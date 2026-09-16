@@ -1,0 +1,24 @@
+<section class="section bg-pattern" id="problem">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge">Проблема</span>
+      <h2 class="section-title">
+        Люди <span class="highlight">пьют</span> пиво,<br>
+        но не <span class="highlight">понимают</span> его
+      </h2>
+    </div>
+
+    <div class="problem-illustration">
+      <div class="illustration-icon">🍺📋</div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card problem-card" *ngFor="let problem of problems; let i = index"
+           [style.animation-delay]="(i * 0.15) + 's'">
+        <div class="card-icon">{{ problem.icon }}</div>
+        <h3 class="card-title">{{ problem.title }}</h3>
+        <p class="card-text">{{ problem.text }}</p>
+      </div>
+    </div>
+  </div>
+</section>

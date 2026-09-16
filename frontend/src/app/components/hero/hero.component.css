@@ -1,0 +1,227 @@
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: 100px 0 60px;
+  background: linear-gradient(180deg, #FFFBF5 0%, #FFFFFF 60%);
+}
+
+/* Decorative circles */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(200, 200, 200, 0.2);
+  background: rgba(200, 200, 200, 0.03);
+}
+
+.circle-1 { width: 300px; height: 300px; top: -50px; right: -80px; }
+.circle-2 { width: 200px; height: 200px; top: 30%; left: -60px; }
+.circle-3 { width: 150px; height: 150px; bottom: 20%; right: 10%; }
+.circle-4 { width: 100px; height: 100px; top: 20%; left: 30%; }
+.circle-5 { width: 250px; height: 250px; bottom: -80px; left: 20%; }
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--container-padding);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Logos */
+.hero-logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.logo-efes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo-text-bold {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--neutral-900);
+  letter-spacing: -1px;
+}
+
+.logo-text-small {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--neutral-500);
+  text-transform: uppercase;
+}
+
+.logo-oneidea {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.oneidea-text {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--neutral-700);
+}
+
+.oneidea-accent {
+  color: var(--primary-500);
+  font-weight: 800;
+}
+
+.oneidea-sub {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--primary-500);
+  text-transform: uppercase;
+}
+
+/* Badge */
+.hero-badge-wrap {
+  margin-bottom: 32px;
+}
+
+/* Title */
+.hero-title-block {
+  margin-bottom: 24px;
+}
+
+.hero-title {
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 900;
+  color: var(--neutral-900);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.title-icon {
+  font-size: clamp(36px, 6vw, 60px);
+  animation: float 3s ease-in-out infinite;
+}
+
+.title-accent {
+  color: var(--primary-500);
+  font-style: italic;
+}
+
+.hero-slogan {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--neutral-500);
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+/* Description */
+.hero-description {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--neutral-600);
+  max-width: 600px;
+  margin: 0 auto 48px;
+}
+
+/* Team */
+.hero-team {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+
+.team-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(247, 148, 29, 0.3);
+  transition: transform var(--transition-base);
+}
+
+.member-avatar:hover {
+  transform: scale(1.1);
+}
+
+.avatar-initials {
+  color: white;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.member-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--neutral-800);
+}
+
+.member-role {
+  font-size: 12px;
+  color: var(--neutral-400);
+  font-weight: 500;
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 80px 0 40px;
+  }
+
+  .hero-logos {
+    margin-bottom: 24px;
+  }
+
+  .logo-text-bold {
+    font-size: 24px;
+  }
+
+  .oneidea-text {
+    font-size: 18px;
+  }
+
+  .hero-team {
+    gap: 24px;
+  }
+
+  .member-avatar {
+    width: 56px;
+    height: 56px;
+  }
+}

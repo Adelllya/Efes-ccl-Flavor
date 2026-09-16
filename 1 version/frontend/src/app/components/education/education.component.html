@@ -1,0 +1,32 @@
+<section class="section" id="education">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge">Образование</span>
+      <h2 class="section-title">
+        🎓 Школа Пивных <span class="highlight">Сомелье</span>
+      </h2>
+      <p class="section-subtitle">
+        4 уровня обучения — модель Duolingo + Cicerone
+      </p>
+    </div>
+
+    <!-- Levels Table -->
+    <div class="levels-table">
+      <div class="table-header">
+        <span class="th">Уровень</span>
+        <span class="th">Название</span>
+        <span class="th">Чему учим</span>
+      </div>
+      <div class="table-row" *ngFor="let level of levels">
+        <span class="level-dot" [style.background]="level.color"></span>
+        <span class="level-name">{{ level.name }}</span>
+        <span class="level-desc">{{ level.description }}</span>
+      </div>
+    </div>
+
+    <!-- Gamification features -->
+    <div class="features-bar">
+      <span class="feature-tag" *ngFor="let feature of features">{{ feature }}</span>
+    </div>
+  </div>
+</section>

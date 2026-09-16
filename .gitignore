@@ -1,0 +1,25 @@
+# Dependencies / build
+node_modules/
+.next/
+dist/
+build/
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.sqlite3
+db.sqlite3
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large archives (GitHub limit 100 MB)
+*.zip

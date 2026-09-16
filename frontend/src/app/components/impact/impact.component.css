@@ -1,0 +1,20 @@
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.impact-card {
+  text-align: center;
+  padding: 36px 24px;
+  background: white;
+  border: 1px solid var(--primary-100);
+}
+
+.impact-card .card-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.impact-card:hover {
+  border-color: var(--primary-300);
+}

@@ -1,0 +1,178 @@
+:root {
+  --bg-0: #FAF6F0;
+  --bg-1: #FFFFFF;
+  --bg-2: #FFFDF9;
+  --beer-light: #E08A28;
+  --beer-mid: #D47519;
+  --beer-deep: #A8550C;
+  --beer-accent: #F5B942;
+  --foam: #1F160E;
+  --foam-dim: #544637;
+  --muted: #8C7B68;
+  --line: rgba(224, 138, 40, 0.18);
+  --line-subtle: rgba(224, 138, 40, 0.1);
+  --glass: rgba(255, 255, 255, 0.78);
+  --shadow-warm: 0 16px 40px -12px rgba(180, 100, 20, 0.09);
+  --shadow-hover: 0 24px 50px -10px rgba(224, 138, 40, 0.22);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-0);
+  color: var(--foam);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 1000px 600px at 50% -10%, rgba(245,185,66,0.22), transparent 60%),
+    radial-gradient(ellipse 800px 600px at 90% 20%, rgba(224,138,40,0.12), transparent 55%),
+    linear-gradient(180deg, #FAF6F0 0%, #F5EFE6 100%);
+}
+
+h1, h2, h3, h4, .brand-font {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Анимация микро-пузырьков пивной карбонизации на фоне */
+.bubbles-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -40px;
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95), rgba(245,185,66,0.3) 45%, rgba(224,138,40,0.06) 75%);
+  border: 1px solid rgba(224,138,40,0.25);
+  box-shadow: 0 2px 8px rgba(245,185,66,0.2);
+  border-radius: 50%;
+  animation: rise linear infinite;
+  opacity: 0;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-112vh) translateX(30px);
+    opacity: 0;
+  }
+}
+
+/* Glassmorphism UI компоненты */
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow-warm);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow-warm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(224, 138, 40, 0.45);
+}
+
+/* Кнопки и Бейджи */
+.btn-amber {
+  background: linear-gradient(135deg, var(--beer-light) 0%, var(--beer-mid) 100%);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 20px -6px rgba(212, 117, 25, 0.45);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-amber:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -6px rgba(212, 117, 25, 0.65);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--foam);
+  border: 1px solid var(--line);
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-outline:hover, .btn-outline.active {
+  background: rgba(224, 138, 40, 0.12);
+  border-color: var(--beer-light);
+  color: var(--beer-deep);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(224, 138, 40, 0.12);
+  color: var(--beer-deep);
+  border: 1px solid rgba(224, 138, 40, 0.25);
+}
+
+/* Золотистый прогресс-бар для пирамиды */
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(224, 138, 40, 0.12);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--beer-accent), var(--beer-mid));
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}

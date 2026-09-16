@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Flavor Tree - Gantt Chart - Roadmap</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --cream: #f7f2e7;
+            --card: #fff;
+            --ink: #241f1a;
+            --ink2: #8a7f6f;
+            --line: #e7ddc8;
+            --orange: #d97b2e;
+            --purple: #8c5fb0;
+            --purple-d: #5f3d7c;
+            --teal: #2b9e8f;
+            --teal-d: #1d766a;
+            --blue: #4a7fd4;
+            --blue-d: #2f5a9e;
+            --hi: rgba(191, 227, 208, 0.35);
+            --ghost: #e3d9c4;
+            --ghost-t: #8a7f6f;
+            --pill-w: 36px;
+            --lbl-w: 190px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--cream);
+            color: var(--ink);
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            padding: 36px 24px 48px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .topbar {
+            height: 5px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #d97b2e, #8c5fb0, #2b9e8f);
+            margin-bottom: 24px;
+        }
+
+        /* Header with logo */
+        .hd {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            font-size: 25px;
+            font-weight: 900;
+            letter-spacing: -.02em;
+        }
+
+        h1 b {
+            color: var(--orange);
+            font-weight: 900;
+        }
+
+        .hd-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .badge {
+            background: var(--orange);
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 9px 18px;
+            border-radius: 20px;
+        }
+
+        .logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            border: 2px solid var(--line);
+            object-fit: cover;
+        }
+
+        .subtitle {
+            font-size: 11.5px;
+            color: var(--ink2);
+            margin-bottom: 22px;
+            font-style: italic;
+        }
+
+        .phase {
+            margin-bottom: 30px;
+        }
+
+        .ph {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 11px;
+        }
+
+        .pn {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        .pn.a {
+            background: var(--orange);
+        }
+
+        .pn.b {
+            background: var(--teal);
+        }
+
+        .pt {
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .pt small {
+            font-weight: 500;
+            color: var(--ink2);
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .bd {
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            padding: 19px 14px 150px;
+            overflow-x: auto;
+        }
+
+        /* ===== CHART ===== */
+        .chart {
+            min-width: 860px;
+        }
+
+        /* Every row: [pill-spacer 36px] [label 190px] [cols flex:1] */
+        .r {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .r .ps {
+            width: var(--pill-w);
+            min-width: var(--pill-w);
+            flex-shrink: 0;
+        }
+
+        .r .lb {
+            width: var(--lbl-w);
+            min-width: var(--lbl-w);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .r .lb small {
+            display: block;
+            font-weight: 400;
+            color: var(--ink2);
+            font-size: 10px;
+            margin-top: 1px;
+        }
+
+        .r .lb .tx {
+            flex: 1;
+        }
+
+        .r .cs {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        .r .c {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Header row */
+        .r.hdr .lb {
+            border-bottom: 2px solid var(--ink);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--ink2);
+            padding-left: 4px;
+        }
+
+        .r.hdr .c {
+            text-align: center;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--ink2);
+            padding: 8px 2px;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .r.hdr .c small {
+            display: block;
+            font-weight: 400;
+            font-size: 8.5px;
+            margin-top: 1px;
+            opacity: .75;
+        }
+
+        .r.hdr .c.now {
+            background: var(--hi);
+            border-radius: 5px 5px 0 0;
+            color: var(--purple-d);
+        }
+
+        .r.hdr .ps {
+            border-bottom: 2px solid var(--ink);
+        }
+
+        /* Data row */
+        .r.dat .c {
+            border-bottom: 1px solid var(--line);
+            border-left: 1px solid var(--line);
+            min-height: 42px;
+        }
+
+        .r.dat .lb {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .r.dat .ps {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .r.dat .c.now {
+            background: var(--hi);
+        }
+
+        /* Bar overlay */
+        .bw {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .bar {
+            position: absolute;
+            top: 7px;
+            height: 27px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.10);
+            pointer-events: auto;
+        }
+
+        .bar.done {
+            background: var(--orange);
+        }
+
+        .bar.wip {
+            background: var(--purple);
+        }
+
+        .bar.flag {
+            background: var(--purple-d);
+        }
+
+        .bar.ghost {
+            background: var(--ghost);
+            color: var(--ghost-t);
+            box-shadow: none;
+        }
+
+        .bar.bl {
+            background: var(--blue);
+        }
+
+        .bar.tp {
+            background: rgba(43, 158, 143, 0.22);
+            color: var(--teal-d);
+            box-shadow: none;
+        }
+
+        .bar.bp {
+            background: rgba(74, 127, 212, 0.18);
+            color: var(--blue-d);
+            box-shadow: none;
+        }
+
+        .bar.deadline {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        /* Group pill */
+        .gpill {
+            position: absolute;
+            left: 0;
+            width: var(--pill-w);
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: .04em;
+            border-radius: 14px;
+            padding: 10px 4px;
+            z-index: 3;
+        }
+
+        .gpill.done {
+            background: var(--orange);
+        }
+
+        .gpill.wip {
+            background: var(--purple);
+        }
+
+        .gpill.pilot {
+            background: var(--teal);
+        }
+
+        .gpill.res {
+            background: var(--blue);
+        }
+
+        /* Group container */
+        .grp {
+            position: relative;
+        }
+
+        /* Deadline column */
+        .r .c.dl {
+            flex: 0 0 48px;
+            min-width: 48px;
+        }
+
+        .r.hdr .c.dl {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 5px 5px 0 0;
+            color: #c0392b;
+            font-weight: 800;
+            font-size: 10px;
+        }
+
+        .r.dat .c.dl {
+            background: rgba(231, 76, 60, 0.06);
+        }
+
+        /* Milestone diamond */
+        .milestone {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            transform: translate(-50%, -50%) rotate(45deg);
+            background: #e74c3c;
+            border-radius: 3px;
+            z-index: 2;
+        }
+
+        .milestone::after {
+            content: '🏁';
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-45deg);
+            font-size: 11px;
+        }
+
+        /* Legend */
+        .leg {
+            padding: 10px 0 6px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 10.5px;
+            color: var(--ink2);
+            padding-left: calc(var(--pill-w) + 8px);
+        }
+
+        .leg i {
+            width: 9px;
+            height: 9px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: -1px;
+        }
+
+        .note {
+            margin-top: 16px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--ink2);
+            max-width: 900px;
+        }
+
+        .note b {
+            color: var(--ink);
+        }
+
+        .foot {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            font-style: italic;
+            color: var(--ink2);
+            border-top: 1px solid var(--line);
+            padding-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <div class="topbar"></div>
+
+        <div class="hd">
+            <h1>Gantt Chart - <b>Flavor Tree</b></h1>
+            <div class="hd-right">
+                <div class="badge">EFES Kazakhstan - One Idea University</div>
+                <img src="logo1_1.png" alt="Flavor Tree" class="logo">
+            </div>
+        </div>
+
+        <div class="subtitle">
+            Обновляемый документ - актуальная версия роадмапа проекта. Последнее обновление: <span id="upd"></span>
+        </div>
+
+        <!-- PHASE 1 -->
+        <div class="phase">
+            <div class="ph">
+                <div class="pn a">1</div>
+                <div class="pt">Ресерч + Разработка<small>середина июля - конец августа</small></div>
+            </div>
+            <div class="bd">
+                <div class="chart" id="c1"></div>
+                <div class="leg">
+                    <span><i style="background:var(--orange)"></i>Готово</span>
+                    <span><i style="background:var(--purple)"></i>В работе</span>
+                    <span><i style="background:var(--purple-d)"></i>Узкое место</span>
+                    <span><i style="background:var(--blue)"></i>Исследование</span>
+                    <span><i style="background:var(--ghost)"></i>Запланировано</span>
+                    <span><i style="background:var(--hi);border:1px solid #6fb894"></i>Текущая неделя</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHASE 2 -->
+        <div class="phase">
+            <div class="ph">
+                <div class="pn b">2</div>
+                <div class="pt">Пилот + Масштабирование<small>сентябрь - середина октября</small></div>
+            </div>
+            <div class="bd">
+                <div class="chart" id="c2"></div>
+                <div class="leg">
+                    <span><i style="background:var(--purple)"></i>Разработка</span>
+                    <span><i style="background:var(--purple-d)"></i>Узкое место</span>
+                    <span><i style="background:rgba(43,158,143,.22);border:1px solid var(--teal)"></i>Пилот
+                        (план)</span>
+                    <span><i style="background:var(--ghost)"></i>Запланировано</span>
+                    <span><i style="background:rgba(74,127,212,.18);border:1px solid var(--blue)"></i>Итоги
+                        (план)</span>
+                    <span><i style="background:#e74c3c"></i>Дедлайн</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <b>Ключевые зависимости:</b><br>
+            ① <b>Наполнение пар (сомелье)</b> - узкое место: soft-пилот стартует, когда в базе ≥50 пар. Сомелье вводят
+            данные через админку сайта.<br>
+            ② <b>Soft-пилот → Основной пилот:</b> результаты soft-пилота (W10-W12) определяют масштаб основного.<br>
+            ③ <b>QR-модуль</b> нужен к W12 для основного пилота с несколькими заведениями.<br>
+            ④ <b>Дедлайн:</b> показ проекта жюри EFES - 15 октября (W14).
+        </div>
+
+        <div class="foot">Flavor Tree Roadmap - EFES Kazakhstan × One Idea University - 2026</div>
+    </div>
+
+    <script>
+        // Update date
+        document.getElementById('upd').textContent = new Date().toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        function buildChart(el, weeks, groups, nowId) {
+            const n = weeks.length;
+
+            // Header row
+            const hr = document.createElement('div');
+            hr.className = 'r hdr';
+            hr.innerHTML = '<div class="ps"></div><div class="lb">Направление / задача</div>';
+
+            const hcs = document.createElement('div');
+            hcs.className = 'cs';
+            weeks.forEach(w => {
+                const d = document.createElement('div');
+                d.className = 'c' + (w.id === nowId ? ' now' : '') + (w.deadline ? ' dl' : '');
+                d.innerHTML = w.id + '<small>' + w.label + '</small>';
+                hcs.appendChild(d);
+            });
+            hr.appendChild(hcs);
+            el.appendChild(hr);
+
+            // Groups
+            groups.forEach(g => {
+                const grp = document.createElement('div');
+                grp.className = 'grp';
+
+                g.tasks.forEach(t => {
+                    const row = document.createElement('div');
+                    row.className = 'r dat';
+                    row.innerHTML = '<div class="ps"></div>';
+
+                    const lb = document.createElement('div');
+                    lb.className = 'lb';
+                    lb.innerHTML = '<div class="tx">' + t.name + (t.sub ? '<small>' + t.sub + '</small>' : '') + '</div>';
+                    row.appendChild(lb);
+
+                    const cs = document.createElement('div');
+                    cs.className = 'cs';
+                    for (let i = 0; i < n; i++) {
+                        const c = document.createElement('div');
+                        c.className = 'c' + (weeks[i].id === nowId ? ' now' : '') + (weeks[i].deadline ? ' dl' : '');
+                        cs.appendChild(c);
+                    }
+
+                    if (t.bars && t.bars.length) {
+                        const bw = document.createElement('div');
+                        bw.className = 'bw';
+                        t.bars.forEach(b => {
+                            const bar = document.createElement('div');
+                            bar.className = 'bar ' + b.cls;
+                            const l = b.from / n * 100;
+                            const r = (n - b.to - 1) / n * 100;
+                            bar.style.left = 'calc(' + l.toFixed(2) + '% + 5px)';
+                            bar.style.right = 'calc(' + r.toFixed(2) + '% + 5px)';
+                            if (b.text) bar.textContent = b.text;
+                            bw.appendChild(bar);
+                        });
+                        cs.appendChild(bw);
+                    }
+
+                    // Milestone diamond
+                    if (t.milestone !== undefined) {
+                        const dlCell = cs.children[t.milestone];
+                        if (dlCell) {
+                            dlCell.style.position = 'relative';
+                            const ms = document.createElement('div');
+                            ms.className = 'milestone';
+                            dlCell.appendChild(ms);
+                        }
+                    }
+                    row.appendChild(cs);
+                    grp.appendChild(row);
+                });
+
+                // Group pill
+                const pill = document.createElement('div');
+                pill.className = 'gpill ' + g.cls;
+                pill.textContent = g.name;
+                grp.appendChild(pill);
+
+                el.appendChild(grp);
+            });
+        }
+
+        // PHASE 1
+        buildChart(document.getElementById('c1'),
+            [
+                { id: 'W1', label: '14-20 июл' },
+                { id: 'W2', label: '21-27 июл' },
+                { id: 'W3', label: '28 июл - 3 авг' },
+                { id: 'W4', label: '4-10 авг' },
+                { id: 'W5', label: '11-17 авг' },
+                { id: 'W6', label: '18-24 авг' },
+                { id: 'W7', label: '25-31 авг' }
+            ],
+            [
+                {
+                    name: 'Готово',
+                    cls: 'done',
+                    tasks: [
+                        { name: 'Ресерч, часть 1', sub: 'анкеты, интервью', bars: [{ from: 0, to: 1, cls: 'done', text: '100%' }] },
+                        { name: 'MVP-демо', sub: 'efes-ccl.vercel.app', bars: [{ from: 0, to: 0, cls: 'done', text: '100%' }] }
+                    ]
+                },
+                {
+                    name: 'В работе',
+                    cls: 'wip',
+                    tasks: [
+                        { name: 'Бэкенд + дизайн', sub: 'общая разработка', bars: [{ from: 2, to: 6, cls: 'wip', text: '60%' }] },
+                        { name: 'Наполнение пар (сомелье)', sub: 'админка + ввод - узкое место', bars: [{ from: 4, to: 6, cls: 'flag', text: '25%' }] },
+                        { name: 'Ресерч, часть 2', sub: 'интервью: сомелье, рестораторы', bars: [{ from: 4, to: 6, cls: 'bl', text: 'старт' }] },
+                        { name: 'Подготовка к пилоту', sub: 'договор с рестораном', bars: [{ from: 6, to: 6, cls: 'ghost', text: 'план' }] }
+                    ]
+                }
+            ],
+            'W7'
+        );
+
+        // PHASE 2
+        buildChart(document.getElementById('c2'),
+            [
+                { id: 'W8', label: '1-7 сен' },
+                { id: 'W9', label: '8-14 сен' },
+                { id: 'W10', label: '15-21 сен' },
+                { id: 'W11', label: '22-28 сен' },
+                { id: 'W12', label: '29 сен - 5 окт' },
+                { id: 'W13', label: '6-12 окт' },
+                { id: '15 окт', label: 'дедлайн', deadline: true }
+            ],
+            [
+                {
+                    name: 'Разработка',
+                    cls: 'wip',
+                    tasks: [
+                        { name: 'Бэкенд + дизайн (финал)', sub: 'стабилизация, деплой', bars: [{ from: 0, to: 1, cls: 'wip', text: '60%' }] },
+                        { name: 'Пейринги для первого теста', sub: 'подготовка данных', bars: [{ from: 0, to: 2, cls: 'flag', text: 'W8-W10' }] },
+                        { name: 'QR / HoReCa-модуль', sub: 'анонимные сессии', bars: [{ from: 1, to: 3, cls: 'ghost', text: 'план' }] }
+                    ]
+                },
+                {
+                    name: 'Пилот',
+                    cls: 'pilot',
+                    tasks: [
+                        { name: 'Soft-пилот', bars: [{ from: 2, to: 4, cls: 'tp', text: 'W10-W12' }] },
+                        { name: 'Основной пилот', sub: 'несколько заведений + QR', bars: [{ from: 2, to: 4, cls: 'tp', text: 'W10-W12' }] },
+                        { name: 'Сбор метрик + обратная связь', sub: 'аналитика, NPS', bars: [{ from: 3, to: 5, cls: 'tp', text: 'W11-W13' }] }
+                    ]
+                },
+                {
+                    name: 'Итоги',
+                    cls: 'res',
+                    tasks: [
+                        { name: 'Тестирование + QA', sub: 'баг-фиксы, нагрузка', bars: [{ from: 4, to: 5, cls: 'bp', text: 'план' }] },
+                        { name: 'Отчет + Защита', sub: 'финальная презентация, подготовка', bars: [{ from: 5, to: 5, cls: 'bp', text: 'план' }] },
+                        { name: 'Показ жюри EFES', sub: '15 октября', milestone: 6 }
+                    ]
+                }
+            ],
+            null
+        );
+
+        // Adjust pill heights to actual DOM
+        document.querySelectorAll('.grp').forEach(grp => {
+            const pill = grp.querySelector('.gpill');
+            if (!pill) return;
+            const rows = grp.querySelectorAll('.r.dat');
+            if (!rows.length) return;
+            const top = rows[0].offsetTop;
+            const last = rows[rows.length - 1];
+            const bottom = last.offsetTop + last.offsetHeight;
+            pill.style.top = (top + 3) + 'px';
+            pill.style.height = (bottom - top - 6) + 'px';
+        });
+    </script>
+</body>
+
+</html>

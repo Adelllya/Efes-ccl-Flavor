@@ -1,0 +1,55 @@
+<section class="hero" id="hero">
+  <!-- Decorative background circles -->
+  <div class="hero-bg">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+    <div class="circle circle-4"></div>
+    <div class="circle circle-5"></div>
+  </div>
+
+  <div class="container">
+    <!-- Top logos -->
+    <div class="hero-logos">
+      <div class="logo-efes">
+        <span class="logo-text-bold">EFES</span>
+        <span class="logo-text-small">KAZAKHSTAN</span>
+      </div>
+      <div class="logo-oneidea">
+        <span class="oneidea-text">One<span class="oneidea-accent">Idea</span></span>
+        <span class="oneidea-sub">UNIVERSITY</span>
+      </div>
+    </div>
+
+    <!-- Championship badge -->
+    <div class="hero-badge-wrap">
+      <span class="badge">OneIdea Championship 2026</span>
+    </div>
+
+    <!-- Main title -->
+    <div class="hero-title-block">
+      <h1 class="hero-title">
+        <span class="title-icon">🍺</span>
+        Flavor <span class="title-accent">Tree</span>
+      </h1>
+      <p class="hero-slogan">"Don't just drink – listen to the flavor"</p>
+    </div>
+
+    <!-- Description -->
+    <p class="hero-description">
+      Первая в СНГ платформа сенсорного образования для напитков.<br>
+      Помогаем людям слышать вкус, а брендам — быть понятыми.
+    </p>
+
+    <!-- Team -->
+    <div class="hero-team">
+      <div class="team-member" *ngFor="let member of team">
+        <div class="member-avatar">
+          <span class="avatar-initials">{{ member.initials }}</span>
+        </div>
+        <span class="member-name">{{ member.name }}</span>
+        <span class="member-role">{{ member.role }}</span>
+      </div>
+    </div>
+  </div>
+</section>
