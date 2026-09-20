@@ -1,0 +1,36 @@
+<section class="section" id="solution">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge">Решение</span>
+      <h2 class="section-title">
+        Flavor Tree — <span class="highlight">вкусовая пирамида</span>
+      </h2>
+      <p class="section-subtitle">
+        Каждое пиво раскладывается на 3 слоя — как аромат в парфюмерии
+      </p>
+    </div>
+
+    <!-- Pyramid -->
+    <div class="pyramid-wrapper">
+      <div class="pyramid">
+        <div class="pyramid-layer" *ngFor="let layer of pyramidLayers; let i = index"
+             [style.--layer-color]="layer.color"
+             [style.--layer-bg]="layer.bgColor"
+             [style.animation-delay]="(i * 0.2) + 's'">
+          <div class="layer-content">
+            <span class="layer-icon">{{ layer.icon }}</span>
+            <div class="layer-info">
+              <span class="layer-level">{{ layer.level }}</span> — 
+              <span class="layer-label">{{ layer.label }}</span>
+              <p class="layer-notes">{{ layer.notes }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="pyramid-quote">
+      «Как парфюмер раскладывает аромат на ноты, мы раскладываем вкус пива на слои»
+    </p>
+  </div>
+</section>

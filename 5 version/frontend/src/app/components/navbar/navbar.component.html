@@ -1,0 +1,20 @@
+<nav class="navbar" [class.scrolled]="isScrolled">
+  <div class="nav-container">
+    <a class="nav-brand" (click)="scrollTo('#hero')">
+      <span class="brand-icon">🍺</span>
+      <span class="brand-text">Flavor <span class="brand-accent">Tree</span></span>
+    </a>
+
+    <ul class="nav-links" [class.open]="isMobileMenuOpen">
+      <li *ngFor="let link of navLinks">
+        <a (click)="scrollTo(link.href)">{{ link.label }}</a>
+      </li>
+    </ul>
+
+    <button class="mobile-toggle" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
