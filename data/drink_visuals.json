@@ -1,0 +1,2609 @@
+{
+ "$comment": "Визуальные приоры напитков Flavor Tree v2. Приоритет: drink.visual → archetypes[style.archetype] → families[style.family] → categories[category]. Цвета пива выведены из SRM по стандартной таблице SRM→sRGB (1..40); anchor — источник значения. Рендерер: frontend/src/app/ui/drink-art.ts.",
+ "version": 1,
+ "srm_rgb": [
+  "#FFE699",
+  "#FFD878",
+  "#FFCA5A",
+  "#FFBF42",
+  "#FBB123",
+  "#F8A600",
+  "#F39C00",
+  "#EA8F00",
+  "#E58500",
+  "#DE7C00",
+  "#D77200",
+  "#CF6900",
+  "#CB6200",
+  "#C35900",
+  "#BB5100",
+  "#B54C00",
+  "#B04500",
+  "#A63E00",
+  "#A13700",
+  "#9B3200",
+  "#952D00",
+  "#8E2900",
+  "#882300",
+  "#821E00",
+  "#7B1A00",
+  "#771900",
+  "#701400",
+  "#6A0E00",
+  "#660D00",
+  "#5E0B00",
+  "#5A0A02",
+  "#560A05",
+  "#520907",
+  "#4C0505",
+  "#470606",
+  "#440607",
+  "#3F0708",
+  "#3B0607",
+  "#3A070B",
+  "#36080A"
+ ],
+ "glasses": {
+  "pilsner": "пилснер (pokal)",
+  "weizen": "вайценбокал",
+  "nonic": "нонник-пинта",
+  "mug": "кружка",
+  "becher": "Willi Becher",
+  "stange": "штанге",
+  "tulip": "тюльпан",
+  "snifter": "снифтер",
+  "tumbler": "тумблер",
+  "white_wine": "бокал для белого",
+  "red_wine": "бокал для красного",
+  "spritz": "бокал для спритца",
+  "flute": "флейта",
+  "port": "бокал для портвейна",
+  "copita": "копита",
+  "coupe": "купе",
+  "martini": "коктейльная рюмка",
+  "rocks": "рокс",
+  "highball": "хайбол",
+  "glencairn": "гленкерн",
+  "shot": "стопка",
+  "piala": "пиала",
+  "teacup": "чашка с блюдцем",
+  "podstakannik": "стакан в подстаканнике",
+  "espresso": "чашка эспрессо"
+ },
+ "garnishes": {
+  "lemon_wheel": "кружок лимона",
+  "lime_wedge": "долька лайма",
+  "orange_peel": "цедра апельсина",
+  "orange_slice": "полукруг апельсина в бокале",
+  "orange_wheel": "кружок апельсина",
+  "lemon_twist": "твист лимона",
+  "cherry": "коктейльная вишня",
+  "mint": "веточка мяты",
+  "rosemary": "веточка розмарина",
+  "cinnamon": "палочка корицы",
+  "olive": "оливка на шпажке",
+  "cucumber": "ломтик огурца",
+  "smoke": "дымка (аромат)"
+ },
+ "ice": [
+  "none",
+  "large_cube",
+  "cubes",
+  "crushed"
+ ],
+ "rim": [
+  "none",
+  "salt",
+  "sugar"
+ ],
+ "serving_glass_aliases_ru": {
+  "пилснер": "pilsner",
+  "пилзнер": "pilsner",
+  "флейта": "flute",
+  "вайцен": "weizen",
+  "вайценбокал": "weizen",
+  "кружка": "mug",
+  "масс": "mug",
+  "нонник": "nonic",
+  "пинта": "nonic",
+  "бехер": "becher",
+  "штанге": "stange",
+  "тюльпан": "tulip",
+  "снифтер": "snifter",
+  "тумблер": "tumbler",
+  "бокал для белого": "white_wine",
+  "бокал для красного": "red_wine",
+  "винный бокал": "red_wine",
+  "бокал для портвейна": "port",
+  "копита": "copita",
+  "купе": "coupe",
+  "мартини": "martini",
+  "рокс": "rocks",
+  "олд-фэшн": "rocks",
+  "хайбол": "highball",
+  "коллинз": "highball",
+  "гленкерн": "glencairn",
+  "стопка": "shot",
+  "шот": "shot",
+  "пиала": "piala",
+  "кесе": "piala",
+  "чашка": "teacup",
+  "подстаканник": "podstakannik",
+  "чашка эспрессо": "espresso"
+ },
+ "archetypes": {
+  "light_lager": {
+   "category": "beer",
+   "glass": "pilsner",
+   "srm": 2.5,
+   "liquid": {
+    "top": "#FFDA84",
+    "mid": "#FFD169",
+    "bottom": "#A68341"
+   },
+   "foam": {
+    "height": 0.4,
+    "color": "#FFF8EA"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 1A Light American Lager: SRM 2–3 → 2.5 → #FFD169; пилснер, пена белая средняя"
+  },
+  "pale_lager_intl": {
+   "category": "beer",
+   "glass": "pilsner",
+   "srm": 3.5,
+   "liquid": {
+    "top": "#FFD170",
+    "mid": "#FFC54E",
+    "bottom": "#A67C30"
+   },
+   "foam": {
+    "height": 0.45,
+    "color": "#FFF8EA"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 2A International Pale Lager: SRM 2–6 → 3.5 → #FFC54E; пилснер"
+  },
+  "czech_pale_premium": {
+   "category": "beer",
+   "glass": "mug",
+   "srm": 4.5,
+   "liquid": {
+    "top": "#FEC85C",
+    "mid": "#FDB833",
+    "bottom": "#A57420"
+   },
+   "foam": {
+    "height": 0.6,
+    "color": "#FFF7E6"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 3B Czech Premium Pale Lager: SRM 3.5–6 → 4.5 → #FDB833; кружка (půllitr), плотная высокая пена"
+  },
+  "german_pils": {
+   "category": "beer",
+   "glass": "pilsner",
+   "srm": 3,
+   "liquid": {
+    "top": "#FFD579",
+    "mid": "#FFCA5A",
+    "bottom": "#A67F38"
+   },
+   "foam": {
+    "height": 0.55,
+    "color": "#FFF9EE"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 5D German Pils: SRM 2–4 → 3 → #FFCA5A; пилснер-флейта, стойкая белая пена"
+  },
+  "helles": {
+   "category": "beer",
+   "glass": "mug",
+   "srm": 4,
+   "liquid": {
+    "top": "#FFCD67",
+    "mid": "#FFBF42",
+    "bottom": "#A67829"
+   },
+   "foam": {
+    "height": 0.5,
+    "color": "#FFF8EA"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 4A Munich Helles: SRM 3–5 → 4 → #FFBF42; кружка (Maß)"
+  },
+  "amber_lager": {
+   "category": "beer",
+   "glass": "becher",
+   "srm": 12,
+   "liquid": {
+    "top": "#DB8C36",
+    "mid": "#CF6900",
+    "bottom": "#884300"
+   },
+   "foam": {
+    "height": 0.45,
+    "color": "#F9ECD6"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 7A Vienna Lager / 6A Märzen: SRM 9–15 → 12 → #CF6900; Willi Becher, пена кремовая"
+  },
+  "czech_dark": {
+   "category": "beer",
+   "glass": "mug",
+   "srm": 22,
+   "liquid": {
+    "top": "#AA5C36",
+    "mid": "#8E2900",
+    "bottom": "#601B00"
+   },
+   "foam": {
+    "height": 0.5,
+    "color": "#EFDCC0"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 3D Czech Dark Lager: SRM 14–35 → 22 → #8E2900; кружка, пена светло-бежевая"
+  },
+  "strong_lager": {
+   "category": "beer",
+   "glass": "becher",
+   "srm": 6,
+   "liquid": {
+    "top": "#FABA36",
+    "mid": "#F8A600",
+    "bottom": "#A26900"
+   },
+   "foam": {
+    "height": 0.4,
+    "color": "#FFF5E2"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Крепкий светлый лагер (KZ SKU золотистые; BJCP 2B/9A ориентир): SRM 5–8 → 6 → #F8A600; Willi Becher"
+  },
+  "rice_lager": {
+   "category": "beer",
+   "glass": "pilsner",
+   "srm": 2.5,
+   "liquid": {
+    "top": "#FFDA84",
+    "mid": "#FFD169",
+    "bottom": "#A68341"
+   },
+   "foam": {
+    "height": 0.35,
+    "color": "#FFFAF0"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Рисовый лагер (BJCP 2A-подобно): SRM 2–3 → 2.5 → #FFD169; пилснер, тонкая пена"
+  },
+  "weissbier": {
+   "category": "beer",
+   "glass": "weizen",
+   "srm": 4,
+   "liquid": {
+    "top": "#FED684",
+    "mid": "#FDCB68",
+    "bottom": "#A58040"
+   },
+   "foam": {
+    "height": 0.95,
+    "color": "#FFF5E0"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "haze": 0.7,
+   "anchor": "BJCP 10A Weissbier: SRM 2–6 → 4, мутное (haze .7) → #FDCB68; вайценбокал, высокая пышная пена"
+  },
+  "witbier": {
+   "category": "beer",
+   "glass": "tumbler",
+   "srm": 3,
+   "liquid": {
+    "top": "#FDDD94",
+    "mid": "#FCD47E",
+    "bottom": "#A4854E"
+   },
+   "foam": {
+    "height": 0.6,
+    "color": "#FFF9EE"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "haze": 0.8,
+   "anchor": "BJCP 24A Witbier: SRM 2–4 → 3, мутное (haze .8) → #FCD47E; толстостенный тумблер"
+  },
+  "american_pale_ale": {
+   "category": "beer",
+   "glass": "nonic",
+   "srm": 7,
+   "liquid": {
+    "top": "#F6B336",
+    "mid": "#F39C00",
+    "bottom": "#9F6300"
+   },
+   "foam": {
+    "height": 0.45,
+    "color": "#FFF3DE"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 18B American Pale Ale: SRM 5–10 → 7 → #F39C00; нонник-пинта"
+  },
+  "american_ipa_45": {
+   "category": "beer",
+   "glass": "tulip",
+   "srm": 8,
+   "liquid": {
+    "top": "#EFA936",
+    "mid": "#EA8F00",
+    "bottom": "#995B00"
+   },
+   "foam": {
+    "height": 0.5,
+    "color": "#FFF2DA"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 21A American IPA: SRM 6–14 → 8 → #EA8F00; тюльпан на ножке"
+  },
+  "double_ipa_85": {
+   "category": "beer",
+   "glass": "tulip",
+   "srm": 9,
+   "liquid": {
+    "top": "#ECA136",
+    "mid": "#E58500",
+    "bottom": "#965400"
+   },
+   "foam": {
+    "height": 0.45,
+    "color": "#FFF1D8"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 22A Double IPA: SRM 6–14 → 9 → #E58500; тюльпан"
+  },
+  "brown_ale": {
+   "category": "beer",
+   "glass": "nonic",
+   "srm": 18,
+   "liquid": {
+    "top": "#BC6C36",
+    "mid": "#A63E00",
+    "bottom": "#6F2800"
+   },
+   "foam": {
+    "height": 0.45,
+    "color": "#F1DFC4"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 13B British Brown Ale: SRM 12–22 → 18 → #A63E00; нонник, пена бежевая"
+  },
+  "porter": {
+   "category": "beer",
+   "glass": "nonic",
+   "srm": 26,
+   "liquid": {
+    "top": "#822307",
+    "mid": "#771900",
+    "bottom": "#5A1300"
+   },
+   "foam": {
+    "height": 0.5,
+    "color": "#E6CBA8"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 13C English Porter: SRM 20–30 → 26 → #771900; нонник, пена светло-коричневая"
+  },
+  "dry_stout": {
+   "category": "beer",
+   "glass": "nonic",
+   "srm": 38,
+   "liquid": {
+    "top": "#58160C",
+    "mid": "#3B0607",
+    "bottom": "#300605"
+   },
+   "foam": {
+    "height": 0.55,
+    "color": "#D8B58C"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 15B Irish Stout: SRM 25–40 → 38 → #3B0607; нонник, плотная кремово-бежевая (нитро) пена"
+  },
+  "milk_stout": {
+   "category": "beer",
+   "glass": "nonic",
+   "srm": 36,
+   "liquid": {
+    "top": "#5E160C",
+    "mid": "#440607",
+    "bottom": "#360605"
+   },
+   "foam": {
+    "height": 0.5,
+    "color": "#DBB893"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 16A Sweet Stout: SRM 30–40 → 36 → #440607; нонник, кремовая пена"
+  },
+  "imperial_stout": {
+   "category": "beer",
+   "glass": "snifter",
+   "srm": 40,
+   "liquid": {
+    "top": "#54170E",
+    "mid": "#36080A",
+    "bottom": "#2C0707"
+   },
+   "foam": {
+    "height": 0.35,
+    "color": "#C9A17B"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "fill": 0.55,
+   "anchor": "BJCP 20C Imperial Stout: SRM 30–40 → 40 → #36080A; снифтер, невысокая тёмно-бежевая пена"
+  },
+  "barleywine": {
+   "category": "beer",
+   "glass": "snifter",
+   "srm": 16,
+   "liquid": {
+    "top": "#C87736",
+    "mid": "#B54C00",
+    "bottom": "#783100"
+   },
+   "foam": {
+    "height": 0.3,
+    "color": "#F0DCBC"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "fill": 0.55,
+   "anchor": "BJCP 17D English Barleywine: SRM 8–22 → 16 → #B54C00; снифтер, низкая пена"
+  },
+  "rauchbier": {
+   "category": "beer",
+   "glass": "becher",
+   "srm": 16,
+   "liquid": {
+    "top": "#C87736",
+    "mid": "#B54C00",
+    "bottom": "#783100"
+   },
+   "foam": {
+    "height": 0.45,
+    "color": "#F3E2C6"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 6B Rauchbier: SRM 12–22 → 16 → #B54C00; Willi Becher"
+  },
+  "kriek_sour": {
+   "category": "beer",
+   "glass": "tulip",
+   "srm": null,
+   "liquid": {
+    "top": "#E0485F",
+    "mid": "#B5173B",
+    "bottom": "#6E0A24"
+   },
+   "foam": {
+    "height": 0.35,
+    "color": "#F6DCE0"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "BJCP 23F Fruit Lambic (kriek): рубиново-красный от вишни (не SRM), пена розоватая; тюльпан"
+  },
+  "na_lager": {
+   "category": "na_beer",
+   "glass": "pilsner",
+   "srm": 3.5,
+   "liquid": {
+    "top": "#FFD170",
+    "mid": "#FFC54E",
+    "bottom": "#A67C30"
+   },
+   "foam": {
+    "height": 0.4,
+    "color": "#FFF8EA"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Безалкогольный лагер: цвет как BJCP 2A, SRM 3–4 → 3.5 → #FFC54E; пилснер"
+  },
+  "radler": {
+   "category": "radler",
+   "glass": "mug",
+   "srm": 2.5,
+   "liquid": {
+    "top": "#FEDF96",
+    "mid": "#FDD781",
+    "bottom": "#A58750"
+   },
+   "foam": {
+    "height": 0.3,
+    "color": "#FFFAEE"
+   },
+   "garnish": [
+    "lemon_wheel"
+   ],
+   "ice": "none",
+   "rim": "none",
+   "haze": 0.6,
+   "anchor": "Радлер: лагер SRM 2.5 + лимонад 1:1, мутно-лимонный (haze .6) → #FDD781; кружка, долька лимона"
+  },
+  "cider_dry": {
+   "category": "cider",
+   "glass": "white_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#F6EEC0",
+    "mid": "#EBDB8C",
+    "bottom": "#C9B45C"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Сухой сидр: бледно-соломенный, прозрачный, без пены; винный бокал"
+  },
+  "cider_semi_dry": {
+   "category": "cider",
+   "glass": "white_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#F8E8A6",
+    "mid": "#EFCF62",
+    "bottom": "#CBA53C"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Полусухой сидр: золотистый; винный бокал"
+  },
+  "cider_sweet_commercial": {
+   "category": "cider",
+   "glass": "tumbler",
+   "srm": null,
+   "liquid": {
+    "top": "#F6DE92",
+    "mid": "#E9C04E",
+    "bottom": "#C4932A"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "cubes",
+   "rim": "none",
+   "anchor": "Коммерческий сладкий сидр: янтарно-золотой, подаётся со льдом; тумблер"
+  },
+  "white_dry": {
+   "category": "wine",
+   "glass": "white_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#F6F2CC",
+    "mid": "#ECE49E",
+    "bottom": "#D2C86C"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Сухое белое: бледно-соломенное с зеленоватым отливом; бокал для белого (узкая чаша)"
+  },
+  "riesling_off_dry": {
+   "category": "wine",
+   "glass": "white_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#F7F2C0",
+    "mid": "#EDE28E",
+    "bottom": "#D6C85E"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Рислинг полусухой: лимонно-соломенный; бокал для белого"
+  },
+  "brut_sparkling": {
+   "category": "sparkling",
+   "glass": "flute",
+   "srm": null,
+   "liquid": {
+    "top": "#F9F3C6",
+    "mid": "#F1E49E",
+    "bottom": "#DACC6C"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Брют: бледно-золотистый, тонкая нить пузырьков; флейта"
+  },
+  "demi_sec_sparkling": {
+   "category": "sparkling",
+   "glass": "flute",
+   "srm": null,
+   "liquid": {
+    "top": "#F8EEB8",
+    "mid": "#EFDD86",
+    "bottom": "#D7C05A"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Деми-сек: золотистый; флейта"
+  },
+  "red_light": {
+   "category": "wine",
+   "glass": "red_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#D64E68",
+    "mid": "#B22842",
+    "bottom": "#6A0E24"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Лёгкое красное (тип пино-нуар): прозрачно-рубиновое; бокал для красного"
+  },
+  "cabernet": {
+   "category": "wine",
+   "glass": "red_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#8F1F40",
+    "mid": "#5E0D27",
+    "bottom": "#2C0412"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Каберне: глубокий рубин с фиолетовым, почти непрозрачное; широкая чаша"
+  },
+  "shiraz": {
+   "category": "wine",
+   "glass": "red_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#7C183C",
+    "mid": "#4A0A23",
+    "bottom": "#22040F"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Шираз: чернильно-пурпурный; широкая чаша"
+  },
+  "red_semi_sweet": {
+   "category": "wine",
+   "glass": "red_wine",
+   "srm": null,
+   "liquid": {
+    "top": "#B42A4A",
+    "mid": "#7F1231",
+    "bottom": "#3E0718"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Полусладкое красное: тёмно-рубиновое; бокал для красного"
+  },
+  "port": {
+   "category": "fortified",
+   "glass": "port",
+   "srm": null,
+   "liquid": {
+    "top": "#901E3C",
+    "mid": "#6C1029",
+    "bottom": "#380713"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Руби-порт: густой гранатовый; малый бокал для портвейна"
+  },
+  "aperol_spritz": {
+   "category": "cocktail",
+   "glass": "spritz",
+   "srm": null,
+   "liquid": {
+    "top": "#FF9E4C",
+    "mid": "#F26B2A",
+    "bottom": "#C8481A"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "orange_slice"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "anchor": "Апероль-спритц: ярко-оранжевый (апероль + просекко); винный бокал, лёд, полукруг апельсина"
+  },
+  "negroni": {
+   "category": "cocktail",
+   "glass": "rocks",
+   "srm": null,
+   "liquid": {
+    "top": "#E25542",
+    "mid": "#C2273A",
+    "bottom": "#7C1226"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "orange_peel"
+   ],
+   "ice": "large_cube",
+   "rim": "none",
+   "anchor": "Негрони: тёмно-красно-оранжевый (кампари); рокс, крупный куб льда, цедра апельсина"
+  },
+  "margarita": {
+   "category": "cocktail",
+   "glass": "coupe",
+   "srm": null,
+   "liquid": {
+    "top": "#ECF2D2",
+    "mid": "#DCE8B4",
+    "bottom": "#B9CD8C",
+    "opacity": 0.9
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "lime_wedge"
+   ],
+   "ice": "none",
+   "rim": "salt",
+   "anchor": "Маргарита: бледно-лаймовая, слегка мутная; купе с солёной кромкой, долька лайма"
+  },
+  "old_fashioned": {
+   "category": "cocktail",
+   "glass": "rocks",
+   "srm": null,
+   "liquid": {
+    "top": "#DC8E3C",
+    "mid": "#B8631C",
+    "bottom": "#78400F"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "orange_peel"
+   ],
+   "ice": "large_cube",
+   "rim": "none",
+   "anchor": "Олд-фэшн: янтарный (бурбон + сахар + биттер); рокс, крупный куб, цедра апельсина"
+  },
+  "manhattan": {
+   "category": "cocktail",
+   "glass": "coupe",
+   "srm": null,
+   "liquid": {
+    "top": "#CB5A30",
+    "mid": "#9C3B1F",
+    "bottom": "#5A1F0E"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "cherry"
+   ],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Манхэттен: тёмно-янтарно-красный (рай + сладкий вермут); купе, коктейльная вишня"
+  },
+  "gin_tonic": {
+   "category": "cocktail",
+   "glass": "highball",
+   "srm": null,
+   "liquid": {
+    "top": "#F0F6F6",
+    "mid": "#E3EDEF",
+    "bottom": "#C6D6DA",
+    "opacity": 0.55
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "lime_wedge"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "anchor": "Джин-тоник: прозрачный, обильные пузырьки; хайбол, кубики льда, долька лайма"
+  },
+  "white_russian": {
+   "category": "cocktail",
+   "glass": "rocks",
+   "srm": null,
+   "liquid": {
+    "top": "#F0E7D8",
+    "mid": "#B78D66",
+    "bottom": "#5A3820"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "cubes",
+   "rim": "none",
+   "anchor": "Белый русский: сливочный слой над кофейно-коричневым (водка + кофейный ликёр + сливки); рокс, лёд"
+  },
+  "whisky_neat": {
+   "category": "spirit",
+   "glass": "glencairn",
+   "srm": null,
+   "liquid": {
+    "top": "#E4A84C",
+    "mid": "#C67A22",
+    "bottom": "#894C12"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Виски: янтарный; гленкерн, без льда"
+  },
+  "cask_strength_whisky": {
+   "category": "spirit",
+   "glass": "glencairn",
+   "srm": null,
+   "liquid": {
+    "top": "#DA9C40",
+    "mid": "#B4661A",
+    "bottom": "#79410E"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Виски бочковой крепости: насыщенно-янтарный; гленкерн"
+  },
+  "peated_whisky": {
+   "category": "spirit",
+   "glass": "glencairn",
+   "srm": null,
+   "liquid": {
+    "top": "#EDC86C",
+    "mid": "#D9A73A",
+    "bottom": "#A2741C"
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Торфяной виски: золотистый (без карамели); гленкерн, без льда"
+  },
+  "vodka_neat": {
+   "category": "spirit",
+   "glass": "shot",
+   "srm": null,
+   "liquid": {
+    "top": "#F5F9FB",
+    "mid": "#E8EFF3",
+    "bottom": "#C8D6DD",
+    "opacity": 0.5
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "condensation": true,
+   "anchor": "Водка: прозрачная; стопка, подача 0 °C → конденсат"
+  },
+  "mezcal": {
+   "category": "spirit",
+   "glass": "copita",
+   "srm": null,
+   "liquid": {
+    "top": "#F8F8F0",
+    "mid": "#EEF0E4",
+    "bottom": "#CDD1BE",
+    "opacity": 0.6
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "orange_wheel"
+   ],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Мескаль joven: прозрачный; копита, кружок апельсина"
+  },
+  "kvass_classic": {
+   "category": "kvass",
+   "glass": "mug",
+   "srm": null,
+   "liquid": {
+    "top": "#B4581A",
+    "mid": "#7B3610",
+    "bottom": "#3E1706"
+   },
+   "foam": {
+    "height": 0.3,
+    "color": "#EAD6B6"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Хлебный квас: тёмно-янтарно-коричневый (ржаной); кружка, лёгкая пена"
+  },
+  "kvass_sour": {
+   "category": "kvass",
+   "glass": "mug",
+   "srm": null,
+   "liquid": {
+    "top": "#C26C26",
+    "mid": "#914516",
+    "bottom": "#4A2008"
+   },
+   "foam": {
+    "height": 0.25,
+    "color": "#EAD6B6"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Кислый квас: чуть светлее хлебного; кружка"
+  },
+  "lemonade_sweet": {
+   "category": "lemonade",
+   "glass": "highball",
+   "srm": null,
+   "liquid": {
+    "top": "#FBF4B4",
+    "mid": "#F4E888",
+    "bottom": "#D8C85A",
+    "opacity": 0.82
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [
+    "lemon_wheel",
+    "mint"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "anchor": "Лимонад: бледно-жёлтый; хайбол, лёд, кружок лимона, веточка мяты"
+  },
+  "soda_water": {
+   "category": "water",
+   "glass": "highball",
+   "srm": null,
+   "liquid": {
+    "top": "#F1F7F9",
+    "mid": "#E5EFF3",
+    "bottom": "#C4D5DB",
+    "opacity": 0.45
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "cubes",
+   "rim": "none",
+   "condensation": true,
+   "anchor": "Содовая: прозрачная, обильные пузырьки; хайбол, лёд"
+  },
+  "ayran": {
+   "category": "dairy",
+   "glass": "piala",
+   "srm": null,
+   "liquid": {
+    "top": "#FCFBF7",
+    "mid": "#F3F1EB",
+    "bottom": "#D6D2C8"
+   },
+   "foam": {
+    "height": 0.12,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Айран: белый, непрозрачный, лёгкая пенка; пиала"
+  },
+  "kumys": {
+   "category": "dairy",
+   "glass": "piala",
+   "srm": null,
+   "liquid": {
+    "top": "#F6F1E2",
+    "mid": "#EEE6CF",
+    "bottom": "#D0C6A8"
+   },
+   "foam": {
+    "height": 0.1,
+    "color": "#FBF8F0"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Кумыс: кремово-белый с желтизной, слабо игристый; пиала"
+  },
+  "shubat": {
+   "category": "dairy",
+   "glass": "piala",
+   "srm": null,
+   "liquid": {
+    "top": "#FBF7F0",
+    "mid": "#F4EEE2",
+    "bottom": "#D8D0BF"
+   },
+   "foam": {
+    "height": 0.08,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "anchor": "Шубат: густой кремово-белый; пиала"
+  },
+  "black_tea_strong": {
+   "category": "tea",
+   "glass": "podstakannik",
+   "srm": null,
+   "liquid": {
+    "top": "#C8581C",
+    "mid": "#8C300F",
+    "bottom": "#481405",
+    "opacity": 0.92
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "steam": true,
+   "anchor": "Крепкий чёрный чай: тёмно-янтарно-красный; стакан в подстаканнике, пар (70 °C)"
+  },
+  "green_tea": {
+   "category": "tea",
+   "glass": "teacup",
+   "srm": null,
+   "liquid": {
+    "top": "#EAEDBE",
+    "mid": "#DADF98",
+    "bottom": "#B3BB68",
+    "opacity": 0.85
+   },
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "steam": true,
+   "anchor": "Зелёный чай: бледный жёлто-зелёный; чашка, пар (70 °C)"
+  }
+ },
+ "families": {
+  "LAGER": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.45,
+    "color": "#FFF8EA"
+   },
+   "glass": "pilsner",
+   "srm": 3.5,
+   "liquid": {
+    "top": "#FFD170",
+    "mid": "#FFC54E",
+    "bottom": "#A67C30"
+   },
+   "anchor": "Светлый лагер по умолчанию: SRM 3.5"
+  },
+  "PILSNER": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.55,
+    "color": "#FFF9EE"
+   },
+   "glass": "pilsner",
+   "srm": 3,
+   "liquid": {
+    "top": "#FFD579",
+    "mid": "#FFCA5A",
+    "bottom": "#A67F38"
+   },
+   "anchor": "Пилснер: SRM 3"
+  },
+  "DARK_LAGER": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.5,
+    "color": "#EFDCC0"
+   },
+   "glass": "mug",
+   "srm": 22,
+   "liquid": {
+    "top": "#AA5C36",
+    "mid": "#8E2900",
+    "bottom": "#601B00"
+   },
+   "anchor": "Тёмный лагер: SRM 22"
+  },
+  "AMBER_LAGER": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.45,
+    "color": "#F9ECD6"
+   },
+   "glass": "becher",
+   "srm": 12,
+   "liquid": {
+    "top": "#DB8C36",
+    "mid": "#CF6900",
+    "bottom": "#884300"
+   },
+   "anchor": "Янтарный лагер: SRM 12"
+  },
+  "STRONG_LAGER": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.4,
+    "color": "#FFF5E2"
+   },
+   "glass": "becher",
+   "srm": 6,
+   "liquid": {
+    "top": "#FABA36",
+    "mid": "#F8A600",
+    "bottom": "#A26900"
+   },
+   "anchor": "Крепкий лагер: SRM 6"
+  },
+  "BOCK": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.45,
+    "color": "#F3E2C6"
+   },
+   "glass": "mug",
+   "srm": 18,
+   "liquid": {
+    "top": "#BC6C36",
+    "mid": "#A63E00",
+    "bottom": "#6F2800"
+   },
+   "anchor": "Бок: SRM 18"
+  },
+  "WHEAT": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.95,
+    "color": "#FFF5E0"
+   },
+   "glass": "weizen",
+   "srm": 4,
+   "haze": 0.7,
+   "liquid": {
+    "top": "#FED684",
+    "mid": "#FDCB68",
+    "bottom": "#A58040"
+   },
+   "anchor": "Пшеничное: SRM 4, мутное, высокая пена"
+  },
+  "WIT": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.6,
+    "color": "#FFF9EE"
+   },
+   "glass": "tumbler",
+   "srm": 3,
+   "haze": 0.8,
+   "liquid": {
+    "top": "#FDDD94",
+    "mid": "#FCD47E",
+    "bottom": "#A4854E"
+   },
+   "anchor": "Витбир: SRM 3, мутное"
+  },
+  "PALE_ALE": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.45,
+    "color": "#FFF3DE"
+   },
+   "glass": "nonic",
+   "srm": 7,
+   "liquid": {
+    "top": "#F6B336",
+    "mid": "#F39C00",
+    "bottom": "#9F6300"
+   },
+   "anchor": "Пэйл-эль: SRM 7"
+  },
+  "IPA": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.5,
+    "color": "#FFF2DA"
+   },
+   "glass": "tulip",
+   "srm": 8,
+   "liquid": {
+    "top": "#EFA936",
+    "mid": "#EA8F00",
+    "bottom": "#995B00"
+   },
+   "anchor": "IPA: SRM 8, тюльпан"
+  },
+  "NEIPA": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.45,
+    "color": "#FFF6E6"
+   },
+   "glass": "tulip",
+   "srm": 5,
+   "haze": 0.9,
+   "liquid": {
+    "top": "#FBD17B",
+    "mid": "#F9C45D",
+    "bottom": "#A27B3A"
+   },
+   "anchor": "NEIPA: SRM 5, очень мутное"
+  },
+  "BELGIAN": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.6,
+    "color": "#FFF6E4"
+   },
+   "glass": "tulip",
+   "srm": 6,
+   "liquid": {
+    "top": "#FABA36",
+    "mid": "#F8A600",
+    "bottom": "#A26900"
+   },
+   "anchor": "Бельгийский эль: SRM 6, тюльпан"
+  },
+  "BROWN_ALE": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.45,
+    "color": "#F1DFC4"
+   },
+   "glass": "nonic",
+   "srm": 18,
+   "liquid": {
+    "top": "#BC6C36",
+    "mid": "#A63E00",
+    "bottom": "#6F2800"
+   },
+   "anchor": "Коричневый эль: SRM 18"
+  },
+  "PORTER": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.5,
+    "color": "#E6CBA8"
+   },
+   "glass": "nonic",
+   "srm": 26,
+   "liquid": {
+    "top": "#822307",
+    "mid": "#771900",
+    "bottom": "#5A1300"
+   },
+   "anchor": "Портер: SRM 26"
+  },
+  "STOUT": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.55,
+    "color": "#D8B58C"
+   },
+   "glass": "nonic",
+   "srm": 38,
+   "liquid": {
+    "top": "#58160C",
+    "mid": "#3B0607",
+    "bottom": "#300605"
+   },
+   "anchor": "Стаут: SRM 38, кремовая пена"
+  },
+  "IMPERIAL": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.35,
+    "color": "#C9A17B"
+   },
+   "glass": "snifter",
+   "srm": 40,
+   "liquid": {
+    "top": "#54170E",
+    "mid": "#36080A",
+    "bottom": "#2C0707"
+   },
+   "fill": 0.55,
+   "anchor": "Имперский стаут / крепкий эль: снифтер"
+  },
+  "STRONG_ALE": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.3,
+    "color": "#F0DCBC"
+   },
+   "glass": "snifter",
+   "srm": 16,
+   "liquid": {
+    "top": "#C87736",
+    "mid": "#B54C00",
+    "bottom": "#783100"
+   },
+   "fill": 0.55,
+   "anchor": "Крепкий эль: SRM 16, снифтер"
+  },
+  "SOUR": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.35,
+    "color": "#FFF7EA"
+   },
+   "glass": "tulip",
+   "srm": 4,
+   "haze": 0.3,
+   "liquid": {
+    "top": "#FED173",
+    "mid": "#FEC452",
+    "bottom": "#A57B33"
+   },
+   "anchor": "Кислый эль (гозе/берлинер): SRM 4"
+  },
+  "FRUIT_SOUR": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.35,
+    "color": "#F6DCE0"
+   },
+   "glass": "tulip",
+   "liquid": {
+    "top": "#E0485F",
+    "mid": "#B5173B",
+    "bottom": "#6E0A24"
+   },
+   "anchor": "Фруктовый кислый эль: рубиновый"
+  },
+  "SMOKED": {
+   "category": "beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.45,
+    "color": "#F3E2C6"
+   },
+   "glass": "becher",
+   "srm": 16,
+   "liquid": {
+    "top": "#C87736",
+    "mid": "#B54C00",
+    "bottom": "#783100"
+   },
+   "anchor": "Копчёное: SRM 16"
+  },
+  "NA_LAGER": {
+   "category": "na_beer",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.4,
+    "color": "#FFF8EA"
+   },
+   "glass": "pilsner",
+   "srm": 3.5,
+   "liquid": {
+    "top": "#FFD170",
+    "mid": "#FFC54E",
+    "bottom": "#A67C30"
+   },
+   "anchor": "Безалкогольный лагер: SRM 3.5"
+  },
+  "RADLER": {
+   "category": "radler",
+   "garnish": [
+    "lemon_wheel"
+   ],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.3,
+    "color": "#FFFAEE"
+   },
+   "glass": "mug",
+   "srm": 2.5,
+   "haze": 0.6,
+   "liquid": {
+    "top": "#FEDF96",
+    "mid": "#FDD781",
+    "bottom": "#A58750"
+   },
+   "anchor": "Радлер: мутно-лимонный, долька лимона"
+  },
+  "CIDER": {
+   "category": "cider",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "white_wine",
+   "liquid": {
+    "top": "#F8E8A6",
+    "mid": "#EFCF62",
+    "bottom": "#CBA53C"
+   },
+   "anchor": "Сидр: золотистый, без пены"
+  },
+  "PERRY": {
+   "category": "cider",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "white_wine",
+   "liquid": {
+    "top": "#F8F2CC",
+    "mid": "#EFE6A4",
+    "bottom": "#D2C878"
+   },
+   "anchor": "Перри: бледно-соломенный"
+  },
+  "WHITE": {
+   "category": "wine",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "white_wine",
+   "liquid": {
+    "top": "#F6F2CC",
+    "mid": "#ECE49E",
+    "bottom": "#D2C86C"
+   },
+   "anchor": "Белое вино: соломенное"
+  },
+  "ROSE": {
+   "category": "wine",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "white_wine",
+   "liquid": {
+    "top": "#F8D2D4",
+    "mid": "#EFA5AE",
+    "bottom": "#D27585"
+   },
+   "anchor": "Розовое вино: лососево-розовое"
+  },
+  "ORANGE": {
+   "category": "wine",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "white_wine",
+   "liquid": {
+    "top": "#F0C070",
+    "mid": "#E0A048",
+    "bottom": "#B57426"
+   },
+   "anchor": "Оранжевое вино: янтарно-оранжевое"
+  },
+  "RED": {
+   "category": "wine",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "red_wine",
+   "liquid": {
+    "top": "#B42A4A",
+    "mid": "#7F1231",
+    "bottom": "#3E0718"
+   },
+   "anchor": "Красное вино: рубиновое"
+  },
+  "SPARKLING": {
+   "category": "sparkling",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "flute",
+   "liquid": {
+    "top": "#F9F3C6",
+    "mid": "#F1E49E",
+    "bottom": "#DACC6C"
+   },
+   "anchor": "Игристое: бледно-золотистое, флейта"
+  },
+  "SPARKLING_ROSE": {
+   "category": "sparkling",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "flute",
+   "liquid": {
+    "top": "#F8D2D4",
+    "mid": "#EFA5AE",
+    "bottom": "#D27585"
+   },
+   "anchor": "Розовое игристое"
+  },
+  "FORTIFIED": {
+   "category": "fortified",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "port",
+   "liquid": {
+    "top": "#B8622A",
+    "mid": "#8E4118",
+    "bottom": "#4E200A"
+   },
+   "anchor": "Креплёное (тони/херес): янтарно-коричневое"
+  },
+  "VERMOUTH": {
+   "category": "fortified",
+   "garnish": [
+    "orange_slice"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "rocks",
+   "liquid": {
+    "top": "#C85A30",
+    "mid": "#9C3B1F",
+    "bottom": "#5A1F0E"
+   },
+   "anchor": "Вермут со льдом"
+  },
+  "SPRITZ": {
+   "category": "cocktail",
+   "garnish": [
+    "orange_slice"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "spritz",
+   "liquid": {
+    "top": "#FF9E4C",
+    "mid": "#F26B2A",
+    "bottom": "#C8481A"
+   },
+   "anchor": "Спритц: оранжевый, лёд, апельсин"
+  },
+  "SOUR_COCKTAIL": {
+   "category": "cocktail",
+   "garnish": [
+    "lemon_wheel"
+   ],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "coupe",
+   "liquid": {
+    "top": "#F6EFC8",
+    "mid": "#EBDD98",
+    "bottom": "#C9B868",
+    "opacity": 0.9
+   },
+   "anchor": "Сауэр: бледно-жёлтый, купе"
+  },
+  "STIRRED": {
+   "category": "cocktail",
+   "garnish": [
+    "orange_peel"
+   ],
+   "ice": "large_cube",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "rocks",
+   "liquid": {
+    "top": "#DC8E3C",
+    "mid": "#B8631C",
+    "bottom": "#78400F"
+   },
+   "anchor": "Крепкий стир-коктейль: рокс, крупный куб"
+  },
+  "HIGHBALL": {
+   "category": "cocktail",
+   "garnish": [
+    "lime_wedge"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#F0F6F6",
+    "mid": "#E3EDEF",
+    "bottom": "#C6D6DA",
+    "opacity": 0.55
+   },
+   "anchor": "Хайбол/лонг-дринк: прозрачный, лёд"
+  },
+  "TIKI": {
+   "category": "cocktail",
+   "garnish": [
+    "mint",
+    "lime_wedge"
+   ],
+   "ice": "crushed",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#F7C04A",
+    "mid": "#E58E2A",
+    "bottom": "#B45A14"
+   },
+   "anchor": "Тики: оранжево-янтарный, дроблёный лёд, мята"
+  },
+  "CREAMY": {
+   "category": "cocktail",
+   "garnish": [],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "rocks",
+   "liquid": {
+    "top": "#F0E7D8",
+    "mid": "#B78D66",
+    "bottom": "#5A3820"
+   },
+   "anchor": "Сливочный коктейль"
+  },
+  "WHISKY": {
+   "category": "spirit",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "glencairn",
+   "liquid": {
+    "top": "#E4A84C",
+    "mid": "#C67A22",
+    "bottom": "#894C12"
+   },
+   "anchor": "Виски: янтарный, гленкерн"
+  },
+  "BRANDY": {
+   "category": "spirit",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "snifter",
+   "liquid": {
+    "top": "#D68A3A",
+    "mid": "#B0601C",
+    "bottom": "#6E3A0E"
+   },
+   "fill": 0.35,
+   "anchor": "Бренди/коньяк: янтарный, снифтер"
+  },
+  "RUM": {
+   "category": "spirit",
+   "garnish": [],
+   "ice": "large_cube",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "rocks",
+   "liquid": {
+    "top": "#D99A4A",
+    "mid": "#B06E24",
+    "bottom": "#6A3E10"
+   },
+   "anchor": "Ром: янтарный, рокс, лёд"
+  },
+  "VODKA": {
+   "category": "spirit",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "shot",
+   "liquid": {
+    "top": "#F5F9FB",
+    "mid": "#E8EFF3",
+    "bottom": "#C8D6DD",
+    "opacity": 0.5
+   },
+   "condensation": true,
+   "anchor": "Водка: стопка, конденсат"
+  },
+  "GIN": {
+   "category": "spirit",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "copita",
+   "liquid": {
+    "top": "#F5F9FB",
+    "mid": "#E8EFF3",
+    "bottom": "#C8D6DD",
+    "opacity": 0.5
+   },
+   "anchor": "Джин: прозрачный, копита"
+  },
+  "AGAVE": {
+   "category": "spirit",
+   "garnish": [
+    "lime_wedge"
+   ],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "copita",
+   "liquid": {
+    "top": "#F8F8F0",
+    "mid": "#EEF0E4",
+    "bottom": "#CDD1BE",
+    "opacity": 0.6
+   },
+   "anchor": "Текила/мескаль: прозрачный, копита, лайм"
+  },
+  "LIQUEUR": {
+   "category": "liqueur",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "port",
+   "liquid": {
+    "top": "#B85A2A",
+    "mid": "#7A3418",
+    "bottom": "#3E1808"
+   },
+   "anchor": "Ликёр: густой тёмно-янтарный"
+  },
+  "CREAM_LIQUEUR": {
+   "category": "liqueur",
+   "garnish": [],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "rocks",
+   "liquid": {
+    "top": "#F2E6D2",
+    "mid": "#D8B892",
+    "bottom": "#9C7048"
+   },
+   "anchor": "Сливочный ликёр со льдом"
+  },
+  "AMARO": {
+   "category": "liqueur",
+   "garnish": [
+    "orange_peel"
+   ],
+   "ice": "large_cube",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "rocks",
+   "liquid": {
+    "top": "#8A3A1E",
+    "mid": "#5A1E0E",
+    "bottom": "#2A0A04"
+   },
+   "anchor": "Амаро: тёмно-коричневый, рокс"
+  },
+  "KVASS": {
+   "category": "kvass",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.3,
+    "color": "#EAD6B6"
+   },
+   "glass": "mug",
+   "liquid": {
+    "top": "#B4581A",
+    "mid": "#7B3610",
+    "bottom": "#3E1706"
+   },
+   "anchor": "Квас: тёмно-янтарный, кружка"
+  },
+  "LEMONADE": {
+   "category": "lemonade",
+   "garnish": [
+    "lemon_wheel",
+    "mint"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#FBF4B4",
+    "mid": "#F4E888",
+    "bottom": "#D8C85A",
+    "opacity": 0.82
+   },
+   "anchor": "Лимонад: хайбол, лёд, лимон, мята"
+  },
+  "COLA": {
+   "category": "soda",
+   "garnish": [
+    "lemon_wheel"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#6A3418",
+    "mid": "#3A1A0C",
+    "bottom": "#1A0804"
+   },
+   "anchor": "Кола: тёмно-коричневая, лёд, лимон"
+  },
+  "TONIC": {
+   "category": "soda",
+   "garnish": [
+    "lime_wedge"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#F0F6F6",
+    "mid": "#E3EDEF",
+    "bottom": "#C6D6DA",
+    "opacity": 0.5
+   },
+   "anchor": "Тоник: прозрачный"
+  },
+  "JUICE": {
+   "category": "soda",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#F9C24C",
+    "mid": "#F0A030",
+    "bottom": "#C47418"
+   },
+   "anchor": "Сок: оранжевый (усреднённо)"
+  },
+  "FERMENTED_DAIRY": {
+   "category": "dairy",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.12,
+    "color": "#FFFFFF"
+   },
+   "glass": "piala",
+   "liquid": {
+    "top": "#FCFBF7",
+    "mid": "#F3F1EB",
+    "bottom": "#D6D2C8"
+   },
+   "anchor": "Кисломолочное: белое, пиала"
+  },
+  "MILK": {
+   "category": "dairy",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "tumbler",
+   "liquid": {
+    "top": "#FFFFFF",
+    "mid": "#F8F6F0",
+    "bottom": "#DEDACF"
+   },
+   "anchor": "Молоко: белое, стакан"
+  },
+  "BLACK_TEA": {
+   "category": "tea",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "podstakannik",
+   "liquid": {
+    "top": "#C8581C",
+    "mid": "#8C300F",
+    "bottom": "#481405",
+    "opacity": 0.92
+   },
+   "steam": true,
+   "anchor": "Чёрный чай: подстаканник, пар"
+  },
+  "GREEN_TEA": {
+   "category": "tea",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "teacup",
+   "liquid": {
+    "top": "#EAEDBE",
+    "mid": "#DADF98",
+    "bottom": "#B3BB68",
+    "opacity": 0.85
+   },
+   "steam": true,
+   "anchor": "Зелёный чай: чашка, пар"
+  },
+  "HERBAL_TEA": {
+   "category": "tea",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "teacup",
+   "liquid": {
+    "top": "#F2DFA6",
+    "mid": "#E4C66A",
+    "bottom": "#B99A3E",
+    "opacity": 0.85
+   },
+   "steam": true,
+   "anchor": "Травяной чай: золотистый"
+  },
+  "MILK_TEA": {
+   "category": "tea",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "piala",
+   "liquid": {
+    "top": "#EED9BF",
+    "mid": "#D9B48E",
+    "bottom": "#A47C58"
+   },
+   "steam": true,
+   "anchor": "Чай с молоком (казахский): пиала, пар"
+  },
+  "ESPRESSO": {
+   "category": "coffee",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.25,
+    "color": "#C99C62"
+   },
+   "glass": "espresso",
+   "liquid": {
+    "top": "#5A2E18",
+    "mid": "#2E140A",
+    "bottom": "#160804"
+   },
+   "steam": true,
+   "anchor": "Эспрессо: чёрный, крема, пар"
+  },
+  "COFFEE": {
+   "category": "coffee",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.25,
+    "color": "#C99C62"
+   },
+   "glass": "espresso",
+   "liquid": {
+    "top": "#5A2E18",
+    "mid": "#2E140A",
+    "bottom": "#160804"
+   },
+   "steam": true,
+   "anchor": "Кофе: чёрный, крема"
+  },
+  "MILK_COFFEE": {
+   "category": "coffee",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.35,
+    "color": "#F5EBDD"
+   },
+   "glass": "tumbler",
+   "liquid": {
+    "top": "#F1E6D6",
+    "mid": "#B78D66",
+    "bottom": "#5A3820"
+   },
+   "steam": true,
+   "anchor": "Латте/капучино: слоистый, молочная пена"
+  },
+  "WATER": {
+   "category": "water",
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "tumbler",
+   "liquid": {
+    "top": "#F2F8FA",
+    "mid": "#E6EFF3",
+    "bottom": "#C6D5DB",
+    "opacity": 0.4
+   },
+   "condensation": true,
+   "anchor": "Вода: прозрачная"
+  },
+  "SPARKLING_WATER": {
+   "category": "water",
+   "garnish": [],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#F1F7F9",
+    "mid": "#E5EFF3",
+    "bottom": "#C4D5DB",
+    "opacity": 0.45
+   },
+   "condensation": true,
+   "anchor": "Газированная вода: хайбол, пузырьки"
+  }
+ },
+ "categories": {
+  "beer": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "glass": "pilsner",
+   "srm": 4,
+   "liquid": {
+    "top": "#FFCD67",
+    "mid": "#FFBF42",
+    "bottom": "#A67829"
+   },
+   "foam": {
+    "height": 0.45,
+    "color": "#FFF8EA"
+   },
+   "anchor": "Пиво неизвестного стиля: светлый лагер SRM 4, пилснер"
+  },
+  "na_beer": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "glass": "pilsner",
+   "srm": 3.5,
+   "liquid": {
+    "top": "#FFD170",
+    "mid": "#FFC54E",
+    "bottom": "#A67C30"
+   },
+   "foam": {
+    "height": 0.4,
+    "color": "#FFF8EA"
+   },
+   "anchor": "Безалкогольное пиво: SRM 3.5"
+  },
+  "radler": {
+   "garnish": [
+    "lemon_wheel"
+   ],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.3,
+    "color": "#FFFAEE"
+   },
+   "glass": "mug",
+   "srm": 2.5,
+   "haze": 0.6,
+   "liquid": {
+    "top": "#FEDF96",
+    "mid": "#FDD781",
+    "bottom": "#A58750"
+   },
+   "anchor": "Радлер"
+  },
+  "cider": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "white_wine",
+   "liquid": {
+    "top": "#F8E8A6",
+    "mid": "#EFCF62",
+    "bottom": "#CBA53C"
+   },
+   "anchor": "Сидр"
+  },
+  "wine": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "red_wine",
+   "liquid": {
+    "top": "#B42A4A",
+    "mid": "#7F1231",
+    "bottom": "#3E0718"
+   },
+   "anchor": "Вино неизвестного типа: красное"
+  },
+  "sparkling": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "flute",
+   "liquid": {
+    "top": "#F9F3C6",
+    "mid": "#F1E49E",
+    "bottom": "#DACC6C"
+   },
+   "anchor": "Игристое"
+  },
+  "fortified": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0
+   },
+   "glass": "port",
+   "liquid": {
+    "top": "#B8622A",
+    "mid": "#8E4118",
+    "bottom": "#4E200A"
+   },
+   "anchor": "Креплёное"
+  },
+  "cocktail": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "glass": "coupe",
+   "liquid": {
+    "top": "#F2CFAE",
+    "mid": "#DB965E",
+    "bottom": "#A86030"
+   },
+   "anchor": "Коктейль неизвестного типа: купе, тёплый янтарно-персиковый; гарнир — из aroma_tags"
+  },
+  "spirit": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "glass": "glencairn",
+   "liquid": {
+    "top": "#E4A84C",
+    "mid": "#C67A22",
+    "bottom": "#894C12"
+   },
+   "anchor": "Крепкий алкоголь: гленкерн, янтарный"
+  },
+  "liqueur": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "port",
+   "liquid": {
+    "top": "#B85A2A",
+    "mid": "#7A3418",
+    "bottom": "#3E1808"
+   },
+   "anchor": "Ликёр"
+  },
+  "kvass": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.3,
+    "color": "#EAD6B6"
+   },
+   "glass": "mug",
+   "liquid": {
+    "top": "#B4581A",
+    "mid": "#7B3610",
+    "bottom": "#3E1706"
+   },
+   "anchor": "Квас"
+  },
+  "lemonade": {
+   "garnish": [
+    "lemon_wheel",
+    "mint"
+   ],
+   "ice": "cubes",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "highball",
+   "liquid": {
+    "top": "#FBF4B4",
+    "mid": "#F4E888",
+    "bottom": "#D8C85A",
+    "opacity": 0.82
+   },
+   "anchor": "Лимонад"
+  },
+  "soda": {
+   "garnish": [],
+   "ice": "cubes",
+   "rim": "none",
+   "glass": "highball",
+   "liquid": {
+    "top": "#F0F6F6",
+    "mid": "#E3EDEF",
+    "bottom": "#C6D6DA",
+    "opacity": 0.55
+   },
+   "anchor": "Газировка неизвестного вкуса: прозрачная, хайбол, лёд"
+  },
+  "dairy": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.12,
+    "color": "#FFFFFF"
+   },
+   "glass": "piala",
+   "liquid": {
+    "top": "#FCFBF7",
+    "mid": "#F3F1EB",
+    "bottom": "#D6D2C8"
+   },
+   "anchor": "Кисломолочное"
+  },
+  "tea": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "glass": "teacup",
+   "liquid": {
+    "top": "#C8581C",
+    "mid": "#8C300F",
+    "bottom": "#481405",
+    "opacity": 0.92
+   },
+   "steam": true,
+   "anchor": "Чай: чашка, пар"
+  },
+  "coffee": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0.25,
+    "color": "#C99C62"
+   },
+   "glass": "espresso",
+   "liquid": {
+    "top": "#5A2E18",
+    "mid": "#2E140A",
+    "bottom": "#160804"
+   },
+   "steam": true,
+   "anchor": "Кофе"
+  },
+  "water": {
+   "garnish": [],
+   "ice": "none",
+   "rim": "none",
+   "foam": {
+    "height": 0,
+    "color": "#FFFFFF"
+   },
+   "glass": "tumbler",
+   "liquid": {
+    "top": "#F2F8FA",
+    "mid": "#E6EFF3",
+    "bottom": "#C6D5DB",
+    "opacity": 0.4
+   },
+   "condensation": true,
+   "anchor": "Вода"
+  }
+ }
+}

@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 from . import views_engine
 from . import views_saas
+from . import views_engine_v2
 from . import ai
 
 router = DefaultRouter()
@@ -21,6 +22,15 @@ urlpatterns = [
     path('landing/', views.landing_data, name='landing-data'),
     path('health/', views.health_check, name='health-check'),
     path('seed/', views.seed_data, name='seed-data'),
+
+    # Движок подбора v2: все категории напитков, вкладки, объяснения (docs/PAIRING_ENGINE_V2.md)
+    path('v2/meta/', views_engine_v2.meta, name='v2-meta'),
+    path('v2/drinks/', views_engine_v2.drinks_list, name='v2-drinks'),
+    path('v2/drinks/<slug:drink_id>/', views_engine_v2.drink_detail, name='v2-drink-detail'),
+    path('v2/dishes/', views_engine_v2.dishes_list, name='v2-dishes'),
+    path('v2/pairing/dish/<slug:dish_id>/', views_engine_v2.pairing_for_dish, name='v2-pairing-dish'),
+    path('v2/pairing/recommend/', views_engine_v2.pairing_recommend, name='v2-pairing-recommend'),
+    path('v2/pairing/explain/', views_engine_v2.pairing_explain, name='v2-pairing-explain'),
 
     # Flavor Tree v2 — движок подбора, Flavor DNA, HoReCa
     path('engine/meta/', views_engine.engine_meta, name='engine-meta'),
