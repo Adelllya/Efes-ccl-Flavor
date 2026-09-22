@@ -50,7 +50,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-ENGINE_VERSION = "2.1.0"
+ENGINE_VERSION = "2.2.1"
 
 DRINK_AXES: Tuple[str, ...] = ("sweet", "acid", "bitter", "tannin", "carbonation", "alcohol", "body", "dairy",
                                "salt", "umami", "aroma_intensity", "roast", "smoke", "serve_temp")
@@ -59,6 +59,8 @@ DISH_AXES: Tuple[str, ...] = ("salt", "sweet", "sour", "bitter", "umami", "fat",
 CATEGORIES: Tuple[str, ...] = ("beer", "na_beer", "radler", "cider", "wine", "sparkling", "fortified", "cocktail",
                                "spirit", "liqueur", "kvass", "lemonade", "soda", "dairy", "tea", "coffee", "water")
 CAP_VETOES: Tuple[str, ...] = ("V1", "V2", "V3", "V4", "V5", "V6")
+# критерий «bad» для эталонных пар (scripts/engine_eval_v2.py, calibrate_v2.py): ниже этого балла — «не рекомендуем»
+BAD_ABSOLUTE: int = 48
 
 # короткие ключи прототипа → ключи контракта
 _SHORT_AXES = {"carb": "carbonation", "aroma": "aroma_intensity", "temp": "serve_temp"}
@@ -648,7 +650,14 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
     if explain:
         W.update({"fb": fmt2(fb), "fd": fmt2(fd), "wb": fmt2(wb), "wd": fmt2(wd)})
         T = p["texts"]
-        loud = T["loud"] if dF > p["text_dF"] else T["quiet"] if dF < -p["text_dF"] else T["match"]
+        # «громче/тише» с плюсом в баллах — мягкая формулировка: причина с плюсом не должна звучать как предупреждение
+        ok = pts >= p["text_ok_min"]
+        if dF > p["text_dF"]:
+            loud = T["loud_ok"] if ok else T["loud"]
+        elif dF < -p["text_dF"]:
+            loud = T["quiet_ok"] if ok else T["quiet"]
+        else:
+            loud = T["match"]
         if it["boost"] >= p["text_boost_min"] and dW >= -p["text_dW"]:
             helper_key, _ = _argmax([("acid", bv["acid"]), ("carbonation", p["light_boost_carb"] * bv["carbonation"]),
                                      ("salt", bv["salt"]), ("tannin", bv["tannin"])])
@@ -735,8 +744,14 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         base_pts = pts
         contrast = (dessert and b["category"] in p["contrast_categories"] and bv["bitter"] >= p["contrast_bitter"]
                     and abs(dF) < p["contrast_dF"])
+        # горячий чай/кофе к десерту: контраст терпкости и сладости, а не правило вина «sweets need sweets»
+        hot = (dessert and not contrast and b["category"] in p["hot_contrast_categories"]
+               and bv["serve_temp"] >= p["hot_contrast_min_temp"])
         if contrast:
             pts = max(pts, p["contrast_floor"])
+        elif hot:
+            pts = max(pts, p["hot_contrast_floor"])
+            contrast = True
         choc_d = 0.0
         for t in p["choc_tags"]:
             choc_d = max(choc_d, d["tags"].get(t, 0.0))
@@ -748,7 +763,9 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         fruit = fsum(min(b["tags"].get(t, 0.0), d["tags"].get(t, 0.0)) for t in p["fruit_tags"])
         fruit_pts = p["fruit"] * min(fruit, p["fruit_max"]) * (1 if dessert else p["fruit_nondessert"])
         pts += fruit_pts
-        if contrast:
+        if hot:
+            key = "hot_contrast"
+        elif contrast:
             key = "contrast"
         elif roast_bonus_choc + roast_bonus_sweet >= p["text_roast_min"] and (base_pts <= 0 or roast_bonus_choc + roast_bonus_sweet > base_pts):
             key = "roast" if roast_bonus_choc > 0 else "roast_sweet"
@@ -764,7 +781,8 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
             text = tpl(T[key], W) + (T["fruit"] if fruit_pts >= p["text_fruit_min"] else "")
         add("R4", clamp(pts, p["min"], p["max"]), "contrast" if contrast else ("complement" if pts >= 0 else "penalty"),
             key, p["evidence"], text)
-        if dessert and x["sweet"] >= V["V2"]["dish_sweet"] and bv["sweet"] <= V["V2"]["drink_sweet"] and not contrast:
+        if (dessert and x["sweet"] >= V["V2"]["dish_sweet"] and bv["sweet"] <= V["V2"]["drink_sweet"] and not contrast
+                and bv["roast"] < V["V2"]["roast_exempt"]):
             vetoes.append("V2")
 
     # ── R5 acid_match ───────────────────────────────────────────────────────

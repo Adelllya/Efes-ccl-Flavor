@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:engine": "node scripts/engine-parity.mjs",
+    "test:engine2": "node scripts/engine-parity-v2.mjs",
     "test:import": "node scripts/menu-import-test.mjs",
     "shots": "node scripts/screenshots.mjs",
     "smoke": "node scripts/smoke.mjs"

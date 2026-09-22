@@ -67,6 +67,17 @@ def score(bid, did, ctx=None, classics=True, params=None):
                         PDS.classic_index if classics else None)
 
 
+def _golden_sig():
+    """Подпись строки golden (sha1 полного результата с текстами) — та же функция, что строит golden."""
+    import importlib.util
+    path = Path(__file__).resolve().parents[3] / "scripts" / "engine_eval_v2.py"
+    spec = importlib.util.spec_from_file_location("engine_eval_v2_for_tests", path)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(mod)
+    return mod._sig
+
+
 def eval_pairs(ds, classics):
     """Критерии §7 (как scripts/engine_eval_v2.py): ранг внутри категории среди архетипов (соревновательный)."""
     passed, fails = 0, []
@@ -80,7 +91,8 @@ def eval_pairs(ds, classics):
         vetoed = any(v in E.CAP_VETOES for v in s["vetoes"])
         sc = s["score"]
         ok = {"top3": rank <= 3 and sc >= 70, "good": sc >= 60 and not vetoed,
-              "bad": sc <= 57 and (rank > 3 or len(peers) <= 3), "avoid": sc <= 35 and vetoed}[t["expect"]]
+              "bad": sc <= 57 and (rank > 3 or len(peers) <= 3 or sc < E.BAD_ABSOLUTE),
+              "avoid": sc <= 35 and vetoed}[t["expect"]]
         passed += ok
         if not ok:
             fails.append((t["id"], t["dish"], t["drink"], sc, rank))
@@ -156,10 +168,24 @@ class TestReproducesPrototype(unittest.TestCase):
             else:
                 self.assertLessEqual(abs(v2 - proto), 1, (dish_id, drink_id, proto, v2))
 
+    @staticmethod
+    def intentional_v22(b, d) -> bool:
+        """v2.2 намеренно отходит от прототипа в двух местах (research/sommelier-sources-v2.md):
+        вето V2 не срабатывает у сильно обжаренных напитков (BA: «Roasted Malt balances Sweetness», сухой стаут ↔ тирамису),
+        горячий чай/кофе к десерту — контраст, а не «sweets need sweets» (THAC, Brekell)."""
+        if not d["dessert"] or d["sweet"] < P["R4"]["min_sweet"]:
+            return False
+        hot = b["cat"] in P["R4"]["hot_contrast_categories"] and b["temp"] >= P["R4"]["hot_contrast_min_temp"]
+        return hot or b["roast"] >= P["vetoes"]["V2"]["roast_exempt"]
+
     def test_full_matrix_components_and_vetoes_match(self):
         diffs = set()
+        skipped = set()
         for d in MOD.DISHES:
             for b in MOD.DRINKS:
+                if self.intentional_v22(b, d):
+                    skipped.add((d["id"], b["id"]))
+                    continue
                 for use_c in (True, False):
                     p = MOD.score_pair(b, d, {}, use_c)
                     r = score(b["id"], d["id"], classics=use_c)
@@ -171,6 +197,19 @@ class TestReproducesPrototype(unittest.TestCase):
                     if p["score"] != r["score"]:
                         diffs.add((d["id"], b["id"]))
         self.assertTrue(diffs <= ROUNDING_CELLS, diffs - ROUNDING_CELLS)
+        # намеренные отличия — только десерты × (обжаренные напитки | горячий чай)
+        self.assertTrue(all(MOD.DISH_BY_ID[x]["dessert"] for x, _ in skipped))
+        self.assertLess(len(skipped), 80, len(skipped))
+
+    def test_v22_changes_are_the_intended_ones(self):
+        """Сухой стаут к тирамису больше не под вето V2; чай к чак-чаку — контраст; брют к тирамису — по-прежнему V2."""
+        r = score("dry_stout", "tiramisu")
+        self.assertNotIn("V2", r["vetoes"])
+        r = score("black_tea_strong", "chak-chak")
+        self.assertNotIn("V2", r["vetoes"])
+        self.assertIn("hot_contrast", [c["key"] for c in r["components"] if c["rule"] == "R4"])
+        self.assertIn("V2", score("brut_sparkling", "tiramisu")["vetoes"])
+        self.assertIn("V2", score("brut_sparkling", "chak-chak")["vetoes"])
 
     def test_pass_criteria_65_of_68_and_12_ordinals(self):
         passed, fails, o_ok = eval_pairs(PDS, PDS.classic_index)
@@ -670,11 +709,15 @@ class TestGoldenV2(unittest.TestCase):
     def test_matrix(self):
         prof = {k: E.drink_vector(v, self.P) for k, v in self.arch.items()}
         dprof = {k: E.dish_vector(v, self.P) for k, v in self.dishes.items()}
-        self.assertEqual(self.g["matrix_fields"], ["drink", "dish", "score", "core", "match_type", "secondary_type", "vetoes"])
-        for b_id, d_id, s, core, t, t2, v in self.g["matrix"]:
+        self.assertEqual(self.g["matrix_fields"], ["drink", "dish", "score", "core", "match_type", "secondary_type", "vetoes", "sig"])
+        sig = _golden_sig()
+        for i, (b_id, d_id, s, core, t, t2, v, sg) in enumerate(self.g["matrix"]):
             r = E.score_pair(prof[b_id], dprof[d_id], {}, self.P, self.cidx, explain=False)
             self.assertEqual((r["score"], r["core"], r["match_type"], r["secondary_type"], r["vetoes"]), (s, core, t, t2, v),
                              (b_id, d_id))
+            if i % 7 == 0:   # полная подпись (тексты, ключи, баллы) — на каждой седьмой строке, чтобы тест оставался быстрым
+                full = E.score_pair(prof[b_id], dprof[d_id], {}, self.P, self.cidx, explain=True)
+                self.assertEqual(sig(full), sg, (b_id, d_id))
 
     def test_cases_with_texts(self):
         for case in self.g["cases"]:

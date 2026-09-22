@@ -1,0 +1,428 @@
+[
+ {
+  "dish": "oysters-raw",
+  "drink": "dry_stout",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "Hearty, rich food: steak, meat pie; a classic with raw oysters."
+  },
+  "evidence": "C",
+  "note": "также силлабус Advanced Cicerone: «oysters and Irish Stout»; WSET 2024"
+ },
+ {
+  "dish": "weisswurst",
+  "drink": "weissbier",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "Great with lighter food: salads, seafood, sushi; classic with weisswurst"
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "mussels-steamed",
+  "drink": "witbier",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "Great with lighter seafood dishes—classic with steamed mussels."
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "chicken-curry",
+  "drink": "american_ipa_45",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "Strong, spicy food (classic with curry!); bold, sweet desserts like carrot cake."
+  },
+  "evidence": "C",
+  "note": "спорно: панель Sam Adams/Garneau — горечь и спирт усиливают жжение; держать бонус только для IPA ≤ 45 IBU / 6.5 %",
+  "contested": true
+ },
+ {
+  "dish": "chocolate-fondant",
+  "drink": "imperial_stout",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "Flourless chocolate cake or truffles call for an inky imperial stout."
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "dark-chocolate",
+  "drink": "imperial_stout",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "Flourless chocolate cake or truffles call for an inky imperial stout."
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "roast-pork",
+  "drink": "amber_lager",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "the rich, caramelly flavors of an Oktoberfest lager and roasted pork"
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "cheese-aged",
+  "drink": "brown_ale",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "The nutty flavor of an English-style brown ale and a handmade cheddar cheese"
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "schnitzel",
+  "drink": "czech_pale_premium",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Brewers Association, American Craft Beer and Food: Perfect Companions (PDF, © 2009, текст R. Mosher; размещено Cicerone)",
+   "url": "https://www.cicerone.org/sites/default/files/resources/Beer_and_Food_English.pdf",
+   "quote": "Schnitzel with pale lager may be obvious"
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "burger",
+  "drink": "brown_ale",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Garrett Oliver, «food pairing», The Oxford Companion to Beer (Craft Beer & Brewing)",
+   "url": "https://www.beerandbrewing.com/dictionary/9jYnWqXy1G",
+   "quote": "a brown ale works so nicely with a hamburger, pork roast, or grilled steak."
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "bratwurst",
+  "drink": "german_pils",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "WSET, «Mastering the art of beer and food pairing» (2024)",
+   "url": "https://www.wsetglobal.com/knowledge-centre/blog/2024/february/mastering-the-art-of-beer-and-food-pairing",
+   "quote": "Bratwurst with German pilsner."
+  },
+  "evidence": "C",
+  "note": "WSET: «most iconic combos of all time»"
+ },
+ {
+  "dish": "steak",
+  "drink": "porter",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "WSET, «Mastering the art of beer and food pairing» (2024)",
+   "url": "https://www.wsetglobal.com/knowledge-centre/blog/2024/february/mastering-the-art-of-beer-and-food-pairing",
+   "quote": "Steak with porter."
+  },
+  "evidence": "C",
+  "note": "WSET: «most iconic combos of all time»"
+ },
+ {
+  "dish": "fish-and-chips",
+  "drink": "english_bitter",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "WSET, «Mastering the art of beer and food pairing» (2024)",
+   "url": "https://www.wsetglobal.com/knowledge-centre/blog/2024/february/mastering-the-art-of-beer-and-food-pairing",
+   "quote": "Fish and chips with pale ale."
+  },
+  "evidence": "C",
+  "note": "британский pale ale ≈ english_bitter; также строка 2 чарта BA (British-Style Bitter)"
+ },
+ {
+  "dish": "carrot-cake",
+  "drink": "american_ipa_45",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Adam Dulye (шеф Brewers Association), «Going Beyond Pairing Basics», CraftBeer.com (2016)",
+   "url": "https://www.craftbeer.com/beer-and-food/going-beyond-beer-pairing-basics",
+   "quote": "the classic pairing of carrot cake and IPA"
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "carrot-cake"
+  ]
+ },
+ {
+  "dish": "blue-cheese",
+  "drink": "barleywine",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Cicerone Certification Program, Advanced Cicerone Syllabus v5.0 (2022), раздел Pairing Beer with Food",
+   "url": "https://www.cicerone.org/sites/default/files/resources/English_AC_Syllabus_V5.0.pdf",
+   "quote": "blue cheese and Barleywine, oysters and Irish Stout, mussels and Witbier"
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "blue-cheese"
+  ]
+ },
+ {
+  "dish": "steak",
+  "drink": "cabernet",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "WSET, «Four essential rules to master food and wine pairing» (2023)",
+   "url": "https://www.wsetglobal.com/knowledge-centre/blog/2023/july/13/four-rules-to-masterful-food-and-wine-pairing",
+   "quote": "Classic matches such as a salty rib eye steak and a tannic and acidic Barolo work well for most people"
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "oysters-raw",
+  "drink": "brut_sparkling",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Wine Folly, «7 Deadly Sins of Wine and Food Pairing» (Madeline Puckette)",
+   "url": "https://winefolly.com/tips/7-worst-wine-and-food-pairings/",
+   "quote": "Champagne and oysters are a classic wine and food pairing."
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "oysters-raw",
+  "drink": "white_dry",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Wine Enthusiast, «Four Tried-and-True Oyster and Wine Pairings» (копия Wayback)",
+   "url": "https://web.archive.org/web/2025/https://www.wineenthusiast.com/basics/how-to-pair/oyster-wine-pairings-guide/",
+   "quote": "Muscadet is a classic pairing due to its acidity and salinity notes"
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "smoked-fish",
+  "drink": "brut_sparkling",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Decanter, «Pairing wine with tricky ingredients» (Ronan Sayburn MS)",
+   "url": "https://www.decanter.com/learn/difficult-food-and-wine-pairing-tricky-ingredients-445974/",
+   "quote": "Smoked salmon is quite forgiving with wine, and is classically matched with Chablis or Champagne."
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "smoked-fish"
+  ]
+ },
+ {
+  "dish": "blue-cheese",
+  "drink": "port",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "WSET, «Traditional and alternative festive pairings: wine versus spirits» (2025)",
+   "url": "https://www.wsetglobal.com/knowledge-centre/blog/2025/december/15/traditional-and-alternative-festive-pairings-wine-versus-spirits",
+   "quote": "A vintage Port is a perfect foil for a stinky stilton."
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "blue-cheese"
+  ]
+ },
+ {
+  "dish": "blue-cheese",
+  "drink": "sweet_white",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Jancis Robinson MW, «Wines for tricky foods» (2025, копия Wayback)",
+   "url": "https://web.archive.org/web/2025/https://www.jancisrobinson.com/articles/wines-tricky-foods",
+   "quote": "sweet whites are the perfect foil for creamy blue cheeses such as Roquefort"
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "blue-cheese",
+   "sweet_white"
+  ]
+ },
+ {
+  "dish": "goat-cheese",
+  "drink": "white_dry",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Jancis Robinson MW, «Wines for tricky foods» (2025, копия Wayback)",
+   "url": "https://web.archive.org/web/2025/https://www.jancisrobinson.com/articles/wines-tricky-foods",
+   "quote": "Fresh goat's-milk cheese and Sancerre, or other bone-dry Sauvignon Blanc, is a widely recognised successful combination"
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "goat-cheese"
+  ]
+ },
+ {
+  "dish": "duck-roast",
+  "drink": "red_light",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Wine Folly, «What Wine Goes With Chicken and Poultry»",
+   "url": "https://winefolly.com/tutorial/what-wine-goes-with-chicken-and-poultry/",
+   "quote": "Pinot Noir has long been considered a classic pairing with duck."
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "duck-roast"
+  ]
+ },
+ {
+  "dish": "schnitzel",
+  "drink": "white_dry",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Wine Folly, «Pairing Wine with Lamb, Steak, and Other Red Meat» (Madeline Puckette)",
+   "url": "https://winefolly.com/tutorial/wine-with-lamb-steak-red-meat/",
+   "quote": "the classic Viennese dish, wiener schnitzel, goes perfectly with Austrian Grüner Veltliner"
+  },
+  "evidence": "C"
+ },
+ {
+  "dish": "mochi",
+  "drink": "green_tea",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Pen, «The pairing of food and green tea» (Per Oscar Brekell)",
+   "url": "https://pen-online.com/food/the-pairing-of-food-and-green-tea-a-gateway-to-japanese-cuisine/",
+   "quote": "The classic and most familiar pairing is Matcha with Japanese bean-paste sweets."
+  },
+  "evidence": "C",
+  "note": "маття к вагаси; моти — ближайшее блюдо"
+ },
+ {
+  "dish": "herring",
+  "drink": "vodka_neat",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Роскачество, «Смелая гастропара: селёдка и вино» (2023)",
+   "url": "https://rskrf.ru/tips/obzory-i-topy/smelaya-gastropara-seledka-i-vino/",
+   "quote": "Сельдь – идеальная пара к народной русской водке"
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "herring"
+  ],
+  "note": "также Похлёбкин, «История водки», прил. 5"
+ },
+ {
+  "dish": "pickles",
+  "drink": "vodka_neat",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "В. В. Похлёбкин, «История водки», прил. 5 «Гастрономическое значение и правильное употребление водки»",
+   "url": "https://vkus.narod.ru/vodka/vodka_09.htm",
+   "quote": "Под все эти закуски водка естественный и идеальный гастрономический дополнитель."
+  },
+  "evidence": "C",
+  "needs_proposed": [
+   "pickles"
+  ],
+  "note": "в списке закусок: «Огурцы солёные. Капуста квашеная»"
+ },
+ {
+  "dish": "okroshka",
+  "drink": "kvass_sour",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "tea.ru (Очаково): как сделать вкуснее окрошку",
+   "url": "https://tea.ru/article/kak-sdelat-vkusnee-okroshku-i-chem-mozhno-zamenit-kvas-krome-kefira-i-mineralki/",
+   "quote": "В классическом рецепте должен быть именно белый, более кислый, сделанный из пшеничного солода"
+  },
+  "evidence": "D",
+  "note": "источник — о квасе как основе окрошки; как пара «блюдо + напиток» это наш перенос"
+ },
+ {
+  "dish": "beshbarmak",
+  "drink": "kumys",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "Cooks.kz, «Кумыс на столе: о классических комбинациях и смелых экспериментах»",
+   "url": "https://cooks.kz/kumys-na-stole-cooks-kz-o-klassicheskih-kombinacziyah-i-smelyh-eksperimentah/",
+   "quote": "Он отлично сочетается с жирными и сытными блюдами, такими как бешбармак или казы (конская колбаса), помогая их усвоению."
+  },
+  "evidence": "D",
+  "note": "национальная традиция; экспертной дегустационной оценки не найдено"
+ },
+ {
+  "dish": "plov",
+  "drink": "green_tea",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "tea.ru, «Как приготовить настоящий плов» (советы шеф-повара и историка восточной кухни)",
+   "url": "https://tea.ru/article/kak-prigotovit-nastoyashchiy-plov-a-ne-kashu-s-myasom-sovety-shef-povara-i-istorika-vostochnoy-kukhni/",
+   "quote": "в течение трапезы правильно пить только один напиток – горячий, несладкий и качественный зеленый чай"
+  },
+  "evidence": "D",
+  "note": "среднеазиатская традиция"
+ },
+ {
+  "dish": "baursaki",
+  "drink": "tea_milk",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "e-history.kz (портал «Открытая история»), о казахском дастархане",
+   "url": "https://e-history.kz/ru/seo-materials/show/28907",
+   "quote": "затем - чай с молоком или сливками, баурсаками, изюмом, иримшиком, куртом."
+  },
+  "evidence": "D",
+  "note": "традиция дастархана"
+ },
+ {
+  "dish": "shawarma",
+  "drink": "ayran",
+  "bonus": 8,
+  "label": "классика",
+  "source": {
+   "title": "The Mediterranean Dish (Suzy Karadsheh), «Ayran (Turkish Yogurt Drink)»",
+   "url": "https://www.themediterraneandish.com/ayran-turkish-yogurt-drink/",
+   "quote": "Ayran is traditionally served as a refreshing way to lighten heavy meat dishes, like kofta or döner kebab."
+  },
+  "evidence": "D",
+  "note": "турецкая традиция"
+ }
+]

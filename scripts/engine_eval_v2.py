@@ -16,11 +16,14 @@
 Критерии (§7 / V2_CONTRACT.md): ранг — внутри категории напитка среди архетипов, 1 + число архетипов категории
 со строго большим баллом (соревновательный ранг: ничьи не штрафуют).
     top3  — ранг ≤ 3 и балл ≥ 70;   good — балл ≥ 60 и нет вето;
-    bad   — балл ≤ 57 и (ранг > 3 или в категории ≤ 3 архетипов);   avoid — балл ≤ 35 и сработало вето (V1–V6).
+    bad   — балл ≤ 57 и (ранг > 3, или в категории ≤ 3 архетипов, или балл < 48 — «не рекомендуем» в любом ранге:
+            если в категории всё плохо, плохой напиток может оказаться 2-м, но гостю его всё равно не покажут);
+    avoid — балл ≤ 35 и сработало вето (V1–V6).
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -141,7 +144,7 @@ def evaluate(ds: DatasetV2, classics: Any) -> Dict[str, Any]:
         vetoed = any(v in E.CAP_VETOES for v in r["vetoes"])
         ok = {"top3": rank <= 3 and s >= 70,
               "good": s >= 60 and not vetoed,
-              "bad": s <= 57 and (rank > 3 or ncat <= 3),
+              "bad": s <= 57 and (rank > 3 or ncat <= 3 or s < E.BAD_ABSOLUTE),
               "avoid": s <= 35 and vetoed}.get(p["expect"])
         row.update(category=b["category"], score=s, rank=rank, n_cat=ncat, vetoes=r["vetoes"], ctx=ctx,
                    match_type=r["match_type"], status="OK" if ok else "FAIL")
@@ -234,6 +237,111 @@ def _slim_list(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return [{"drink_id": r["drink_id"], "score": r["score"], "efes_partner": r["efes_partner"]} for r in items]
 
 
+_SIG_NUMS = ("W_B", "F_B", "W_D", "F_D", "W_B_eff", "dW", "dF", "fit", "core", "ctx_points", "raw")
+
+
+def _sig(r: Dict[str, Any]) -> str:
+    """Сигнатура полного результата score_pair(explain=True): первые 12 hex sha1 от канонической строки (UTF-8).
+    Покрывает то, чего нет в строке матрицы: ключи, баллы и тексты всех правил, механизмы, причины, предупреждения, бэнд,
+    промежуточные величины. Строки через «\\n» (TS-зеркало: frontend/scripts/engine-parity-v2.mjs, sigLine):
+      C|rule|family|key|evidence|fmt2(points)|text   — компонент, в порядке вычисления;
+      M|правила mechanisms через «,»;   R|правила reasons через «,»;   W|rule|text — предупреждение;
+      S|score|band|band_label|match_type|secondary_type или ""|vetoes через «,»|capped|excluded|classic (булевы — 1/0);
+      N|W_B|F_B|W_D|F_D|W_B_eff|dW|dF|fit|core|ctx_points|raw (каждое через fmt2).
+    Только строки, целые и fmt2 — форматирование совпадает в Python и JS."""
+    def flag(v: Any) -> str:
+        return "1" if v else "0"
+    lines = [f"C|{c['rule']}|{c['family']}|{c['key']}|{c['evidence']}|{E.fmt2(c['points'])}|{c['text']}"
+             for c in r["components"]]
+    lines.append("M|" + ",".join(c["rule"] for c in r["mechanisms"]))
+    lines.append("R|" + ",".join(c["rule"] for c in r["reasons"]))
+    lines += [f"W|{w['rule']}|{w['text']}" for w in r["warnings"]]
+    lines.append("|".join(["S", str(r["score"]), r["band"], r["band_label"], r["match_type"], r["secondary_type"] or "",
+                           ",".join(r["vetoes"]), flag(r["capped"]), flag(r["excluded"]), flag(r["classic"])]))
+    lines.append("|".join(["N"] + [E.fmt2(r[k]) for k in _SIG_NUMS]))
+    return hashlib.sha1("\n".join(lines).encode("utf-8")).hexdigest()[:12]
+
+
+def _profile_out(p: Dict[str, Any]) -> Dict[str, Any]:
+    """Профиль движка целиком (без служебного _v2) — для edge-записей golden."""
+    return {k: v for k, v in p.items() if k != "_v2"}
+
+
+# Синтетические записи для golden (секция edge): ветки нормализации drink_vector/dish_vector, которых нет в каталоге
+# (формат прототипа, vector_override, abv_after_dilution, середина serving, пустой sensory, теги списком, None-значения,
+# неизвестные категории, is_dessert=None при dessert=True, не-словарь vector…), горячий контраст R4 и roast_exempt V2 (2.2),
+# классики со строковым источником / только label / бонусом выше max_bonus. Это не данные продукта.
+_EDGE_DRINKS: List[Dict[str, Any]] = [
+    {"id": "edge-proto", "cat": "cocktail", "abv": 18, "ibu": None, "sweet": .5, "acid": .3, "bitter": .6, "tannin": 0,
+     "carb": .2, "body": .4, "dairy": 0, "salt": 0, "umami": 0, "aroma": .8, "roast": 0, "smoke": 0, "temp": 7,
+     "tags": {"bitter_orange": .8, "herbal": .5}, "origin": ["italian"]},
+    {"id": "edge-override", "name": "Override", "category": "beer", "abv": 6.2, "ibu": 44.5,
+     "sensory": {"sweet": .2, "bitter": .5, "carbonation": .7, "body": .4},
+     "vector_override": {"bitter": .9, "alcohol": .5, "serve_temp": 9.5}, "aroma_tags": ["citrus", "pine_resin", "citrus"],
+     "origin_affinity": "american", "efes_relation": "cci", "serving": {"temp_min_c": 4, "temp_max_c": 8}},
+    {"id": "edge-dilution", "display_name": "Разбавленный", "name": "ignored", "category": "cocktail", "abv": 40,
+     "abv_after_dilution": 12.5, "sensory": {"sweet": .7, "acid": .6, "carbonation": .8, "body": .3, "serve_temp": None},
+     "serving": {"temp_min_c": 2, "temp_max_c": 5}, "aroma_tags": {"citrus": .9, "mint": .6, "x": None},
+     "style": {"archetype": "mojito", "family": "HIGHBALL"}},
+    {"id": "edge-empty-sensory", "label_ru": "Пустой", "category": "water", "abv": None, "sensory": {},
+     "vector": {"carbonation": .9, "acid": .1}, "flags": {"non_alcoholic": True}, "efes_relation": None,
+     "aroma_tags": None, "tags": ["mineral"]},
+    {"id": "edge-alcohol-only", "category": "spirit",
+     "sensory": {"alcohol": .95, "aroma_intensity": .9, "roast": .3, "smoke": .8, "tannin": .2},
+     "ibu": 0, "style": {}, "family": "WHISKY", "archetype": "peated_whisky", "serving": {"temp_min_c": 16}},
+    {"id": "edge-na-beer", "name": "NA", "category": "na_beer", "abv": 0.4, "ibu": 18,
+     "sensory": {"sweet": .3, "bitter": .3, "carbonation": .8, "body": .3, "serve_temp": 4}, "efes_relation": "own",
+     "flags": {"non_alcoholic": False}, "aroma_tags": {"grain": .5, "bread": .5, "honey": .5}},
+    {"id": "edge-mead", "name": "Медовуха", "category": "mead", "abv": 11, "sensory": {"sweet": .8, "body": .6, "acid": .3},
+     "aroma_tags": {"honey": 1.0, "floral": .5, "warm_spice": .5}, "origin_affinity": ["russian", "tatar"]},
+    {"id": "edge-kombucha", "name": "Комбуча", "category": "kombucha", "abv": 0.5,
+     "sensory": {"acid": .7, "carbonation": .6, "sweet": .3}},
+    {"id": "edge-ties", "name": "Ties", "category": "beer", "abv": 5, "ibu": 20,
+     "sensory": {"sweet": .3, "bitter": .3, "carbonation": .5, "body": .4, "acid": .3, "salt": .3, "tannin": .3,
+                 "serve_temp": 6},
+     "aroma_tags": {"yeast": .5, "bread": .5, "caramel": .5, "toast": .5, "biscuit": .5, "grain": .5, "nutty": .5,
+                    "honey": .5, "citrus": .5, "herbal": .5}},
+    {"id": "edge-hot-tea", "name": "Горячий чай", "category": "tea", "abv": 0,
+     "sensory": {"bitter": .35, "tannin": .55, "aroma_intensity": .5, "body": .2, "serve_temp": 75},
+     "aroma_tags": {"herbal": .4, "floral": .3}},
+    {"id": "edge-roasted-dry", "name": "Сухой стаут", "category": "beer", "abv": 4.2, "ibu": 40,
+     "sensory": {"sweet": .1, "bitter": .6, "roast": .7, "body": .45, "carbonation": .45, "serve_temp": 9},
+     "aroma_tags": {"coffee": .8, "chocolate": .5, "roast": .9}, "style": {"archetype": "dry_stout", "family": "STOUT"}},
+]
+_EDGE_DISHES: List[Dict[str, Any]] = [
+    {"id": "edge-proto-dish", "name": "Прото", "salt": .8, "sweet": .1, "sour": .5, "umami": .6, "fat": .7, "protein": .9,
+     "heat": .7, "weight": .7, "maillard": .6, "smoke": .5, "fresh": .1, "fish_oil": 0, "dessert": False, "vinegar": True,
+     "tags": {"beef": .9, "char": .7}, "cuisine": ["korean"]},
+    {"id": "edge-dessert", "name": "Десерт", "vector": {"sweet": .9, "fat": .6, "cream": .7, "bitter": .3}, "is_dessert": True,
+     "tags": {"chocolate": .8, "cocoa": .6, "coffee": .9, "red_fruit": .5, "cherry": .6, "dairy_cream": .7}, "cuisine": "french"},
+    {"id": "edge-fish", "name": "Рыба", "vector": {"salt": .5, "fat": .6, "protein": .8, "fresh": .7, "fish_oil": .7, "weight": None},
+     "protein_source": "white_fish", "sauce": "cream", "acid_type": "citrus", "cook_method": "steamed",
+     "tags": ["fish", "citrus", "herbal"]},
+    {"id": "edge-cured", "name": "Вяленое", "vector": {"salt": .9, "umami": .7, "fat": .5, "protein": .8, "smoke": .6, "maillard": .3},
+     "cook_method": "cured", "protein_source": "horse",
+     "tags": {"cured": 1, "smoke": .8, "yeast": .5, "bread": .5, "caramel": .5, "toast": .5, "biscuit": .5, "grain": .5,
+              "nutty": .5, "honey": .5}},
+    {"id": "edge-cheese", "name": "Сыр", "vector": {"salt": .8, "umami": .8, "fat": .8, "protein": .7, "sour": .3},
+     "protein_source": "cheese_hard", "sauce": "none", "acid_type": "lactic", "tags": {"nutty": .6, "caramel": .5, "cheese": .9}},
+    {"id": "edge-chili", "name": "Чили",
+     "vector": {"heat": .8, "salt": .6, "fat": .5, "sour": .4, "sweet": .4, "umami": .5, "protein": .6, "weight": .6},
+     "sauce": "chili", "tags": {"pepper": .7, "tomato": .6, "chicken": .8, "fried": .6}, "cook_method": "fried"},
+    {"id": "edge-soy", "name": "Соя", "vector": {"salt": .7, "umami": .9, "sour": .1}, "sauce": "soy",
+     "tags": {"rice": .8, "brine": .6, "yeast": .5}},
+    {"id": "edge-bare", "name": None, "display_name": "", "vector": "not-a-dict", "salt": .4, "fat": .2, "tags": {},
+     "cuisine": [], "sauce": "broth"},
+    {"id": "edge-null-dessert", "name": "Неявный десерт", "is_dessert": None, "dessert": True, "vector": {"sweet": .8, "fat": .4}},
+    {"id": "edge-green", "name": "Зелень", "vector": {"green_iron": .8, "fresh": .6, "bitter": .6, "sour": .3},
+     "protein_source": "legume", "tags": {"grass": .7, "herbal": .6, "beans": .8}, "cook_method": "grilled"},
+]
+_EDGE_CLASSICS: List[Dict[str, Any]] = [
+    {"dish": "edge-cured", "drink": "peated_whisky", "bonus": 5, "label": "мой список", "source": "строка-источник"},
+    {"dish": "edge-cheese", "drink": "edge-ties", "bonus": None, "label": "метка", "source": None},
+    {"dish": "edge-fish", "drink": "edge-override", "bonus": 12, "source": {"title": None}},
+    {"dish": "edge-dessert", "drink": "edge-hot-tea", "source": {"title": "чайная традиция"}},
+]
+
+
 def build_golden(ds: DatasetV2, classics_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     P = ds.params
     cidx = E.index_classics(classics_list)
@@ -269,7 +377,8 @@ def build_golden(ds: DatasetV2, classics_list: List[Dict[str, Any]]) -> Dict[str
     for did in dish_ids:
         for aid in (x["id"] for x in arch_raw):
             r = E.score_pair(arch_prof[aid], dish_prof[did], {}, P, cidx, explain=False)
-            matrix.append([aid, did, r["score"], r["core"], r["match_type"], r["secondary_type"], r["vetoes"]])
+            sig = _sig(E.score_pair(arch_prof[aid], dish_prof[did], {}, P, cidx, explain=True))
+            matrix.append([aid, did, r["score"], r["core"], r["match_type"], r["secondary_type"], r["vetoes"], sig])
 
     dna = E.dna_vector([{"drink": arch_prof[a], "rating": rt} for a, rt in
                         (("czech_pale_premium", "love"), ("american_ipa_45", "like"), ("milk_stout", "dislike"))
@@ -302,6 +411,11 @@ def build_golden(ds: DatasetV2, classics_list: List[Dict[str, Any]]) -> Dict[str
         ("port", "strudel", {"temperature_perception": True}, None),
         ("rice_lager", "sushi", {}, {"score.base": 42, "score.k": 0.85}),
         ("porter", "tiramisu", {}, {"R18": {"enabled": True}}),
+        # слой калибровки: вложенный частичный override (массив заменяется целиком, подписи — из params) и смешанный с путями
+        ("czech_dark", "beshbarmak", {}, {"R2": {"scale": 25}, "R12": {"k": 6, "exclude_tags": ["fresh", "fizz"]},
+                                          "labels": {"tags": {"bread": "хлебные ноты"}}}),
+        ("czech_dark", "beshbarmak", {"occasion": "meal"}, {"score": {"base": 44}, "R13.points": 5,
+                                                            "R1.texts.join": "{loudness} / {weight}"}),
         ("american_ipa_45", "burger", {"bitter_pref": 1.0}, None), ("american_ipa_45", "burger", {"bitter_pref": -1.0}, None),
         ("milk_stout", "tiramisu", {"sweet_pref": 1.0}, None), ("milk_stout", "tiramisu", {"sweet_pref": -0.5}, None),
         ("amber_lager", "plov", {"dna": dna} if dna else {}, None),
@@ -334,6 +448,38 @@ def build_golden(ds: DatasetV2, classics_list: List[Dict[str, Any]]) -> Dict[str
         ("plov", {"bitter_pref": -1.0}, 5, None, None), ("okroshka", {"occasion": "hot"}, 5, None, None),
         ("shashlyk", {}, 0, None, None),
     ]
+    # диверсификация (§5.4), чтобы golden покрывал _diversify целиком (данные меняются — выбор автоматический):
+    # 1) венью только из двух семейств (LAGER + IPA, иначе два самых частых) → групповой лимит и добор без лимита (шаг 3);
+    # 2) первые блюда, где гарантия безалкогольной / не-пивной позиции меняет топ-n (сравнение с тем же пулом, но
+    #    categories = все категории пула: фильтра нет, а гарантии выключены).
+    def _fam(x: Dict[str, Any]) -> str:
+        return str((x.get("style") or {}).get("family") or x.get("family") or x.get("category"))
+    fam_n: Dict[str, int] = {}
+    for x in pool_raw:
+        fam_n[_fam(x)] = fam_n.get(_fam(x), 0) + 1
+    two_fams = [f for f in ("LAGER", "IPA") if f in fam_n]
+    if len(two_fams) < 2:
+        two_fams = sorted(fam_n, key=lambda f: -fam_n[f])[:2]
+    venue2 = [i for f in two_fams for i in [x["id"] for x in pool_raw if _fam(x) == f][:6]]
+    if dish_ids:
+        rec_specs += [(dish_ids[0], {}, 5, None, venue2), (dish_ids[0], {}, 8, None, venue2)]
+    all_cats = sorted({b["category"] for b in pool})
+    na_ids = {b["id"] for b in pool if b["non_alcoholic_flag"]}
+    na_max = P["recommend"]["diversify"]["na_max_abv"]
+    found: Dict[Any, str] = {}
+    for n in (5, 3):
+        for did in dish_ids:
+            if ("na", n) in found and ("nonbeer", n) in found:
+                break
+            got = E.recommend(dish_prof[did], pool, {}, n, P, cidx, explain=False)["items"]
+            plain = {r["drink_id"] for r in E.recommend(dish_prof[did], pool, {}, n, P, cidx, categories=all_cats,
+                                                        explain=False)["items"]}
+            for r in got:
+                if r["drink_id"] not in plain:
+                    kind = "na" if (r["drink_id"] in na_ids or r["abv"] <= na_max) else "nonbeer"
+                    found.setdefault((kind, n), did)
+    for (kind, n), did in sorted(found.items()):
+        rec_specs.append((did, {}, n, None, None))
     recs = []
     for did, ctx, n, cats, ven in rec_specs:
         if did not in dish_prof:
@@ -360,6 +506,79 @@ def build_golden(ds: DatasetV2, classics_list: List[Dict[str, Any]]) -> Dict[str
         revs.append({"drink": bid, "ctx": ctx, "top_n": 6, "excluded": res["excluded"],
                      "items": [{"dish_id": r["dish_id"], "score": r["score"]} for r in res["items"]]})
 
+    # ── edge: синтетические записи (_EDGE_*) — профили целиком, пары с сигнатурами, выдача с неизвестными категориями,
+    #    DNA с векторами/пустыми оценками, partner_order на заданных баллах. Классика = classics + _EDGE_CLASSICS.
+    edge_b = [E.drink_vector(x, P) for x in _EDGE_DRINKS]
+    edge_d = [E.dish_vector(x, P) for x in _EDGE_DISHES]
+    edge_classics = list(classics_list) + _EDGE_CLASSICS
+    ecidx = E.index_classics(edge_classics)
+    edge_profiles: Dict[str, Dict[str, Any]] = {"drinks": {}, "dishes": {}}
+    for p in edge_b:
+        dv = E.derived(p, None, P)
+        edge_profiles["drinks"][p["id"]] = dict(_profile_out(p), W_B=E.r2(dv["W_B"]), F_B=E.r2(dv["F_B"]))
+    for p in edge_d:
+        dv = E.derived(None, p, P)
+        edge_profiles["dishes"][p["id"]] = dict(_profile_out(p), W_D=E.r2(dv["W_D"]), F_D=E.r2(dv["F_D"]))
+    ectxs = [{}, {"occasion": "dessert", "temperature_perception": True},
+             {"heat_lover": True, "harsh_tol": 0.8, "bitter_pref": 0.6}, {"non_alcoholic": True, "sweet_pref": -0.4},
+             {"occasion": "meal", "harsh_tol": "tolerant", **({"dna": dna} if dna else {})}]
+    real_d = [dish_prof[i] for i in dish_ids[::10]]
+    real_b = [arch_prof[x["id"]] for x in arch_raw[::11]]
+    combos = [(b, d) for b in edge_b for d in edge_d + real_d] + [(b, d) for b in real_b for d in edge_d]
+    edge_pairs = []
+    for k, (b, d) in enumerate(combos):
+        for ci in sorted({0, 1 + k % (len(ectxs) - 1)}):
+            r = E.score_pair(b, d, ectxs[ci], P, ecidx, explain=True)
+            edge_pairs.append([b["id"], d["id"], ci, r["score"], r["core"], r["match_type"], r["secondary_type"],
+                               r["vetoes"], _sig(r)])
+    epool = pool + edge_b
+    edge_dish = {p["id"]: p for p in edge_d}
+    edge_rec = []
+    for did, ctx, n in (("edge-dessert", {}, 8), ("edge-dessert", {"non_alcoholic": True}, 5), ("edge-cured", {}, 5)):
+        res = E.recommend(edge_dish[did], epool, ctx, n, P, edge_classics, explain=False)
+        bp = res["best_partner"]
+        edge_rec.append({"dish": did, "ctx": ctx, "top_n": n, "items": _slim_list(res["items"]),
+                         "best_partner": {"drink_id": bp["drink_id"], "score": bp["score"]} if bp else None,
+                         "excluded_non_alcoholic": res["excluded_non_alcoholic"], "n_candidates": res["n_candidates"],
+                         "policy": res["policy"]})
+    edge_cat = []
+    for did, ctx in (("edge-dessert", {}), ("edge-cheese", {"occasion": "gourmet"})):
+        res = E.by_category(edge_dish[did], epool, ctx, P, ecidx, per_category=2, explain=False)
+        edge_cat.append({"dish": did, "ctx": ctx, "per_category": 2,
+                         "categories": [{"category": c["category"], "label": c["label"], "n": c["n"],
+                                         "items": _slim_list(c["items"])} for c in res["categories"]]})
+    edge_rev = []
+    for bid, ctx in (("edge-hot-tea", {}), ("edge-roasted-dry", {"occasion": "dessert"}), ("edge-dilution", {"non_alcoholic": True})):
+        b = next(p for p in edge_b if p["id"] == bid)
+        res = E.reverse(b, edge_d + real_d, ctx, 0, P, edge_classics, explain=False)
+        edge_rev.append({"drink": bid, "ctx": ctx, "top_n": 0, "excluded": res["excluded"],
+                         "items": [{"dish_id": r["dish_id"], "score": r["score"]} for r in res["items"]]})
+    edge_raw = {x["id"]: x for x in _EDGE_DRINKS}
+    dna_specs = [
+        [{"drink": "edge-override", "rating": "love"}, {"drink": "edge-mead", "rating": "dislike"},
+         {"vector": {"sweet": .3, "bitter": None, "roast": .9}, "rating": "like"}],
+        [{"drink": "edge-na-beer", "rating": "meh"}, {"drink": "edge-proto", "rating": None},
+         {"drink": "edge-ties", "rating": "unknown"}],
+        [{"vector": {"sweet": 1.2, "acid": -0.5, "carbonation": .4}, "rating": "love"}, {"drink": "edge-hot-tea", "rating": "like"}],
+    ]
+    edge_dna = [{"rated": spec, "result": E.dna_vector([dict(x, drink=edge_raw[x["drink"]]) if "drink" in x else x
+                                                        for x in spec], P)} for spec in dna_specs]
+    fake = [{"drink_id": f"p{i:02d}", "score": s, "efes_partner": e} for i, (s, e) in enumerate(
+        [(80, False), (79, True), (79, False), (78, True), (75, False), (74, True), (74, True), (70, False), (69, True), (60, False)])]
+    edge_partner = {"results": fake, "best_partner": (E.best_partner(fake) or {}).get("drink_id"),
+                    "orders": [{"window": w, "order": [r["drink_id"] for r in E.partner_order(fake, P, w)]}
+                               for w in (None, 0, 1, 2, 5)]}
+    edge = {
+        "_doc": "Синтетические записи (не каталог): ветки нормализации, горячий контраст R4 / roast_exempt V2, неизвестные "
+                "категории, классика со строковым источником. pairs: [drink, dish, индекс ctxs, score, core, match_type, "
+                "secondary_type, vetoes, sig]; recommend/by_category — пул recommend_pool + drinks; классика — "
+                "inputs.classics + classics.",
+        "drinks": _EDGE_DRINKS, "dishes": _EDGE_DISHES, "classics": _EDGE_CLASSICS, "ctxs": ectxs,
+        "real_dishes": [p["id"] for p in real_d], "real_drinks": [p["id"] for p in real_b],
+        "profiles": edge_profiles, "pairs": edge_pairs, "recommend": edge_rec, "by_category": edge_cat,
+        "reverse": edge_rev, "dna": edge_dna, "partner": edge_partner,
+    }
+
     helpers = {
         "r2": [[x, E.r2(x)] for x in (0.125, 0.135, 2.675, 1.005, -1.005, 0.285, -0.004, -0.006, 2.835, 72.495, 16.51)],
         "round_half_up": [[x, E.round_half_up(x)] for x in (40.5, 16.51, 2.5, -0.5, -2.5, 0.49999999999999994, 71.4999)],
@@ -376,17 +595,20 @@ def build_golden(ds: DatasetV2, classics_list: List[Dict[str, Any]]) -> Dict[str
         "recommend_pool": pool_note,
         "_doc": "Эталон для TS-паритета: входы (inputs), параметры (params) и результаты движка v2. TS-порт должен "
                 "получить из inputs+params те же профили, матрицу, кейсы (все компоненты с текстами), recommend/by_category/"
-                "reverse и помощники. Регенерация: python3 scripts/engine_eval_v2.py.",
+                "reverse и помощники. matrix.sig — sha1 полного результата с текстами (см. _sig), edge — синтетические "
+                "записи для веток нормализации. Регенерация: python3 scripts/engine_eval_v2.py. "
+                "Проверка: cd frontend && npm run test:engine2.",
         "params": P,
         "inputs": {"archetypes": arch_raw, "dishes": dish_raw, "recommend_pool": pool_raw, "classics": classics_list},
         "helpers": helpers,
         "profiles": profiles,
-        "matrix_fields": ["drink", "dish", "score", "core", "match_type", "secondary_type", "vetoes"],
+        "matrix_fields": ["drink", "dish", "score", "core", "match_type", "secondary_type", "vetoes", "sig"],
         "matrix": matrix,
         "cases": cases,
         "recommend": recs,
         "by_category": cats_out,
         "reverse": revs,
+        "edge": edge,
     }
 
 

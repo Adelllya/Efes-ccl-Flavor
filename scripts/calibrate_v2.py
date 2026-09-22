@@ -61,7 +61,8 @@ RANK_MARGIN = 1.0      # запас по рангу для top3
 VETO_PENALTY = 10.0    # «good» с вето или «avoid» без вето
 ORDINAL_MARGIN = 1.0
 DIST_WEIGHT = 3.0      # вес штрафа за раздутую шкалу
-ORIGIN_WEIGHT = {"curated_efes": 0.5}   # внутренние суждения команды весят вдвое меньше литературы
+ORIGIN_WEIGHT = {"curated_efes": 0.5, "guests": 0.3}   # суждения команды — вдвое меньше литературы, отзывы гостей — слабый сигнал
+EVIDENCE_WEIGHT = {"D": 0.5}             # традиция / сайт бренда — половина веса экспертного консенсуса
 DIST_TARGET = {"median_lo": 58, "median_hi": 62, "ge72_max": 25.0, "le47_min": 20.0}
 
 
@@ -112,7 +113,7 @@ class Problem:
             q["split"] = p.get("split", "train")
             q["origin"] = p.get("origin", "?")
             q["category"] = self.arch[p["drink"]]["category"]
-            q["weight"] = ORIGIN_WEIGHT.get(q["origin"], 1.0)
+            q["weight"] = ORIGIN_WEIGHT.get(q["origin"], 1.0) * EVIDENCE_WEIGHT.get(p.get("evidence") or "", 1.0)
             self.pairs.append(q)
         self.ordinals: List[Dict[str, Any]] = []
         for o in ds.tests.get("ordinals", []):
@@ -193,9 +194,9 @@ def pair_outcome(pb: Problem, q: Dict[str, Any], rows) -> Dict[str, Any]:
         ok = s >= 60 and not vetoed
     elif exp == "bad":
         loss = max(0.0, s - (57 - MARGIN))
-        if ncat > 3 and third is not None:
+        if ncat > 3 and third is not None and s >= E.BAD_ABSOLUTE:
             loss += max(0.0, s - (third - 1))
-        ok = s <= 57 and (rank > 3 or ncat <= 3)
+        ok = s <= 57 and (rank > 3 or ncat <= 3 or s < E.BAD_ABSOLUTE)
     elif exp == "avoid":
         loss = max(0.0, s - (35 - MARGIN)) + (0.0 if vetoed else VETO_PENALTY)
         ok = s <= 35 and vetoed
