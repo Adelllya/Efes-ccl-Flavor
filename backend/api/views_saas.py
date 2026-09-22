@@ -26,6 +26,8 @@ import secrets
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Count, F, Sum
 from django.utils import timezone
@@ -60,6 +62,43 @@ def _dec(value, default='0') -> Decimal:
         return Decimal(str(value if value not in (None, '') else default)).quantize(Decimal('0.01'))
     except (InvalidOperation, ValueError):
         return Decimal(default)
+
+
+MAX_PRICE = Decimal('99999999.99')      # DecimalField(max_digits=10, decimal_places=2)
+MAX_INT = 2 ** 31 - 1                   # IntegerField и в SQLite, и в PostgreSQL
+
+
+def _price(value) -> Decimal | None:
+    """Цена от гостя или из кабинета. Отрицательная, NaN или не влезающая в поле — None, а не 500."""
+    d = _dec(value, default='NaN')
+    if not d.is_finite() or d < 0 or d > MAX_PRICE:
+        return None
+    return d
+
+
+def _int(value, lo: int = 0, hi: int = MAX_INT) -> int | None:
+    """Целое из запроса. str.isdigit() тут не годится: '²'.isdigit() → True, а int('²') падает."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        n = value
+    elif isinstance(value, str) and re.fullmatch(r'-?[0-9]{1,12}', value.strip()):
+        n = int(value.strip())
+    else:
+        return None
+    return n if lo <= n <= hi else None
+
+
+def _body(request) -> dict | None:
+    """Тело запроса, если это JSON-объект (или форма). Массив, строка, число — None."""
+    data = request.data
+    if data is None or data == '':
+        return {}
+    return data if isinstance(data, dict) else None
+
+
+def _bad_body():
+    return Response({'detail': 'Ожидается JSON-объект'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def _unique_slug(name: str) -> str:
@@ -130,7 +169,7 @@ def menu_public(request, slug):
     table = request.query_params.get('table')
     return Response({
         'venue': _venue_public(venue),
-        'table': int(table) if (table or '').isdigit() else None,
+        'table': _int(table or ''),
         'beers': [_item_payload(i) for i in items.filter(kind='BEER')],
         'dishes': [_item_payload(i) for i in items.filter(kind='DISH')],
         'updated_at': venue.updated_at.isoformat() if venue.updated_at else None,
@@ -140,15 +179,18 @@ def menu_public(request, slug):
 @api_view(['POST'])
 def track(request):
     """Событие гостя. Без него нечего показать владельцу при продлении подписки."""
-    data = request.data or {}
-    venue = Venue.objects.filter(slug=data.get('venue')).first()
+    data = _body(request)
+    if data is None:
+        return _bad_body()
+    # Пустой slug нельзя отдавать в filter: slug=None превращается в slug IS NULL и находит чужое заведение.
+    venue_slug = str(data.get('venue') or '').strip()
+    venue = Venue.objects.filter(slug=venue_slug).first() if venue_slug else None
     if not venue:
         return Response({'ok': False}, status=status.HTTP_204_NO_CONTENT)
 
     kind = data.get('kind', '')
     session_key = str(data.get('session') or '')[:64]
-    table_raw = data.get('table')
-    table = int(table_raw) if str(table_raw or '').isdigit() else None
+    table = _int(data.get('table'))
 
     if kind == 'SCAN':
         qr = QRCode.objects.filter(venue=venue, table_number=table).first() if table is not None else None
@@ -159,12 +201,11 @@ def track(request):
         return Response({'ok': True})
 
     if kind in dict(MenuEvent.KIND_CHOICES):
-        score = data.get('score')
         MenuEvent.objects.create(
             venue=venue, kind=kind,
             dish_slug=str(data.get('dish') or '')[:80], beer_slug=str(data.get('beer') or '')[:80],
-            score=int(score) if str(score or '').lstrip('-').isdigit() else None,
-            price=_dec(data.get('price')), table_number=table, session_key=session_key,
+            score=_int(data.get('score'), lo=-MAX_INT),
+            price=_price(data.get('price')) or Decimal('0'), table_number=table, session_key=session_key,
         )
         return Response({'ok': True})
 
@@ -174,17 +215,18 @@ def track(request):
 @api_view(['POST'])
 def lead_create(request):
     """Заявка с лендинга — то, ради чего лендинг вообще существует."""
-    data = request.data or {}
+    data = _body(request)
+    if data is None:
+        return _bad_body()
     venue_name = str(data.get('venue_name') or '').strip()
     phone = str(data.get('phone') or '').strip()
     if not venue_name or not phone:
         return Response({'detail': 'Укажите название заведения и телефон'}, status=status.HTTP_400_BAD_REQUEST)
 
-    tables = data.get('tables')
     lead = Lead.objects.create(
         venue_name=venue_name[:200], contact_name=str(data.get('contact_name') or '')[:150], phone=phone[:40],
         email=str(data.get('email') or '')[:254], city=str(data.get('city') or '')[:100],
-        tables=int(tables) if str(tables or '').isdigit() else None,
+        tables=_int(data.get('tables')),
         plan_interest=str(data.get('plan') or '')[:20], comment=str(data.get('comment') or '')[:2000],
         source=str(data.get('source') or 'landing')[:80],
     )
@@ -197,7 +239,9 @@ def lead_create(request):
 @api_view(['POST'])
 def cabinet_register(request):
     """Self-serve: бар заводит кабинет сам и сразу получает 14 дней пробного."""
-    data = request.data or {}
+    data = _body(request)
+    if data is None:
+        return _bad_body()
     email = str(data.get('email') or '').strip().lower()
     password = str(data.get('password') or '')
     venue_name = str(data.get('venue_name') or '').strip()
@@ -205,11 +249,17 @@ def cabinet_register(request):
     if not email or len(password) < 6 or not venue_name:
         return Response({'detail': 'Нужны e-mail, пароль от 6 символов и название заведения'},
                         status=status.HTTP_400_BAD_REQUEST)
+    try:
+        validate_email(email)
+    except ValidationError:
+        return Response({'detail': 'Проверьте e-mail: на него придут счёт и сброс пароля'},
+                        status=status.HTTP_400_BAD_REQUEST)
     if VenueAccount.objects.filter(email=email).exists():
         return Response({'detail': 'Такой e-mail уже зарегистрирован'}, status=status.HTTP_409_CONFLICT)
 
-    tables_raw = data.get('tables')
-    tables_n = min(int(tables_raw), MAX_TABLES_PER_CALL) if str(tables_raw or '').isdigit() else 5
+    # Регистрация идёт на пробном тарифе, значит и столов не больше, чем разрешает он.
+    tables_n = _int(data.get('tables'))
+    tables_n = min(5 if tables_n is None else tables_n, VenueAccount.PLAN_LIMITS['TRIAL']['tables'])
 
     try:
         with transaction.atomic():
@@ -235,7 +285,9 @@ def cabinet_register(request):
 
 @api_view(['POST'])
 def cabinet_login(request):
-    data = request.data or {}
+    data = _body(request)
+    if data is None:
+        return _bad_body()
     account = VenueAccount.objects.filter(email=str(data.get('email') or '').strip().lower()) \
                                   .select_related('venue').first()
     if not account or not account.check_password(str(data.get('password') or '')):
@@ -287,7 +339,9 @@ def cabinet_venue(request):
     account = _account(request)
     if not account:
         return _unauth()
-    venue, data = account.venue, request.data or {}
+    venue, data = account.venue, _body(request)
+    if data is None:
+        return _bad_body()
     branding_ok = account.limits['branding']
 
     plain = {'name': 200, 'city': 100, 'address': 300, 'description': 2000, 'phone': 40,
@@ -332,6 +386,8 @@ def cabinet_menu(request):
     existing = {(i.kind, i.ref_slug): i for i in venue.menu_items.all()}
     saved, skipped = [], 0
     for row in rows:
+        if not isinstance(row, dict):
+            continue
         kind = row.get('kind')
         ref_slug = str(row.get('ref_slug') or '')[:80]
         if kind not in ('BEER', 'DISH') or not ref_slug:
@@ -343,8 +399,9 @@ def cabinet_menu(request):
                 continue
             item = VenueMenuItem(venue=venue, kind=kind, ref_slug=ref_slug)
             existing[(kind, ref_slug)] = item
-        if 'price' in row:
-            item.price = _dec(row.get('price'))
+        # Кривую цену не сохраняем: у новой позиции останется 0, у старой — прежняя.
+        if 'price' in row and _price(row.get('price')) is not None:
+            item.price = _price(row.get('price'))
         for src, dst, size in (('name', 'custom_name', 200), ('description', 'custom_description', 300),
                                ('category', 'category', 80), ('volume', 'volume', 40)):
             if src in row:
@@ -353,11 +410,9 @@ def cabinet_menu(request):
             item.is_available = bool(row['is_available'])
         if 'is_featured' in row:
             item.is_featured = bool(row['is_featured'])
-        if 'sort_order' in row:
-            try:
-                item.sort_order = int(row['sort_order'])
-            except (TypeError, ValueError):
-                pass
+        sort_order = _int(row.get('sort_order'), lo=-MAX_INT)
+        if sort_order is not None:
+            item.sort_order = sort_order
         item.save()
         saved.append(item)
 
@@ -487,11 +542,13 @@ def cabinet_tables(request):
         return Response({'tables': [_table_payload(q) for q in venue.qrcodes.order_by('table_number')],
                          'limit': account.limits['tables']})
 
-    data = request.data or {}
+    data = _body(request)
+    if data is None:
+        return _bad_body()
     limit = account.limits['tables']
     have = venue.qrcodes.count()
-    want = data.get('tables', 1)
-    want = int(want) if str(want).isdigit() else 1
+    want = _int(data.get('tables', 1))
+    want = 1 if want is None else want
     allowed = max(0, min(want, limit - have, MAX_TABLES_PER_CALL))
     if allowed == 0:
         return Response({'detail': f'Лимит тарифа — {limit} столов. Перейдите на старший тариф.',
@@ -522,8 +579,8 @@ def cabinet_stats(request):
         return _unauth()
     venue = account.venue
 
-    days_raw = request.query_params.get('days', '30')
-    days = int(days_raw) if days_raw.isdigit() else 30
+    days = _int(request.query_params.get('days', '30'))
+    days = 30 if days is None else days
     days = max(1, min(days, account.limits['history_days']))
     since = timezone.now() - timedelta(days=days)
 

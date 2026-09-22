@@ -3,14 +3,12 @@
 Запуск: python manage.py test api.tests.test_saas
 База — sqlite в памяти, сети нет. Эндпоинт импорта меню здесь не проверяется.
 
-Ошибки views_saas.py, найденные этим набором, собраны в конце файла в TestKnownBugs:
-каждый такой тест помечен @expectedFailure. Набор с ними остаётся зелёным; когда ошибку
-исправят, тест даст «unexpected success» — тогда декоратор нужно снять.
+В конце файла TestKnownBugs — ошибки views_saas.py, которые нашёл этот набор. Все исправлены,
+тесты оставлены как регрессионные.
 """
 from __future__ import annotations
 
 from datetime import timedelta
-from unittest import expectedFailure
 
 from django.test import TestCase
 from django.utils import timezone
@@ -768,11 +766,7 @@ class TestIsolation(SaasBase):
         self.assertEqual(self.client.get('/api/cabinet/overview/', **self.a).json()['plan'], 'TRIAL')
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  НАЙДЕННЫЕ ОШИБКИ api/views_saas.py
-#  Каждый тест ниже описывает ПРАВИЛЬНОЕ поведение и сейчас падает — поэтому
-#  @expectedFailure. Файл views_saas.py этим набором не правился намеренно.
-#  После исправления тест станет «unexpected success»: снимите декоратор,
-#  и тест останется обычной регрессионной проверкой.
+#  НАЙДЕННЫЕ ОШИБКИ api/views_saas.py (исправлены 22.09, тесты оставлены как регрессия)
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestKnownBugs(SaasBase):
@@ -780,7 +774,6 @@ class TestKnownBugs(SaasBase):
         super().setUp()
         self.auth, self.slug, self.account = self.new_venue(tables=2)
 
-    @expectedFailure
     def test_BUG_register_ignores_trial_table_limit(self):
         """БАГ: cabinet_register создаёт столько столов, сколько попросили (до 200), хотя на TRIAL лимит 5.
 
@@ -789,12 +782,10 @@ class TestKnownBugs(SaasBase):
         _, _, account = self.new_venue('big@example.com', 'Big Bar', tables=50)
         self.assertLessEqual(account.venue.qrcodes.count(), TRIAL['tables'])
 
-    @expectedFailure
     def test_BUG_register_accepts_invalid_email(self):
         """БАГ: e-mail не проверяется — в базу попадает адрес, на который нельзя написать (счёт, сброс пароля)."""
         self.assertEqual(self.register(email='not-an-email', venue_name='Typo Bar').status_code, 400)
 
-    @expectedFailure
     def test_BUG_track_without_venue_lands_on_slugless_venue(self):
         """БАГ: нет поля venue → filter(slug=None) → Django ищет slug IS NULL и находит заведение без slug.
 
@@ -805,13 +796,11 @@ class TestKnownBugs(SaasBase):
         self.client.post('/api/track/', {'kind': 'ORDER_INTENT', 'price': 5000}, format='json')
         self.assertEqual(legacy.scan_events.count() + legacy.menu_events.count(), 0)
 
-    @expectedFailure
     def test_BUG_negative_menu_price_is_accepted(self):
         """БАГ: цена -500 сохраняется и уходит гостю в меню."""
         r = self.post_menu(self.auth, {'kind': 'BEER', 'ref_slug': 'efes', 'price': -500})
         self.assertGreaterEqual(r.json()['items'][0]['price'], 0)
 
-    @expectedFailure
     def test_BUG_negative_track_price_lowers_revenue(self):
         """БАГ: любой аноним может увести «эффект в ₸» в минус событием с отрицательной ценой."""
         self.track(self.slug, 'ORDER_INTENT', beer='efes', price=1200)
@@ -819,7 +808,6 @@ class TestKnownBugs(SaasBase):
         stats = self.client.get('/api/cabinet/stats/', **self.auth).json()
         self.assertGreaterEqual(stats['revenue_intent_kzt'], 1200.0)
 
-    @expectedFailure
     def test_BUG_superscript_digit_is_500(self):
         """БАГ: проверка str.isdigit() перед int(): '²'.isdigit() → True, int('²') → ValueError → 500.
 
@@ -836,7 +824,6 @@ class TestKnownBugs(SaasBase):
         for i, call in enumerate(calls):
             self.assertLess(call().status_code, 500, f'вызов №{i + 1}')
 
-    @expectedFailure
     def test_BUG_huge_integer_is_500(self):
         """БАГ: 10**20 проходит isdigit(), но не помещается в IntegerField → OverflowError (SQLite) / DataError (PostgreSQL)."""
         big = str(10 ** 20)
@@ -849,13 +836,11 @@ class TestKnownBugs(SaasBase):
         for i, call in enumerate(calls):
             self.assertLess(call().status_code, 500, f'вызов №{i + 1}')
 
-    @expectedFailure
     def test_BUG_huge_price_is_500(self):
         """БАГ: цена длиннее DecimalField(max_digits=10) проходит _dec() и падает в save() с decimal.InvalidOperation."""
         self.assertLess(self.track(self.slug, 'ORDER_INTENT', price='1e12').status_code, 500)
         self.assertLess(self.post_menu(self.auth, {'kind': 'BEER', 'ref_slug': 'efes', 'price': 99999999999}).status_code, 500)
 
-    @expectedFailure
     def test_BUG_non_object_json_is_500(self):
         """БАГ: JSON-массив вместо объекта → 'list'.get(...) → AttributeError → 500. Первые четыре адреса публичные."""
         for url in ('/api/leads/', '/api/track/', '/api/cabinet/register/', '/api/cabinet/login/'):
