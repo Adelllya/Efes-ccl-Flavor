@@ -23,3 +23,9 @@ Thumbs.db
 
 # Large archives (GitHub limit 100 MB)
 *.zip
+
+# Flavor Tree v2
+backend/.venv/
+backend/staticfiles/
+frontend/scripts/.engine-build/
+frontend/.angular/

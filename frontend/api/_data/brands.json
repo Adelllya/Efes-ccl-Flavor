@@ -1,0 +1,887 @@
+[
+  {
+    "id": "kruzhka-svezhego",
+    "name": "Кружка Свежего",
+    "display_name": "Кружка Свежего",
+    "brand_owner": "",
+    "style": "Lager (draft-style)",
+    "style_family": "DRAFT_LAGER",
+    "style_label": "Разливной лагер",
+    "abv": 4.0,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Разливное пиво в бутылочном формате, сваренное по классическому рецепту",
+    "origin": "Казахстан",
+    "tagline": "Разливное — в бутылке",
+    "image": "img/beers/kruzhka-svezhego.webp",
+    "media_file": "Kruzhka_Svezhevo.png",
+    "accent": "#e7a120",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 6,
+        "sommelier_note": "Яркий свежий вдох разливного формата"
+      },
+      {
+        "layer": "TOP",
+        "note_id": "hop-aroma",
+        "intensity": 4,
+        "sommelier_note": "Тонкий хмелевой акцент"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 5,
+        "sommelier_note": "Классический ячменный солод"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "mild-bitterness",
+        "intensity": 4,
+        "sommelier_note": "Мягкая приятная горчинка"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "refreshing-finish",
+        "intensity": 5,
+        "sommelier_note": "Быстрое утоление жажды"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "belyi-medved",
+    "name": "Белый Медведь",
+    "display_name": "Белый Медведь",
+    "brand_owner": "Efes Kazakhstan",
+    "style": "Lager",
+    "style_family": "LAGER",
+    "style_label": "Светлый лагер",
+    "abv": 4.8,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Локальное производство с 2007 г. на алматинском заводе Efes Kazakhstan",
+    "origin": "Казахстан · Алматы, с 2007",
+    "tagline": "Локальная классика",
+    "image": "img/beers/belyi-medved.webp",
+    "media_file": "Belyi_Medved.png",
+    "accent": "#395b27",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 5,
+        "sommelier_note": "Чистый освежающий старт"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "grainy",
+        "intensity": 5,
+        "sommelier_note": "Ярко выраженное зерновое тело"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 4,
+        "sommelier_note": "Мягкая солодовая сладость"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "mild-bitterness",
+        "intensity": 4,
+        "sommelier_note": "Сдержанная классическая горчинка"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "efes-pilsener",
+    "name": "Efes Pilsener",
+    "display_name": "Efes Pilsener",
+    "brand_owner": "Efes Beer Group",
+    "style": "Pilsner",
+    "style_family": "PILSNER",
+    "style_label": "Пилснер",
+    "abv": 5.0,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Флагманская марка Efes Beer Group",
+    "origin": "Турция · Efes Beer Group",
+    "tagline": "Флагман портфеля",
+    "image": "img/beers/efes-pilsener.webp",
+    "media_file": "Efes_Pilsener.png",
+    "accent": "#385083",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "hop-aroma",
+        "intensity": 6,
+        "sommelier_note": "Благородный хмель европейского типа"
+      },
+      {
+        "layer": "TOP",
+        "note_id": "floral",
+        "intensity": 4,
+        "sommelier_note": "Изящные цветочные тона"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "rich-malt",
+        "intensity": 6,
+        "sommelier_note": "Полнотелый насыщенный солод"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "hop-bitterness",
+        "intensity": 7,
+        "sommelier_note": "Выразительная пилснеровская горечь"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "refreshing-finish",
+        "intensity": 7,
+        "sommelier_note": "Фирменное сухое послевкусие Efes"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "miller-genuine-draft",
+    "name": "Miller Genuine Draft",
+    "display_name": "Miller Genuine Draft",
+    "brand_owner": "Miller",
+    "style": "American Lager",
+    "style_family": "AMERICAN_LAGER",
+    "style_label": "Американский лагер",
+    "abv": 4.4,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Одна из самых популярных марок на рынке США",
+    "origin": "США · Milwaukee",
+    "tagline": "Холодная фильтрация",
+    "image": "img/beers/miller-genuine-draft.webp",
+    "media_file": "Miller.png",
+    "accent": "#d1a141",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 7,
+        "sommelier_note": "Исключительная легкость холодной фильтрации"
+      },
+      {
+        "layer": "TOP",
+        "note_id": "light-hop",
+        "intensity": 3,
+        "sommelier_note": "Очень деликатный хмель"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "grainy",
+        "intensity": 3,
+        "sommelier_note": "Мягкий кукурузно-ячменный профиль"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "mild-bitterness",
+        "intensity": 3,
+        "sommelier_note": "Едва заметная горчинка"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "clean-finish",
+        "intensity": 6,
+        "sommelier_note": "Кристально чистое послевкусие"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "kozel",
+    "name": "Velkopopovický Kozel",
+    "display_name": "Velkopopovický Kozel",
+    "brand_owner": "Kozel",
+    "style": "Czech Lager",
+    "style_family": "CZECH_LAGER",
+    "style_label": "Чешский лагер",
+    "abv": 4.0,
+    "abv_estimated": true,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Чешское пиво №1 в мире, продаётся в 37 странах",
+    "origin": "Чехия · Velké Popovice, с 1874",
+    "tagline": "Чешское пиво №1 в мире",
+    "image": "img/beers/kozel.webp",
+    "media_file": "Kozel.png",
+    "accent": "#7e401c",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "hop-aroma",
+        "intensity": 5,
+        "sommelier_note": "Чешский ароматный хмель"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 7,
+        "sommelier_note": "Глубокая солодовая основа"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "caramel",
+        "intensity": 3,
+        "sommelier_note": "Оттенки карамелизованного солода"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "hop-bitterness",
+        "intensity": 5,
+        "sommelier_note": "Благородная чешская горечь"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "balanced-finish",
+        "intensity": 5,
+        "sommelier_note": "Классический велкопоповицкий баланс"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "bremen-von-lustig",
+    "name": "Bremen von Lustig",
+    "display_name": "Bremen von Lustig",
+    "brand_owner": "",
+    "style": "German-style Lager",
+    "style_family": "GERMAN_LAGER",
+    "style_label": "Немецкий лагер",
+    "abv": 4.0,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Яркий искрящийся вкус с горчинкой и хмелевым послевкусием",
+    "origin": "Немецкий стиль",
+    "tagline": "Искрящаяся горчинка",
+    "image": "img/beers/bremen-von-lustig.webp",
+    "media_file": "Bremen.png",
+    "accent": "#659b46",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "effervescence",
+        "intensity": 7,
+        "sommelier_note": "Яркая игра пузырьков и свежесть"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 4,
+        "sommelier_note": "Лёгкая солодовая основа"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "hop-bitterness",
+        "intensity": 6,
+        "sommelier_note": "Характерная немецкая горчинка"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "hoppy-aftertaste",
+        "intensity": 6,
+        "sommelier_note": "Стойкое хмелевое послевкусие"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "bavaria",
+    "name": "Bavaria",
+    "display_name": "Bavaria",
+    "brand_owner": "Bavaria",
+    "style": "Holland Lager",
+    "style_family": "LAGER",
+    "style_label": "Светлый лагер",
+    "abv": 4.9,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Существует с 1719 года, продаётся в 120+ странах",
+    "origin": "Нидерланды · с 1719",
+    "tagline": "120+ стран",
+    "image": "img/beers/bavaria.webp",
+    "media_file": "Bavaria.png",
+    "accent": "#2d77ac",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 5,
+        "sommelier_note": "Голландская минеральная чистота"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 4,
+        "sommelier_note": "Легкое солодовое зерно"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "mild-bitterness",
+        "intensity": 3,
+        "sommelier_note": "Очень мягкий сход вкуса"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "wukong-ju",
+    "name": "Wùkōng Jū (悟空居)",
+    "display_name": "Wùkōng Jū",
+    "brand_owner": "",
+    "style": "Rice Beer",
+    "style_family": "RICE_LAGER",
+    "style_label": "Рисовый лагер",
+    "abv": 4.0,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Сбалансированное рисовое пиво",
+    "origin": "Китай",
+    "tagline": "Рисовый лагер",
+    "image": "img/beers/wukong-ju.webp",
+    "media_file": "WuKong.png",
+    "accent": "#b59457",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 4,
+        "sommelier_note": "Легкая восточная свежесть"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "rice",
+        "intensity": 5,
+        "sommelier_note": "Характерная рисовая сухость и шелковистость"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "sweetness",
+        "intensity": 4,
+        "sommelier_note": "Тонкая рисовая сладость"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "balanced-finish",
+        "intensity": 3,
+        "sommelier_note": "Мягкий сбалансированный финиш"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "karagandinskoe",
+    "name": "Карагандинское",
+    "display_name": "Карагандинское",
+    "brand_owner": "",
+    "style": "Lager",
+    "style_family": "LAGER",
+    "style_label": "Светлый лагер",
+    "abv": 4.6,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "История казахстанского пивоварения + современный характер",
+    "origin": "Казахстан · Караганда",
+    "tagline": "История казахстанского пивоварения",
+    "image": "img/beers/karagandinskoe.webp",
+    "media_file": "Karagandinskoe.png",
+    "accent": "#924412",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 4,
+        "sommelier_note": "Знакомая классическая свежесть"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "grainy",
+        "intensity": 4,
+        "sommelier_note": "Казахстанский ячменный характер"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "crisp-dynamic-bitterness",
+        "intensity": 5,
+        "sommelier_note": "Динамичная бодрящая горчинка"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "slavna-praga",
+    "name": "Slavna ПРАГА",
+    "display_name": "Slavna ПРАГА",
+    "brand_owner": "",
+    "style": "Pale Lager",
+    "style_family": "CZECH_LAGER",
+    "style_label": "Чешский лагер",
+    "abv": 4.5,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Золотистый цвет, баланс хмеля и солода, нотки сладости сусла",
+    "origin": "Чешский стиль",
+    "tagline": "Золотистый баланс",
+    "image": "img/beers/slavna-praga.webp",
+    "media_file": "Slavna_ПРАГА.png",
+    "accent": "#c17643",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "hop-aroma",
+        "intensity": 5,
+        "sommelier_note": "Жатецкий хмель"
+      },
+      {
+        "layer": "TOP",
+        "note_id": "floral",
+        "intensity": 3,
+        "sommelier_note": "Цветочный букет"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 6,
+        "sommelier_note": "Золотистый плотный солод"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "worty",
+        "intensity": 4,
+        "sommelier_note": "Сладковатое сусло"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "sweet-finish",
+        "intensity": 4,
+        "sommelier_note": "Тонкая сладость послевкусия"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "zhigulevskoe",
+    "name": "Жигулевское",
+    "display_name": "Жигулевское",
+    "brand_owner": "",
+    "style": "Classic Lager",
+    "style_family": "LAGER",
+    "style_label": "Светлый лагер",
+    "abv": 4.5,
+    "abv_estimated": false,
+    "packaging_type": "BOTTLE",
+    "is_horeca_only": false,
+    "description": "Лёгкий и хорошо знакомый вкус",
+    "origin": "Классический рецепт",
+    "tagline": "Знакомый вкус",
+    "image": "img/beers/zhigulevskoe.webp",
+    "media_file": "Zhigulevskoe.png",
+    "accent": "#6ab238",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 4,
+        "sommelier_note": "Легкая свежесть традиционного лагера"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "grainy",
+        "intensity": 5,
+        "sommelier_note": "Добротный солодовый вкус"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "classic-bitterness",
+        "intensity": 5,
+        "sommelier_note": "Классическая ностальгическая горечь"
+      }
+    ],
+    "serving": {
+      "temp_min": 5.0,
+      "temp_max": 8.0,
+      "glass": "Пилснер / Пинта",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "khmelnoy-los",
+    "name": "Хмельной Лось",
+    "display_name": "Хмельной Лось",
+    "brand_owner": "",
+    "style": "Strong Lager",
+    "style_family": "STRONG_LAGER",
+    "style_label": "Крепкий лагер",
+    "abv": 7.3,
+    "abv_estimated": false,
+    "packaging_type": "CAN",
+    "is_horeca_only": false,
+    "description": "Крепкое пиво для раскрытия «внутреннего философа»",
+    "origin": "Казахстан",
+    "tagline": "Крепкое · 7,3%",
+    "image": "img/beers/khmelnoy-los.webp",
+    "media_file": "Khmelnyi_los.png",
+    "accent": "#9f3545",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "alcoholic",
+        "intensity": 6,
+        "sommelier_note": "Согревающее алкогольное дыхание (7.3%)"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "rich-malt",
+        "intensity": 6,
+        "sommelier_note": "Густое солодовое тело"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "hop-bitterness",
+        "intensity": 6,
+        "sommelier_note": "Мощная выраженная горечь"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "mouthfeel",
+        "intensity": 7,
+        "sommelier_note": "Массивное плотное тело"
+      }
+    ],
+    "serving": {
+      "temp_min": 8.0,
+      "temp_max": 12.0,
+      "glass": "Тюльпан / Снифтер",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "severnoe-siyanie",
+    "name": "Северное Сияние",
+    "display_name": "Северное Сияние",
+    "brand_owner": "",
+    "style": "Premium Lager",
+    "style_family": "LAGER",
+    "style_label": "Светлый лагер",
+    "abv": 4.5,
+    "abv_estimated": true,
+    "packaging_type": "DRAFT",
+    "is_horeca_only": true,
+    "description": "Освежающий лагер, натуральные ингредиенты премиум-класса",
+    "origin": "Казахстан · разливное",
+    "tagline": "Премиальный лагер",
+    "image": "img/beers/severnoe-siyanie.webp",
+    "media_file": "Severnoye_Syiyanyie.png",
+    "accent": "#8a632c",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 6,
+        "sommelier_note": "Кристальная северная свежесть"
+      },
+      {
+        "layer": "TOP",
+        "note_id": "light-hop",
+        "intensity": 4,
+        "sommelier_note": "Натуральные хмелевые ноты"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 5,
+        "sommelier_note": "Премиальный отборный солод"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "refreshing-finish",
+        "intensity": 5,
+        "sommelier_note": "Чистый освежающий финал"
+      }
+    ],
+    "serving": {
+      "temp_min": 4.0,
+      "temp_max": 7.0,
+      "glass": "Кружка 0,5 л",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "legenda-777",
+    "name": "Легенда 777",
+    "display_name": "Легенда 777",
+    "brand_owner": "Efes",
+    "style": "Amber Lager",
+    "style_family": "AMBER_LAGER",
+    "style_label": "Янтарный лагер",
+    "abv": 4.7,
+    "abv_estimated": true,
+    "packaging_type": "DRAFT",
+    "is_horeca_only": true,
+    "description": "Свежий янтарный напиток высокого качества",
+    "origin": "Казахстан · разливное",
+    "tagline": "Янтарный характер",
+    "image": "img/beers/legenda-777.webp",
+    "media_file": "777_razliv.png",
+    "accent": "#9c7232",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "hop-aroma",
+        "intensity": 4,
+        "sommelier_note": "Легкий хмель"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "caramel",
+        "intensity": 5,
+        "sommelier_note": "Янтарная карамель"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 5,
+        "sommelier_note": "Подрумяненный солод"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "amber-sweetness",
+        "intensity": 4,
+        "sommelier_note": "Мягкая сладость янтаря"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "hop-bitterness",
+        "intensity": 4,
+        "sommelier_note": "Сбалансированная горечь"
+      }
+    ],
+    "serving": {
+      "temp_min": 4.0,
+      "temp_max": 7.0,
+      "glass": "Кружка 0,5 л",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "13-region",
+    "name": "13 регион",
+    "display_name": "13 регион",
+    "brand_owner": "",
+    "style": "Lager",
+    "style_family": "LAGER",
+    "style_label": "Светлый лагер",
+    "abv": 4.5,
+    "abv_estimated": true,
+    "packaging_type": "DRAFT",
+    "is_horeca_only": true,
+    "description": "Свежее пиво для настоящих южан",
+    "origin": "Казахстан · Шымкент, разливное",
+    "tagline": "Для настоящих южан",
+    "image": "img/beers/13-region.webp",
+    "media_file": "13_region.png",
+    "accent": "#90672c",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 6,
+        "sommelier_note": "Южная свежесть"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "grainy",
+        "intensity": 4,
+        "sommelier_note": "Светлое зерно"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "mild-bitterness",
+        "intensity": 4,
+        "sommelier_note": "Легкая питкая горечь"
+      }
+    ],
+    "serving": {
+      "temp_min": 4.0,
+      "temp_max": 7.0,
+      "glass": "Кружка 0,5 л",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "stary-melnik",
+    "name": "Старый мельник (из бочонка)",
+    "display_name": "Старый мельник из бочонка",
+    "brand_owner": "",
+    "style": "Lager",
+    "style_family": "LAGER",
+    "style_label": "Светлый лагер",
+    "abv": 3.9,
+    "abv_estimated": true,
+    "packaging_type": "DRAFT",
+    "is_horeca_only": true,
+    "description": "Три сорта хмеля в три этапа для баланса горечи, аромата, мягкости",
+    "origin": "Разливное · три сорта хмеля",
+    "tagline": "Три хмеля в три этапа",
+    "image": "img/beers/stary-melnik.webp",
+    "media_file": "Melnik.png",
+    "accent": "#8a6329",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "hop-aroma",
+        "intensity": 7,
+        "sommelier_note": "Ароматный хмель позднего охмеления"
+      },
+      {
+        "layer": "TOP",
+        "note_id": "kettle-hop",
+        "intensity": 5,
+        "sommelier_note": "Котловое охмеление трех сортов"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "smooth-malt-balance",
+        "intensity": 5,
+        "sommelier_note": "Бархатный баланс солода"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "mild-bitterness",
+        "intensity": 5,
+        "sommelier_note": "Умеренная благородная горечь"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "smooth-finish",
+        "intensity": 6,
+        "sommelier_note": "Мягкий бочоночный финиш"
+      }
+    ],
+    "serving": {
+      "temp_min": 4.0,
+      "temp_max": 7.0,
+      "glass": "Кружка 0,5 л",
+      "seasonality": "Круглый год"
+    }
+  },
+  {
+    "id": "bochkovoe",
+    "name": "Бочковое",
+    "display_name": "Бочковое",
+    "brand_owner": "",
+    "style": "Draft Lager",
+    "style_family": "DRAFT_LAGER",
+    "style_label": "Разливной лагер",
+    "abv": 4.6,
+    "abv_estimated": true,
+    "packaging_type": "DRAFT",
+    "is_horeca_only": true,
+    "description": "Лёгкий насыщенный напиток с мягким хмелевым вкусом",
+    "origin": "Казахстан · разливное",
+    "tagline": "Мягкий хмель",
+    "image": "img/beers/bochkovoe.webp",
+    "media_file": "Bochkovoe.png",
+    "accent": "#996e27",
+    "pyramid": [
+      {
+        "layer": "TOP",
+        "note_id": "freshness",
+        "intensity": 5,
+        "sommelier_note": "Ощущение свеженакатанной бочки"
+      },
+      {
+        "layer": "TOP",
+        "note_id": "light-hop",
+        "intensity": 4,
+        "sommelier_note": "Мягкий хмелевой штрих"
+      },
+      {
+        "layer": "HEART",
+        "note_id": "malty",
+        "intensity": 4,
+        "sommelier_note": "Легкое солодовое зерно"
+      },
+      {
+        "layer": "BASE",
+        "note_id": "hoppy-aftertaste",
+        "intensity": 5,
+        "sommelier_note": "Мягкое хмелевое послевкусие"
+      }
+    ],
+    "serving": {
+      "temp_min": 4.0,
+      "temp_max": 7.0,
+      "glass": "Кружка 0,5 л",
+      "seasonality": "Круглый год"
+    }
+  }
+]

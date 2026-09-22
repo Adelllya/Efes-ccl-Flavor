@@ -1,0 +1,5783 @@
+{
+ "version": "1.0",
+ "matrix": [
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "beshbarmak",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "beshbarmak",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "beshbarmak",
+   "score": 78,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "beshbarmak",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "beshbarmak",
+   "score": 93,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "beshbarmak",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "beshbarmak",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "beshbarmak",
+   "score": 51,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "beshbarmak",
+   "score": 66,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "beshbarmak",
+   "score": 71,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "beshbarmak",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "beshbarmak",
+   "score": 69,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "beshbarmak",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "beshbarmak",
+   "score": 75,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "beshbarmak",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "beshbarmak",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "beshbarmak",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "kazy",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "kazy",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "kazy",
+   "score": 91,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "kazy",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "kazy",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "kazy",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "kazy",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "kazy",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "kazy",
+   "score": 66,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "kazy",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "kazy",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "kazy",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "kazy",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "kazy",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "kazy",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "kazy",
+   "score": 68,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "kazy",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "shuzhyk",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "shuzhyk",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "shuzhyk",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "shuzhyk",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "shuzhyk",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "shuzhyk",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "shuzhyk",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "shuzhyk",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "shuzhyk",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "shuzhyk",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "shuzhyk",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "shuzhyk",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "shuzhyk",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "shuzhyk",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "shuzhyk",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "shuzhyk",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "shuzhyk",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "kuyrdak",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "kuyrdak",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "kuyrdak",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "kuyrdak",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "kuyrdak",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "kuyrdak",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "kuyrdak",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "kuyrdak",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "kuyrdak",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "kuyrdak",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "kuyrdak",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "kuyrdak",
+   "score": 67,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "kuyrdak",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "kuyrdak",
+   "score": 77,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "kuyrdak",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "kuyrdak",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "kuyrdak",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "zhaya",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "zhaya",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "zhaya",
+   "score": 77,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "zhaya",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "zhaya",
+   "score": 77,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "zhaya",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "zhaya",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "zhaya",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "zhaya",
+   "score": 66,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "zhaya",
+   "score": 71,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "zhaya",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "zhaya",
+   "score": 67,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "zhaya",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "zhaya",
+   "score": 77,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "zhaya",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "zhaya",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "zhaya",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "shashlyk",
+   "score": 66,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "shashlyk",
+   "score": 66,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "shashlyk",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "shashlyk",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "shashlyk",
+   "score": 76,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "shashlyk",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "shashlyk",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "shashlyk",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "shashlyk",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "shashlyk",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "shashlyk",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "shashlyk",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "shashlyk",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "shashlyk",
+   "score": 78,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "shashlyk",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "shashlyk",
+   "score": 76,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "shashlyk",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "plov",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "plov",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "plov",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "plov",
+   "score": 55,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "plov",
+   "score": 80,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "plov",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "plov",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "plov",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "plov",
+   "score": 66,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "plov",
+   "score": 77,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "plov",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "plov",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "plov",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "plov",
+   "score": 80,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "plov",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "plov",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "plov",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "kurt",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "kurt",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "kurt",
+   "score": 55,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "kurt",
+   "score": 69,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kozel",
+   "dish": "kurt",
+   "score": 52,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "kurt",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "kurt",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "kurt",
+   "score": 69,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "kurt",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "kurt",
+   "score": 54,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "kurt",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "kurt",
+   "score": 35,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "kurt",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "kurt",
+   "score": 49,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "kurt",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "kurt",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "kurt",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "irimshik",
+   "score": 54,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "irimshik",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "irimshik",
+   "score": 44,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "irimshik",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "irimshik",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "irimshik",
+   "score": 47,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "irimshik",
+   "score": 54,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "irimshik",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "irimshik",
+   "score": 50,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "irimshik",
+   "score": 56,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "irimshik",
+   "score": 51,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "irimshik",
+   "score": 34,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "irimshik",
+   "score": 55,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "irimshik",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "irimshik",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "irimshik",
+   "score": 50,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "irimshik",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "airan",
+   "score": 51,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "airan",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "airan",
+   "score": 46,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "airan",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "airan",
+   "score": 41,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "airan",
+   "score": 47,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "airan",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "airan",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "airan",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "airan",
+   "score": 43,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "airan",
+   "score": 49,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "airan",
+   "score": 21,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "airan",
+   "score": 52,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "airan",
+   "score": 36,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "airan",
+   "score": 52,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "airan",
+   "score": 48,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "airan",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "kumys",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "kumys",
+   "score": 48,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "kumys",
+   "score": 44,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "kumys",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "kumys",
+   "score": 40,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "kumys",
+   "score": 52,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "kumys",
+   "score": 49,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "kumys",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "kumys",
+   "score": 48,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "kumys",
+   "score": 42,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "kumys",
+   "score": 48,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "kumys",
+   "score": 21,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "kumys",
+   "score": 51,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "kumys",
+   "score": 35,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "kumys",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "kumys",
+   "score": 46,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "kumys",
+   "score": 48,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "baursaki",
+   "score": 67,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "baursaki",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "baursaki",
+   "score": 60,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "baursaki",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "baursaki",
+   "score": 66,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "baursaki",
+   "score": 61,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "baursaki",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "baursaki",
+   "score": 58,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "baursaki",
+   "score": 63,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "baursaki",
+   "score": 67,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "baursaki",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "baursaki",
+   "score": 52,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "baursaki",
+   "score": 68,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "baursaki",
+   "score": 67,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "baursaki",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "baursaki",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "baursaki",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "samsa",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "samsa",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "samsa",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "samsa",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "samsa",
+   "score": 75,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "samsa",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "samsa",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "samsa",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "samsa",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "samsa",
+   "score": 83,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "samsa",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "samsa",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "samsa",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "samsa",
+   "score": 75,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "samsa",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "samsa",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "samsa",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "manty",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "manty",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "manty",
+   "score": 62,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "manty",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "manty",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "manty",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "manty",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "manty",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "manty",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "manty",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "manty",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "manty",
+   "score": 50,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "manty",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "manty",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "manty",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "manty",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "manty",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "zheti-as",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "zheti-as",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "zheti-as",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "zheti-as",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "zheti-as",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "zheti-as",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "zheti-as",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "zheti-as",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "zheti-as",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "zheti-as",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "zheti-as",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "zheti-as",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "zheti-as",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "zheti-as",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "zheti-as",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "zheti-as",
+   "score": 68,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "zheti-as",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "pizza-margherita",
+   "score": 79,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "pizza-margherita",
+   "score": 74,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "pizza-margherita",
+   "score": 86,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "pizza-margherita",
+   "score": 69,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "pizza-margherita",
+   "score": 77,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "pizza-margherita",
+   "score": 77,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "pizza-margherita",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "pizza-margherita",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "pizza-margherita",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "pizza-margherita",
+   "score": 78,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "pizza-margherita",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "pizza-margherita",
+   "score": 63,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "pizza-margherita",
+   "score": 80,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "pizza-margherita",
+   "score": 74,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "pizza-margherita",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "pizza-margherita",
+   "score": 79,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "pizza-margherita",
+   "score": 78,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "carbonara",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "carbonara",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "carbonara",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "carbonara",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "carbonara",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "carbonara",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "carbonara",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "carbonara",
+   "score": 52,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "carbonara",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "carbonara",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "carbonara",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "carbonara",
+   "score": 62,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "carbonara",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "carbonara",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "carbonara",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "carbonara",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "carbonara",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "bruschetta",
+   "score": 69,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "bruschetta",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "bruschetta",
+   "score": 67,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "bruschetta",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "bruschetta",
+   "score": 62,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "bruschetta",
+   "score": 65,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "bruschetta",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "bruschetta",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "bruschetta",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "bruschetta",
+   "score": 62,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "bruschetta",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "bruschetta",
+   "score": 40,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "bruschetta",
+   "score": 69,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "bruschetta",
+   "score": 55,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "bruschetta",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "bruschetta",
+   "score": 68,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "bruschetta",
+   "score": 67,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "lasagna",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "lasagna",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "lasagna",
+   "score": 80,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "lasagna",
+   "score": 56,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "lasagna",
+   "score": 81,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "lasagna",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "lasagna",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "lasagna",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "lasagna",
+   "score": 68,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "lasagna",
+   "score": 81,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "lasagna",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "lasagna",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "lasagna",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "lasagna",
+   "score": 80,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "lasagna",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "lasagna",
+   "score": 71,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "lasagna",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "risotto",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "risotto",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "risotto",
+   "score": 60,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "risotto",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "risotto",
+   "score": 60,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "risotto",
+   "score": 62,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "risotto",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "risotto",
+   "score": 62,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "risotto",
+   "score": 63,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "risotto",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "risotto",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "risotto",
+   "score": 48,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "risotto",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "risotto",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "risotto",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "risotto",
+   "score": 62,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "risotto",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "tiramisu",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "tiramisu",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "tiramisu",
+   "score": 53,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "tiramisu",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "tiramisu",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "tiramisu",
+   "score": 57,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "tiramisu",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "tiramisu",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "tiramisu",
+   "score": 60,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "tiramisu",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "tiramisu",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "tiramisu",
+   "score": 48,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "tiramisu",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "tiramisu",
+   "score": 66,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "tiramisu",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "tiramisu",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "tiramisu",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "caprese",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "caprese",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "caprese",
+   "score": 58,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "caprese",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "caprese",
+   "score": 51,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "caprese",
+   "score": 58,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "caprese",
+   "score": 55,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "caprese",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "caprese",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "caprese",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "caprese",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "caprese",
+   "score": 29,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "caprese",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "caprese",
+   "score": 45,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "caprese",
+   "score": 56,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "caprese",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "caprese",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "sushi",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "sushi",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "sushi",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "sushi",
+   "score": 74,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kozel",
+   "dish": "sushi",
+   "score": 52,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "sushi",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "sushi",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "sushi",
+   "score": 87,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "sushi",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "sushi",
+   "score": 54,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "sushi",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "sushi",
+   "score": 31,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "sushi",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "sushi",
+   "score": 49,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "sushi",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "sushi",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "sushi",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "ramen",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "ramen",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "ramen",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "ramen",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "ramen",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "ramen",
+   "score": 71,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "ramen",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "ramen",
+   "score": 54,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "ramen",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "ramen",
+   "score": 68,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "ramen",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "ramen",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "ramen",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "ramen",
+   "score": 69,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "ramen",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "ramen",
+   "score": 66,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "ramen",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "edamame",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "edamame",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "edamame",
+   "score": 52,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "edamame",
+   "score": 73,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kozel",
+   "dish": "edamame",
+   "score": 50,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "edamame",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "edamame",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "edamame",
+   "score": 66,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "edamame",
+   "score": 56,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "edamame",
+   "score": 52,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "edamame",
+   "score": 56,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "edamame",
+   "score": 30,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "edamame",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "edamame",
+   "score": 46,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "edamame",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "edamame",
+   "score": 55,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "edamame",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "tempura",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "tempura",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "tempura",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "tempura",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "tempura",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "tempura",
+   "score": 68,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "tempura",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "tempura",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "tempura",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "tempura",
+   "score": 66,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "tempura",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "tempura",
+   "score": 50,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "tempura",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "tempura",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "tempura",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "tempura",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "tempura",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "yakitori",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "yakitori",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "yakitori",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "yakitori",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "yakitori",
+   "score": 76,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "yakitori",
+   "score": 68,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "yakitori",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "yakitori",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "yakitori",
+   "score": 69,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "yakitori",
+   "score": 79,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "yakitori",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "yakitori",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "yakitori",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "yakitori",
+   "score": 81,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "yakitori",
+   "score": 68,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "yakitori",
+   "score": 79,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "yakitori",
+   "score": 71,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "mochi",
+   "score": 49,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "mochi",
+   "score": 48,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "mochi",
+   "score": 36,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "mochi",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kozel",
+   "dish": "mochi",
+   "score": 45,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "mochi",
+   "score": 39,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "mochi",
+   "score": 48,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "mochi",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "mochi",
+   "score": 44,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "mochi",
+   "score": 47,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "mochi",
+   "score": 44,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "mochi",
+   "score": 28,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "mochi",
+   "score": 50,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "mochi",
+   "score": 48,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "mochi",
+   "score": 47,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "mochi",
+   "score": 45,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "mochi",
+   "score": 48,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "tonkatsu",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "tonkatsu",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "tonkatsu",
+   "score": 81,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "tonkatsu",
+   "score": 58,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "tonkatsu",
+   "score": 83,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "tonkatsu",
+   "score": 78,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "tonkatsu",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "tonkatsu",
+   "score": 55,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "tonkatsu",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "tonkatsu",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "tonkatsu",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "tonkatsu",
+   "score": 69,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "tonkatsu",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "tonkatsu",
+   "score": 82,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "tonkatsu",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "tonkatsu",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "tonkatsu",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "burger",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "burger",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "burger",
+   "score": 80,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "burger",
+   "score": 54,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "burger",
+   "score": 81,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "burger",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "burger",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "burger",
+   "score": 51,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "burger",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "burger",
+   "score": 75,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "burger",
+   "score": 68,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "burger",
+   "score": 86,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "burger",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "burger",
+   "score": 80,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "burger",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "burger",
+   "score": 71,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "burger",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "steak",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "steak",
+   "score": 66,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "steak",
+   "score": 82,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "steak",
+   "score": 56,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "steak",
+   "score": 81,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "steak",
+   "score": 79,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "steak",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "steak",
+   "score": 54,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "steak",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "steak",
+   "score": 77,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "steak",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "steak",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "steak",
+   "score": 68,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "steak",
+   "score": 82,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "steak",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "steak",
+   "score": 76,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "steak",
+   "score": 71,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "nachos",
+   "score": 75,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "nachos",
+   "score": 80,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "nachos",
+   "score": 79,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "nachos",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "nachos",
+   "score": 80,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "nachos",
+   "score": 86,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "nachos",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "nachos",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "nachos",
+   "score": 77,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "nachos",
+   "score": 77,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "nachos",
+   "score": 78,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "nachos",
+   "score": 62,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "nachos",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "nachos",
+   "score": 81,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "nachos",
+   "score": 76,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "nachos",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "nachos",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "bbq-ribs",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "bbq-ribs",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "bbq-ribs",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "bbq-ribs",
+   "score": 52,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "bbq-ribs",
+   "score": 84,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "bbq-ribs",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "bbq-ribs",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "bbq-ribs",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "bbq-ribs",
+   "score": 63,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "bbq-ribs",
+   "score": 79,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "bbq-ribs",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "bbq-ribs",
+   "score": 99,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "bbq-ribs",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "bbq-ribs",
+   "score": 98,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "bbq-ribs",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "bbq-ribs",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "bbq-ribs",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "buffalo-wings",
+   "score": 79,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "buffalo-wings",
+   "score": 79,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "buffalo-wings",
+   "score": 84,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "buffalo-wings",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "buffalo-wings",
+   "score": 83,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "buffalo-wings",
+   "score": 82,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "buffalo-wings",
+   "score": 77,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "buffalo-wings",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "buffalo-wings",
+   "score": 76,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "buffalo-wings",
+   "score": 80,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "buffalo-wings",
+   "score": 76,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "buffalo-wings",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "buffalo-wings",
+   "score": 79,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "buffalo-wings",
+   "score": 84,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "buffalo-wings",
+   "score": 75,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "buffalo-wings",
+   "score": 78,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "buffalo-wings",
+   "score": 77,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "mac-and-cheese",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "mac-and-cheese",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "mac-and-cheese",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "mac-and-cheese",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "mac-and-cheese",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "mac-and-cheese",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "mac-and-cheese",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "mac-and-cheese",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "mac-and-cheese",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "mac-and-cheese",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "mac-and-cheese",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "mac-and-cheese",
+   "score": 61,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "mac-and-cheese",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "mac-and-cheese",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "mac-and-cheese",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "mac-and-cheese",
+   "score": 66,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "mac-and-cheese",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "apple-pie",
+   "score": 67,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "apple-pie",
+   "score": 66,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "apple-pie",
+   "score": 56,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "apple-pie",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kozel",
+   "dish": "apple-pie",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "apple-pie",
+   "score": 57,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "apple-pie",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "apple-pie",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "apple-pie",
+   "score": 61,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "apple-pie",
+   "score": 72,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "apple-pie",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "apple-pie",
+   "score": 51,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "apple-pie",
+   "score": 67,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "apple-pie",
+   "score": 75,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "apple-pie",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "apple-pie",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "apple-pie",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "tacos",
+   "score": 83,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "tacos",
+   "score": 87,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "tacos",
+   "score": 81,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "tacos",
+   "score": 76,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "tacos",
+   "score": 81,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "tacos",
+   "score": 82,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "tacos",
+   "score": 80,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "tacos",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "tacos",
+   "score": 83,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "tacos",
+   "score": 83,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "tacos",
+   "score": 84,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "tacos",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "tacos",
+   "score": 82,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "tacos",
+   "score": 80,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "tacos",
+   "score": 83,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "tacos",
+   "score": 82,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "tacos",
+   "score": 87,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "burrito",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "burrito",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "burrito",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "burrito",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "burrito",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "burrito",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "burrito",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "burrito",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "burrito",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "burrito",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "burrito",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "burrito",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "burrito",
+   "score": 67,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "burrito",
+   "score": 76,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "burrito",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "burrito",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "burrito",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "guacamole",
+   "score": 75,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "guacamole",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "guacamole",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "guacamole",
+   "score": 80,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "guacamole",
+   "score": 64,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "guacamole",
+   "score": 71,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "guacamole",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "guacamole",
+   "score": 78,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "guacamole",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "guacamole",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "guacamole",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "guacamole",
+   "score": 39,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "guacamole",
+   "score": 76,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "guacamole",
+   "score": 58,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "guacamole",
+   "score": 75,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "guacamole",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "guacamole",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "quesadilla",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "quesadilla",
+   "score": 76,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "quesadilla",
+   "score": 71,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "quesadilla",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "quesadilla",
+   "score": 71,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "quesadilla",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "quesadilla",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "quesadilla",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "quesadilla",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "quesadilla",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "quesadilla",
+   "score": 75,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "quesadilla",
+   "score": 57,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "quesadilla",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "quesadilla",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "quesadilla",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "quesadilla",
+   "score": 72,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "quesadilla",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "chili-con-carne",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "chili-con-carne",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "chili-con-carne",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "chili-con-carne",
+   "score": 58,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "chili-con-carne",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "chili-con-carne",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "chili-con-carne",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "chili-con-carne",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "chili-con-carne",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "chili-con-carne",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "chili-con-carne",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "chili-con-carne",
+   "score": 69,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "chili-con-carne",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "chili-con-carne",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "chili-con-carne",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "chili-con-carne",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "chili-con-carne",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "enchilada",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "enchilada",
+   "score": 76,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "enchilada",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "enchilada",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "enchilada",
+   "score": 77,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "enchilada",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "enchilada",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "enchilada",
+   "score": 62,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "enchilada",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "enchilada",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "enchilada",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "enchilada",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "enchilada",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "enchilada",
+   "score": 79,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "enchilada",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "enchilada",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "enchilada",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "churros",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "churros",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "churros",
+   "score": 49,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "churros",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "churros",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "churros",
+   "score": 53,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "churros",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "churros",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "churros",
+   "score": 56,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "churros",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "churros",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "churros",
+   "score": 44,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "churros",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "churros",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "churros",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "churros",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "churros",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "bratwurst",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "bratwurst",
+   "score": 66,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "bratwurst",
+   "score": 84,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "bratwurst",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "bratwurst",
+   "score": 81,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "bratwurst",
+   "score": 88,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "bratwurst",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "bratwurst",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "bratwurst",
+   "score": 65,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "bratwurst",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "bratwurst",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "bratwurst",
+   "score": 74,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "bratwurst",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "bratwurst",
+   "score": 80,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "bratwurst",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "bratwurst",
+   "score": 75,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "bratwurst",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "pretzel",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "pretzel",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "pretzel",
+   "score": 56,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "pretzel",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kozel",
+   "dish": "pretzel",
+   "score": 56,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "pretzel",
+   "score": 55,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "pretzel",
+   "score": 66,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "pretzel",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "pretzel",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "pretzel",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "pretzel",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "pretzel",
+   "score": 40,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "pretzel",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "pretzel",
+   "score": 54,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "13-region",
+   "dish": "pretzel",
+   "score": 60,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "pretzel",
+   "score": 57,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "pretzel",
+   "score": 58,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "schnitzel",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "schnitzel",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "schnitzel",
+   "score": 79,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "schnitzel",
+   "score": 58,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "schnitzel",
+   "score": 88,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "schnitzel",
+   "score": 78,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "schnitzel",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "schnitzel",
+   "score": 55,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "schnitzel",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "schnitzel",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "schnitzel",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "schnitzel",
+   "score": 67,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "schnitzel",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "schnitzel",
+   "score": 80,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "schnitzel",
+   "score": 68,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "schnitzel",
+   "score": 73,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "schnitzel",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "sauerkraut",
+   "score": 52,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "sauerkraut",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "sauerkraut",
+   "score": 45,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "sauerkraut",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "sauerkraut",
+   "score": 41,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "sauerkraut",
+   "score": 46,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "sauerkraut",
+   "score": 51,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "sauerkraut",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "sauerkraut",
+   "score": 49,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "sauerkraut",
+   "score": 43,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "sauerkraut",
+   "score": 49,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "sauerkraut",
+   "score": 21,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "sauerkraut",
+   "score": 53,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "sauerkraut",
+   "score": 36,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "sauerkraut",
+   "score": 52,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "sauerkraut",
+   "score": 47,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "sauerkraut",
+   "score": 50,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "currywurst",
+   "score": 73,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "currywurst",
+   "score": 74,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "currywurst",
+   "score": 77,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "currywurst",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "currywurst",
+   "score": 82,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "currywurst",
+   "score": 76,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "currywurst",
+   "score": 71,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "currywurst",
+   "score": 63,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "currywurst",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "currywurst",
+   "score": 77,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "currywurst",
+   "score": 70,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "currywurst",
+   "score": 70,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "currywurst",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "currywurst",
+   "score": 85,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "currywurst",
+   "score": 69,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "currywurst",
+   "score": 80,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "currywurst",
+   "score": 72,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "kartoffelsalat",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "kartoffelsalat",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "kartoffelsalat",
+   "score": 55,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "kartoffelsalat",
+   "score": 65,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kozel",
+   "dish": "kartoffelsalat",
+   "score": 53,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "kartoffelsalat",
+   "score": 57,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "kartoffelsalat",
+   "score": 60,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "kartoffelsalat",
+   "score": 64,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "kartoffelsalat",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "kartoffelsalat",
+   "score": 55,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "kartoffelsalat",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "kartoffelsalat",
+   "score": 38,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "kartoffelsalat",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "kartoffelsalat",
+   "score": 51,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "13-region",
+   "dish": "kartoffelsalat",
+   "score": 61,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "kartoffelsalat",
+   "score": 57,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "kartoffelsalat",
+   "score": 59,
+   "type": "CLEANSE"
+  },
+  {
+   "beer": "kruzhka-svezhego",
+   "dish": "strudel",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "belyi-medved",
+   "dish": "strudel",
+   "score": 64,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "strudel",
+   "score": 54,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "strudel",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "kozel",
+   "dish": "strudel",
+   "score": 68,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bremen-von-lustig",
+   "dish": "strudel",
+   "score": 56,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "bavaria",
+   "dish": "strudel",
+   "score": 63,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "wukong-ju",
+   "dish": "strudel",
+   "score": 59,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "karagandinskoe",
+   "dish": "strudel",
+   "score": 59,
+   "type": "CONTRAST"
+  },
+  {
+   "beer": "slavna-praga",
+   "dish": "strudel",
+   "score": 70,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "zhigulevskoe",
+   "dish": "strudel",
+   "score": 61,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "strudel",
+   "score": 49,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "severnoe-siyanie",
+   "dish": "strudel",
+   "score": 65,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "strudel",
+   "score": 80,
+   "type": "BRIDGE"
+  },
+  {
+   "beer": "13-region",
+   "dish": "strudel",
+   "score": 62,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "stary-melnik",
+   "dish": "strudel",
+   "score": 61,
+   "type": "COMPLEMENT"
+  },
+  {
+   "beer": "bochkovoe",
+   "dish": "strudel",
+   "score": 63,
+   "type": "COMPLEMENT"
+  }
+ ],
+ "cases": [
+  {
+   "beer": "kozel",
+   "dish": "beshbarmak",
+   "context": {},
+   "score": 93,
+   "type": "COMPLEMENT",
+   "contributions": [
+    {
+     "rule": "intensity",
+     "points": 19.9
+    },
+    {
+     "rule": "cut",
+     "points": 10.92
+    },
+    {
+     "rule": "salt",
+     "points": 4.78
+    },
+    {
+     "rule": "umami",
+     "points": 9.52
+    },
+    {
+     "rule": "bridge",
+     "points": 8.4
+    },
+    {
+     "rule": "curated",
+     "points": 16.0
+    }
+   ]
+  },
+  {
+   "beer": "efes-pilsener",
+   "dish": "kazy",
+   "context": {
+    "occasion": "hot"
+   },
+   "score": 98,
+   "type": "CONTRAST",
+   "contributions": [
+    {
+     "rule": "intensity",
+     "points": 18.52
+    },
+    {
+     "rule": "cut",
+     "points": 14.94
+    },
+    {
+     "rule": "salt",
+     "points": 8.02
+    },
+    {
+     "rule": "umami",
+     "points": 7.26
+    },
+    {
+     "rule": "roast",
+     "points": 1.29
+    },
+    {
+     "rule": "smoke",
+     "points": 1.49
+    },
+    {
+     "rule": "curated",
+     "points": 16.0
+    },
+    {
+     "rule": "occasion",
+     "points": 7.68
+    }
+   ]
+  },
+  {
+   "beer": "khmelnoy-los",
+   "dish": "bbq-ribs",
+   "context": {
+    "occasion": "evening",
+    "bitter_pref": 0.5
+   },
+   "score": 99,
+   "type": "COMPLEMENT",
+   "contributions": [
+    {
+     "rule": "intensity",
+     "points": 18.61
+    },
+    {
+     "rule": "cut",
+     "points": 11.02
+    },
+    {
+     "rule": "salt",
+     "points": 4.38
+    },
+    {
+     "rule": "sweet",
+     "points": 8.86
+    },
+    {
+     "rule": "umami",
+     "points": 10.48
+    },
+    {
+     "rule": "roast",
+     "points": 5.22
+    },
+    {
+     "rule": "smoke",
+     "points": 1.62
+    },
+    {
+     "rule": "curated",
+     "points": 16.0
+    },
+    {
+     "rule": "occasion",
+     "points": 10.18
+    },
+    {
+     "rule": "bitter_pref",
+     "points": 2.16
+    }
+   ]
+  },
+  {
+   "beer": "miller-genuine-draft",
+   "dish": "sushi",
+   "context": {
+    "occasion": "party"
+   },
+   "score": 79,
+   "type": "COMPLEMENT",
+   "contributions": [
+    {
+     "rule": "intensity",
+     "points": 18.73
+    },
+    {
+     "rule": "salt",
+     "points": 2.88
+    },
+    {
+     "rule": "sour",
+     "points": 4.34
+    },
+    {
+     "rule": "umami",
+     "points": 3.86
+    },
+    {
+     "rule": "fresh",
+     "points": 10.94
+    },
+    {
+     "rule": "curated",
+     "points": 8.0
+    },
+    {
+     "rule": "occasion",
+     "points": 6.07
+    }
+   ]
+  },
+  {
+   "beer": "legenda-777",
+   "dish": "strudel",
+   "context": {
+    "occasion": "gourmet",
+    "dna": {
+     "bitter": 0.45,
+     "body": 0.36,
+     "malt_sweet": 0.16,
+     "carbonation": 0.29,
+     "hop_aroma": 0.5,
+     "roast": 0.03,
+     "alcohol": 0.12,
+     "caramel": 0.03,
+     "fruit": 0.08,
+     "clean": 0.16
+    }
+   },
+   "score": 85,
+   "type": "BRIDGE",
+   "contributions": [
+    {
+     "rule": "intensity",
+     "points": 9.4
+    },
+    {
+     "rule": "cut",
+     "points": 4.71
+    },
+    {
+     "rule": "sweet",
+     "points": 17.31
+    },
+    {
+     "rule": "roast",
+     "points": 3.94
+    },
+    {
+     "rule": "bridge",
+     "points": 12.0
+    },
+    {
+     "rule": "curated",
+     "points": 8.0
+    },
+    {
+     "rule": "occasion",
+     "points": 6.76
+    },
+    {
+     "rule": "dna",
+     "points": -1.46
+    }
+   ]
+  },
+  {
+   "beer": "bavaria",
+   "dish": "buffalo-wings",
+   "context": {
+    "bitter_pref": -1.0
+   },
+   "score": 77,
+   "type": "CLEANSE",
+   "contributions": [
+    {
+     "rule": "intensity",
+     "points": 13.39
+    },
+    {
+     "rule": "cut",
+     "points": 9.24
+    },
+    {
+     "rule": "heat",
+     "points": 13.8
+    },
+    {
+     "rule": "salt",
+     "points": 5.27
+    },
+    {
+     "rule": "sour",
+     "points": 3.38
+    },
+    {
+     "rule": "umami",
+     "points": 4.3
+    },
+    {
+     "rule": "roast",
+     "points": 2.72
+    },
+    {
+     "rule": "bitter_pref",
+     "points": 0.16
+    }
+   ]
+  }
+ ],
+ "beer_profiles": {
+  "kruzhka-svezhego": {
+   "vector": {
+    "bitter": 0.48,
+    "body": 0.52,
+    "malt_sweet": 0.58,
+    "carbonation": 0.81,
+    "hop_aroma": 0.58,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.73
+   },
+   "intensity": 0.4,
+   "confidence": 1.0,
+   "tags": {
+    "fresh": 0.6,
+    "herbs": 0.4,
+    "pine": 0.4,
+    "grass": 0.4,
+    "bread": 0.5,
+    "grain": 0.5
+   }
+  },
+  "belyi-medved": {
+   "vector": {
+    "bitter": 0.52,
+    "body": 0.53,
+    "malt_sweet": 0.58,
+    "carbonation": 0.77,
+    "hop_aroma": 0.35,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.69
+   },
+   "intensity": 0.41,
+   "confidence": 0.8,
+   "tags": {
+    "fresh": 0.5,
+    "grain": 0.5,
+    "bread": 0.5,
+    "corn": 0.5
+   }
+  },
+  "efes-pilsener": {
+   "vector": {
+    "bitter": 0.83,
+    "body": 0.66,
+    "malt_sweet": 0.51,
+    "carbonation": 0.83,
+    "hop_aroma": 0.83,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.05,
+    "fruit": 0.17,
+    "clean": 0.71
+   },
+   "intensity": 0.52,
+   "confidence": 1.0,
+   "tags": {
+    "herbs": 0.7,
+    "pine": 0.6,
+    "grass": 0.6,
+    "floral": 0.4,
+    "bread": 0.6,
+    "grain": 0.6,
+    "fresh": 0.7
+   }
+  },
+  "miller-genuine-draft": {
+   "vector": {
+    "bitter": 0.36,
+    "body": 0.32,
+    "malt_sweet": 0.36,
+    "carbonation": 0.89,
+    "hop_aroma": 0.3,
+    "roast": 0.0,
+    "alcohol": 0.25,
+    "caramel": 0.05,
+    "fruit": 0.1,
+    "clean": 0.93
+   },
+   "intensity": 0.27,
+   "confidence": 1.0,
+   "tags": {
+    "fresh": 0.7,
+    "herbs": 0.3,
+    "grain": 0.3,
+    "bread": 0.3,
+    "corn": 0.3
+   }
+  },
+  "kozel": {
+   "vector": {
+    "bitter": 0.75,
+    "body": 0.64,
+    "malt_sweet": 0.74,
+    "carbonation": 0.6,
+    "hop_aroma": 0.73,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.38,
+    "fruit": 0.1,
+    "clean": 0.52
+   },
+   "intensity": 0.52,
+   "confidence": 1.0,
+   "tags": {
+    "herbs": 0.5,
+    "pine": 0.5,
+    "grass": 0.5,
+    "bread": 0.7,
+    "grain": 0.7,
+    "caramel": 0.3,
+    "toffee": 0.3,
+    "honey": 0.3
+   }
+  },
+  "bremen-von-lustig": {
+   "vector": {
+    "bitter": 0.82,
+    "body": 0.54,
+    "malt_sweet": 0.54,
+    "carbonation": 0.88,
+    "hop_aroma": 0.58,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.5
+   },
+   "intensity": 0.49,
+   "confidence": 0.8,
+   "tags": {
+    "fizz": 0.7,
+    "fresh": 0.7,
+    "bread": 0.4,
+    "grain": 0.4,
+    "herbs": 0.6,
+    "grass": 0.6
+   }
+  },
+  "bavaria": {
+   "vector": {
+    "bitter": 0.49,
+    "body": 0.5,
+    "malt_sweet": 0.54,
+    "carbonation": 0.77,
+    "hop_aroma": 0.35,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.66
+   },
+   "intensity": 0.39,
+   "confidence": 0.6,
+   "tags": {
+    "fresh": 0.5,
+    "bread": 0.4,
+    "grain": 0.4
+   }
+  },
+  "wukong-ju": {
+   "vector": {
+    "bitter": 0.32,
+    "body": 0.25,
+    "malt_sweet": 0.55,
+    "carbonation": 0.78,
+    "hop_aroma": 0.15,
+    "roast": 0.0,
+    "alcohol": 0.25,
+    "caramel": 0.0,
+    "fruit": 0.1,
+    "clean": 0.93
+   },
+   "intensity": 0.26,
+   "confidence": 0.8,
+   "tags": {
+    "fresh": 0.4,
+    "rice": 0.5,
+    "honey": 0.4,
+    "sweet": 0.4
+   }
+  },
+  "karagandinskoe": {
+   "vector": {
+    "bitter": 0.64,
+    "body": 0.47,
+    "malt_sweet": 0.47,
+    "carbonation": 0.77,
+    "hop_aroma": 0.35,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.66
+   },
+   "intensity": 0.42,
+   "confidence": 0.6,
+   "tags": {
+    "fresh": 0.4,
+    "grain": 0.4,
+    "bread": 0.4,
+    "corn": 0.4
+   }
+  },
+  "slavna-praga": {
+   "vector": {
+    "bitter": 0.5,
+    "body": 0.64,
+    "malt_sweet": 0.73,
+    "carbonation": 0.6,
+    "hop_aroma": 0.76,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.25,
+    "fruit": 0.15,
+    "clean": 0.4
+   },
+   "intensity": 0.46,
+   "confidence": 1.0,
+   "tags": {
+    "herbs": 0.5,
+    "pine": 0.5,
+    "grass": 0.5,
+    "floral": 0.3,
+    "bread": 0.6,
+    "grain": 0.6,
+    "honey": 0.4,
+    "caramel": 0.4
+   }
+  },
+  "zhigulevskoe": {
+   "vector": {
+    "bitter": 0.61,
+    "body": 0.49,
+    "malt_sweet": 0.49,
+    "carbonation": 0.75,
+    "hop_aroma": 0.35,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.66
+   },
+   "intensity": 0.42,
+   "confidence": 0.6,
+   "tags": {
+    "fresh": 0.4,
+    "grain": 0.5,
+    "bread": 0.5,
+    "corn": 0.5
+   }
+  },
+  "khmelnoy-los": {
+   "vector": {
+    "bitter": 0.77,
+    "body": 1.0,
+    "malt_sweet": 0.69,
+    "carbonation": 0.5,
+    "hop_aroma": 0.3,
+    "roast": 0.1,
+    "alcohol": 0.87,
+    "caramel": 0.35,
+    "fruit": 0.15,
+    "clean": 0.2
+   },
+   "intensity": 0.75,
+   "confidence": 0.8,
+   "tags": {
+    "warmth": 0.6,
+    "bread": 0.6,
+    "grain": 0.6,
+    "herbs": 0.6
+   }
+  },
+  "severnoe-siyanie": {
+   "vector": {
+    "bitter": 0.4,
+    "body": 0.52,
+    "malt_sweet": 0.58,
+    "carbonation": 0.83,
+    "hop_aroma": 0.45,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.73
+   },
+   "intensity": 0.38,
+   "confidence": 0.8,
+   "tags": {
+    "fresh": 0.6,
+    "herbs": 0.4,
+    "bread": 0.5,
+    "grain": 0.5
+   }
+  },
+  "legenda-777": {
+   "vector": {
+    "bitter": 0.62,
+    "body": 0.64,
+    "malt_sweet": 0.76,
+    "carbonation": 0.55,
+    "hop_aroma": 0.55,
+    "roast": 0.2,
+    "alcohol": 0.35,
+    "caramel": 0.82,
+    "fruit": 0.1,
+    "clean": 0.3
+   },
+   "intensity": 0.52,
+   "confidence": 1.0,
+   "tags": {
+    "herbs": 0.4,
+    "pine": 0.4,
+    "grass": 0.4,
+    "caramel": 0.5,
+    "toffee": 0.5,
+    "honey": 0.5,
+    "bread": 0.5,
+    "grain": 0.5
+   }
+  },
+  "13-region": {
+   "vector": {
+    "bitter": 0.52,
+    "body": 0.47,
+    "malt_sweet": 0.47,
+    "carbonation": 0.8,
+    "hop_aroma": 0.35,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.7
+   },
+   "intensity": 0.39,
+   "confidence": 0.6,
+   "tags": {
+    "fresh": 0.6,
+    "grain": 0.4,
+    "bread": 0.4,
+    "corn": 0.4
+   }
+  },
+  "stary-melnik": {
+   "vector": {
+    "bitter": 0.58,
+    "body": 0.59,
+    "malt_sweet": 0.55,
+    "carbonation": 0.65,
+    "hop_aroma": 0.84,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.71
+   },
+   "intensity": 0.44,
+   "confidence": 1.0,
+   "tags": {
+    "herbs": 0.7,
+    "pine": 0.7,
+    "grass": 0.7,
+    "bread": 0.5
+   }
+  },
+  "bochkovoe": {
+   "vector": {
+    "bitter": 0.54,
+    "body": 0.5,
+    "malt_sweet": 0.54,
+    "carbonation": 0.74,
+    "hop_aroma": 0.55,
+    "roast": 0.05,
+    "alcohol": 0.3,
+    "caramel": 0.1,
+    "fruit": 0.1,
+    "clean": 0.66
+   },
+   "intensity": 0.41,
+   "confidence": 0.8,
+   "tags": {
+    "fresh": 0.5,
+    "herbs": 0.5,
+    "bread": 0.4,
+    "grain": 0.4,
+    "grass": 0.5
+   }
+  }
+ },
+ "dna_case": {
+  "vector": {
+   "bitter": 0.45,
+   "body": 0.36,
+   "malt_sweet": 0.16,
+   "carbonation": 0.29,
+   "hop_aroma": 0.5,
+   "roast": 0.03,
+   "alcohol": 0.12,
+   "caramel": 0.03,
+   "fruit": 0.08,
+   "clean": 0.16
+  },
+  "archetype": "hop-explorer"
+ }
+}

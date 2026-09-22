@@ -1,0 +1,5829 @@
+{
+ "_comment": "Эталон паритета импорта меню. Генерируется: cd frontend && node scripts/menu-import-test.mjs --update. Не править руками.",
+ "config": {
+  "limits": {
+   "max_bytes": 2097152,
+   "max_chars": 2097152,
+   "max_rows": 2000,
+   "max_price_cents": 999999900,
+   "max_name": 200,
+   "max_category": 80,
+   "max_volume": 40
+  },
+  "thresholds": {
+   "match_min": 85,
+   "gap_min": 10,
+   "candidate_min": 60,
+   "token_sim_min": 70,
+   "soft_cap": 70,
+   "synonym_weight": 90
+  },
+  "errors": {
+   "too_large": "Файл больше 2 МБ. Выгрузите только меню (без остатков и тех. карт) или разделите файл.",
+   "empty": "Файл пустой.",
+   "bad_json": "Не удалось прочитать JSON: файл повреждён или это не JSON.",
+   "unknown_format": "Не узнали формат. Поддерживаются JSON номенклатуры iiko, JSON Poster (menu.getProducts) и CSV с колонкой названия.",
+   "no_name_column": "В CSV не нашли колонку с названием позиции. Назовите её «Название» или «Наименование».",
+   "too_many_rows": "В файле больше 2000 позиций. Разделите выгрузку на части.",
+   "no_rows": "В файле нет позиций меню."
+  },
+  "beer_aliases": {
+   "belyi-medved": [
+    [
+     "бел медведь",
+     100
+    ]
+   ],
+   "efes-pilsener": [
+    [
+     "efes pilsner",
+     100
+    ],
+    [
+     "эфес пилзнер",
+     100
+    ],
+    [
+     "эфес пильзнер",
+     100
+    ],
+    [
+     "efes pils",
+     100
+    ],
+    [
+     "efes",
+     90
+    ]
+   ],
+   "miller-genuine-draft": [
+    [
+     "миллер дженьюин",
+     100
+    ],
+    [
+     "миллер генуин",
+     100
+    ],
+    [
+     "miller",
+     90
+    ],
+    [
+     "mgd",
+     90
+    ]
+   ],
+   "kozel": [
+    [
+     "kozel",
+     100
+    ]
+   ],
+   "bremen-von-lustig": [
+    [
+     "бремен фон лустиг",
+     100
+    ],
+    [
+     "bremen",
+     90
+    ]
+   ],
+   "wukong-ju": [
+    [
+     "wukong",
+     100
+    ]
+   ],
+   "slavna-praga": [
+    [
+     "славна прага",
+     100
+    ],
+    [
+     "praga",
+     90
+    ]
+   ],
+   "legenda-777": [
+    [
+     "legenda",
+     90
+    ]
+   ],
+   "13-region": [
+    [
+     "13й регион",
+     100
+    ],
+    [
+     "тринадцатый регион",
+     100
+    ]
+   ],
+   "stary-melnik": [
+    [
+     "старый мельник",
+     100
+    ]
+   ]
+  },
+  "stop_words": [
+   "с",
+   "со",
+   "из",
+   "и",
+   "на",
+   "в",
+   "во",
+   "по",
+   "к",
+   "для",
+   "от",
+   "под",
+   "а",
+   "ля",
+   "шт",
+   "штук",
+   "порция",
+   "порц",
+   "г",
+   "гр",
+   "кг",
+   "мл",
+   "л",
+   "the",
+   "with",
+   "and",
+   "of",
+   "пиво",
+   "пиву",
+   "beer",
+   "разливное",
+   "разливной",
+   "розлив",
+   "разлив",
+   "draft",
+   "draught",
+   "бутылка",
+   "бутылочное",
+   "бут",
+   "банка",
+   "баночное",
+   "жб",
+   "стб",
+   "стекло",
+   "светлое",
+   "светлый",
+   "lager",
+   "лагер",
+   "кега",
+   "keg",
+   "tap",
+   "new",
+   "новинка",
+   "хит"
+  ],
+  "variant_words": [
+   "темное",
+   "темный",
+   "темная",
+   "dark",
+   "черный",
+   "черное",
+   "cerny",
+   "безалкогольное",
+   "безалкогольный",
+   "nonalcoholic",
+   "нефильтрованное",
+   "нефильтрованный",
+   "unfiltered",
+   "пшеничное",
+   "пшеничный",
+   "wheat",
+   "weiss",
+   "weizen",
+   "radler",
+   "радлер",
+   "stout",
+   "стаут",
+   "porter",
+   "портер",
+   "ipa",
+   "ale",
+   "эль",
+   "сидр",
+   "cider"
+  ],
+  "drink_categories": [
+   "коктейли",
+   "коктейль",
+   "cocktails",
+   "cocktail",
+   "вино",
+   "вина",
+   "wine",
+   "wines",
+   "виски",
+   "whisky",
+   "whiskey",
+   "водка",
+   "vodka",
+   "ром",
+   "rum",
+   "джин",
+   "gin",
+   "текила",
+   "tequila",
+   "коньяк",
+   "бренди",
+   "ликеры",
+   "ликер",
+   "настойки",
+   "настойка",
+   "шоты",
+   "шот",
+   "shots",
+   "напитки",
+   "напиток",
+   "drinks",
+   "beverages",
+   "чай",
+   "кофе",
+   "tea",
+   "coffee",
+   "лимонады",
+   "лимонад",
+   "соки",
+   "сок",
+   "смузи",
+   "кальян",
+   "кальяны",
+   "hookah",
+   "алкоголь",
+   "бар",
+   "bar"
+  ],
+  "pre_fold": [
+   [
+    "б/а",
+    " безалкогольное "
+   ],
+   [
+    "ст/б",
+    " стб "
+   ],
+   [
+    "с/б",
+    " стб "
+   ],
+   [
+    "ж/б",
+    " жб "
+   ]
+  ],
+  "fold_map": {
+   "ё": "е",
+   "ә": "а",
+   "ғ": "г",
+   "қ": "к",
+   "ң": "н",
+   "ө": "о",
+   "ұ": "у",
+   "ү": "у",
+   "һ": "х",
+   "і": "и",
+   "à": "a",
+   "á": "a",
+   "â": "a",
+   "ã": "a",
+   "ä": "a",
+   "å": "a",
+   "ā": "a",
+   "ç": "c",
+   "ć": "c",
+   "č": "c",
+   "ď": "d",
+   "đ": "d",
+   "è": "e",
+   "é": "e",
+   "ê": "e",
+   "ë": "e",
+   "ē": "e",
+   "ě": "e",
+   "ę": "e",
+   "ì": "i",
+   "í": "i",
+   "î": "i",
+   "ï": "i",
+   "ī": "i",
+   "ł": "l",
+   "ľ": "l",
+   "ñ": "n",
+   "ń": "n",
+   "ň": "n",
+   "ò": "o",
+   "ó": "o",
+   "ô": "o",
+   "õ": "o",
+   "ö": "o",
+   "ø": "o",
+   "ō": "o",
+   "ř": "r",
+   "ŕ": "r",
+   "ś": "s",
+   "š": "s",
+   "ş": "s",
+   "ť": "t",
+   "ţ": "t",
+   "ù": "u",
+   "ú": "u",
+   "û": "u",
+   "ü": "u",
+   "ū": "u",
+   "ů": "u",
+   "ý": "y",
+   "ÿ": "y",
+   "ź": "z",
+   "ž": "z",
+   "ż": "z",
+   "ß": "ss",
+   "æ": "ae",
+   "œ": "oe"
+  },
+  "translit": {
+   "а": "a",
+   "б": "b",
+   "в": "v",
+   "г": "g",
+   "д": "d",
+   "е": "e",
+   "ж": "zh",
+   "з": "z",
+   "и": "i",
+   "й": "i",
+   "к": "k",
+   "л": "l",
+   "м": "m",
+   "н": "n",
+   "о": "o",
+   "п": "p",
+   "р": "r",
+   "с": "s",
+   "т": "t",
+   "у": "u",
+   "ф": "f",
+   "х": "h",
+   "ц": "c",
+   "ч": "ch",
+   "ш": "sh",
+   "щ": "sh",
+   "ъ": "",
+   "ы": "i",
+   "ь": "",
+   "э": "e",
+   "ю": "iu",
+   "я": "ia"
+  },
+  "latin_fold": [
+   [
+    "kh",
+    "h"
+   ],
+   [
+    "ph",
+    "f"
+   ],
+   [
+    "ck",
+    "k"
+   ],
+   [
+    "ts",
+    "c"
+   ],
+   [
+    "w",
+    "v"
+   ],
+   [
+    "y",
+    "i"
+   ],
+   [
+    "x",
+    "ks"
+   ],
+   [
+    "q",
+    "k"
+   ]
+  ],
+  "header": {
+   "category": [
+    "категор",
+    "групп",
+    "раздел",
+    "category",
+    "group",
+    "section"
+   ],
+   "price": [
+    "цена",
+    "стоимость",
+    "прайс",
+    "price"
+   ],
+   "price_not": [
+    "себестоим",
+    "закуп",
+    "cost"
+   ],
+   "unit": [
+    "ед",
+    "ед изм",
+    "ед измерения",
+    "единица",
+    "единица измерения",
+    "unit",
+    "units",
+    "measure",
+    "measure unit"
+   ],
+   "volume": [
+    "объем",
+    "обьем",
+    "выход",
+    "вес",
+    "масса",
+    "литраж",
+    "порция",
+    "volume",
+    "weight",
+    "size",
+    "portion"
+   ],
+   "name": [
+    "название",
+    "наименование",
+    "блюдо",
+    "товар",
+    "позиция",
+    "продукт",
+    "номенклатура",
+    "тех карта",
+    "техкарта",
+    "name",
+    "title",
+    "product",
+    "item",
+    "dish",
+    "product name",
+    "item name"
+   ],
+   "name_prefix": [
+    "наименование",
+    "название",
+    "name",
+    "product name",
+    "item name"
+   ]
+  }
+ },
+ "fixtures": {
+  "bar_menu_tab.csv": {
+   "encoding": "utf-8",
+   "result": {
+    "format": "csv",
+    "delimiter": "\t",
+    "total": 39,
+    "skipped": 1,
+    "matched": 30,
+    "ambiguous": 2,
+    "unmatched": 7,
+    "warnings": [],
+    "rows": [
+     {
+      "index": 0,
+      "line": 2,
+      "name": "Efes Pilsener",
+      "title": "Efes Pilsener",
+      "category": "Draft beer",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 1,
+      "line": 3,
+      "name": "Efes Pilsener",
+      "title": "Efes Pilsener",
+      "category": "Draft beer",
+      "price": 1100,
+      "volume": "0.3 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 2,
+      "line": 4,
+      "name": "Beliy Medved",
+      "title": "Beliy Medved",
+      "category": "Bottled beer",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "belyi-medved",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "belyi-medved",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 3,
+      "line": 5,
+      "name": "Miller Genuine Draft",
+      "title": "Miller Genuine Draft",
+      "category": "Bottled beer",
+      "price": 1700,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "miller-genuine-draft",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "miller-genuine-draft",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 4,
+      "line": 6,
+      "name": "Kozel Dark",
+      "title": "Kozel Dark",
+      "category": "Bottled beer",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 5,
+      "line": 7,
+      "name": "Velkopopovicky Kozel",
+      "title": "Velkopopovicky Kozel",
+      "category": "Bottled beer",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kozel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 6,
+      "line": 8,
+      "name": "Khmelnoy Los",
+      "title": "Khmelnoy Los",
+      "category": "Cans",
+      "price": 1000,
+      "volume": "0.45 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "khmelnoy-los",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "khmelnoy-los",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 7,
+      "line": 9,
+      "name": "Zhigulevskoe",
+      "title": "Zhigulevskoe",
+      "category": "Bottled beer",
+      "price": 850,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "zhigulevskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "zhigulevskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 8,
+      "line": 10,
+      "name": "Legenda 777",
+      "title": "Legenda 777",
+      "category": "Draft beer",
+      "price": 1700,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "legenda-777",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "legenda-777",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 9,
+      "line": 11,
+      "name": "13 region",
+      "title": "13 region",
+      "category": "Draft beer",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "13-region",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "13-region",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 10,
+      "line": 12,
+      "name": "Severnoe Siyanie",
+      "title": "Severnoe Siyanie",
+      "category": "Draft beer",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "severnoe-siyanie",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "severnoe-siyanie",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 11,
+      "line": 13,
+      "name": "Bochkovoe",
+      "title": "Bochkovoe",
+      "category": "Draft beer",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bochkovoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bochkovoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 12,
+      "line": 14,
+      "name": "Stary Melnik iz bochonka",
+      "title": "Stary Melnik iz bochonka",
+      "category": "Draft beer",
+      "price": 1750,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "stary-melnik",
+      "confidence": 98,
+      "candidates": [
+       {
+        "slug": "stary-melnik",
+        "confidence": 98
+       }
+      ]
+     },
+     {
+      "index": 13,
+      "line": 15,
+      "name": "Bavaria",
+      "title": "Bavaria",
+      "category": "Bottled beer",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bavaria",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bavaria",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 14,
+      "line": 16,
+      "name": "Karagandinskoe",
+      "title": "Karagandinskoe",
+      "category": "Bottled beer",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "karagandinskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "karagandinskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 15,
+      "line": 17,
+      "name": "Kruzhka Svezhego",
+      "title": "Kruzhka Svezhego",
+      "category": "Bottled beer",
+      "price": 950,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kruzhka-svezhego",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kruzhka-svezhego",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 16,
+      "line": 18,
+      "name": "Bremen von Lustig",
+      "title": "Bremen von Lustig",
+      "category": "Bottled beer",
+      "price": 1300,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bremen-von-lustig",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bremen-von-lustig",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 17,
+      "line": 19,
+      "name": "Wukong Ju",
+      "title": "Wukong Ju",
+      "category": "Bottled beer",
+      "price": 1800,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "wukong-ju",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "wukong-ju",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 18,
+      "line": 20,
+      "name": "Slavna Praga",
+      "title": "Slavna Praga",
+      "category": "Bottled beer",
+      "price": 1100,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "slavna-praga",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "slavna-praga",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 19,
+      "line": 21,
+      "name": "Corona Extra",
+      "title": "Corona Extra",
+      "category": "Bottled beer",
+      "price": 2500,
+      "volume": "0.33 л",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 20,
+      "line": 22,
+      "name": "Shashlik (lamb)",
+      "title": "Shashlik (lamb)",
+      "category": "Grill",
+      "price": 3900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 21,
+      "line": 23,
+      "name": "Ribeye steak",
+      "title": "Ribeye steak",
+      "category": "Grill",
+      "price": 8900,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 81,
+      "candidates": [
+       {
+        "slug": "steak",
+        "confidence": 81
+       }
+      ]
+     },
+     {
+      "index": 22,
+      "line": 24,
+      "name": "Buffalo wings",
+      "title": "Buffalo wings",
+      "category": "Grill",
+      "price": 2600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "buffalo-wings",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "buffalo-wings",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 23,
+      "line": 25,
+      "name": "BBQ ribs",
+      "title": "BBQ ribs",
+      "category": "Grill",
+      "price": 5200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "bbq-ribs",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "bbq-ribs",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 24,
+      "line": 26,
+      "name": "Bratwurst",
+      "title": "Bratwurst",
+      "category": "Grill",
+      "price": 3400,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "bratwurst",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bratwurst",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 25,
+      "line": 27,
+      "name": "Burger classic",
+      "title": "Burger classic",
+      "category": "Burgers",
+      "price": 3600,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "burger",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "burger",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 26,
+      "line": 28,
+      "name": "Mac and cheese",
+      "title": "Mac and cheese",
+      "category": "Mains",
+      "price": 2400,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "mac-and-cheese",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "mac-and-cheese",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 27,
+      "line": 29,
+      "name": "Nachos",
+      "title": "Nachos",
+      "category": "Snacks",
+      "price": 2200,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "nachos",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "nachos",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 28,
+      "line": 30,
+      "name": "Pretzel",
+      "title": "Pretzel",
+      "category": "Snacks",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 29,
+      "line": 31,
+      "name": "Beshbarmak",
+      "title": "Beshbarmak",
+      "category": "Kazakh",
+      "price": 4200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "beshbarmak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "beshbarmak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 30,
+      "line": 32,
+      "name": "Plov",
+      "title": "Plov",
+      "category": "Kazakh",
+      "price": 2800,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "plov",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "plov",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 31,
+      "line": 33,
+      "name": "Manty (5 pcs)",
+      "title": "Manty (5 pcs)",
+      "category": "Kazakh",
+      "price": 2400,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "manty",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "manty",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 32,
+      "line": 34,
+      "name": "Pizza Margherita",
+      "title": "Pizza Margherita",
+      "category": "Pizza",
+      "price": 3200,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pizza-margherita",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 33,
+      "line": 35,
+      "name": "Tiramisu",
+      "title": "Tiramisu",
+      "category": "Desserts",
+      "price": 1900,
+      "volume": "120 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "tiramisu",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "tiramisu",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 34,
+      "line": 36,
+      "name": "Apple pie",
+      "title": "Apple pie",
+      "category": "Desserts",
+      "price": 1500,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 35,
+      "line": 37,
+      "name": "Caesar salad",
+      "title": "Caesar salad",
+      "category": "Salads",
+      "price": 2900,
+      "volume": "250 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 36,
+      "line": 38,
+      "name": "French fries",
+      "title": "French fries",
+      "category": "Snacks",
+      "price": 0,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 37,
+      "line": 39,
+      "name": "Garlic bread",
+      "title": "Garlic bread",
+      "category": "Snacks",
+      "price": 0,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 38,
+      "line": 41,
+      "name": "Sample data — Flavor Tree demo (not a real venue)",
+      "title": "Sample data — Flavor Tree demo (not a real venue)",
+      "category": "",
+      "price": 0,
+      "volume": "",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     }
+    ]
+   }
+  },
+  "iiko_external_menu.json": {
+   "encoding": "utf-8",
+   "result": {
+    "format": "iiko-menu",
+    "delimiter": "",
+    "total": 6,
+    "skipped": 2,
+    "matched": 6,
+    "ambiguous": 0,
+    "unmatched": 0,
+    "warnings": [],
+    "rows": [
+     {
+      "index": 0,
+      "line": 1,
+      "name": "Северное Сияние",
+      "title": "Северное Сияние",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "severnoe-siyanie",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "severnoe-siyanie",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 1,
+      "line": 2,
+      "name": "Легенда 777",
+      "title": "Легенда 777",
+      "category": "Пиво разливное",
+      "price": 1700,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "legenda-777",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "legenda-777",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 2,
+      "line": 3,
+      "name": "Бочковое",
+      "title": "Бочковое",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bochkovoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bochkovoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 3,
+      "line": 4,
+      "name": "Kozel",
+      "title": "Kozel",
+      "category": "Пиво разливное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kozel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 4,
+      "line": 5,
+      "name": "Шашлык из баранины",
+      "title": "Шашлык из баранины",
+      "category": "Гриль",
+      "price": 3900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 5,
+      "line": 6,
+      "name": "Крылышки Баффало",
+      "title": "Крылышки Баффало",
+      "category": "Гриль",
+      "price": 2600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "buffalo-wings",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "buffalo-wings",
+        "confidence": 90
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "iiko_nomenclature.json": {
+   "encoding": "utf-8",
+   "result": {
+    "format": "iiko",
+    "delimiter": "",
+    "total": 49,
+    "skipped": 5,
+    "matched": 36,
+    "ambiguous": 5,
+    "unmatched": 8,
+    "warnings": [],
+    "rows": [
+     {
+      "index": 0,
+      "line": 1,
+      "name": "Северное Сияние",
+      "title": "Северное Сияние",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "severnoe-siyanie",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "severnoe-siyanie",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 1,
+      "line": 2,
+      "name": "Легенда 777",
+      "title": "Легенда 777",
+      "category": "Пиво разливное",
+      "price": 1700,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "legenda-777",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "legenda-777",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 2,
+      "line": 3,
+      "name": "13 регион",
+      "title": "13 регион",
+      "category": "Пиво разливное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "13-region",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "13-region",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 3,
+      "line": 4,
+      "name": "Бочковое",
+      "title": "Бочковое",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bochkovoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bochkovoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 4,
+      "line": 5,
+      "name": "Старый мельник из бочонка",
+      "title": "Старый мельник из бочонка",
+      "category": "Пиво разливное",
+      "price": 1750,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "stary-melnik",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "stary-melnik",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 5,
+      "line": 6,
+      "name": "Kozel Světlý разливное",
+      "title": "Kozel Světlý разливное",
+      "category": "Пиво разливное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kozel",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 6,
+      "line": 7,
+      "name": "Efes Pilsener",
+      "title": "Efes Pilsener",
+      "category": "Пиво бутылочное и банка",
+      "price": 1400,
+      "volume": "0.45 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 7,
+      "line": 8,
+      "name": "Efes Pilsener 0,33",
+      "title": "Efes Pilsener",
+      "category": "Пиво бутылочное и банка",
+      "price": 1200,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 8,
+      "line": 9,
+      "name": "Kozel Dark",
+      "title": "Kozel Dark",
+      "category": "Пиво бутылочное и банка",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 9,
+      "line": 11,
+      "name": "Miller Genuine Draft",
+      "title": "Miller Genuine Draft",
+      "category": "Пиво бутылочное и банка",
+      "price": 1700,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "miller-genuine-draft",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "miller-genuine-draft",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 10,
+      "line": 12,
+      "name": "Bavaria Premium",
+      "title": "Bavaria Premium",
+      "category": "Пиво бутылочное и банка",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bavaria",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "bavaria",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 11,
+      "line": 13,
+      "name": "Белый Медведь Светлое",
+      "title": "Белый Медведь Светлое",
+      "category": "Пиво бутылочное и банка",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "belyi-medved",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "belyi-medved",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 12,
+      "line": 14,
+      "name": "Хмельной Лось ж/б",
+      "title": "Хмельной Лось ж/б",
+      "category": "Пиво бутылочное и банка",
+      "price": 1000,
+      "volume": "0.45 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "khmelnoy-los",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "khmelnoy-los",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 13,
+      "line": 15,
+      "name": "Guinness Draught",
+      "title": "Guinness Draught",
+      "category": "Пиво бутылочное и банка",
+      "price": 3200,
+      "volume": "440 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 14,
+      "line": 16,
+      "name": "Hoegaarden",
+      "title": "Hoegaarden",
+      "category": "Пиво бутылочное и банка",
+      "price": 2900,
+      "volume": "330 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 15,
+      "line": 17,
+      "name": "Жигулёвское",
+      "title": "Жигулёвское",
+      "category": "Пиво бутылочное и банка",
+      "price": 850,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "zhigulevskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "zhigulevskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 16,
+      "line": 18,
+      "name": "Карагандинское",
+      "title": "Карагандинское",
+      "category": "Пиво бутылочное и банка",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "karagandinskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "karagandinskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 17,
+      "line": 19,
+      "name": "Кружка Свежего",
+      "title": "Кружка Свежего",
+      "category": "Пиво бутылочное и банка",
+      "price": 950,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kruzhka-svezhego",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kruzhka-svezhego",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 18,
+      "line": 20,
+      "name": "Bremen von Lustig",
+      "title": "Bremen von Lustig",
+      "category": "Пиво бутылочное и банка",
+      "price": 1300,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bremen-von-lustig",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bremen-von-lustig",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 19,
+      "line": 21,
+      "name": "Wùkōng Jū (悟空居)",
+      "title": "Wùkōng Jū (悟空居)",
+      "category": "Пиво бутылочное и банка",
+      "price": 1800,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "wukong-ju",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "wukong-ju",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 20,
+      "line": 22,
+      "name": "Slavna ПРАГА",
+      "title": "Slavna ПРАГА",
+      "category": "Пиво бутылочное и банка",
+      "price": 1100,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "slavna-praga",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "slavna-praga",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 21,
+      "line": 23,
+      "name": "Шашлык из баранины",
+      "title": "Шашлык из баранины",
+      "category": "Гриль",
+      "price": 3900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 22,
+      "line": 24,
+      "name": "Шашлык из курицы",
+      "title": "Шашлык из курицы",
+      "category": "Гриль",
+      "price": 2900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 23,
+      "line": 25,
+      "name": "Люля-кебаб",
+      "title": "Люля-кебаб",
+      "category": "Гриль",
+      "price": 3200,
+      "volume": "200 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 81,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 81
+       }
+      ]
+     },
+     {
+      "index": 24,
+      "line": 26,
+      "name": "Куриные крылышки BBQ",
+      "title": "Куриные крылышки BBQ",
+      "category": "Гриль",
+      "price": 2600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 83,
+      "candidates": [
+       {
+        "slug": "buffalo-wings",
+        "confidence": 83
+       },
+       {
+        "slug": "bbq-ribs",
+        "confidence": 77
+       }
+      ]
+     },
+     {
+      "index": 25,
+      "line": 27,
+      "name": "Стейк Рибай",
+      "title": "Стейк Рибай",
+      "category": "Гриль",
+      "price": 8900,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "steak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "steak",
+        "confidence": 100
+       },
+       {
+        "slug": "sushi",
+        "confidence": 66
+       }
+      ]
+     },
+     {
+      "index": 26,
+      "line": 28,
+      "name": "Братвурст с квашеной капустой",
+      "title": "Братвурст с квашеной капустой",
+      "category": "Гриль",
+      "price": 3400,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "bratwurst",
+      "confidence": 89,
+      "candidates": [
+       {
+        "slug": "bratwurst",
+        "confidence": 89
+       },
+       {
+        "slug": "sauerkraut",
+        "confidence": 64
+       }
+      ]
+     },
+     {
+      "index": 27,
+      "line": 29,
+      "name": "Начос с сыром и халапеньо",
+      "title": "Начос с сыром и халапеньо",
+      "category": "Закуски к пиву",
+      "price": 2200,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "nachos",
+      "confidence": 96,
+      "candidates": [
+       {
+        "slug": "nachos",
+        "confidence": 96
+       }
+      ]
+     },
+     {
+      "index": 28,
+      "line": 30,
+      "name": "Брецель с горчицей",
+      "title": "Брецель с горчицей",
+      "category": "Закуски к пиву",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pretzel",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "pretzel",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 29,
+      "line": 31,
+      "name": "Сырные палочки",
+      "title": "Сырные палочки",
+      "category": "Закуски к пиву",
+      "price": 1800,
+      "volume": "200 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 30,
+      "line": 32,
+      "name": "Картофель фри",
+      "title": "Картофель фри",
+      "category": "Закуски к пиву",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 31,
+      "line": 33,
+      "name": "Мясное ассорти к пиву",
+      "title": "Мясное ассорти к пиву",
+      "category": "Закуски к пиву",
+      "price": 4500,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "zheti-as",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "zheti-as",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 32,
+      "line": 34,
+      "name": "Бургер с говядиной",
+      "title": "Бургер с говядиной",
+      "category": "Горячее",
+      "price": 3600,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "burger",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "burger",
+        "confidence": 93
+       },
+       {
+        "slug": "steak",
+        "confidence": 64
+       }
+      ]
+     },
+     {
+      "index": 33,
+      "line": 35,
+      "name": "Цезарь с курицей",
+      "title": "Цезарь с курицей",
+      "category": "Горячее",
+      "price": 2900,
+      "volume": "250 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 34,
+      "line": 36,
+      "name": "Паста Карбонара",
+      "title": "Паста Карбонара",
+      "category": "Горячее",
+      "price": 2700,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "carbonara",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "carbonara",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 35,
+      "line": 37,
+      "name": "Пицца Пепперони 30 см",
+      "title": "Пицца Пепперони 30 см",
+      "category": "Горячее",
+      "price": 3800,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 80,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 80
+       }
+      ]
+     },
+     {
+      "index": 36,
+      "line": 38,
+      "name": "Бешбармак",
+      "title": "Бешбармак",
+      "category": "Казахская кухня",
+      "price": 4200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "beshbarmak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "beshbarmak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 37,
+      "line": 39,
+      "name": "Манты (5 шт)",
+      "title": "Манты (5 шт)",
+      "category": "Казахская кухня",
+      "price": 2400,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "manty",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "manty",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 38,
+      "line": 40,
+      "name": "Казы",
+      "title": "Казы",
+      "category": "Казахская кухня",
+      "price": 3800,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kazy",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kazy",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 39,
+      "line": 41,
+      "name": "Баурсаки",
+      "title": "Баурсаки",
+      "category": "Казахская кухня",
+      "price": 900,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "baursaki",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "baursaki",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 40,
+      "line": 42,
+      "name": "Самса с говядиной",
+      "title": "Самса с говядиной",
+      "category": "Казахская кухня",
+      "price": 700,
+      "volume": "120 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "samsa",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "samsa",
+        "confidence": 93
+       },
+       {
+        "slug": "steak",
+        "confidence": 64
+       }
+      ]
+     },
+     {
+      "index": 41,
+      "line": 43,
+      "name": "Куырдак",
+      "title": "Куырдак",
+      "category": "Казахская кухня",
+      "price": 3600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kuyrdak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kuyrdak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 42,
+      "line": 44,
+      "name": "Плов по-узбекски",
+      "title": "Плов по-узбекски",
+      "category": "Казахская кухня",
+      "price": 2800,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "plov",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "plov",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 43,
+      "line": 45,
+      "name": "Тирамису",
+      "title": "Тирамису",
+      "category": "Десерты",
+      "price": 1900,
+      "volume": "120 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "tiramisu",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "tiramisu",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 44,
+      "line": 46,
+      "name": "Штрудель яблочный",
+      "title": "Штрудель яблочный",
+      "category": "Десерты",
+      "price": 1700,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "strudel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "strudel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 45,
+      "line": 47,
+      "name": "Чизкейк Нью-Йорк",
+      "title": "Чизкейк Нью-Йорк",
+      "category": "Десерты",
+      "price": 1900,
+      "volume": "130 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 46,
+      "line": 48,
+      "name": "Кока-кола 0,5",
+      "title": "Кока-кола 0,5",
+      "category": "Напитки б/а",
+      "price": 700,
+      "volume": "500 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 47,
+      "line": 49,
+      "name": "Сок яблочный 0,2",
+      "title": "Сок яблочный 0,2",
+      "category": "Напитки б/а",
+      "price": 600,
+      "volume": "200 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 48,
+      "line": 50,
+      "name": "Айран",
+      "title": "Айран",
+      "category": "Напитки б/а",
+      "price": 500,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "airan",
+        "confidence": 70
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "iikooffice_pricelist_cp1251.csv": {
+   "encoding": "windows-1251",
+   "result": {
+    "format": "csv",
+    "delimiter": ";",
+    "total": 49,
+    "skipped": 1,
+    "matched": 40,
+    "ambiguous": 4,
+    "unmatched": 5,
+    "warnings": [],
+    "rows": [
+     {
+      "index": 0,
+      "line": 6,
+      "name": "Северное Сияние",
+      "title": "Северное Сияние",
+      "category": "ПИВО РАЗЛИВНОЕ",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "severnoe-siyanie",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "severnoe-siyanie",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 1,
+      "line": 7,
+      "name": "Легенда 777",
+      "title": "Легенда 777",
+      "category": "ПИВО РАЗЛИВНОЕ",
+      "price": 1700,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "legenda-777",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "legenda-777",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 2,
+      "line": 8,
+      "name": "13 регион",
+      "title": "13 регион",
+      "category": "ПИВО РАЗЛИВНОЕ",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "13-region",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "13-region",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 3,
+      "line": 9,
+      "name": "Бочковое",
+      "title": "Бочковое",
+      "category": "ПИВО РАЗЛИВНОЕ",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bochkovoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bochkovoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 4,
+      "line": 10,
+      "name": "Старый мельник из бочонка",
+      "title": "Старый мельник из бочонка",
+      "category": "ПИВО РАЗЛИВНОЕ",
+      "price": 1750,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "stary-melnik",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "stary-melnik",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 5,
+      "line": 11,
+      "name": "Kozel светлое",
+      "title": "Kozel светлое",
+      "category": "ПИВО РАЗЛИВНОЕ",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kozel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 6,
+      "line": 12,
+      "name": "Kozel тёмное",
+      "title": "Kozel тёмное",
+      "category": "ПИВО РАЗЛИВНОЕ",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 7,
+      "line": 14,
+      "name": "Efes Pilsener",
+      "title": "Efes Pilsener",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1400,
+      "volume": "0.45 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 8,
+      "line": 15,
+      "name": "Efes Pilsener",
+      "title": "Efes Pilsener",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1200,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 9,
+      "line": 16,
+      "name": "Miller Genuine Draft",
+      "title": "Miller Genuine Draft",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1700,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "miller-genuine-draft",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "miller-genuine-draft",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 10,
+      "line": 17,
+      "name": "Бавария",
+      "title": "Бавария",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bavaria",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bavaria",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 11,
+      "line": 18,
+      "name": "Белый Медведь",
+      "title": "Белый Медведь",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "belyi-medved",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "belyi-medved",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 12,
+      "line": 19,
+      "name": "Хмельной Лось (ж/б)",
+      "title": "Хмельной Лось (ж/б)",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1000,
+      "volume": "0.45 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "khmelnoy-los",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "khmelnoy-los",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 13,
+      "line": 20,
+      "name": "Guinness",
+      "title": "Guinness",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 3200,
+      "volume": "0.44 л",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 14,
+      "line": 21,
+      "name": "Жигулёвское",
+      "title": "Жигулёвское",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 850,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "zhigulevskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "zhigulevskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 15,
+      "line": 22,
+      "name": "Карагандинское",
+      "title": "Карагандинское",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "karagandinskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "karagandinskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 16,
+      "line": 23,
+      "name": "Кружка Свежего",
+      "title": "Кружка Свежего",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 950,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kruzhka-svezhego",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kruzhka-svezhego",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 17,
+      "line": 24,
+      "name": "Bremen von Lustig",
+      "title": "Bremen von Lustig",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1300,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bremen-von-lustig",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bremen-von-lustig",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 18,
+      "line": 25,
+      "name": "Wukong Ju",
+      "title": "Wukong Ju",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1800,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "wukong-ju",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "wukong-ju",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 19,
+      "line": 26,
+      "name": "Slavna Прага",
+      "title": "Slavna Прага",
+      "category": "ПИВО БУТЫЛОЧНОЕ",
+      "price": 1100,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "slavna-praga",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "slavna-praga",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 20,
+      "line": 28,
+      "name": "Шашлык из баранины",
+      "title": "Шашлык из баранины",
+      "category": "ГРИЛЬ",
+      "price": 3900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 21,
+      "line": 29,
+      "name": "Шашлык из курицы",
+      "title": "Шашлык из курицы",
+      "category": "ГРИЛЬ",
+      "price": 2900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 22,
+      "line": 30,
+      "name": "Люля-кебаб",
+      "title": "Люля-кебаб",
+      "category": "ГРИЛЬ",
+      "price": 3200,
+      "volume": "200 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 81,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 81
+       }
+      ]
+     },
+     {
+      "index": 23,
+      "line": 31,
+      "name": "Стейк Рибай",
+      "title": "Стейк Рибай",
+      "category": "ГРИЛЬ",
+      "price": 8900,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "steak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "steak",
+        "confidence": 100
+       },
+       {
+        "slug": "sushi",
+        "confidence": 66
+       }
+      ]
+     },
+     {
+      "index": 24,
+      "line": 32,
+      "name": "Рёбрышки BBQ",
+      "title": "Рёбрышки BBQ",
+      "category": "ГРИЛЬ",
+      "price": 5200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "bbq-ribs",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bbq-ribs",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 25,
+      "line": 33,
+      "name": "Крылышки Баффало",
+      "title": "Крылышки Баффало",
+      "category": "ГРИЛЬ",
+      "price": 2600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "buffalo-wings",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "buffalo-wings",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 26,
+      "line": 34,
+      "name": "Колбаски гриль",
+      "title": "Колбаски гриль",
+      "category": "ГРИЛЬ",
+      "price": 3400,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 83,
+      "candidates": [
+       {
+        "slug": "bratwurst",
+        "confidence": 83
+       },
+       {
+        "slug": "shashlyk",
+        "confidence": 81
+       },
+       {
+        "slug": "shuzhyk",
+        "confidence": 62
+       }
+      ]
+     },
+     {
+      "index": 27,
+      "line": 36,
+      "name": "Начос с сыром",
+      "title": "Начос с сыром",
+      "category": "ЗАКУСКИ К ПИВУ",
+      "price": 2200,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "nachos",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "nachos",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 28,
+      "line": 37,
+      "name": "Брецель",
+      "title": "Брецель",
+      "category": "ЗАКУСКИ К ПИВУ",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pretzel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "pretzel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 29,
+      "line": 38,
+      "name": "Сырные палочки",
+      "title": "Сырные палочки",
+      "category": "ЗАКУСКИ К ПИВУ",
+      "price": 1800,
+      "volume": "200 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 30,
+      "line": 39,
+      "name": "Картофель фри",
+      "title": "Картофель фри",
+      "category": "ЗАКУСКИ К ПИВУ",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 31,
+      "line": 40,
+      "name": "Мясное ассорти \"Жети-ас\"",
+      "title": "Мясное ассорти \"Жети-ас\"",
+      "category": "ЗАКУСКИ К ПИВУ",
+      "price": 4500,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "zheti-as",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "zheti-as",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 32,
+      "line": 41,
+      "name": "Квашеная капуста",
+      "title": "Квашеная капуста",
+      "category": "ЗАКУСКИ К ПИВУ",
+      "price": 900,
+      "volume": "200 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "sauerkraut",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "sauerkraut",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 33,
+      "line": 43,
+      "name": "Бешбармак",
+      "title": "Бешбармак",
+      "category": "КАЗАХСКАЯ КУХНЯ",
+      "price": 4200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "beshbarmak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "beshbarmak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 34,
+      "line": 44,
+      "name": "Манты \"с мясом\"; 5 шт",
+      "title": "Манты \"с мясом\"; 5 шт",
+      "category": "КАЗАХСКАЯ КУХНЯ",
+      "price": 2400,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "manty",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "manty",
+        "confidence": 93
+       },
+       {
+        "slug": "steak",
+        "confidence": 69
+       }
+      ]
+     },
+     {
+      "index": 35,
+      "line": 45,
+      "name": "Казы",
+      "title": "Казы",
+      "category": "КАЗАХСКАЯ КУХНЯ",
+      "price": 3800,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kazy",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kazy",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 36,
+      "line": 46,
+      "name": "Баурсаки",
+      "title": "Баурсаки",
+      "category": "КАЗАХСКАЯ КУХНЯ",
+      "price": 900,
+      "volume": "6 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "baursaki",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "baursaki",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 37,
+      "line": 47,
+      "name": "Самса с говядиной",
+      "title": "Самса с говядиной",
+      "category": "КАЗАХСКАЯ КУХНЯ",
+      "price": 700,
+      "volume": "120 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "samsa",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "samsa",
+        "confidence": 93
+       },
+       {
+        "slug": "steak",
+        "confidence": 64
+       }
+      ]
+     },
+     {
+      "index": 38,
+      "line": 48,
+      "name": "Куырдак",
+      "title": "Куырдак",
+      "category": "КАЗАХСКАЯ КУХНЯ",
+      "price": 3600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kuyrdak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kuyrdak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 39,
+      "line": 49,
+      "name": "Плов",
+      "title": "Плов",
+      "category": "КАЗАХСКАЯ КУХНЯ",
+      "price": 2800,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "plov",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "plov",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 40,
+      "line": 51,
+      "name": "Бургер классический",
+      "title": "Бургер классический",
+      "category": "ГОРЯЧЕЕ",
+      "price": 3600,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "burger",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "burger",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 41,
+      "line": 52,
+      "name": "Цезарь с курицей",
+      "title": "Цезарь с курицей",
+      "category": "ГОРЯЧЕЕ",
+      "price": 2900,
+      "volume": "250 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 42,
+      "line": 53,
+      "name": "Паста Карбонара",
+      "title": "Паста Карбонара",
+      "category": "ГОРЯЧЕЕ",
+      "price": 2700,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "carbonara",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "carbonara",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 43,
+      "line": 54,
+      "name": "Пицца Маргарита",
+      "title": "Пицца Маргарита",
+      "category": "ГОРЯЧЕЕ",
+      "price": 3200,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pizza-margherita",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 44,
+      "line": 55,
+      "name": "Пицца Пепперони",
+      "title": "Пицца Пепперони",
+      "category": "ГОРЯЧЕЕ",
+      "price": 3800,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 83,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 83
+       }
+      ]
+     },
+     {
+      "index": 45,
+      "line": 56,
+      "name": "Лазанья",
+      "title": "Лазанья",
+      "category": "ГОРЯЧЕЕ",
+      "price": 2900,
+      "volume": "320 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "lasagna",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "lasagna",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 46,
+      "line": 58,
+      "name": "Тирамису",
+      "title": "Тирамису",
+      "category": "ДЕСЕРТЫ",
+      "price": 1900,
+      "volume": "120 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "tiramisu",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "tiramisu",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 47,
+      "line": 59,
+      "name": "Штрудель яблочный",
+      "title": "Штрудель яблочный",
+      "category": "ДЕСЕРТЫ",
+      "price": 1700,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "strudel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "strudel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 48,
+      "line": 60,
+      "name": "Чизкейк",
+      "title": "Чизкейк",
+      "category": "ДЕСЕРТЫ",
+      "price": 1900,
+      "volume": "130 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     }
+    ]
+   }
+  },
+  "poster_export_utf8_bom.csv": {
+   "encoding": "utf-8",
+   "result": {
+    "format": "csv",
+    "delimiter": ",",
+    "total": 38,
+    "skipped": 0,
+    "matched": 30,
+    "ambiguous": 4,
+    "unmatched": 4,
+    "warnings": [],
+    "rows": [
+     {
+      "index": 0,
+      "line": 3,
+      "name": "Efes Pilsener 0,5",
+      "title": "Efes Pilsener",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 1,
+      "line": 4,
+      "name": "Efes Pilsener 0,3",
+      "title": "Efes Pilsener",
+      "category": "Пиво разливное",
+      "price": 1100,
+      "volume": "0.3 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 2,
+      "line": 5,
+      "name": "Kozel 0.5",
+      "title": "Kozel",
+      "category": "Пиво бутылочное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kozel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 3,
+      "line": 6,
+      "name": "Kozel Dark 0.5",
+      "title": "Kozel Dark",
+      "category": "Пиво бутылочное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 4,
+      "line": 7,
+      "name": "Miller Genuine Draft 0.33",
+      "title": "Miller Genuine Draft",
+      "category": "Пиво бутылочное",
+      "price": 1700,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "miller-genuine-draft",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "miller-genuine-draft",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 5,
+      "line": 8,
+      "name": "Бавария 0.5",
+      "title": "Бавария",
+      "category": "Пиво бутылочное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bavaria",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bavaria",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 6,
+      "line": 9,
+      "name": "Белый Медведь 0.5",
+      "title": "Белый Медведь",
+      "category": "Пиво бутылочное",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "belyi-medved",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "belyi-medved",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 7,
+      "line": 10,
+      "name": "Хмельной Лось 0.45",
+      "title": "Хмельной Лось",
+      "category": "Пиво бутылочное",
+      "price": 1000,
+      "volume": "0.45 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "khmelnoy-los",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "khmelnoy-los",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 8,
+      "line": 11,
+      "name": "Жигулёвское 0.5",
+      "title": "Жигулёвское",
+      "category": "Пиво бутылочное",
+      "price": 850,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "zhigulevskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "zhigulevskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 9,
+      "line": 12,
+      "name": "Легенда 777 0.5",
+      "title": "Легенда 777",
+      "category": "Пиво разливное",
+      "price": 1700,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "legenda-777",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "legenda-777",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 10,
+      "line": 13,
+      "name": "Северное Сияние 0.5",
+      "title": "Северное Сияние",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "severnoe-siyanie",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "severnoe-siyanie",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 11,
+      "line": 14,
+      "name": "13 регион 0.5",
+      "title": "13 регион",
+      "category": "Пиво разливное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "13-region",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "13-region",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 12,
+      "line": 15,
+      "name": "Бочковое 0.5",
+      "title": "Бочковое",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bochkovoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bochkovoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 13,
+      "line": 16,
+      "name": "Старый Мельник 0.5",
+      "title": "Старый Мельник",
+      "category": "Пиво разливное",
+      "price": 1750,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "stary-melnik",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "stary-melnik",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 14,
+      "line": 17,
+      "name": "Heineken 0.33",
+      "title": "Heineken 0.33",
+      "category": "Пиво бутылочное",
+      "price": 2100,
+      "volume": "",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 15,
+      "line": 18,
+      "name": "Бургер \"Классик\", с картофелем фри",
+      "title": "Бургер \"Классик\", с картофелем фри",
+      "category": "Бургеры",
+      "price": 3600,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "burger",
+      "confidence": 88,
+      "candidates": [
+       {
+        "slug": "burger",
+        "confidence": 88
+       }
+      ]
+     },
+     {
+      "index": 16,
+      "line": 19,
+      "name": "Чизбургер",
+      "title": "Чизбургер",
+      "category": "Бургеры",
+      "price": 3800,
+      "volume": "370 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "burger",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "burger",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 17,
+      "line": 20,
+      "name": "Шашлык из баранины",
+      "title": "Шашлык из баранины",
+      "category": "Гриль",
+      "price": 3900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 18,
+      "line": 21,
+      "name": "Стейк Рибай",
+      "title": "Стейк Рибай",
+      "category": "Гриль",
+      "price": 8900,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "steak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "steak",
+        "confidence": 100
+       },
+       {
+        "slug": "sushi",
+        "confidence": 66
+       }
+      ]
+     },
+     {
+      "index": 19,
+      "line": 22,
+      "name": "Крылышки Баффало",
+      "title": "Крылышки Баффало",
+      "category": "Гриль",
+      "price": 2600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "buffalo-wings",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "buffalo-wings",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 20,
+      "line": 23,
+      "name": "Рёбрышки BBQ",
+      "title": "Рёбрышки BBQ",
+      "category": "Гриль",
+      "price": 5200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "bbq-ribs",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bbq-ribs",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 21,
+      "line": 24,
+      "name": "Колбаски гриль ассорти",
+      "title": "Колбаски гриль ассорти",
+      "category": "Гриль",
+      "price": 3400,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 80,
+      "candidates": [
+       {
+        "slug": "bratwurst",
+        "confidence": 80
+       },
+       {
+        "slug": "shashlyk",
+        "confidence": 77
+       },
+       {
+        "slug": "shuzhyk",
+        "confidence": 60
+       }
+      ]
+     },
+     {
+      "index": 22,
+      "line": 25,
+      "name": "Начос с сыром",
+      "title": "Начос с сыром",
+      "category": "Закуски",
+      "price": 2200,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "nachos",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "nachos",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 23,
+      "line": 26,
+      "name": "Брецель",
+      "title": "Брецель",
+      "category": "Закуски",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pretzel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "pretzel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 24,
+      "line": 27,
+      "name": "Картофель фри",
+      "title": "Картофель фри",
+      "category": "Закуски",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 25,
+      "line": 28,
+      "name": "Гренки чесночные",
+      "title": "Гренки чесночные",
+      "category": "Закуски",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 26,
+      "line": 29,
+      "name": "Қазы",
+      "title": "Қазы",
+      "category": "Казахская кухня",
+      "price": 3800,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kazy",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kazy",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 27,
+      "line": 30,
+      "name": "Бауырсақ",
+      "title": "Бауырсақ",
+      "category": "Казахская кухня",
+      "price": 900,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "baursaki",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "baursaki",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 28,
+      "line": 31,
+      "name": "Бешбармак",
+      "title": "Бешбармак",
+      "category": "Казахская кухня",
+      "price": 4200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "beshbarmak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "beshbarmak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 29,
+      "line": 32,
+      "name": "Манты",
+      "title": "Манты",
+      "category": "Казахская кухня",
+      "price": 2400,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "manty",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "manty",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 30,
+      "line": 33,
+      "name": "Куырдак",
+      "title": "Куырдак",
+      "category": "Казахская кухня",
+      "price": 3600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kuyrdak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kuyrdak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 31,
+      "line": 34,
+      "name": "Пицца Маргарита",
+      "title": "Пицца Маргарита",
+      "category": "Пицца",
+      "price": 3200,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pizza-margherita",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 32,
+      "line": 35,
+      "name": "Паста Карбонара",
+      "title": "Паста Карбонара",
+      "category": "Паста",
+      "price": 2700,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "carbonara",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "carbonara",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 33,
+      "line": 36,
+      "name": "Тирамису",
+      "title": "Тирамису",
+      "category": "Десерты",
+      "price": 1900,
+      "volume": "120 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "tiramisu",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "tiramisu",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 34,
+      "line": 37,
+      "name": "Штрудель яблочный",
+      "title": "Штрудель яблочный",
+      "category": "Десерты",
+      "price": 1700,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "strudel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "strudel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 35,
+      "line": 38,
+      "name": "Маргарита",
+      "title": "Маргарита",
+      "category": "Коктейли",
+      "price": 2500,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 36,
+      "line": 39,
+      "name": "Айран",
+      "title": "Айран",
+      "category": "Напитки",
+      "price": 500,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "airan",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 37,
+      "line": 40,
+      "name": "Кофе американо",
+      "title": "Кофе американо",
+      "category": "Напитки",
+      "price": 900,
+      "volume": "200 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     }
+    ]
+   }
+  },
+  "poster_products.json": {
+   "encoding": "utf-8",
+   "result": {
+    "format": "poster",
+    "delimiter": "",
+    "total": 51,
+    "skipped": 2,
+    "matched": 41,
+    "ambiguous": 4,
+    "unmatched": 6,
+    "warnings": [],
+    "rows": [
+     {
+      "index": 0,
+      "line": 1,
+      "name": "Efes Pilsener 0,3 л",
+      "title": "Efes Pilsener",
+      "category": "Пиво разливное",
+      "price": 1100,
+      "volume": "0.3 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 1,
+      "line": 1,
+      "name": "Efes Pilsener 0,5 л",
+      "title": "Efes Pilsener",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "efes-pilsener",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "efes-pilsener",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 2,
+      "line": 2,
+      "name": "Легенда 777 0,3",
+      "title": "Легенда 777",
+      "category": "Пиво разливное",
+      "price": 1200,
+      "volume": "0.3 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "legenda-777",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "legenda-777",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 3,
+      "line": 2,
+      "name": "Легенда 777 0,5",
+      "title": "Легенда 777",
+      "category": "Пиво разливное",
+      "price": 1700,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "legenda-777",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "legenda-777",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 4,
+      "line": 3,
+      "name": "Бочковое разливное 0,5",
+      "title": "Бочковое разливное",
+      "category": "Пиво разливное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bochkovoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bochkovoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 5,
+      "line": 4,
+      "name": "13 регион 0,5",
+      "title": "13 регион",
+      "category": "Пиво разливное",
+      "price": 1450,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "13-region",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "13-region",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 6,
+      "line": 5,
+      "name": "Северное сияние 0,5",
+      "title": "Северное сияние",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "severnoe-siyanie",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "severnoe-siyanie",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 7,
+      "line": 6,
+      "name": "Kozel svetly 0,5",
+      "title": "Kozel svetly",
+      "category": "Пиво бутылочное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kozel",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 8,
+      "line": 7,
+      "name": "Kozel tmavy 0,5",
+      "title": "Kozel tmavy",
+      "category": "Пиво бутылочное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kozel",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "kozel",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 9,
+      "line": 8,
+      "name": "Miller 0,33",
+      "title": "Miller",
+      "category": "Пиво бутылочное",
+      "price": 1700,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "miller-genuine-draft",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "miller-genuine-draft",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 10,
+      "line": 9,
+      "name": "Бавария 0,5",
+      "title": "Бавария",
+      "category": "Пиво бутылочное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bavaria",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bavaria",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 11,
+      "line": 10,
+      "name": "Белый медведь 0,5",
+      "title": "Белый медведь",
+      "category": "Пиво бутылочное",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "belyi-medved",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "belyi-medved",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 12,
+      "line": 11,
+      "name": "Хмельной лось 0,45 ж/б",
+      "title": "Хмельной лось ж/б",
+      "category": "Пиво бутылочное",
+      "price": 1000,
+      "volume": "0.45 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "khmelnoy-los",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "khmelnoy-los",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 13,
+      "line": 12,
+      "name": "Corona Extra 0,33",
+      "title": "Corona Extra 0,33",
+      "category": "Пиво бутылочное",
+      "price": 2500,
+      "volume": "",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 14,
+      "line": 13,
+      "name": "Жигулевское 0,5",
+      "title": "Жигулевское",
+      "category": "Пиво бутылочное",
+      "price": 850,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "zhigulevskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "zhigulevskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 15,
+      "line": 14,
+      "name": "Кружка свежего 0,5",
+      "title": "Кружка свежего",
+      "category": "Пиво бутылочное",
+      "price": 950,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "kruzhka-svezhego",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kruzhka-svezhego",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 16,
+      "line": 15,
+      "name": "Бремен фон Лустиг 0,5",
+      "title": "Бремен фон Лустиг",
+      "category": "Пиво бутылочное",
+      "price": 1300,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "bremen-von-lustig",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bremen-von-lustig",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 17,
+      "line": 16,
+      "name": "Вуконг 0,33",
+      "title": "Вуконг",
+      "category": "Пиво бутылочное",
+      "price": 1800,
+      "volume": "0.33 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "wukong-ju",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "wukong-ju",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 18,
+      "line": 17,
+      "name": "Прага 0,5",
+      "title": "Прага",
+      "category": "Пиво бутылочное",
+      "price": 1100,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "slavna-praga",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "slavna-praga",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 19,
+      "line": 18,
+      "name": "Карагандинское 0,5",
+      "title": "Карагандинское",
+      "category": "Пиво бутылочное",
+      "price": 900,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "karagandinskoe",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "karagandinskoe",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 20,
+      "line": 19,
+      "name": "Старый мельник 0,5",
+      "title": "Старый мельник",
+      "category": "Пиво бутылочное",
+      "price": 1200,
+      "volume": "0.5 л",
+      "kind": "BEER",
+      "status": "matched",
+      "ref_slug": "stary-melnik",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "stary-melnik",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 21,
+      "line": 20,
+      "name": "Шашлык из баранины",
+      "title": "Шашлык из баранины",
+      "category": "Гриль",
+      "price": 3900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 22,
+      "line": 21,
+      "name": "Шашлык куриный",
+      "title": "Шашлык куриный",
+      "category": "Гриль",
+      "price": 2900,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "shashlyk",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "shashlyk",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 23,
+      "line": 22,
+      "name": "Рёбрышки BBQ",
+      "title": "Рёбрышки BBQ",
+      "category": "Гриль",
+      "price": 5200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "bbq-ribs",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "bbq-ribs",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 24,
+      "line": 23,
+      "name": "Крылья Баффало",
+      "title": "Крылья Баффало",
+      "category": "Гриль",
+      "price": 2600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "buffalo-wings",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "buffalo-wings",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 25,
+      "line": 24,
+      "name": "Колбаски гриль",
+      "title": "Колбаски гриль",
+      "category": "Гриль",
+      "price": 3400,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 83,
+      "candidates": [
+       {
+        "slug": "bratwurst",
+        "confidence": 83
+       },
+       {
+        "slug": "shashlyk",
+        "confidence": 81
+       },
+       {
+        "slug": "shuzhyk",
+        "confidence": 62
+       }
+      ]
+     },
+     {
+      "index": 26,
+      "line": 25,
+      "name": "Стейк Рибай",
+      "title": "Стейк Рибай",
+      "category": "Гриль",
+      "price": 8900,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "steak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "steak",
+        "confidence": 100
+       },
+       {
+        "slug": "sushi",
+        "confidence": 66
+       }
+      ]
+     },
+     {
+      "index": 27,
+      "line": 26,
+      "name": "Бургер Классик",
+      "title": "Бургер Классик",
+      "category": "Бургеры",
+      "price": 3600,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "burger",
+      "confidence": 93,
+      "candidates": [
+       {
+        "slug": "burger",
+        "confidence": 93
+       }
+      ]
+     },
+     {
+      "index": 28,
+      "line": 27,
+      "name": "Чизбургер",
+      "title": "Чизбургер",
+      "category": "Бургеры",
+      "price": 3800,
+      "volume": "370 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "burger",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "burger",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 29,
+      "line": 28,
+      "name": "Начос",
+      "title": "Начос",
+      "category": "Закуски",
+      "price": 2200,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "nachos",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "nachos",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 30,
+      "line": 29,
+      "name": "Гренки чесночные",
+      "title": "Гренки чесночные",
+      "category": "Закуски",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 31,
+      "line": 30,
+      "name": "Кольца кальмара",
+      "title": "Кольца кальмара",
+      "category": "Закуски",
+      "price": 2100,
+      "volume": "200 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 32,
+      "line": 31,
+      "name": "Брецель",
+      "title": "Брецель",
+      "category": "Закуски",
+      "price": 1200,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pretzel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "pretzel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 33,
+      "line": 32,
+      "name": "Квашеная капуста",
+      "title": "Квашеная капуста",
+      "category": "Закуски",
+      "price": 900,
+      "volume": "200 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "sauerkraut",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "sauerkraut",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 34,
+      "line": 33,
+      "name": "Бешбармак",
+      "title": "Бешбармак",
+      "category": "Казахская кухня",
+      "price": 4200,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "beshbarmak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "beshbarmak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 35,
+      "line": 34,
+      "name": "Қазы",
+      "title": "Қазы",
+      "category": "Казахская кухня",
+      "price": 3800,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kazy",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kazy",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 36,
+      "line": 35,
+      "name": "Манты",
+      "title": "Манты",
+      "category": "Казахская кухня",
+      "price": 2400,
+      "volume": "350 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "manty",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "manty",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 37,
+      "line": 36,
+      "name": "Бауырсақ",
+      "title": "Бауырсақ",
+      "category": "Казахская кухня",
+      "price": 900,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "baursaki",
+      "confidence": 90,
+      "candidates": [
+       {
+        "slug": "baursaki",
+        "confidence": 90
+       }
+      ]
+     },
+     {
+      "index": 38,
+      "line": 37,
+      "name": "Куырдак",
+      "title": "Куырдак",
+      "category": "Казахская кухня",
+      "price": 3600,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "kuyrdak",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "kuyrdak",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 39,
+      "line": 38,
+      "name": "Плов",
+      "title": "Плов",
+      "category": "Казахская кухня",
+      "price": 2800,
+      "volume": "400 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "plov",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "plov",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 40,
+      "line": 39,
+      "name": "Пицца Маргарита",
+      "title": "Пицца Маргарита",
+      "category": "Пицца",
+      "price": 3200,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "pizza-margherita",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 41,
+      "line": 40,
+      "name": "Пицца Пепперони",
+      "title": "Пицца Пепперони",
+      "category": "Пицца",
+      "price": 3800,
+      "volume": "450 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 83,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 83
+       }
+      ]
+     },
+     {
+      "index": 42,
+      "line": 41,
+      "name": "Паста Карбонара",
+      "title": "Паста Карбонара",
+      "category": "Паста",
+      "price": 2700,
+      "volume": "300 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "carbonara",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "carbonara",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 43,
+      "line": 42,
+      "name": "Лазанья",
+      "title": "Лазанья",
+      "category": "Паста",
+      "price": 2900,
+      "volume": "320 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "lasagna",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "lasagna",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 44,
+      "line": 43,
+      "name": "Тирамису",
+      "title": "Тирамису",
+      "category": "Десерты",
+      "price": 1900,
+      "volume": "120 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "tiramisu",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "tiramisu",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 45,
+      "line": 44,
+      "name": "Штрудель",
+      "title": "Штрудель",
+      "category": "Десерты",
+      "price": 1700,
+      "volume": "150 г",
+      "kind": "DISH",
+      "status": "matched",
+      "ref_slug": "strudel",
+      "confidence": 100,
+      "candidates": [
+       {
+        "slug": "strudel",
+        "confidence": 100
+       }
+      ]
+     },
+     {
+      "index": 46,
+      "line": 45,
+      "name": "Чизкейк",
+      "title": "Чизкейк",
+      "category": "Десерты",
+      "price": 1900,
+      "volume": "130 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 47,
+      "line": 46,
+      "name": "Маргарита",
+      "title": "Маргарита",
+      "category": "Коктейли",
+      "price": 2500,
+      "volume": "250 г",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "pizza-margherita",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 48,
+      "line": 47,
+      "name": "Мохито",
+      "title": "Мохито",
+      "category": "Коктейли",
+      "price": 2400,
+      "volume": "300 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     },
+     {
+      "index": 49,
+      "line": 48,
+      "name": "Айран",
+      "title": "Айран",
+      "category": "Напитки",
+      "price": 500,
+      "volume": "",
+      "kind": "DISH",
+      "status": "ambiguous",
+      "ref_slug": "",
+      "confidence": 70,
+      "candidates": [
+       {
+        "slug": "airan",
+        "confidence": 70
+       }
+      ]
+     },
+     {
+      "index": 50,
+      "line": 49,
+      "name": "Кофе американо",
+      "title": "Кофе американо",
+      "category": "Напитки",
+      "price": 900,
+      "volume": "200 г",
+      "kind": "",
+      "status": "unmatched",
+      "ref_slug": "",
+      "confidence": 0,
+      "candidates": []
+     }
+    ]
+   }
+  }
+ },
+ "errors": [
+  {
+   "input": "",
+   "expected": "empty",
+   "code": "empty"
+  },
+  {
+   "input": "   \n\n",
+   "expected": "empty",
+   "code": "empty"
+  },
+  {
+   "input": "{bad json",
+   "expected": "bad_json",
+   "code": "bad_json"
+  },
+  {
+   "input": "{\"foo\": 1}",
+   "expected": "unknown_format",
+   "code": "unknown_format"
+  },
+  {
+   "input": "[1, 2, 3]",
+   "expected": "unknown_format",
+   "code": "unknown_format"
+  },
+  {
+   "input": "{\"products\": \"нет\"}",
+   "expected": "unknown_format",
+   "code": "unknown_format"
+  },
+  {
+   "input": "Цена;Себестоимость\n100;50",
+   "expected": "no_name_column",
+   "code": "no_name_column"
+  },
+  {
+   "input": "Название;Цена\n",
+   "expected": "no_rows",
+   "code": "no_rows"
+  },
+  {
+   "input": "{\"products\": []}",
+   "expected": "no_rows",
+   "code": "no_rows"
+  },
+  {
+   "input": "{\"response\": [{\"product_name\": \"\", \"price\": {\"1\": \"100\"}}]}",
+   "expected": "no_rows",
+   "code": "no_rows"
+  },
+  {
+   "input": "<32920 chars>",
+   "expected": "too_many_rows",
+   "code": "too_many_rows"
+  },
+  {
+   "input": "<2097153 chars>",
+   "expected": "too_large",
+   "code": "too_large"
+  }
+ ],
+ "plans": [
+  {
+   "fixture": "iiko_nomenclature.json",
+   "choices": {},
+   "existing": [],
+   "limit": 40,
+   "plan": {
+    "items": [
+     {
+      "kind": "BEER",
+      "ref_slug": "severnoe-siyanie",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "legenda-777",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1700,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "13-region",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bochkovoe",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "stary-melnik",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1750,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "kozel",
+      "name": "Kozel Světlý разливное",
+      "category": "Пиво разливное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "efes-pilsener",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 1400,
+      "volume": "0.45 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "miller-genuine-draft",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 1700,
+      "volume": "0.33 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bavaria",
+      "name": "Bavaria Premium",
+      "category": "Пиво бутылочное и банка",
+      "price": 1500,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "belyi-medved",
+      "name": "Белый Медведь Светлое",
+      "category": "Пиво бутылочное и банка",
+      "price": 900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "khmelnoy-los",
+      "name": "Хмельной Лось ж/б",
+      "category": "Пиво бутылочное и банка",
+      "price": 1000,
+      "volume": "0.45 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "zhigulevskoe",
+      "name": "Жигулёвское",
+      "category": "Пиво бутылочное и банка",
+      "price": 850,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "karagandinskoe",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "kruzhka-svezhego",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 950,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bremen-von-lustig",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 1300,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "wukong-ju",
+      "name": "Wùkōng Jū (悟空居)",
+      "category": "Пиво бутылочное и банка",
+      "price": 1800,
+      "volume": "0.33 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "slavna-praga",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 1100,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "shashlyk",
+      "name": "Шашлык из баранины",
+      "category": "Гриль",
+      "price": 3900,
+      "volume": "250 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "steak",
+      "name": "Стейк Рибай",
+      "category": "Гриль",
+      "price": 8900,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "bratwurst",
+      "name": "Братвурст с квашеной капустой",
+      "category": "Гриль",
+      "price": 3400,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "nachos",
+      "name": "Начос с сыром и халапеньо",
+      "category": "Закуски к пиву",
+      "price": 2200,
+      "volume": "350 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "pretzel",
+      "name": "Брецель с горчицей",
+      "category": "Закуски к пиву",
+      "price": 1200,
+      "volume": "150 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "zheti-as",
+      "name": "Мясное ассорти к пиву",
+      "category": "Закуски к пиву",
+      "price": 4500,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "burger",
+      "name": "Бургер с говядиной",
+      "category": "Горячее",
+      "price": 3600,
+      "volume": "350 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "carbonara",
+      "name": "",
+      "category": "Горячее",
+      "price": 2700,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "beshbarmak",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 4200,
+      "volume": "400 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "manty",
+      "name": "Манты (5 шт)",
+      "category": "Казахская кухня",
+      "price": 2400,
+      "volume": "350 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "kazy",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 3800,
+      "volume": "150 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "baursaki",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 900,
+      "volume": "150 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "samsa",
+      "name": "Самса с говядиной",
+      "category": "Казахская кухня",
+      "price": 700,
+      "volume": "120 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "kuyrdak",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 3600,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "plov",
+      "name": "Плов по-узбекски",
+      "category": "Казахская кухня",
+      "price": 2800,
+      "volume": "400 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "tiramisu",
+      "name": "",
+      "category": "Десерты",
+      "price": 1900,
+      "volume": "120 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "strudel",
+      "name": "Штрудель яблочный",
+      "category": "Десерты",
+      "price": 1700,
+      "volume": "150 г",
+      "action": "create"
+     }
+    ],
+    "created": 34,
+    "updated": 0,
+    "over_limit": 0,
+    "duplicates": 2,
+    "needs_choice": 5,
+    "skipped_by_user": 0,
+    "unmatched": 8
+   }
+  },
+  {
+   "fixture": "iiko_nomenclature.json",
+   "choices": {
+    "3": "no-such-slug",
+    "8": "kozel",
+    "24": "",
+    "25": "buffalo-wings",
+    "49": "airan"
+   },
+   "existing": [
+    "BEER:efes-pilsener",
+    "DISH:shashlyk",
+    "BEER:kozel"
+   ],
+   "limit": 12,
+   "plan": {
+    "items": [
+     {
+      "kind": "BEER",
+      "ref_slug": "severnoe-siyanie",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "legenda-777",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1700,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "13-region",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bochkovoe",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "stary-melnik",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1750,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "kozel",
+      "name": "Kozel Světlý разливное",
+      "category": "Пиво разливное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "action": "update"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "efes-pilsener",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 1400,
+      "volume": "0.45 л",
+      "action": "update"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "miller-genuine-draft",
+      "name": "",
+      "category": "Пиво бутылочное и банка",
+      "price": 1700,
+      "volume": "0.33 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bavaria",
+      "name": "Bavaria Premium",
+      "category": "Пиво бутылочное и банка",
+      "price": 1500,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "belyi-medved",
+      "name": "Белый Медведь Светлое",
+      "category": "Пиво бутылочное и банка",
+      "price": 900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "khmelnoy-los",
+      "name": "Хмельной Лось ж/б",
+      "category": "Пиво бутылочное и банка",
+      "price": 1000,
+      "volume": "0.45 л",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "shashlyk",
+      "name": "Шашлык из баранины",
+      "category": "Гриль",
+      "price": 3900,
+      "volume": "250 г",
+      "action": "update"
+     }
+    ],
+    "created": 9,
+    "updated": 3,
+    "over_limit": 22,
+    "duplicates": 3,
+    "needs_choice": 3,
+    "skipped_by_user": 1,
+    "unmatched": 8
+   }
+  },
+  {
+   "fixture": "poster_products.json",
+   "choices": {
+    "1": "efes-pilsener",
+    "5": ""
+   },
+   "existing": [
+    "BEER:legenda-777"
+   ],
+   "limit": 300,
+   "plan": {
+    "items": [
+     {
+      "kind": "BEER",
+      "ref_slug": "efes-pilsener",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1100,
+      "volume": "0.3 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "legenda-777",
+      "name": "",
+      "category": "Пиво разливное",
+      "price": 1200,
+      "volume": "0.3 л",
+      "action": "update"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bochkovoe",
+      "name": "Бочковое разливное",
+      "category": "Пиво разливное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "severnoe-siyanie",
+      "name": "Северное сияние",
+      "category": "Пиво разливное",
+      "price": 1600,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "kozel",
+      "name": "Kozel svetly",
+      "category": "Пиво бутылочное",
+      "price": 1900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "miller-genuine-draft",
+      "name": "Miller",
+      "category": "Пиво бутылочное",
+      "price": 1700,
+      "volume": "0.33 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bavaria",
+      "name": "Бавария",
+      "category": "Пиво бутылочное",
+      "price": 1500,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "belyi-medved",
+      "name": "Белый медведь",
+      "category": "Пиво бутылочное",
+      "price": 900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "khmelnoy-los",
+      "name": "Хмельной лось ж/б",
+      "category": "Пиво бутылочное",
+      "price": 1000,
+      "volume": "0.45 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "zhigulevskoe",
+      "name": "",
+      "category": "Пиво бутылочное",
+      "price": 850,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "kruzhka-svezhego",
+      "name": "Кружка свежего",
+      "category": "Пиво бутылочное",
+      "price": 950,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "bremen-von-lustig",
+      "name": "Бремен фон Лустиг",
+      "category": "Пиво бутылочное",
+      "price": 1300,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "wukong-ju",
+      "name": "Вуконг",
+      "category": "Пиво бутылочное",
+      "price": 1800,
+      "volume": "0.33 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "slavna-praga",
+      "name": "Прага",
+      "category": "Пиво бутылочное",
+      "price": 1100,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "karagandinskoe",
+      "name": "",
+      "category": "Пиво бутылочное",
+      "price": 900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "stary-melnik",
+      "name": "Старый мельник",
+      "category": "Пиво бутылочное",
+      "price": 1200,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "shashlyk",
+      "name": "Шашлык из баранины",
+      "category": "Гриль",
+      "price": 3900,
+      "volume": "250 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "bbq-ribs",
+      "name": "",
+      "category": "Гриль",
+      "price": 5200,
+      "volume": "400 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "buffalo-wings",
+      "name": "Крылья Баффало",
+      "category": "Гриль",
+      "price": 2600,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "steak",
+      "name": "Стейк Рибай",
+      "category": "Гриль",
+      "price": 8900,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "burger",
+      "name": "Бургер Классик",
+      "category": "Бургеры",
+      "price": 3600,
+      "volume": "350 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "nachos",
+      "name": "",
+      "category": "Закуски",
+      "price": 2200,
+      "volume": "350 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "pretzel",
+      "name": "",
+      "category": "Закуски",
+      "price": 1200,
+      "volume": "150 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "sauerkraut",
+      "name": "",
+      "category": "Закуски",
+      "price": 900,
+      "volume": "200 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "beshbarmak",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 4200,
+      "volume": "400 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "kazy",
+      "name": "Қазы",
+      "category": "Казахская кухня",
+      "price": 3800,
+      "volume": "150 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "manty",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 2400,
+      "volume": "350 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "baursaki",
+      "name": "Бауырсақ",
+      "category": "Казахская кухня",
+      "price": 900,
+      "volume": "150 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "kuyrdak",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 3600,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "plov",
+      "name": "",
+      "category": "Казахская кухня",
+      "price": 2800,
+      "volume": "400 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "pizza-margherita",
+      "name": "",
+      "category": "Пицца",
+      "price": 3200,
+      "volume": "450 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "carbonara",
+      "name": "",
+      "category": "Паста",
+      "price": 2700,
+      "volume": "300 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "lasagna",
+      "name": "",
+      "category": "Паста",
+      "price": 2900,
+      "volume": "320 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "tiramisu",
+      "name": "",
+      "category": "Десерты",
+      "price": 1900,
+      "volume": "120 г",
+      "action": "create"
+     },
+     {
+      "kind": "DISH",
+      "ref_slug": "strudel",
+      "name": "",
+      "category": "Десерты",
+      "price": 1700,
+      "volume": "150 г",
+      "action": "create"
+     }
+    ],
+    "created": 34,
+    "updated": 1,
+    "over_limit": 0,
+    "duplicates": 5,
+    "needs_choice": 4,
+    "skipped_by_user": 1,
+    "unmatched": 6
+   }
+  },
+  {
+   "fixture": "bar_menu_tab.csv",
+   "choices": {},
+   "existing": [],
+   "limit": 5,
+   "plan": {
+    "items": [
+     {
+      "kind": "BEER",
+      "ref_slug": "efes-pilsener",
+      "name": "",
+      "category": "Draft beer",
+      "price": 1600,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "belyi-medved",
+      "name": "Beliy Medved",
+      "category": "Bottled beer",
+      "price": 900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "miller-genuine-draft",
+      "name": "",
+      "category": "Bottled beer",
+      "price": 1700,
+      "volume": "0.33 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "kozel",
+      "name": "Velkopopovicky Kozel",
+      "category": "Bottled beer",
+      "price": 1900,
+      "volume": "0.5 л",
+      "action": "create"
+     },
+     {
+      "kind": "BEER",
+      "ref_slug": "khmelnoy-los",
+      "name": "Khmelnoy Los",
+      "category": "Cans",
+      "price": 1000,
+      "volume": "0.45 л",
+      "action": "create"
+     }
+    ],
+    "created": 5,
+    "updated": 0,
+    "over_limit": 24,
+    "duplicates": 1,
+    "needs_choice": 2,
+    "skipped_by_user": 0,
+    "unmatched": 7
+   }
+  }
+ ]
+}

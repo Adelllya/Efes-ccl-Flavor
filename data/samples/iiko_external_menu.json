@@ -1,0 +1,262 @@
+{
+  "_sample": "Учебные данные Flavor Tree (вымышленный бар в Алматы, цены в тенге) — не выгрузка реального заведения",
+  "id": 42,
+  "name": "Основное меню",
+  "revision": 9,
+  "formatVersion": 2,
+  "itemCategories": [
+    {
+      "id": "cat-1",
+      "name": "Пиво разливное",
+      "isHidden": false,
+      "items": [
+        {
+          "sku": "",
+          "name": "Северное Сияние",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-331208114515",
+          "type": "Dish",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "0,3 л",
+              "isDefault": false,
+              "portionWeightGrams": 300,
+              "sizeId": "s-03",
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 1100
+                }
+              ]
+            },
+            {
+              "sku": "",
+              "sizeName": "0,5 л",
+              "isDefault": true,
+              "portionWeightGrams": 500,
+              "sizeId": "s-05",
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 1600
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sku": "",
+          "name": "Легенда 777",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-667404104349",
+          "type": "Dish",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "",
+              "isDefault": true,
+              "portionWeightGrams": 500,
+              "sizeId": null,
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 1700
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sku": "",
+          "name": "Бочковое",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-826278024764",
+          "type": "Dish",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "",
+              "isDefault": true,
+              "portionWeightGrams": 500,
+              "sizeId": null,
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 1600
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sku": "",
+          "name": "Kozel",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-738724604007",
+          "type": "Dish",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "",
+              "isDefault": true,
+              "portionWeightGrams": 500,
+              "sizeId": null,
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 1900
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-2",
+      "name": "Гриль",
+      "isHidden": false,
+      "items": [
+        {
+          "sku": "",
+          "name": "Шашлык из баранины",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-426061722701",
+          "type": "Dish",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "",
+              "isDefault": true,
+              "portionWeightGrams": 250,
+              "sizeId": null,
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 3900
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sku": "",
+          "name": "Крылышки Баффало",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-869635046984",
+          "type": "Dish",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "",
+              "isDefault": true,
+              "portionWeightGrams": 300,
+              "sizeId": null,
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 2600
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "sku": "",
+          "name": "Соус чесночный",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-452758080992",
+          "type": "Modifier",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "",
+              "isDefault": true,
+              "portionWeightGrams": 30,
+              "sizeId": null,
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 300
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat-3",
+      "name": "Скрытый раздел",
+      "isHidden": true,
+      "items": [
+        {
+          "sku": "",
+          "name": "Бургер",
+          "description": "",
+          "itemId": "b0000000-0000-4000-8000-717176341413",
+          "type": "Dish",
+          "measureUnit": "порц",
+          "isHidden": false,
+          "itemSizes": [
+            {
+              "sku": "",
+              "sizeName": "",
+              "isDefault": true,
+              "portionWeightGrams": 350,
+              "sizeId": null,
+              "isHidden": false,
+              "prices": [
+                {
+                  "organizations": [
+                    "org-1"
+                  ],
+                  "price": 3600
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  {"level": 1, "id": "novice", "title": "Новичок", "subtitle": "Азбука вкуса", "xp_required": 0, "color": "#F5B942",
+   "description": "Три слоя вкуса, температура подачи, бокал. Учимся не «пить», а слушать первые 15 секунд глотка."},
+  {"level": 2, "id": "explorer", "title": "Исследователь", "subtitle": "Архитектура пирамиды", "xp_required": 500, "color": "#E08A28",
+   "description": "Top / Heart / Base на практике: хмель против солода, зерно против карамели, как читать пирамиду сорта."},
+  {"level": 3, "id": "expert", "title": "Знаток", "subtitle": "Искусство Food Pairing", "xp_required": 1500, "color": "#C2621A",
+   "description": "Четыре механики пары — Complement, Contrast, Cleanse, Bridge — и почему бешбармак дружит с Kozel."},
+  {"level": 4, "id": "sommelier", "title": "Сомелье", "subtitle": "Слепая дегустация и сертификат", "xp_required": 5000, "color": "#8C3F0C",
+   "description": "Дефекты вкуса (off-flavours), дегустационные карты, подбор для гостей. 5000 XP — именной сертификат Efes с QR-верификацией."}
+]

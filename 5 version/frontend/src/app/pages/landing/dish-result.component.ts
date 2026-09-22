@@ -59,7 +59,7 @@ const PAIRING_HINT: Record<string, string> = {
               @if (big(best.brand); as src) {
                 <img [src]="src" [alt]="'Бутылка ' + best.brand.name" />
               } @else {
-                <span class="dr-fallback" aria-hidden="true">🍺</span>
+                <span class="dr-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3.5l2 3V21a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8.5l2-3V2Z"/><path d="M8 12h8"/></svg></span>
               }
             </div>
 
@@ -131,7 +131,7 @@ const PAIRING_HINT: Record<string, string> = {
                   @if (small(alt.brand); as src) {
                     <img [src]="src" [alt]="alt.brand.name" loading="lazy" />
                   } @else {
-                    <span class="dr-fallback" aria-hidden="true">🍺</span>
+                    <span class="dr-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3.5l2 3V21a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8.5l2-3V2Z"/><path d="M8 12h8"/></svg></span>
                   }
                 </span>
 
@@ -215,8 +215,15 @@ const PAIRING_HINT: Record<string, string> = {
       overflow: hidden;
       background: radial-gradient(circle at 50% 45%, var(--beer-glow), transparent 68%);
     }
-    .dr-best-visual img { position: absolute; inset: 6px; width: auto; height: auto; max-width: calc(100% - 12px); max-height: calc(100% - 12px); margin: auto; object-fit: contain; }
-    .dr-fallback { font-size: 3.4rem; line-height: 1; }
+    .dr-best-visual img {
+      position: absolute; inset: 6px; width: auto; height: auto;
+      max-width: calc(100% - 12px); max-height: calc(100% - 12px);
+      margin: auto; object-fit: contain;
+      /* Тень объёма: фото приходят PNG без фона и без неё лежат плоско. */
+      filter: drop-shadow(0 16px 20px rgba(69, 26, 3, 0.28));
+    }
+    .dr-fallback svg { width: 44px; height: 44px; }
+    .dr-fallback { color: var(--beer-mid); opacity: 0.35; line-height: 1; }
 
     .dr-best-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-md); }
     .dr-best-name { font-size: clamp(1.8rem, 3.4vw, 2.6rem); }
@@ -292,7 +299,12 @@ const PAIRING_HINT: Record<string, string> = {
     .dr-alt:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
 
     .dr-alt-visual { position: relative; display: block; width: 110px; height: 110px; overflow: hidden; }
-    .dr-alt-visual img { position: absolute; inset: 6px; width: auto; height: auto; max-width: calc(100% - 12px); max-height: calc(100% - 12px); margin: auto; object-fit: contain; }
+    .dr-alt-visual img {
+      position: absolute; inset: 6px; width: auto; height: auto;
+      max-width: calc(100% - 12px); max-height: calc(100% - 12px);
+      margin: auto; object-fit: contain;
+      filter: drop-shadow(0 8px 10px rgba(69, 26, 3, 0.24));
+    }
 
     .dr-alt-body { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 0; }
     .dr-alt-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); width: 100%; }

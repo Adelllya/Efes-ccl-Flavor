@@ -1,0 +1,2142 @@
+{
+  "_sample": "Учебные данные Flavor Tree (вымышленный бар в Алматы, цены в тенге) — не выгрузка реального заведения",
+  "correlationId": "0f0f0f0f-0000-4000-8000-000000000000",
+  "groups": [
+    {
+      "id": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "name": "Пиво разливное",
+      "parentGroup": null,
+      "order": 0,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "name": "Пиво бутылочное и банка",
+      "parentGroup": null,
+      "order": 1,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "name": "Закуски к пиву",
+      "parentGroup": null,
+      "order": 2,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "name": "Гриль",
+      "parentGroup": null,
+      "order": 3,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "name": "Казахская кухня",
+      "parentGroup": null,
+      "order": 4,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "name": "Горячее",
+      "parentGroup": null,
+      "order": 5,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0007-4a0b-9c1d-000000000007",
+      "name": "Десерты",
+      "parentGroup": null,
+      "order": 6,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0008-4a0b-9c1d-000000000008",
+      "name": "Напитки б/а",
+      "parentGroup": null,
+      "order": 7,
+      "isIncludedInMenu": true,
+      "isGroupModifier": false,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    },
+    {
+      "id": "7d3a1c2e-0009-4a0b-9c1d-000000000009",
+      "name": "Добавки к блюдам",
+      "parentGroup": null,
+      "order": 8,
+      "isIncludedInMenu": true,
+      "isGroupModifier": true,
+      "isDeleted": false,
+      "imageLinks": [],
+      "code": null,
+      "description": null
+    }
+  ],
+  "productCategories": [
+    {
+      "id": "c0000000-0000-4000-8000-000000000001",
+      "name": "Кухня",
+      "isDeleted": false
+    }
+  ],
+  "products": [
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000001",
+      "code": "0001",
+      "name": "Северное Сияние",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Compound",
+      "parentGroup": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "groupId": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "productCategoryId": null,
+      "measureUnit": "л",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000003",
+          "price": {
+            "currentPrice": 1100,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        },
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000005",
+          "price": {
+            "currentPrice": 1600,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 1,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000002",
+      "code": "0002",
+      "name": "Легенда 777",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Compound",
+      "parentGroup": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "groupId": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "productCategoryId": null,
+      "measureUnit": "л",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000003",
+          "price": {
+            "currentPrice": 1200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        },
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000005",
+          "price": {
+            "currentPrice": 1700,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 2,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000003",
+      "code": "0003",
+      "name": "13 регион",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Compound",
+      "parentGroup": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "groupId": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "productCategoryId": null,
+      "measureUnit": "л",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000003",
+          "price": {
+            "currentPrice": 1000,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        },
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000005",
+          "price": {
+            "currentPrice": 1500,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 3,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000004",
+      "code": "0004",
+      "name": "Бочковое",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Compound",
+      "parentGroup": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "groupId": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "productCategoryId": null,
+      "measureUnit": "л",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000003",
+          "price": {
+            "currentPrice": 1100,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        },
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000005",
+          "price": {
+            "currentPrice": 1600,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 4,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000005",
+      "code": "0005",
+      "name": "Старый мельник из бочонка",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Compound",
+      "parentGroup": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "groupId": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "productCategoryId": null,
+      "measureUnit": "л",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000003",
+          "price": {
+            "currentPrice": 1200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        },
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000005",
+          "price": {
+            "currentPrice": 1750,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 5,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000006",
+      "code": "0006",
+      "name": "Kozel Světlý разливное",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Compound",
+      "parentGroup": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "groupId": "7d3a1c2e-0001-4a0b-9c1d-000000000001",
+      "productCategoryId": null,
+      "measureUnit": "л",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000003",
+          "price": {
+            "currentPrice": 1300,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        },
+        {
+          "sizeId": "5a5e0000-0000-4000-8000-000000000005",
+          "price": {
+            "currentPrice": 1900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 6,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000007",
+      "code": "0007",
+      "name": "Efes Pilsener",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.45,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1400,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 7,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000008",
+      "code": "0008",
+      "name": "Efes Pilsener 0,33",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.33,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 8,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000009",
+      "code": "0009",
+      "name": "Kozel Dark",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 9,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000010",
+      "code": "0010",
+      "name": "Kozel 0,3",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1100,
+            "isIncludedInMenu": false,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 10,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000011",
+      "code": "0011",
+      "name": "Miller Genuine Draft",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.33,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1700,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 11,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000012",
+      "code": "0012",
+      "name": "Bavaria Premium",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1500,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 12,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000013",
+      "code": "0013",
+      "name": "Белый Медведь Светлое",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 13,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000014",
+      "code": "0014",
+      "name": "Хмельной Лось ж/б",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.45,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1000,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 14,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000015",
+      "code": "0015",
+      "name": "Guinness Draught",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.44,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 15,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000016",
+      "code": "0016",
+      "name": "Hoegaarden",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.33,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 16,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000017",
+      "code": "0017",
+      "name": "Жигулёвское",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 850,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 17,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000018",
+      "code": "0018",
+      "name": "Карагандинское",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 18,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000019",
+      "code": "0019",
+      "name": "Кружка Свежего",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 950,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 19,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000020",
+      "code": "0020",
+      "name": "Bremen von Lustig",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1300,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 20,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000021",
+      "code": "0021",
+      "name": "Wùkōng Jū (悟空居)",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.33,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1800,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 21,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000022",
+      "code": "0022",
+      "name": "Slavna ПРАГА",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "groupId": "7d3a1c2e-0002-4a0b-9c1d-000000000002",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1100,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 22,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000023",
+      "code": "0023",
+      "name": "Шашлык из баранины",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "groupId": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.25,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 23,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000024",
+      "code": "0024",
+      "name": "Шашлык из курицы",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "groupId": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.25,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 24,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000025",
+      "code": "0025",
+      "name": "Люля-кебаб",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "groupId": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.2,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 25,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000026",
+      "code": "0026",
+      "name": "Куриные крылышки BBQ",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "groupId": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2600,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 26,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000027",
+      "code": "0027",
+      "name": "Стейк Рибай",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "groupId": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 8900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 27,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000028",
+      "code": "0028",
+      "name": "Братвурст с квашеной капустой",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "groupId": "7d3a1c2e-0004-4a0b-9c1d-000000000004",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3400,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 28,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000029",
+      "code": "0029",
+      "name": "Начос с сыром и халапеньо",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "groupId": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.35,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 29,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000030",
+      "code": "0030",
+      "name": "Брецель с горчицей",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "groupId": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.15,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 30,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000031",
+      "code": "0031",
+      "name": "Сырные палочки",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "groupId": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.2,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1800,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 31,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000032",
+      "code": "0032",
+      "name": "Картофель фри",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "groupId": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.15,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 32,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000033",
+      "code": "0033",
+      "name": "Мясное ассорти к пиву",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "groupId": "7d3a1c2e-0003-4a0b-9c1d-000000000003",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 4500,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 33,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000034",
+      "code": "0034",
+      "name": "Бургер с говядиной",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "groupId": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.35,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3600,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 34,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000035",
+      "code": "0035",
+      "name": "Цезарь с курицей",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "groupId": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.25,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 35,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000036",
+      "code": "0036",
+      "name": "Паста Карбонара",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "groupId": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2700,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 36,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000037",
+      "code": "0037",
+      "name": "Пицца Пепперони 30 см",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "groupId": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.45,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3800,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 37,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000038",
+      "code": "0038",
+      "name": "Бешбармак",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "groupId": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.4,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 4200,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 38,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000039",
+      "code": "0039",
+      "name": "Манты (5 шт)",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "groupId": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.35,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2400,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 39,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000040",
+      "code": "0040",
+      "name": "Казы",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "groupId": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.15,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3800,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 40,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000041",
+      "code": "0041",
+      "name": "Баурсаки",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "groupId": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.15,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 41,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000042",
+      "code": "0042",
+      "name": "Самса с говядиной",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "groupId": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.12,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 700,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 42,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000043",
+      "code": "0043",
+      "name": "Куырдак",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "groupId": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 3600,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 43,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000044",
+      "code": "0044",
+      "name": "Плов по-узбекски",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "groupId": "7d3a1c2e-0005-4a0b-9c1d-000000000005",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.4,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 2800,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 44,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000045",
+      "code": "0045",
+      "name": "Тирамису",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0007-4a0b-9c1d-000000000007",
+      "groupId": "7d3a1c2e-0007-4a0b-9c1d-000000000007",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.12,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 45,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000046",
+      "code": "0046",
+      "name": "Штрудель яблочный",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0007-4a0b-9c1d-000000000007",
+      "groupId": "7d3a1c2e-0007-4a0b-9c1d-000000000007",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.15,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1700,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 46,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000047",
+      "code": "0047",
+      "name": "Чизкейк Нью-Йорк",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0007-4a0b-9c1d-000000000007",
+      "groupId": "7d3a1c2e-0007-4a0b-9c1d-000000000007",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.13,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1900,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 47,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000048",
+      "code": "0048",
+      "name": "Кока-кола 0,5",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0008-4a0b-9c1d-000000000008",
+      "groupId": "7d3a1c2e-0008-4a0b-9c1d-000000000008",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.5,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 700,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 48,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000049",
+      "code": "0049",
+      "name": "Сок яблочный 0,2",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0008-4a0b-9c1d-000000000008",
+      "groupId": "7d3a1c2e-0008-4a0b-9c1d-000000000008",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.2,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 600,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 49,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000050",
+      "code": "0050",
+      "name": "Айран",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0008-4a0b-9c1d-000000000008",
+      "groupId": "7d3a1c2e-0008-4a0b-9c1d-000000000008",
+      "productCategoryId": null,
+      "measureUnit": "шт",
+      "weight": 0.3,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 500,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 50,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000051",
+      "code": "0051",
+      "name": "Соус BBQ",
+      "description": null,
+      "type": "Modifier",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0009-4a0b-9c1d-000000000009",
+      "groupId": "7d3a1c2e-0009-4a0b-9c1d-000000000009",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.03,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 300,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 51,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000052",
+      "code": "0052",
+      "name": "Сыр (добавка)",
+      "description": null,
+      "type": "Modifier",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0009-4a0b-9c1d-000000000009",
+      "groupId": "7d3a1c2e-0009-4a0b-9c1d-000000000009",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.03,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 400,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 52,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000053",
+      "code": "0053",
+      "name": "Лёд",
+      "description": null,
+      "type": "Good",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0009-4a0b-9c1d-000000000009",
+      "groupId": "7d3a1c2e-0009-4a0b-9c1d-000000000009",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": null,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 0,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 53,
+      "isDeleted": false,
+      "tags": [],
+      "additionalInfo": null
+    },
+    {
+      "id": "9e0b0000-0000-4000-8000-000000000054",
+      "code": "0054",
+      "name": "Старая позиция (удалена)",
+      "description": null,
+      "type": "Dish",
+      "orderItemType": "Product",
+      "parentGroup": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "groupId": "7d3a1c2e-0006-4a0b-9c1d-000000000006",
+      "productCategoryId": null,
+      "measureUnit": "порц",
+      "weight": 0.2,
+      "sizePrices": [
+        {
+          "sizeId": null,
+          "price": {
+            "currentPrice": 1000,
+            "isIncludedInMenu": true,
+            "nextPrice": null,
+            "nextIncludedInMenu": false,
+            "nextDatePrice": null
+          }
+        }
+      ],
+      "modifiers": [],
+      "groupModifiers": [],
+      "imageLinks": [],
+      "splittable": false,
+      "doNotPrintInCheque": false,
+      "useBalanceForSell": false,
+      "canSetOpenPrice": false,
+      "order": 54,
+      "isDeleted": true,
+      "tags": [],
+      "additionalInfo": null
+    }
+  ],
+  "sizes": [
+    {
+      "id": "5a5e0000-0000-4000-8000-000000000003",
+      "name": "0,3 л",
+      "priority": 0,
+      "isDefault": false
+    },
+    {
+      "id": "5a5e0000-0000-4000-8000-000000000005",
+      "name": "0,5 л",
+      "priority": 1,
+      "isDefault": true
+    }
+  ],
+  "revision": 174
+}

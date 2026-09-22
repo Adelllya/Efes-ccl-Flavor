@@ -46,8 +46,9 @@ class FlavorNoteAdmin(admin.ModelAdmin):
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     list_display = ['image_preview', 'name', 'brand_owner', 'style', 'abv', 'packaging_type', 'is_horeca_only', 'is_active', 'profile_status']
-    list_filter = ['packaging_type', 'is_horeca_only', 'brand_owner', 'style', 'is_active']
-    search_fields = ['name', 'brand_owner', 'style']
+    list_filter = ['packaging_type', 'is_horeca_only', 'brand_owner', 'style_family', 'is_active', 'abv_estimated']
+    search_fields = ['name', 'brand_owner', 'style', 'slug']
+    prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ['image_preview_large']
     inlines = [FlavorProfileInline, ServingRecommendationInline, FoodPairingInline]
 
@@ -134,3 +135,81 @@ class AnonymousSessionAdmin(admin.ModelAdmin):
     list_display = ['id', 'qr_code', 'completed_levels', 'score', 'created_at']
     list_filter = ['completed_levels']
     ordering = ['-created_at']
+
+
+# ── SaaS: заведения-клиенты, их карта, столы, события и воронка продаж ──
+from datetime import timedelta
+
+from django.utils import timezone
+
+from .models import Lead, MenuEvent, ScanEvent, VenueAccount, VenueMenuItem
+
+
+class VenueMenuItemInline(admin.TabularInline):
+    model = VenueMenuItem
+    extra = 0
+    fields = ('kind', 'ref_slug', 'price', 'volume', 'is_available', 'is_featured', 'sort_order')
+
+
+@admin.register(VenueAccount)
+class VenueAccountAdmin(admin.ModelAdmin):
+    list_display = ('email', 'venue', 'plan', 'days_left', 'subscription_ok', 'is_active', 'last_login_at')
+    list_filter = ('plan', 'is_active')
+    search_fields = ('email', 'venue__name', 'phone', 'contact_name')
+    readonly_fields = ('api_token', 'created_at', 'last_login_at', 'password_hash')
+    actions = ('extend_month', 'rotate_tokens')
+
+    @admin.display(description='Осталось дней')
+    def days_left(self, obj):
+        return obj.days_left
+
+    @admin.display(boolean=True, description='Подписка активна')
+    def subscription_ok(self, obj):
+        return obj.subscription_ok
+
+    @admin.action(description='Продлить на 30 дней')
+    def extend_month(self, request, queryset):
+        now = timezone.now()
+        for account in queryset:
+            base = account.paid_until if account.paid_until and account.paid_until > now else now
+            account.paid_until = base + timedelta(days=30)
+            account.save(update_fields=['paid_until'])
+        self.message_user(request, f'Продлено аккаунтов: {queryset.count()}')
+
+    @admin.action(description='Сбросить токен API')
+    def rotate_tokens(self, request, queryset):
+        for account in queryset:
+            account.rotate_token()
+        self.message_user(request, 'Токены обновлены')
+
+
+@admin.register(VenueMenuItem)
+class VenueMenuItemAdmin(admin.ModelAdmin):
+    list_display = ('venue', 'kind', 'ref_slug', 'price', 'volume', 'is_available', 'is_featured')
+    list_filter = ('kind', 'is_available', 'is_featured', 'venue')
+    list_editable = ('price', 'is_available', 'is_featured')
+    search_fields = ('ref_slug', 'custom_name', 'venue__name')
+
+
+@admin.register(Lead)
+class LeadAdmin(admin.ModelAdmin):
+    list_display = ('venue_name', 'contact_name', 'phone', 'city', 'tables', 'plan_interest', 'status', 'created_at')
+    list_filter = ('status', 'city', 'plan_interest')
+    list_editable = ('status',)
+    search_fields = ('venue_name', 'phone', 'email', 'contact_name')
+    date_hierarchy = 'created_at'
+
+
+@admin.register(ScanEvent)
+class ScanEventAdmin(admin.ModelAdmin):
+    list_display = ('venue', 'table_number', 'created_at')
+    list_filter = ('venue',)
+    date_hierarchy = 'created_at'
+
+
+@admin.register(MenuEvent)
+class MenuEventAdmin(admin.ModelAdmin):
+    list_display = ('venue', 'kind', 'dish_slug', 'beer_slug', 'score', 'price', 'created_at')
+    list_filter = ('kind', 'venue')
+    search_fields = ('dish_slug', 'beer_slug')
+    date_hierarchy = 'created_at'

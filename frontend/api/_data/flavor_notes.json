@@ -1,0 +1,1091 @@
+[
+  {
+    "id": "freshness",
+    "name": "Свежесть",
+    "technical_term": "Freshness / Crisp",
+    "category": "TOP",
+    "icon": "🌿",
+    "description": "Яркое ощущение свежести, чистоты и прохлады при первом глотке",
+    "axes": {
+      "carbonation": 0.7,
+      "clean": 0.5
+    },
+    "tags": [
+      "fresh"
+    ],
+    "sort_order": 1,
+    "is_off_flavour": false
+  },
+  {
+    "id": "hop-aroma",
+    "name": "Хмелевой аромат",
+    "technical_term": "Hop Aroma",
+    "category": "TOP",
+    "icon": "🍃",
+    "description": "Свежий аромат благородного хмеля (травянистый, смолистый)",
+    "axes": {
+      "hop_aroma": 0.9
+    },
+    "tags": [
+      "herbs",
+      "pine",
+      "grass"
+    ],
+    "sort_order": 2,
+    "is_off_flavour": false
+  },
+  {
+    "id": "floral",
+    "name": "Цветочные ноты",
+    "technical_term": "Floral / Linalool",
+    "category": "TOP",
+    "icon": "🌸",
+    "description": "Тонкие оттенки луговых цветов, жасмина, цитрусового цвета",
+    "axes": {
+      "hop_aroma": 0.6,
+      "fruit": 0.2
+    },
+    "tags": [
+      "floral",
+      "herbs"
+    ],
+    "sort_order": 3,
+    "is_off_flavour": false
+  },
+  {
+    "id": "light-hop",
+    "name": "Лёгкий хмель",
+    "technical_term": "Light Hop",
+    "category": "TOP",
+    "icon": "🌱",
+    "description": "Деликатный, ненавязчивый хмелевой оттенок",
+    "axes": {
+      "hop_aroma": 0.4
+    },
+    "tags": [
+      "herbs"
+    ],
+    "sort_order": 4,
+    "is_off_flavour": false
+  },
+  {
+    "id": "effervescence",
+    "name": "Искрящаяся карбонация",
+    "technical_term": "Effervescence / Carbonation",
+    "category": "TOP",
+    "icon": "✨",
+    "description": "Искрящиеся покалывающие пузырьки газа, освежающие рецепторы",
+    "axes": {
+      "carbonation": 0.95
+    },
+    "tags": [
+      "fizz",
+      "fresh"
+    ],
+    "sort_order": 5,
+    "is_off_flavour": false
+  },
+  {
+    "id": "alcoholic",
+    "name": "Спиртовая теплота",
+    "technical_term": "Alcoholic / Warming",
+    "category": "TOP",
+    "icon": "🔥",
+    "description": "Согревающее ощущение этанола, характерное для крепких сортов",
+    "axes": {
+      "alcohol": 0.8,
+      "body": 0.2
+    },
+    "tags": [
+      "warmth"
+    ],
+    "sort_order": 6,
+    "is_off_flavour": false
+  },
+  {
+    "id": "kettle-hop",
+    "name": "Котловой хмель",
+    "technical_term": "Kettle Hop",
+    "category": "TOP",
+    "icon": "🫖",
+    "description": "Глубокий хмелевой аромат многоэтапного охмеления в сусловарочном котле",
+    "axes": {
+      "hop_aroma": 0.7,
+      "bitter": 0.3
+    },
+    "tags": [
+      "herbs",
+      "pine"
+    ],
+    "sort_order": 7,
+    "is_off_flavour": false
+  },
+  {
+    "id": "citrus",
+    "name": "Цитрусовый аромат",
+    "technical_term": "Citrus / Myrcene",
+    "category": "TOP",
+    "icon": "🍋",
+    "description": "Яркие ноты цедры лимона, грейпфрута или апельсина",
+    "axes": {
+      "hop_aroma": 0.7,
+      "fruit": 0.5
+    },
+    "tags": [
+      "citrus",
+      "lime",
+      "lemon"
+    ],
+    "sort_order": 8,
+    "is_off_flavour": false
+  },
+  {
+    "id": "fruity-esters",
+    "name": "Фруктовые эфиры",
+    "technical_term": "Fruity Esters",
+    "category": "TOP",
+    "icon": "🍎",
+    "description": "Фруктовые оттенки зеленого яблока, груши или банана",
+    "axes": {
+      "fruit": 0.9
+    },
+    "tags": [
+      "apple",
+      "pear",
+      "banana",
+      "fruit"
+    ],
+    "sort_order": 9,
+    "is_off_flavour": false
+  },
+  {
+    "id": "malty",
+    "name": "Солод",
+    "technical_term": "Malty",
+    "category": "HEART",
+    "icon": "🌾",
+    "description": "Сладковато-зерновой, хлебный фундамент пива из ячменного солода",
+    "axes": {
+      "malt_sweet": 0.6,
+      "body": 0.4
+    },
+    "tags": [
+      "bread",
+      "grain"
+    ],
+    "sort_order": 10,
+    "is_off_flavour": false
+  },
+  {
+    "id": "rich-malt",
+    "name": "Солодовая плотность",
+    "technical_term": "Rich Malt",
+    "category": "HEART",
+    "icon": "🍞",
+    "description": "Глубокое, округлое солодовое тело напитка",
+    "axes": {
+      "body": 0.8,
+      "malt_sweet": 0.5
+    },
+    "tags": [
+      "bread",
+      "grain"
+    ],
+    "sort_order": 11,
+    "is_off_flavour": false
+  },
+  {
+    "id": "grainy",
+    "name": "Зерновые ноты",
+    "technical_term": "Grainy / Cereal",
+    "category": "HEART",
+    "icon": "🥣",
+    "description": "Оттенки свежего зерна, солодовой муки, ячменных хлопьев",
+    "axes": {
+      "malt_sweet": 0.3,
+      "clean": 0.3,
+      "body": 0.3
+    },
+    "tags": [
+      "grain",
+      "bread",
+      "corn"
+    ],
+    "sort_order": 12,
+    "is_off_flavour": false
+  },
+  {
+    "id": "caramel",
+    "name": "Карамель",
+    "technical_term": "Caramel / Maltol",
+    "category": "HEART",
+    "icon": "🍯",
+    "description": "Сладкие ноты жженого сахара, тоффи и карамельного солода",
+    "axes": {
+      "caramel": 0.9,
+      "malt_sweet": 0.6
+    },
+    "tags": [
+      "caramel",
+      "toffee",
+      "honey"
+    ],
+    "sort_order": 13,
+    "is_off_flavour": false
+  },
+  {
+    "id": "rice",
+    "name": "Рисовые ноты",
+    "technical_term": "Rice / Dry Cereal",
+    "category": "HEART",
+    "icon": "🍚",
+    "description": "Легкий сухой рисовый профиль, придающий воздушность и нейтральную чистоту",
+    "axes": {
+      "clean": 0.8
+    },
+    "tags": [
+      "rice"
+    ],
+    "sort_order": 14,
+    "is_off_flavour": false
+  },
+  {
+    "id": "sweetness",
+    "name": "Сладость",
+    "technical_term": "Sweetness",
+    "category": "HEART",
+    "icon": "🍬",
+    "description": "Мягкая натуральная сладость несброженных сахаров",
+    "axes": {
+      "malt_sweet": 0.8
+    },
+    "tags": [
+      "honey",
+      "sweet"
+    ],
+    "sort_order": 15,
+    "is_off_flavour": false
+  },
+  {
+    "id": "worty",
+    "name": "Сусло (Worty)",
+    "technical_term": "Worty",
+    "category": "HEART",
+    "icon": "🌾",
+    "description": "Свежий аромат варочного цеха и теплого пивного сусла",
+    "axes": {
+      "malt_sweet": 0.6,
+      "body": 0.3
+    },
+    "tags": [
+      "grain",
+      "bread",
+      "honey"
+    ],
+    "sort_order": 16,
+    "is_off_flavour": false
+  },
+  {
+    "id": "smooth-malt-balance",
+    "name": "Мягкий баланс солода",
+    "technical_term": "Smooth Malt Balance",
+    "category": "HEART",
+    "icon": "🥖",
+    "description": "Идеально сбалансированное, бархатистое солодовое сердце",
+    "axes": {
+      "malt_sweet": 0.5,
+      "body": 0.5,
+      "clean": 0.3
+    },
+    "tags": [
+      "bread"
+    ],
+    "sort_order": 17,
+    "is_off_flavour": false
+  },
+  {
+    "id": "roasty",
+    "name": "Обжаренный солод",
+    "technical_term": "Roasty / 2-Acetylpyridine",
+    "category": "HEART",
+    "icon": "☕",
+    "description": "Кофейно-шоколадный характер темного прожаренного солода",
+    "axes": {
+      "roast": 0.9,
+      "body": 0.3
+    },
+    "tags": [
+      "coffee",
+      "toast",
+      "roast"
+    ],
+    "sort_order": 18,
+    "is_off_flavour": false
+  },
+  {
+    "id": "chocolate",
+    "name": "Шоколад",
+    "technical_term": "Chocolate / Pyrazines",
+    "category": "HEART",
+    "icon": "🍫",
+    "description": "Ноты горького темного какао и шоколада",
+    "axes": {
+      "roast": 0.7,
+      "caramel": 0.3
+    },
+    "tags": [
+      "chocolate",
+      "cocoa"
+    ],
+    "sort_order": 19,
+    "is_off_flavour": false
+  },
+  {
+    "id": "hop-bitterness",
+    "name": "Хмелевая горчинка",
+    "technical_term": "Hop Bitterness / Iso-alpha",
+    "category": "BASE",
+    "icon": "⚡",
+    "description": "Благородная освежающая горечь изо-альфа-кислот хмеля",
+    "axes": {
+      "bitter": 0.9
+    },
+    "tags": [
+      "herbs"
+    ],
+    "sort_order": 20,
+    "is_off_flavour": false
+  },
+  {
+    "id": "refreshing-finish",
+    "name": "Освежающий финиш",
+    "technical_term": "Refreshing Finish",
+    "category": "BASE",
+    "icon": "❄️",
+    "description": "Быстрое, сухое и чистое завершение глотка, зовущее к следующему",
+    "axes": {
+      "carbonation": 0.6,
+      "clean": 0.6
+    },
+    "tags": [
+      "fresh"
+    ],
+    "sort_order": 21,
+    "is_off_flavour": false
+  },
+  {
+    "id": "mild-bitterness",
+    "name": "Умеренная горечь",
+    "technical_term": "Mild Bitterness",
+    "category": "BASE",
+    "icon": "🌿",
+    "description": "Мягкая, сглаженная горчинка без резкости",
+    "axes": {
+      "bitter": 0.5
+    },
+    "tags": [],
+    "sort_order": 22,
+    "is_off_flavour": false
+  },
+  {
+    "id": "clean-finish",
+    "name": "Чистый финиш",
+    "technical_term": "Clean Finish",
+    "category": "BASE",
+    "icon": "🫧",
+    "description": "Кристально чистое послевкусие без посторонних привкусов",
+    "axes": {
+      "clean": 0.8,
+      "carbonation": 0.3
+    },
+    "tags": [
+      "fresh"
+    ],
+    "sort_order": 23,
+    "is_off_flavour": false
+  },
+  {
+    "id": "balanced-finish",
+    "name": "Сбалансированный финиш",
+    "technical_term": "Balanced Finish",
+    "category": "BASE",
+    "icon": "⚖️",
+    "description": "Гармоничный баланс между мягким солодом и тонким хмелем",
+    "axes": {
+      "clean": 0.4,
+      "malt_sweet": 0.3,
+      "bitter": 0.3
+    },
+    "tags": [],
+    "sort_order": 24,
+    "is_off_flavour": false
+  },
+  {
+    "id": "hoppy-aftertaste",
+    "name": "Хмелевое послевкусие",
+    "technical_term": "Hoppy Aftertaste",
+    "category": "BASE",
+    "icon": "🍃",
+    "description": "Долгое приятное травянисто-хмелевое эхо",
+    "axes": {
+      "bitter": 0.6,
+      "hop_aroma": 0.5
+    },
+    "tags": [
+      "herbs",
+      "grass"
+    ],
+    "sort_order": 25,
+    "is_off_flavour": false
+  },
+  {
+    "id": "crisp-dynamic-bitterness",
+    "name": "Динамичная горечь",
+    "technical_term": "Crisp Dynamic Bitterness",
+    "category": "BASE",
+    "icon": "🎯",
+    "description": "Яркая, бодрящая горчинка с быстрым развитием",
+    "axes": {
+      "bitter": 0.8,
+      "carbonation": 0.3
+    },
+    "tags": [],
+    "sort_order": 26,
+    "is_off_flavour": false
+  },
+  {
+    "id": "sweet-finish",
+    "name": "Тонкая сладость финиша",
+    "technical_term": "Sweet Finish",
+    "category": "BASE",
+    "icon": "🍯",
+    "description": "Едва уловимая карамельно-солодовая сладость в финале",
+    "axes": {
+      "malt_sweet": 0.5,
+      "caramel": 0.3
+    },
+    "tags": [
+      "honey",
+      "caramel"
+    ],
+    "sort_order": 27,
+    "is_off_flavour": false
+  },
+  {
+    "id": "classic-bitterness",
+    "name": "Классическая горечь",
+    "technical_term": "Classic Bitterness",
+    "category": "BASE",
+    "icon": "🍺",
+    "description": "Традиционная лагерная горчинка, выверенная годами",
+    "axes": {
+      "bitter": 0.7
+    },
+    "tags": [],
+    "sort_order": 28,
+    "is_off_flavour": false
+  },
+  {
+    "id": "mouthfeel",
+    "name": "Тело и плотность (Body)",
+    "technical_term": "Mouthfeel / Body",
+    "category": "BASE",
+    "icon": "🧱",
+    "description": "Ощущение весомости, плотности и густоты напитка во рту",
+    "axes": {
+      "body": 0.9
+    },
+    "tags": [],
+    "sort_order": 29,
+    "is_off_flavour": false
+  },
+  {
+    "id": "amber-sweetness",
+    "name": "Янтарная сладость",
+    "technical_term": "Amber Sweetness",
+    "category": "BASE",
+    "icon": "🍂",
+    "description": "Мягкое послевкусие венского и янтарного солода",
+    "axes": {
+      "caramel": 0.7,
+      "malt_sweet": 0.5
+    },
+    "tags": [
+      "caramel",
+      "toffee",
+      "bread"
+    ],
+    "sort_order": 30,
+    "is_off_flavour": false
+  },
+  {
+    "id": "smooth-finish",
+    "name": "Мягкий финиш",
+    "technical_term": "Smooth Finish",
+    "category": "BASE",
+    "icon": "🕊️",
+    "description": "Округлый, бархатистый и шелковистый сход вкуса",
+    "axes": {
+      "clean": 0.5,
+      "body": 0.3
+    },
+    "tags": [],
+    "sort_order": 31,
+    "is_off_flavour": false
+  },
+  {
+    "id": "banana",
+    "name": "Банан",
+    "technical_term": "Banana / Isoamyl acetate",
+    "category": "TOP",
+    "icon": "🍌",
+    "description": "Эфирный аромат спелого банана — дрожжевой характер пшеничных и тёплых брожений",
+    "axes": {
+      "fruit": 0.8
+    },
+    "tags": [
+      "banana",
+      "fruit"
+    ],
+    "sort_order": 32,
+    "is_off_flavour": false
+  },
+  {
+    "id": "tropical-fruit",
+    "name": "Тропические фрукты",
+    "technical_term": "Tropical Fruit",
+    "category": "TOP",
+    "icon": "🥭",
+    "description": "Манго, маракуйя, ананас — современные ароматные сорта хмеля",
+    "axes": {
+      "hop_aroma": 0.5,
+      "fruit": 0.7
+    },
+    "tags": [
+      "mango",
+      "tropical",
+      "citrus"
+    ],
+    "sort_order": 33,
+    "is_off_flavour": false
+  },
+  {
+    "id": "berry",
+    "name": "Ягоды",
+    "technical_term": "Berry",
+    "category": "TOP",
+    "icon": "🫐",
+    "description": "Тёмные и красные ягоды: смородина, ежевика, вишня",
+    "axes": {
+      "fruit": 0.7
+    },
+    "tags": [
+      "berry",
+      "fruit"
+    ],
+    "sort_order": 34,
+    "is_off_flavour": false
+  },
+  {
+    "id": "pine",
+    "name": "Сосна и смола",
+    "technical_term": "Pine / Resin",
+    "category": "TOP",
+    "icon": "🌲",
+    "description": "Хвойная смолистость американского хмеля",
+    "axes": {
+      "hop_aroma": 0.8,
+      "bitter": 0.2
+    },
+    "tags": [
+      "pine",
+      "resin",
+      "herbs"
+    ],
+    "sort_order": 35,
+    "is_off_flavour": false
+  },
+  {
+    "id": "grassy",
+    "name": "Травянистость",
+    "technical_term": "Grassy",
+    "category": "TOP",
+    "icon": "🍀",
+    "description": "Свежескошенная трава, зелёные стебли — сырой хмель",
+    "axes": {
+      "hop_aroma": 0.6,
+      "clean": 0.2
+    },
+    "tags": [
+      "grass",
+      "herbs"
+    ],
+    "sort_order": 36,
+    "is_off_flavour": false
+  },
+  {
+    "id": "spicy-hop",
+    "name": "Пряный хмель",
+    "technical_term": "Spicy Hop / Saaz",
+    "category": "TOP",
+    "icon": "🫚",
+    "description": "Перечно-пряные оттенки благородных чешских и немецких сортов хмеля",
+    "axes": {
+      "hop_aroma": 0.6
+    },
+    "tags": [
+      "pepper",
+      "spice",
+      "herbs"
+    ],
+    "sort_order": 37,
+    "is_off_flavour": false
+  },
+  {
+    "id": "honey",
+    "name": "Мёд",
+    "technical_term": "Honey",
+    "category": "TOP",
+    "icon": "🐝",
+    "description": "Цветочный мёд, нектар — светлый солод и мягкие эфиры",
+    "axes": {
+      "malt_sweet": 0.5,
+      "fruit": 0.2
+    },
+    "tags": [
+      "honey",
+      "sweet",
+      "floral"
+    ],
+    "sort_order": 38,
+    "is_off_flavour": false
+  },
+  {
+    "id": "clove",
+    "name": "Гвоздика",
+    "technical_term": "Clove / Phenolic",
+    "category": "TOP",
+    "icon": "🪵",
+    "description": "Гвоздика и лёгкая аптечность — фенолы дрожжей пшеничных стилей",
+    "axes": {
+      "fruit": 0.2,
+      "alcohol": 0.1
+    },
+    "tags": [
+      "clove",
+      "spice"
+    ],
+    "sort_order": 39,
+    "is_off_flavour": false
+  },
+  {
+    "id": "minty",
+    "name": "Мята",
+    "technical_term": "Minty",
+    "category": "TOP",
+    "icon": "🌿",
+    "description": "Прохладная мятно-эвкалиптовая свежесть некоторых сортов хмеля",
+    "axes": {
+      "hop_aroma": 0.4,
+      "clean": 0.3
+    },
+    "tags": [
+      "mint",
+      "herbs"
+    ],
+    "sort_order": 40,
+    "is_off_flavour": false
+  },
+  {
+    "id": "biscuit",
+    "name": "Бисквит",
+    "technical_term": "Biscuit",
+    "category": "HEART",
+    "icon": "🍪",
+    "description": "Сухое печенье, крекер — лёгкий обжаренный солод",
+    "axes": {
+      "malt_sweet": 0.5,
+      "body": 0.3
+    },
+    "tags": [
+      "bread",
+      "biscuit",
+      "toast"
+    ],
+    "sort_order": 41,
+    "is_off_flavour": false
+  },
+  {
+    "id": "toasty",
+    "name": "Тост",
+    "technical_term": "Toasty",
+    "category": "HEART",
+    "icon": "🥐",
+    "description": "Поджаренная хлебная корочка, сухарь",
+    "axes": {
+      "roast": 0.4,
+      "malt_sweet": 0.3
+    },
+    "tags": [
+      "toast",
+      "bread"
+    ],
+    "sort_order": 42,
+    "is_off_flavour": false
+  },
+  {
+    "id": "nutty",
+    "name": "Орех",
+    "technical_term": "Nutty",
+    "category": "HEART",
+    "icon": "🥜",
+    "description": "Фундук, миндаль — характер тёмного мюнхенского и «бисквитного» солода",
+    "axes": {
+      "caramel": 0.3,
+      "body": 0.3,
+      "roast": 0.2
+    },
+    "tags": [
+      "nuts",
+      "toast"
+    ],
+    "sort_order": 43,
+    "is_off_flavour": false
+  },
+  {
+    "id": "toffee",
+    "name": "Тоффи",
+    "technical_term": "Toffee",
+    "category": "HEART",
+    "icon": "🍮",
+    "description": "Ирис, сливочная карамель — кристаллические солода",
+    "axes": {
+      "caramel": 0.8,
+      "malt_sweet": 0.5
+    },
+    "tags": [
+      "toffee",
+      "caramel",
+      "sweet"
+    ],
+    "sort_order": 44,
+    "is_off_flavour": false
+  },
+  {
+    "id": "dried-fruit",
+    "name": "Сухофрукты",
+    "technical_term": "Dried Fruit",
+    "category": "HEART",
+    "icon": "🍇",
+    "description": "Изюм, чернослив, финик — тёмные карамельные солода и крепкие сорта",
+    "axes": {
+      "fruit": 0.6,
+      "malt_sweet": 0.4,
+      "alcohol": 0.2
+    },
+    "tags": [
+      "raisin",
+      "fruit",
+      "sweet"
+    ],
+    "sort_order": 45,
+    "is_off_flavour": false
+  },
+  {
+    "id": "coffee",
+    "name": "Кофе",
+    "technical_term": "Coffee",
+    "category": "HEART",
+    "icon": "☕",
+    "description": "Свежемолотый кофе — сильно обжаренный солод и ячмень",
+    "axes": {
+      "roast": 0.9,
+      "bitter": 0.3
+    },
+    "tags": [
+      "coffee",
+      "roast"
+    ],
+    "sort_order": 46,
+    "is_off_flavour": false
+  },
+  {
+    "id": "smoky",
+    "name": "Дым",
+    "technical_term": "Smoky / Rauch",
+    "category": "HEART",
+    "icon": "💨",
+    "description": "Копчёный солод: костёр, бекон, дуб",
+    "axes": {
+      "roast": 0.5,
+      "body": 0.3
+    },
+    "tags": [
+      "smoke",
+      "char"
+    ],
+    "sort_order": 47,
+    "is_off_flavour": false
+  },
+  {
+    "id": "wheat",
+    "name": "Пшеничная мягкость",
+    "technical_term": "Wheat / Doughy",
+    "category": "HEART",
+    "icon": "🥯",
+    "description": "Мягкое тесто, хлебный мякиш — пшеничный солод",
+    "axes": {
+      "body": 0.3,
+      "clean": 0.4,
+      "carbonation": 0.3
+    },
+    "tags": [
+      "bread",
+      "wheat"
+    ],
+    "sort_order": 48,
+    "is_off_flavour": false
+  },
+  {
+    "id": "oaty",
+    "name": "Овсяная кремовость",
+    "technical_term": "Oaty / Creamy",
+    "category": "HEART",
+    "icon": "🥛",
+    "description": "Шелковистая, сливочная текстура овса и лактозы",
+    "axes": {
+      "body": 0.6,
+      "malt_sweet": 0.3
+    },
+    "tags": [
+      "cream"
+    ],
+    "sort_order": 49,
+    "is_off_flavour": false
+  },
+  {
+    "id": "vanilla",
+    "name": "Ваниль",
+    "technical_term": "Vanilla",
+    "category": "HEART",
+    "icon": "🍦",
+    "description": "Ваниль и лёгкая древесность — выдержка в бочке или специальный солод",
+    "axes": {
+      "caramel": 0.4,
+      "malt_sweet": 0.3
+    },
+    "tags": [
+      "vanilla",
+      "sweet"
+    ],
+    "sort_order": 50,
+    "is_off_flavour": false
+  },
+  {
+    "id": "cooked-corn",
+    "name": "Варёная кукуруза (DMS)",
+    "technical_term": "Cooked corn / DMS",
+    "category": "HEART",
+    "icon": "🌽",
+    "description": "Off-flavour: варёная кукуруза, консервированные овощи — диметилсульфид при недостаточном кипячении",
+    "axes": {
+      "malt_sweet": 0.2
+    },
+    "tags": [
+      "corn"
+    ],
+    "sort_order": 51,
+    "is_off_flavour": true
+  },
+  {
+    "id": "buttery",
+    "name": "Масло (диацетил)",
+    "technical_term": "Buttery / Diacetyl",
+    "category": "HEART",
+    "icon": "🧈",
+    "description": "Off-flavour: сливочное масло, попкорн, скользкое послевкусие — незавершённое брожение",
+    "axes": {
+      "body": 0.3
+    },
+    "tags": [
+      "butter"
+    ],
+    "sort_order": 52,
+    "is_off_flavour": true
+  },
+  {
+    "id": "dry",
+    "name": "Сухой финиш",
+    "technical_term": "Dry / Attenuated",
+    "category": "BASE",
+    "icon": "🏜️",
+    "description": "Полное сбраживание: сухое, «хрустящее» завершение без сладости",
+    "axes": {
+      "clean": 0.6,
+      "carbonation": 0.3
+    },
+    "tags": [
+      "fresh"
+    ],
+    "sort_order": 53,
+    "is_off_flavour": false
+  },
+  {
+    "id": "tart",
+    "name": "Кислинка",
+    "technical_term": "Tart / Acidic",
+    "category": "BASE",
+    "icon": "🥝",
+    "description": "Лёгкая приятная кислотность — пшеничные, фруктовые и кислые стили",
+    "axes": {
+      "carbonation": 0.3,
+      "clean": 0.3,
+      "fruit": 0.2
+    },
+    "tags": [
+      "sour"
+    ],
+    "sort_order": 54,
+    "is_off_flavour": false
+  },
+  {
+    "id": "astringent",
+    "name": "Терпкость",
+    "technical_term": "Astringent / Tannic",
+    "category": "BASE",
+    "icon": "🍵",
+    "description": "Вяжущее, как крепкий чай — оболочки зерна, избыточное промывание",
+    "axes": {
+      "bitter": 0.4,
+      "body": 0.2
+    },
+    "tags": [],
+    "sort_order": 55,
+    "is_off_flavour": false
+  },
+  {
+    "id": "mineral",
+    "name": "Минеральность",
+    "technical_term": "Mineral / Salty",
+    "category": "BASE",
+    "icon": "🧂",
+    "description": "Солоноватая минеральность воды — стиль гозе или жёсткая вода",
+    "axes": {
+      "clean": 0.5
+    },
+    "tags": [
+      "mineral"
+    ],
+    "sort_order": 56,
+    "is_off_flavour": false
+  },
+  {
+    "id": "warming-finish",
+    "name": "Согревающее послевкусие",
+    "technical_term": "Warming Finish",
+    "category": "BASE",
+    "icon": "♨️",
+    "description": "Тёплая волна алкоголя в финале крепких лагеров и боков",
+    "axes": {
+      "alcohol": 0.8,
+      "body": 0.3
+    },
+    "tags": [
+      "warmth"
+    ],
+    "sort_order": 57,
+    "is_off_flavour": false
+  },
+  {
+    "id": "oily",
+    "name": "Маслянистая текстура",
+    "technical_term": "Oily / Slick",
+    "category": "BASE",
+    "icon": "🫒",
+    "description": "Плотная, обволакивающая текстура — высокая плотность, овёс, лактоза",
+    "axes": {
+      "body": 0.5
+    },
+    "tags": [],
+    "sort_order": 58,
+    "is_off_flavour": false
+  },
+  {
+    "id": "metallic",
+    "name": "Металлический",
+    "technical_term": "Metallic",
+    "category": "BASE",
+    "icon": "🔩",
+    "description": "Off-flavour: монеты, кровь — ржавое оборудование, старый хмель",
+    "axes": {},
+    "tags": [],
+    "sort_order": 59,
+    "is_off_flavour": true
+  },
+  {
+    "id": "sulfury",
+    "name": "Сернистый",
+    "technical_term": "Sulfury",
+    "category": "BASE",
+    "icon": "🥚",
+    "description": "Off-flavour: варёное яйцо, спичка — дрожжевой стресс; лёгкая сера допустима в молодых лагерах",
+    "axes": {},
+    "tags": [],
+    "sort_order": 60,
+    "is_off_flavour": true
+  },
+  {
+    "id": "acetaldehyde",
+    "name": "Зелёное яблоко (ацетальдегид)",
+    "technical_term": "Acetaldehyde",
+    "category": "BASE",
+    "icon": "🍏",
+    "description": "Off-flavour: незрелое зелёное яблоко, свежая краска — недобродившее «зелёное» пиво",
+    "axes": {
+      "fruit": 0.3
+    },
+    "tags": [
+      "apple"
+    ],
+    "sort_order": 61,
+    "is_off_flavour": true
+  },
+  {
+    "id": "papery",
+    "name": "Картон (окисление)",
+    "technical_term": "Papery / Oxidized",
+    "category": "BASE",
+    "icon": "📦",
+    "description": "Off-flavour: мокрый картон, чёрствый хлеб — старое или неправильно хранившееся пиво",
+    "axes": {},
+    "tags": [],
+    "sort_order": 62,
+    "is_off_flavour": true
+  },
+  {
+    "id": "lightstruck",
+    "name": "Скунс (засветка)",
+    "technical_term": "Lightstruck / Skunky",
+    "category": "BASE",
+    "icon": "🦨",
+    "description": "Off-flavour: скунс, жжёная резина — свет разрушил хмелевые кислоты в прозрачной бутылке",
+    "axes": {},
+    "tags": [],
+    "sort_order": 63,
+    "is_off_flavour": true
+  },
+  {
+    "id": "acetic",
+    "name": "Уксусный",
+    "technical_term": "Acetic / Vinegar",
+    "category": "BASE",
+    "icon": "🫙",
+    "description": "Off-flavour: уксус — заражение уксуснокислыми бактериями (кроме намеренно кислых стилей)",
+    "axes": {},
+    "tags": [
+      "sour"
+    ],
+    "sort_order": 64,
+    "is_off_flavour": true
+  }
+]

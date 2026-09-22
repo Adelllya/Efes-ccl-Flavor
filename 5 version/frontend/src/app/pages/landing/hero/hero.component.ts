@@ -624,7 +624,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   sideTransform = signal<string[]>(['', '', '', '', '', '']);
 
   pills: HeroPill[] = [
-    { id: 'brands', label: '5 брендов Efes KZ', icon: 'beer' },
+    { id: 'brands', label: '17 сортов в каталоге', icon: 'beer' },
     { id: 'pyramid', label: 'Вкусовая пирамида', icon: 'pyramid' },
     { id: 'ai', label: 'AI-Сомелье', icon: 'sparkle' },
     { id: 'school', label: 'Школа вкуса', icon: 'book' },

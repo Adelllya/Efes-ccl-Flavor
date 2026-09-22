@@ -38,7 +38,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             [class.active]="activeTab === 'overview'"
             (click)="activeTab = 'overview'"
           >
-            <span style="font-size: 1.15rem;">⚡</span>
+            <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <span style="font-weight: 600; flex: 1; text-align: left;">Обзор & Статус</span>
           </button>
 
@@ -47,7 +47,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             [class.active]="activeTab === 'brands'"
             (click)="activeTab = 'brands'"
           >
-            <span style="font-size: 1.15rem;">📸</span>
+            <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg>
             <span style="font-weight: 600; flex: 1; text-align: left;">Сорта & Фото</span>
             <span class="badge-mini">{{ brands().length }}</span>
           </button>
@@ -57,7 +57,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             [class.active]="activeTab === 'pyramid'"
             (click)="activeTab = 'pyramid'"
           >
-            <span style="font-size: 1.15rem;">📐</span>
+            <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3Z"/><path d="M8.5 15h7"/><path d="M10 11h4"/></svg>
             <span style="font-weight: 600; flex: 1; text-align: left;">Вкусовая Пирамида</span>
           </button>
 
@@ -66,7 +66,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             [class.active]="activeTab === 'serving'"
             (click)="activeTab = 'serving'"
           >
-            <span style="font-size: 1.15rem;">🌡️</span>
+            <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/></svg>
             <span style="font-weight: 600; flex: 1; text-align: left;">Подача & Бокалы</span>
           </button>
 
@@ -75,7 +75,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             [class.active]="activeTab === 'pairings'"
             (click)="activeTab = 'pairings'"
           >
-            <span style="font-size: 1.15rem;">🍽️</span>
+            <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
             <span style="font-weight: 600; flex: 1; text-align: left;">Фуд-пейринг</span>
             <span class="badge-mini">{{ pairings().length }}</span>
           </button>
@@ -85,7 +85,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             [class.active]="activeTab === 'notes'"
             (click)="activeTab = 'notes'"
           >
-            <span style="font-size: 1.15rem;">🌿</span>
+            <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
             <span style="font-weight: 600; flex: 1; text-align: left;">Справочник Нот</span>
             <span class="badge-mini">{{ notes().length }}</span>
           </button>
@@ -99,7 +99,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             target="_blank"
             style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); text-decoration: none; font-weight: 600;"
           >
-            <span>⚙️</span> Django Admin Panel ↗
+            <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.63 1 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Django Admin Panel ↗
           </a>
         </div>
 
@@ -126,7 +126,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
                 </div>
 
                 <div style="display: flex; gap: 10px;">
-                  <button class="btn-amber" (click)="loadData()">🔄 Обновить данные</button>
+                  <button class="btn-amber" (click)="loadData()"><svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg> Обновить данные</button>
                 </div>
               </div>
             </div>
@@ -134,27 +134,30 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             <!-- Сетка статистики -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px;">
               <div class="glass-card" style="padding: 22px; cursor: pointer;" (click)="activeTab = 'brands'">
-                <span style="font-size: 2rem;">🍺</span>
+                <svg class="adm-tile-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
                 <h3 style="font-size: 1.8rem; margin: 8px 0 2px;">{{ brands().length }}</h3>
                 <p style="color: var(--muted); margin: 0; font-size: 0.88rem; font-weight: 600;">Сортов в базе (100% активны)</p>
               </div>
 
               <div class="glass-card" style="padding: 22px; cursor: pointer;" (click)="activeTab = 'notes'">
-                <span style="font-size: 2rem;">🌿</span>
+                <svg class="adm-tile-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
                 <h3 style="font-size: 1.8rem; margin: 8px 0 2px;">{{ notes().length }}</h3>
                 <p style="color: var(--muted); margin: 0; font-size: 0.88rem; font-weight: 600;">Вкусовых сенсорных нот</p>
               </div>
 
               <div class="glass-card" style="padding: 22px; cursor: pointer;" (click)="activeTab = 'pairings'">
-                <span style="font-size: 2rem;">🍽️</span>
+                <svg class="adm-tile-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
                 <h3 style="font-size: 1.8rem; margin: 8px 0 2px;">{{ pairings().length }}</h3>
                 <p style="color: var(--muted); margin: 0; font-size: 0.88rem; font-weight: 600;">Гастропар с блюдами</p>
               </div>
 
-              <div class="glass-card" style="padding: 22px;">
-                <span style="font-size: 2rem;">⚡</span>
-                <h3 style="font-size: 1.8rem; margin: 8px 0 2px;">PostgreSQL</h3>
-                <p style="color: var(--muted); margin: 0; font-size: 0.88rem; font-weight: 600;">База данных app_db</p>
+              <!-- Раньше здесь было «PostgreSQL / app_db»: движок базы берётся из
+                   настроек и на демо это SQLite, то есть плитка показывала неправду.
+                   Заменили на показатель, который сомелье реально ведёт. -->
+              <div class="glass-card" style="padding: 22px; cursor: pointer;" (click)="activeTab = 'pyramid'">
+                <svg class="adm-tile-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3Z"/><path d="m9 16 2 2 4-4"/></svg>
+                <h3 style="font-size: 1.8rem; margin: 8px 0 2px;">{{ completePyramids() }}<span style="font-size: 1rem; color: var(--muted);">/{{ brands().length }}</span></h3>
+                <p style="color: var(--muted); margin: 0; font-size: 0.88rem; font-weight: 600;">Пирамид заполнено до конца</p>
               </div>
             </div>
 
@@ -162,24 +165,24 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             <div class="glass-panel" style="padding: 28px;">
               <h3 style="font-size: 1.25rem; margin-bottom: 16px;">Быстрый переход к настройкам:</h3>
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-                <div class="glass-card" style="padding: 18px; display: flex; align-items: center; gap: 14px; cursor: pointer;" (click)="activeTab = 'brands'">
-                  <span style="font-size: 2rem;">📸</span>
+                <div class="glass-card" style="padding: 18px; display: flex; flex-direction: row; align-items: center; gap: 14px; cursor: pointer;" (click)="activeTab = 'brands'">
+                  <svg class="adm-tile-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg>
                   <div>
                     <h4 style="margin: 0; font-size: 1rem;">Загрузить фото для сорта</h4>
                     <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--muted);">Прикрепить изображение бутылки/бокала</p>
                   </div>
                 </div>
 
-                <div class="glass-card" style="padding: 18px; display: flex; align-items: center; gap: 14px; cursor: pointer;" (click)="activeTab = 'pyramid'">
-                  <span style="font-size: 2rem;">📐</span>
+                <div class="glass-card" style="padding: 18px; display: flex; flex-direction: row; align-items: center; gap: 14px; cursor: pointer;" (click)="activeTab = 'pyramid'">
+                  <svg class="adm-tile-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3Z"/><path d="M8.5 15h7"/><path d="M10 11h4"/></svg>
                   <div>
                     <h4 style="margin: 0; font-size: 1rem;">Калибровка пирамиды</h4>
                     <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--muted);">Top, Heart, Base ноты и интенсивность</p>
                   </div>
                 </div>
 
-                <div class="glass-card" style="padding: 18px; display: flex; align-items: center; gap: 14px; cursor: pointer;" (click)="activeTab = 'serving'">
-                  <span style="font-size: 2rem;">🌡️</span>
+                <div class="glass-card" style="padding: 18px; display: flex; flex-direction: row; align-items: center; gap: 14px; cursor: pointer;" (click)="activeTab = 'serving'">
+                  <svg class="adm-tile-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/></svg>
                   <div>
                     <h4 style="margin: 0; font-size: 1rem;">Температура подачи & Бокалы</h4>
                     <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--muted);">Рекомендации для баров и ресторанов</p>
@@ -251,18 +254,18 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
                   </div>
 
                   <!-- Статус вкусового профиля -->
-                  <div class="glass-card" style="padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+                  <div class="glass-card" style="padding: 20px; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                     <div>
                       <h4 style="margin: 0 0 4px; font-size: 1.05rem;">Вкусовая пирамида сорта</h4>
                       <p style="margin: 0; font-size: 0.85rem; color: var(--muted);">
                         @if (b.profile?.complete) {
-                          <span style="color: #16a34a; font-weight: 700;">✅ Профиль полностью заполнен (Top, Heart, Base)</span>
+                          <span style="color: #16a34a; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;"><svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Профиль полностью заполнен (Top, Heart, Base)</span>
                         } @else {
                           <span style="color: var(--beer-deep); font-weight: 600;">🟡 Требуется калибровка нот</span>
                         }
                       </p>
                     </div>
-                    <button class="btn-outline" (click)="activeTab = 'pyramid'">📐 Открыть конструктор</button>
+                    <button class="btn-outline" (click)="activeTab = 'pyramid'"><svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3Z"/><path d="M8.5 15h7"/><path d="M10 11h4"/></svg> Открыть конструктор</button>
                   </div>
                 </div>
               }
@@ -270,7 +273,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
               <!-- Правая часть: виджет загрузки фото -->
               <div style="background: var(--bg-1); border: 1px solid var(--line); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
                 <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 14px; display: flex; align-items: center; gap: 6px;">
-                  <span>📸</span> Фотография сорта
+                  <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg> Фотография сорта
                 </div>
 
                 <!-- Контейнер для фото -->
@@ -283,7 +286,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
                     <span class="badge" style="position: absolute; bottom: 8px; font-size: 0.75rem; background: var(--beer-amber); color: #000;">Сохранено на сервере</span>
                   } @else {
                     <div style="color: var(--muted); font-size: 0.88rem;">
-                      <div style="font-size: 3rem; margin-bottom: 6px; opacity: 0.35;">🍺</div>
+                      <div style="margin-bottom: 6px; opacity: 0.35; color: var(--beer-mid);"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3.5l2 3V21a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8.5l2-3V2Z"/><path d="M8 12h8"/></svg></div>
                       Фото не загружено
                     </div>
                   }
@@ -300,7 +303,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
 
                 <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
                   <button class="btn-outline" style="width: 100%; justify-content: center;" (click)="brandPhotoInput.click()">
-                    📁 Выбрать фото с диска
+                    <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg> Выбрать фото с диска
                   </button>
 
                   @if (selectedFile) {
@@ -320,7 +323,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
                 </div>
 
                 @if (uploadSuccess()) {
-                  <span style="color: #1a5e28; font-weight: 700; font-size: 0.88rem; margin-top: 10px;">✅ Фото успешно загружено и обновлено!</span>
+                  <span style="color: #1a5e28; font-weight: 700; font-size: 0.88rem; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"><svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Фото успешно загружено и обновлено!</span>
                 }
                 @if (uploadError()) {
                   <span style="color: #991b1b; font-weight: 600; font-size: 0.85rem; margin-top: 10px;">❌ {{ uploadError() }}</span>
@@ -329,7 +332,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
                 <!-- Подпись рекомендаций -->
                 <div style="margin-top: 18px; padding: 12px; background: rgba(224,138,40,0.06); border-radius: 12px; border: 1px dashed rgba(224,138,40,0.3); font-size: 0.78rem; color: var(--foam-dim); text-align: left; line-height: 1.45; width: 100%;">
                   <div style="font-weight: 700; color: var(--beer-deep); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-                    <span>📐</span> Рекомендации к загрузке:
+                    <svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3Z"/><path d="M8.5 15h7"/><path d="M10 11h4"/></svg> Рекомендации к загрузке:
                   </div>
                   <div>• <strong>Масштаб:</strong> 3:4 (вертикальное) или 1:1</div>
                   <div>• <strong>Оптимальный размер:</strong> 600×800 px или 800×800 px</div>
@@ -409,7 +412,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
                 </button>
 
                 @if (saveSuccess()) {
-                  <span style="color: #1a5e28; font-weight: 700;">✅ Вкусовой профиль успешно сохранен на сервере!</span>
+                  <span style="color: #1a5e28; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;"><svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Вкусовой профиль успешно сохранен на сервере!</span>
                 }
               </div>
             </div>
@@ -459,7 +462,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
               </button>
 
               @if (servingSaveSuccess()) {
-                <span style="color: #1a5e28; font-weight: 700; margin-left: 14px;">✅ Рекомендации подачи обновлены!</span>
+                <span style="color: #1a5e28; font-weight: 700; margin-left: 14px; display: inline-flex; align-items: center; gap: 6px;"><svg class="adm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Рекомендации подачи обновлены!</span>
               }
             </div>
           </div>
@@ -480,7 +483,7 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
               <input
                 type="text"
                 [(ngModel)]="pairingSearch"
-                placeholder="🔍 Поиск по сорту или блюду..."
+                placeholder="Поиск по сорту или блюду..."
                 style="padding: 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-1); min-width: 260px;"
               />
             </div>
@@ -509,13 +512,13 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
               <div>
                 <h2 style="font-size: 1.8rem; margin: 0;">Сенсорный Справочник Вкусовых Нот</h2>
-                <p style="color: var(--muted); margin-top: 4px; font-size: 0.9rem;">31+ вкусовая нота колеса вкусов Meilgaard (Top, Heart, Base и дефекты)</p>
+                <p style="color: var(--muted); margin-top: 4px; font-size: 0.9rem;">Колесо вкусов Meilgaard: Top, Heart, Base и дефекты. Всего в справочнике: {{ notes().length }}</p>
               </div>
 
               <input
                 type="text"
                 [(ngModel)]="noteSearch"
-                placeholder="🔍 Поиск ноты или термина..."
+                placeholder="Поиск ноты или термина..."
                 style="padding: 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-1); min-width: 260px;"
               />
             </div>
@@ -546,6 +549,23 @@ type AdminTab = 'overview' | 'brands' | 'pyramid' | 'serving' | 'pairings' | 'no
     </div>
   `,
   styles: [`
+    /* Иконки панели: один язык линий вместо разнокалиберных эмодзи. */
+    .adm-ico {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      color: var(--beer-mid);
+    }
+    .sidebar-tab-btn.active .adm-ico { color: var(--beer-deep); }
+    .btn-amber .adm-ico { color: currentColor; }
+
+    .adm-tile-ico {
+      width: 26px;
+      height: 26px;
+      color: var(--beer-mid);
+      margin-bottom: 4px;
+    }
+
     .sidebar-tab-btn {
       display: flex;
       align-items: center;
@@ -617,6 +637,9 @@ export class SommelierAdminComponent implements OnInit {
   isUploading = signal(false);
   uploadSuccess = signal(false);
   uploadError = signal<string | null>(null);
+
+  /** Сколько сортов доведено до полной пирамиды: Top, Heart и Base заполнены. */
+  completePyramids = computed(() => this.brands().filter(b => b.profile?.complete).length);
 
   filteredPairings = computed(() => {
     const q = this.pairingSearch.toLowerCase().trim();

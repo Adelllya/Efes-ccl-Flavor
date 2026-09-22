@@ -1,0 +1,359 @@
+[
+  {
+    "brand_id": "kruzhka-svezhego",
+    "dish_id": "baursaki",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Нейтральный вкус выпечки не спорит с простым лагерным профилем"
+  },
+  {
+    "brand_id": "kruzhka-svezhego",
+    "dish_id": "kuyrdak",
+    "score": 4,
+    "type": "CONTRAST",
+    "explanation": "Свежесть пива освежает жирность жареных потрохов"
+  },
+  {
+    "brand_id": "kruzhka-svezhego",
+    "dish_id": "bruschetta",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Лёгкая свежесть пива сочетается с кисло-свежей закуской"
+  },
+  {
+    "brand_id": "belyi-medved",
+    "dish_id": "manty",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Зерновые ноты пива вторят нейтральному тесту на пару"
+  },
+  {
+    "brand_id": "belyi-medved",
+    "dish_id": "shashlyk",
+    "score": 3,
+    "type": "CONTRAST",
+    "explanation": "Умеренная горечь смягчает дымность гриля"
+  },
+  {
+    "brand_id": "belyi-medved",
+    "dish_id": "edamame",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Простой чистый профиль не перебивает лёгкую закуску"
+  },
+  {
+    "brand_id": "efes-pilsener",
+    "dish_id": "kazy",
+    "score": 5,
+    "type": "CONTRAST",
+    "explanation": "Высокая base-горечь пильзнера режет жирность вяленого мяса"
+  },
+  {
+    "brand_id": "efes-pilsener",
+    "dish_id": "pizza-margherita",
+    "score": 4,
+    "type": "CONTRAST",
+    "explanation": "Хмелевая горчинка режет сырную жирность"
+  },
+  {
+    "brand_id": "efes-pilsener",
+    "dish_id": "tempura",
+    "score": 4,
+    "type": "CLEANSE",
+    "explanation": "Горечь и карбонизация освежают после жареного жирного блюда"
+  },
+  {
+    "brand_id": "miller-genuine-draft",
+    "dish_id": "sushi",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Лёгкий чистый профиль не перебивает деликатный вкус рыбы"
+  },
+  {
+    "brand_id": "miller-genuine-draft",
+    "dish_id": "edamame",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Лёгкость пива сочетается с лёгкостью закуски"
+  },
+  {
+    "brand_id": "miller-genuine-draft",
+    "dish_id": "guacamole",
+    "score": 3,
+    "type": "CLEANSE",
+    "explanation": "Чистый финиш освежает после жирного авокадо"
+  },
+  {
+    "brand_id": "kozel",
+    "dish_id": "beshbarmak",
+    "score": 5,
+    "type": "COMPLEMENT",
+    "explanation": "Плотная солодовая база отзеркаливает умами варёного мяса"
+  },
+  {
+    "brand_id": "kozel",
+    "dish_id": "schnitzel",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Солодовая плотность держит вес жареного мяса в панировке"
+  },
+  {
+    "brand_id": "kozel",
+    "dish_id": "kartoffelsalat",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Солодовая сладость сочетается с картофельной основой"
+  },
+  {
+    "brand_id": "bremen-von-lustig",
+    "dish_id": "bratwurst",
+    "score": 4,
+    "type": "BRIDGE",
+    "explanation": "Немецкий стиль пива и сосисок, хмель режет жирность"
+  },
+  {
+    "brand_id": "bremen-von-lustig",
+    "dish_id": "nachos",
+    "score": 4,
+    "type": "CONTRAST",
+    "explanation": "Хмелевая горчинка балансирует соль и жир"
+  },
+  {
+    "brand_id": "bremen-von-lustig",
+    "dish_id": "quesadilla",
+    "score": 3,
+    "type": "CONTRAST",
+    "explanation": "Горечь смягчает сырную тяжесть"
+  },
+  {
+    "brand_id": "bavaria",
+    "dish_id": "kurt",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Мягкая горечь не спорит с кисломолочной кислинкой"
+  },
+  {
+    "brand_id": "bavaria",
+    "dish_id": "irimshik",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Мягкий профиль не конфликтует с творожной кислинкой"
+  },
+  {
+    "brand_id": "bavaria",
+    "dish_id": "pretzel",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Классика: нейтральная соль хорошо держит баланс с мягким лагером"
+  },
+  {
+    "brand_id": "wukong-ju",
+    "dish_id": "sushi",
+    "score": 5,
+    "type": "COMPLEMENT",
+    "explanation": "Рисовое пиво и рис в суши — родственные лёгкие текстуры"
+  },
+  {
+    "brand_id": "wukong-ju",
+    "dish_id": "mochi",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Рисовые ноты пива вторят рисовому десерту"
+  },
+  {
+    "brand_id": "wukong-ju",
+    "dish_id": "tempura",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Лёгкость пива держит баланс с некрупным жареным блюдом"
+  },
+  {
+    "brand_id": "karagandinskoe",
+    "dish_id": "schnitzel",
+    "score": 3,
+    "type": "CONTRAST",
+    "explanation": "Горечь пива уравновешивает жареную панировку"
+  },
+  {
+    "brand_id": "karagandinskoe",
+    "dish_id": "kuyrdak",
+    "score": 4,
+    "type": "CONTRAST",
+    "explanation": "Горечь пива уравновешивает жирность потрохов"
+  },
+  {
+    "brand_id": "karagandinskoe",
+    "dish_id": "tacos",
+    "score": 3,
+    "type": "CLEANSE",
+    "explanation": "Лёгкая горечь освежает после остроты"
+  },
+  {
+    "brand_id": "slavna-praga",
+    "dish_id": "samsa",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Солодовая сладость сусла вторит запечённому тесту с мясом"
+  },
+  {
+    "brand_id": "slavna-praga",
+    "dish_id": "strudel",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Тонкая сладость послевкусия перекликается с десертом"
+  },
+  {
+    "brand_id": "slavna-praga",
+    "dish_id": "lasagna",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Солодовая сладость перекликается с насыщенным сырным вкусом"
+  },
+  {
+    "brand_id": "zhigulevskoe",
+    "dish_id": "baursaki",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Нейтральный лагерный профиль подходит нейтральной выпечке"
+  },
+  {
+    "brand_id": "zhigulevskoe",
+    "dish_id": "shashlyk",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Классическое сочетание лагера и шашлыка"
+  },
+  {
+    "brand_id": "zhigulevskoe",
+    "dish_id": "burger",
+    "score": 3,
+    "type": "CONTRAST",
+    "explanation": "Горечь смягчает жирность котлеты"
+  },
+  {
+    "brand_id": "khmelnoy-los",
+    "dish_id": "burger",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Высокое тело пива держит вес жирного бургера"
+  },
+  {
+    "brand_id": "khmelnoy-los",
+    "dish_id": "bbq-ribs",
+    "score": 5,
+    "type": "COMPLEMENT",
+    "explanation": "Крепкое тело пива держит насыщенный сладко-солёный вкус рёбер"
+  },
+  {
+    "brand_id": "khmelnoy-los",
+    "dish_id": "chili-con-carne",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Плотность пива подходит острому тяжёлому блюду"
+  },
+  {
+    "brand_id": "severnoe-siyanie",
+    "dish_id": "manty",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Умеренный профиль сочетается с нейтральным паровым блюдом"
+  },
+  {
+    "brand_id": "severnoe-siyanie",
+    "dish_id": "tonkatsu",
+    "score": 3,
+    "type": "CLEANSE",
+    "explanation": "Свежий финиш освежает после жареной панировки"
+  },
+  {
+    "brand_id": "severnoe-siyanie",
+    "dish_id": "caprese",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Свежесть пива вторит свежести салата"
+  },
+  {
+    "brand_id": "legenda-777",
+    "dish_id": "strudel",
+    "score": 4,
+    "type": "BRIDGE",
+    "explanation": "Карамельная нота пива в тон карамельно-яблочному десерту"
+  },
+  {
+    "brand_id": "legenda-777",
+    "dish_id": "bbq-ribs",
+    "score": 4,
+    "type": "COMPLEMENT",
+    "explanation": "Карамельная сладость пива под сладко-острый соус BBQ"
+  },
+  {
+    "brand_id": "legenda-777",
+    "dish_id": "tiramisu",
+    "score": 3,
+    "type": "BRIDGE",
+    "explanation": "Карамельные ноты пива перекликаются с десертом"
+  },
+  {
+    "brand_id": "13-region",
+    "dish_id": "nachos",
+    "score": 3,
+    "type": "CLEANSE",
+    "explanation": "Лёгкая карбонизация освежает после соли и жира"
+  },
+  {
+    "brand_id": "13-region",
+    "dish_id": "burrito",
+    "score": 3,
+    "type": "CLEANSE",
+    "explanation": "Лёгкость освежает после плотного острого блюда"
+  },
+  {
+    "brand_id": "13-region",
+    "dish_id": "guacamole",
+    "score": 3,
+    "type": "CLEANSE",
+    "explanation": "Свежесть пива режет жирность авокадо"
+  },
+  {
+    "brand_id": "stary-melnik",
+    "dish_id": "shashlyk",
+    "score": 4,
+    "type": "BRIDGE",
+    "explanation": "Kettle hop-нота перекликается с дымным ароматом гриля"
+  },
+  {
+    "brand_id": "stary-melnik",
+    "dish_id": "yakitori",
+    "score": 4,
+    "type": "BRIDGE",
+    "explanation": "Хмелевой аромат перекликается с дымным грилем"
+  },
+  {
+    "brand_id": "stary-melnik",
+    "dish_id": "currywurst",
+    "score": 4,
+    "type": "CONTRAST",
+    "explanation": "Горечь смягчает остроту карри-соуса"
+  },
+  {
+    "brand_id": "bochkovoe",
+    "dish_id": "tacos",
+    "score": 4,
+    "type": "CLEANSE",
+    "explanation": "Мягкая свежесть гасит остроту, не спорит с ней"
+  },
+  {
+    "brand_id": "bochkovoe",
+    "dish_id": "enchilada",
+    "score": 3,
+    "type": "CLEANSE",
+    "explanation": "Мягкость освежает остроту"
+  },
+  {
+    "brand_id": "bochkovoe",
+    "dish_id": "risotto",
+    "score": 3,
+    "type": "COMPLEMENT",
+    "explanation": "Мягкий хмель не спорит с кремовым умами ризотто"
+  }
+]

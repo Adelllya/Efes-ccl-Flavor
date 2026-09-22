@@ -6,6 +6,7 @@ Management command: python manage.py load_flavor_data
 
 import csv
 from pathlib import Path
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from api.models import FlavorNote, Brand, FlavorProfile, ServingRecommendation, Course, TeamMember
@@ -160,6 +161,105 @@ PYRAMID_DRAFT = {
 }
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+#  ФОТО БУТЫЛОК
+#  Файлы уже лежат в MEDIA_ROOT (media/brands/ и media/brands/hd/), поэтому
+#  достаточно записать путь в ImageField — копировать ничего не нужно.
+#  image    — лёгкий PNG 240x430 для карточек каталога и списков.
+#  image_hd — крупный PNG для страницы сорта; если нет, там берётся image.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+BRAND_IMAGES = {
+    "Кружка Свежего":              ("brands/Kruzhka_Svezhevo.png",    "brands/hd/kruzhka_svezhego_hd.png"),
+    "Белый Медведь":               ("brands/Belyi_Medved.png",        "brands/hd/belyi_medved_hd.png"),
+    "Efes Pilsener":               ("brands/Efes_Pilsener.png",       "brands/hd/efes_pilsener_hd.png"),
+    "Miller Genuine Draft":        ("brands/Miller.png",              "brands/hd/miller_hd.png"),
+    "Velkopopovický Kozel":        ("brands/Kozel.png",               "brands/hd/kozel_hd.png"),
+    "Bremen von Lustig":           ("brands/Bremen.png",              "brands/hd/bremen_hd.png"),
+    "Bavaria":                     ("brands/Bavaria.png",             "brands/hd/bavaria_hd.png"),
+    "Wùkōng Jū (悟空居)":           ("brands/WuKong.png",              "brands/hd/wukong_hd.png"),
+    "Карагандинское":              ("brands/Karagandinskoe.png",      "brands/hd/karagandinskoe_hd.png"),
+    "Slavna ПРАГА":                ("brands/Slavna_ПРАГА.png",        "brands/hd/praga_hd.png"),
+    "Жигулевское":                 ("brands/Zhigulevskoe.png",        "brands/hd/zhigulevskoe_hd.png"),
+    "Хмельной Лось":               ("brands/Khmelnyi_los.png",        "brands/hd/khmelnoy_los_hd.png"),
+    "Северное Сияние":             ("brands/Severnoye_Syiyanyie.png", "brands/hd/severnoe_siyanie_hd.png"),
+    "Легенда 777":                 ("brands/777_razliv.png",          "brands/hd/legenda_777_hd.png"),
+    "13 регион":                   ("brands/13_region.png",           "brands/hd/13_region_hd.png"),
+    "Старый мельник (из бочонка)": ("brands/Melnik.png",              ""),
+    "Бочковое":                    ("brands/Bochkovoe.png",           ""),
+}
+
+# Подложка страницы сорта: цвет снимаем с самой бутылки, чтобы фон не спорил с этикеткой.
+BRAND_ACCENTS = {
+    "Кружка Свежего": "#C98A2B",
+    "Белый Медведь": "#8FA9C4",
+    "Efes Pilsener": "#1F3F8F",
+    "Miller Genuine Draft": "#B8892F",
+    "Velkopopovický Kozel": "#D8A32B",
+    "Bremen von Lustig": "#9C6B24",
+    "Bavaria": "#C2453B",
+    "Wùkōng Jū (悟空居)": "#C0392B",
+    "Карагандинское": "#A2551C",
+    "Slavna ПРАГА": "#C08B2E",
+    "Жигулевское": "#B5762A",
+    "Хмельной Лось": "#5C4A2E",
+    "Северное Сияние": "#2E6E8E",
+    "Легенда 777": "#B4561A",
+    "13 регион": "#2F7A46",
+    "Старый мельник (из бочонка)": "#8A5A22",
+    "Бочковое": "#A3702A",
+}
+
+
+def media_exists(rel_path):
+    """Не записываем в базу путь к файлу, которого нет на диске."""
+    if not rel_path:
+        return False
+    return (Path(settings.MEDIA_ROOT) / rel_path).exists()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  ЧЕТЫРЕ СТУПЕНИ ШКОЛЫ
+#  Подзаголовок «Академии» обещает 4 ступени, поэтому они должны быть в базе:
+#  без них страница открывалась пустой. Цвета — из янтарной палитры сайта.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+COURSE_LEVELS = [
+    {
+        "level": 1,
+        "title": "Первый глоток",
+        "description": "Что такое лагер, эль и пшеничное. Крепость, плотность, карбонизация. "
+                       "Учимся описывать напиток словами, а не «вкусно / невкусно».",
+        "color": "#F59E0B",
+        "required_score": 0,
+    },
+    {
+        "level": 2,
+        "title": "Три слоя вкуса",
+        "description": "Разбираем пирамиду: Top за 3 секунды, Heart до 15-й, Base в послевкусии. "
+                       "Отличаем хмелевую горечь от солодовой сладости и ловим off-flavour.",
+        "color": "#D97706",
+        "required_score": 25,
+    },
+    {
+        "level": 3,
+        "title": "Пиво и еда",
+        "description": "Четыре принципа сочетания: Contrast, Complement, Cleanse, Bridge. "
+                       "Температура подачи, бокал, порядок подачи блюд в зале.",
+        "color": "#B45309",
+        "required_score": 50,
+    },
+    {
+        "level": 4,
+        "title": "Сомелье зала",
+        "description": "Слепая дегустация, лексикон FlavorActiV, работа с гостем и картой бара. "
+                       "Финал: собрать гастропару под меню заведения и защитить её.",
+        "color": "#92400E",
+        "required_score": 80,
+    },
+]
+
+
 class Command(BaseCommand):
     help = "Загружает 17 сортов пива из brands_seed.csv и наполняет вкусовые пирамиды"
 
@@ -191,6 +291,7 @@ class Command(BaseCommand):
 
         brands_count = 0
         profiles_count = 0
+        images_count = 0
 
         with open(csv_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -204,18 +305,24 @@ class Command(BaseCommand):
                 is_horeca = row.get("is_horeca_only", "False").strip().lower() in ("true", "1", "yes")
                 description = row.get("description", "").strip()
 
-                brand, created = Brand.objects.update_or_create(
-                    name=name,
-                    defaults={
-                        "brand_owner": brand_owner,
-                        "style": style,
-                        "abv": abv,
-                        "packaging_type": packaging_type,
-                        "is_horeca_only": is_horeca,
-                        "description": description,
-                        "is_active": True,
-                    }
-                )
+                image, image_hd = BRAND_IMAGES.get(name, ("", ""))
+                defaults = {
+                    "brand_owner": brand_owner,
+                    "style": style,
+                    "abv": abv,
+                    "packaging_type": packaging_type,
+                    "is_horeca_only": is_horeca,
+                    "description": description,
+                    "is_active": True,
+                    "accent_color": BRAND_ACCENTS.get(name, ""),
+                }
+                if media_exists(image):
+                    defaults["image"] = image
+                    images_count += 1
+                if media_exists(image_hd):
+                    defaults["image_hd"] = image_hd
+
+                brand, created = Brand.objects.update_or_create(name=name, defaults=defaults)
                 brands_count += 1
 
                 # Настройка рекомендаций по подаче
@@ -252,6 +359,7 @@ class Command(BaseCommand):
                             profiles_count += 1
 
         self.stdout.write(f"   ✓ Загружено {brands_count} брендов")
+        self.stdout.write(f"   ✓ Прикреплено {images_count} фото бутылок из media/brands/")
         self.stdout.write(f"   ✓ Создано {profiles_count} вкусовых связей пирамиды")
 
         self.stdout.write("3. Загрузка 50 блюд для Food Pairing из dishes_50.csv...")
@@ -291,4 +399,12 @@ class Command(BaseCommand):
         from django.core.management import call_command
         call_command("load_food_pairings")
 
-        self.stdout.write(self.style.SUCCESS("✅ Успешно загружены 17 сортов, вкусовые пирамиды, 50 блюд и 51 пара Food Pairing!"))
+        self.stdout.write("5. Загрузка 4 ступеней Школы сомелье...")
+        for course in COURSE_LEVELS:
+            Course.objects.update_or_create(level=course["level"], defaults=course)
+        self.stdout.write(f"   ✓ Загружено {len(COURSE_LEVELS)} ступеней")
+
+        self.stdout.write(self.style.SUCCESS(
+            "✅ Успешно загружены 17 сортов с фото, вкусовые пирамиды, 50 блюд, "
+            "51 пара Food Pairing и 4 ступени школы!"
+        ))

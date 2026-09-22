@@ -1,5 +1,77 @@
 # Flavor Tree — Бэкенд
 
+> **v2 (сентябрь 2026):** добавлен движок подбора (`api/pairing/`), эндпоинты `/api/pairing/*`, `/api/dna/`, `/api/venues/`, `/api/qr/*`, поля v2 у моделей (slug, style_family, vector/axes/tags), загрузка из `data/*.json`, SQLite по умолчанию. Актуальное описание API — в [docs/API.md](docs/API.md), архитектура — [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), движок — [docs/PAIRING_ENGINE.md](docs/PAIRING_ENGINE.md). Ниже — исходная документация v1 (модели и CRUD по-прежнему актуальны).
+
+---
+
+## Переменные окружения (.env)
+
+`flavor_tree/settings.py` сам читает файл `backend/.env` — без `python-dotenv` и других пакетов. Образец со всеми переменными и пояснениями: `backend/.env.example`.
+
+```bash
+cd backend
+cp .env.example .env      # и заполнить значения; .env в git не попадает
+```
+
+Правила разбора: `KEY=VALUE`, строки с `#` — комментарии, кавычки вокруг значения необязательны, допустим префикс `export `, пустое значение = переменная не задана. **Реальное окружение главнее файла**: если переменная уже задана в системе (systemd, Docker, панель хостинга), значение из `.env` её не перезапишет.
+
+Значения кладутся в `os.environ` при импорте настроек, поэтому их видит и код, который читает окружение сам: `api/ai.py` создаёт клиент `anthropic.Anthropic()` при первом запросе и берёт `ANTHROPIC_API_KEY` из окружения, `api/auth.py` читает `FT_ADMIN_TOKEN` при каждом запросе.
+
+| Переменная | Зачем | Если не задана |
+|---|---|---|
+| `DJANGO_SECRET_KEY` | подпись сессий и токенов сброса пароля | dev-ключ из репозитория; при `DJANGO_DEBUG=False` сервер **не запустится** (`ImproperlyConfigured`) |
+| `DJANGO_DEBUG` | `True` — разработка, `False` — прод | `True` |
+| `DJANGO_ALLOWED_HOSTS` | домены через запятую | `DEBUG=True` → любой хост; `DEBUG=False` → пустой список, то есть `400` на каждый запрос, пока не заполнить |
+| `CORS_ALLOWED_ORIGINS` | адреса фронтенда через запятую (`https://app.example.com`) | только `localhost:4200` / `:3000`; при `DEBUG=True` разрешены все источники |
+| `FT_ADMIN_TOKEN` | токен служебного API сомелье | `DEBUG=True` → служебный API открыт, в лог пишется предупреждение; `DEBUG=False` → закрыт для всех, кроме сотрудника Django |
+| `ANTHROPIC_API_KEY` | ИИ-сомелье `POST /api/ai/` | эндпоинт отвечает `503` с понятным текстом, остальной API работает |
+| `DATABASE_URL` или `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | PostgreSQL | SQLite `backend/db.sqlite3` |
+| `FLAVOR_DATA_DIR` | папка с `data/*.json` | `../data` относительно `backend/` |
+
+Сгенерировать секреты:
+
+```bash
+python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"   # DJANGO_SECRET_KEY
+python -c "import secrets; print(secrets.token_urlsafe(32))"                                  # FT_ADMIN_TOKEN
+```
+
+Проверка перед выкладкой: `DJANGO_DEBUG=False python manage.py check --deploy`.
+
+## Доступ к служебному API
+
+Пишущие эндпоинты сомелье закрыты классом `IsSommelierAdmin` из `api/auth.py`:
+
+- все `/api/admin/*` (включая `GET /api/admin/brands/`) и `/api/seed/` — декоратор `@sommelier_only`;
+- `BrandViewSet` и `FlavorNoteViewSet` — `IsSommelierAdminOrReadOnly`: чтение открыто, `POST/PUT/PATCH/DELETE` и `upload-image` закрыты.
+
+Пускает токен `FT_ADMIN_TOKEN` (заголовок `Authorization: Bearer <token>` или `X-Admin-Token: <token>`, сравнение через `hmac.compare_digest`) либо вошедший сотрудник Django (`is_staff`). Нет учётных данных — `401` с `WWW-Authenticate`, не подошли — `403`. Подробная таблица ответов — в [docs/API.md](docs/API.md#доступ).
+
+Чтобы закрыть ещё одну функцию-вьюху, декоратор ставится **под** `@api_view`:
+
+```python
+from .auth import sommelier_only
+
+@api_view(['POST'])
+@sommelier_only
+def my_view(request): ...
+```
+
+Кабинет заведения (`/api/cabinet/*`) — отдельный контур со своим токеном `VenueAccount.api_token`; он описан в [docs/SAAS.md](docs/SAAS.md).
+
+## Тесты
+
+```bash
+cd backend
+.venv/bin/python manage.py test api.tests                      # всё: движок, доступ, SaaS
+.venv/bin/python manage.py test api.tests.test_admin_auth      # 401/403, оба заголовка, сотрудник, DEBUG on/off
+.venv/bin/python manage.py test api.tests.test_saas            # регистрация, кабинет, меню, стоп-лист, столы, аналитика, лимиты, изоляция заведений
+```
+
+База — SQLite в памяти, сеть не нужна. В `test_saas.py` класс `TestKnownBugs` собран из тестов с `@expectedFailure`: каждый описывает найденную ошибку `views_saas.py`. После исправления тест даёт «unexpected success» — тогда декоратор снимается.
+
+---
+
+
 Документация по серверной части проекта. Здесь описано как устроен API, какие модели в базе, какие запросы можно делать и что они возвращают.
 
 ---
@@ -204,7 +276,9 @@ cd backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env              # необязательно: без .env работают значения по умолчанию для разработки
 python manage.py migrate
+python manage.py load_flavor_data # канонические данные из ../data/*.json
 python manage.py runserver
 # http://127.0.0.1:8000/api/
 ```

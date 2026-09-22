@@ -11,9 +11,10 @@ import { SelectionService } from '../../services/selection.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="flex justify-between items-start mb-3xl flex-wrap gap-lg">
-      <div>
-        <h1 class="section-header">Каталог 17 сортов & Вкусовая пирамида</h1>
-        <p class="text-muted">Исследуйте сенсорные профили, температуру подачи, бокалы и гастрономические характеристики</p>
+      <div class="section-head" style="margin-bottom: 0;">
+        <span class="badge">Каталог</span>
+        <h1 class="section-header">17 сортов и вкусовая пирамида</h1>
+        <p class="section-subtitle">Сенсорные профили, температура подачи, бокалы и гастрономические характеристики каждого сорта.</p>
       </div>
       <div style="position: relative; min-width: 280px; max-width: 380px; width: 100%;">
         <input
@@ -76,7 +77,7 @@ import { SelectionService } from '../../services/selection.service';
               <img [src]="brand.image" [alt]="brand.name" />
             } @else {
               <div class="beer-card-placeholder">
-                <span>🍺</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3.5l2 3V21a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8.5l2-3V2Z"/><path d="M8 12h8"/></svg>
                 <span class="text-xs text-muted font-bold uppercase" style="margin-top: 4px;">Flavor Tree</span>
               </div>
             }
@@ -87,9 +88,9 @@ import { SelectionService } from '../../services/selection.service';
             <div>
               <div class="beer-card-meta">
                 <span class="badge">{{ brand.style }}</span>
-                <span class="beer-card-abv">
-                  {{ brand.abv !== null && brand.abv !== undefined ? brand.abv + '% ABV' : 'N/A' }}
-                </span>
+                @if (brand.abv !== null && brand.abv !== undefined) {
+                  <span class="beer-card-abv">{{ brand.abv }}% ABV</span>
+                }
               </div>
               <h3 class="beer-card-name">{{ brand.name }}</h3>
               @if (brand.brand_owner) {
@@ -114,8 +115,8 @@ import { SelectionService } from '../../services/selection.service';
           </div>
         </div>
       } @empty {
-        <div class="glass-panel text-center p-4xl" style="grid-column: 1 / -1;">
-          <p class="text-muted mb-lg" style="font-size: 1.1rem;">По вашему запросу ничего не найдено.</p>
+        <div class="empty-state">
+          <p class="mb-lg" style="font-size: 1.05rem;">По вашему запросу ничего не найдено.</p>
           <button class="btn-outline" (click)="resetFilters()">Сбросить фильтры</button>
         </div>
       }
@@ -124,6 +125,11 @@ import { SelectionService } from '../../services/selection.service';
 
   `,
   styles: [`
+    .beer-card-placeholder svg {
+      width: 46px;
+      height: 46px;
+      color: var(--beer-mid);
+    }
     .beer-card-image-badge {
       position: absolute;
       top: 8px;

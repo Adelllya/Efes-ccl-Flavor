@@ -1,0 +1,25 @@
+// Скриншоты для ревью дизайна: мобильные ключевые экраны + новые ИИ-экраны. node scripts/shots-review.mjs <outDir>
+import { chromium } from 'playwright-core';
+import { createServer } from 'node:http';
+import { readFileSync, existsSync, statSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here = path.dirname(fileURLToPath(import.meta.url));
+const dist = path.resolve(here, '..', 'dist/frontend/browser');
+const out = process.argv[2] || path.resolve(here, '..', '..', 'docs', 'screenshots', 'review');
+mkdirSync(out, { recursive: true });
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const server = createServer((req, res) => { let p = path.join(dist, decodeURIComponent(req.url.split('?')[0])); if (!existsSync(p) || statSync(p).isDirectory()) p = path.join(dist, 'index.html'); res.writeHead(200, { 'content-type': types[path.extname(p)] || 'application/octet-stream' }); res.end(readFileSync(p)); }).listen(4323);
+const base = 'http://127.0.0.1:4323';
+const browser = await chromium.launch({ channel: 'chrome' });
+const m = await (await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'ru-RU' })).newPage();
+const shot = async (name, url, after) => { await m.goto(base + url, { waitUntil: 'networkidle' }); await m.waitForTimeout(700); if (after) await after(); await m.screenshot({ path: path.join(out, name + '.png'), fullPage: !!process.env.FULL }); console.log('✓', name); };
+await shot('m-home', '/');
+await shot('m-pair', '/pair');
+await shot('m-results', '/pair/beshbarmak');
+await shot('m-beers', '/beers');
+await shot('m-scan', '/scan');
+await shot('m-menu', '/m/efes-beer-garden-almaty/5');
+await shot('m-chat', '/m/efes-beer-garden-almaty/5', async () => { await m.locator('.fab').dispatchEvent('click'); await m.waitForSelector('.sheet .hello'); await m.waitForTimeout(400); });
+await shot('m-cabinet-tables', '/cabinet', async () => { await m.getByRole('button', { name: 'заполнить' }).dispatchEvent('click'); await m.getByRole('button', { name: 'Войти' }).dispatchEvent('click'); await m.waitForSelector('.hero .big'); await m.getByRole('button', { name: /Столы и QR/ }).dispatchEvent('click'); await m.waitForSelector('.tbl .tok'); await m.waitForTimeout(300); });
+await browser.close(); server.close(); console.log('done →', out);

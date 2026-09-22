@@ -1,0 +1,2206 @@
+{
+  "_sample": "Учебные данные Flavor Tree (вымышленный бар в Алматы, цены в тенге) — не выгрузка реального заведения",
+  "response": [
+    {
+      "barcode": "",
+      "category_name": "Пиво разливное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "101",
+      "product_name": "Efes Pilsener",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "modifications": [
+        {
+          "modificator_id": "40",
+          "modificator_name": "0,3 л",
+          "modificator_selfprice": "0",
+          "modificator_selfprice_netto": "0",
+          "order": "0",
+          "modificator_barcode": "",
+          "modificator_product_code": "",
+          "spots": [
+            {
+              "spot_id": "1",
+              "price": "110000",
+              "profit": "110000",
+              "profit_netto": "110000",
+              "visible": "1"
+            }
+          ],
+          "ingredient_id": "0"
+        },
+        {
+          "modificator_id": "41",
+          "modificator_name": "0,5 л",
+          "modificator_selfprice": "0",
+          "modificator_selfprice_netto": "0",
+          "order": "0",
+          "modificator_barcode": "",
+          "modificator_product_code": "",
+          "spots": [
+            {
+              "spot_id": "1",
+              "price": "160000",
+              "profit": "160000",
+              "profit_netto": "160000",
+              "visible": "1"
+            }
+          ],
+          "ingredient_id": "0"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво разливное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "102",
+      "product_name": "Легенда 777",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "modifications": [
+        {
+          "modificator_id": "42",
+          "modificator_name": "0,3",
+          "modificator_selfprice": "0",
+          "modificator_selfprice_netto": "0",
+          "order": "0",
+          "modificator_barcode": "",
+          "modificator_product_code": "",
+          "spots": [
+            {
+              "spot_id": "1",
+              "price": "120000",
+              "profit": "120000",
+              "profit_netto": "120000",
+              "visible": "1"
+            }
+          ],
+          "ingredient_id": "0"
+        },
+        {
+          "modificator_id": "43",
+          "modificator_name": "0,5",
+          "modificator_selfprice": "0",
+          "modificator_selfprice_netto": "0",
+          "order": "0",
+          "modificator_barcode": "",
+          "modificator_product_code": "",
+          "spots": [
+            {
+              "spot_id": "1",
+              "price": "170000",
+              "profit": "170000",
+              "profit_netto": "170000",
+              "visible": "1"
+            }
+          ],
+          "ingredient_id": "0"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво разливное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "103",
+      "product_name": "Бочковое разливное 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "150000"
+      },
+      "profit": {
+        "1": "150000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "150000",
+          "profit": "150000",
+          "profit_netto": "150000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво разливное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "104",
+      "product_name": "13 регион 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "145000"
+      },
+      "profit": {
+        "1": "145000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "145000",
+          "profit": "145000",
+          "profit_netto": "145000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво разливное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "105",
+      "product_name": "Северное сияние 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "160000"
+      },
+      "profit": {
+        "1": "160000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "160000",
+          "profit": "160000",
+          "profit_netto": "160000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "p",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "106",
+      "product_name": "Kozel svetly 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "190000"
+      },
+      "profit": {
+        "1": "190000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "190000",
+          "profit": "190000",
+          "profit_netto": "190000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "p",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "107",
+      "product_name": "Kozel tmavy 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "190000"
+      },
+      "profit": {
+        "1": "190000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "190000",
+          "profit": "190000",
+          "profit_netto": "190000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "108",
+      "product_name": "Miller 0,33",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "170000"
+      },
+      "profit": {
+        "1": "170000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "170000",
+          "profit": "170000",
+          "profit_netto": "170000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "109",
+      "product_name": "Бавария 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "0",
+        "2": "150000"
+      },
+      "profit": {
+        "1": "0",
+        "2": "150000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "0",
+          "profit": "0",
+          "profit_netto": "0",
+          "visible": "0"
+        },
+        {
+          "spot_id": "2",
+          "price": "150000",
+          "profit": "150000",
+          "profit_netto": "150000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "110",
+      "product_name": "Белый медведь 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "90000"
+      },
+      "profit": {
+        "1": "90000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "90000",
+          "profit": "90000",
+          "profit_netto": "90000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "111",
+      "product_name": "Хмельной лось 0,45 ж/б",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "100000"
+      },
+      "profit": {
+        "1": "100000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "100000",
+          "profit": "100000",
+          "profit_netto": "100000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "112",
+      "product_name": "Corona Extra 0,33",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "250000"
+      },
+      "profit": {
+        "1": "250000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "250000",
+          "profit": "250000",
+          "profit_netto": "250000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "113",
+      "product_name": "Жигулевское 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "85000"
+      },
+      "profit": {
+        "1": "85000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "85000",
+          "profit": "85000",
+          "profit_netto": "85000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "114",
+      "product_name": "Кружка свежего 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "95000"
+      },
+      "profit": {
+        "1": "95000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "95000",
+          "profit": "95000",
+          "profit_netto": "95000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "115",
+      "product_name": "Бремен фон Лустиг 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "130000"
+      },
+      "profit": {
+        "1": "130000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "130000",
+          "profit": "130000",
+          "profit_netto": "130000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "116",
+      "product_name": "Вуконг 0,33",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "180000"
+      },
+      "profit": {
+        "1": "180000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "180000",
+          "profit": "180000",
+          "profit_netto": "180000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "117",
+      "product_name": "Прага 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "110000"
+      },
+      "profit": {
+        "1": "110000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "110000",
+          "profit": "110000",
+          "profit_netto": "110000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "118",
+      "product_name": "Карагандинское 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "90000"
+      },
+      "profit": {
+        "1": "90000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "90000",
+          "profit": "90000",
+          "profit_netto": "90000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пиво бутылочное",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "119",
+      "product_name": "Старый мельник 0,5",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "120000"
+      },
+      "profit": {
+        "1": "120000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "120000",
+          "profit": "120000",
+          "profit_netto": "120000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Гриль",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "120",
+      "product_name": "Шашлык из баранины",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 250,
+      "price": {
+        "1": "390000"
+      },
+      "profit": {
+        "1": "390000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "390000",
+          "profit": "390000",
+          "profit_netto": "390000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Гриль",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "121",
+      "product_name": "Шашлык куриный",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 250,
+      "price": {
+        "1": "290000"
+      },
+      "profit": {
+        "1": "290000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "290000",
+          "profit": "290000",
+          "profit_netto": "290000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Гриль",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "122",
+      "product_name": "Рёбрышки BBQ",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 400,
+      "price": {
+        "1": "520000"
+      },
+      "profit": {
+        "1": "520000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "520000",
+          "profit": "520000",
+          "profit_netto": "520000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Гриль",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "123",
+      "product_name": "Крылья Баффало",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 300,
+      "price": {
+        "1": "260000"
+      },
+      "profit": {
+        "1": "260000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "260000",
+          "profit": "260000",
+          "profit_netto": "260000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Гриль",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "124",
+      "product_name": "Колбаски гриль",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 300,
+      "price": {
+        "1": "340000"
+      },
+      "profit": {
+        "1": "340000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "340000",
+          "profit": "340000",
+          "profit_netto": "340000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Гриль",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "125",
+      "product_name": "Стейк Рибай",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 300,
+      "price": {
+        "1": "890000"
+      },
+      "profit": {
+        "1": "890000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "890000",
+          "profit": "890000",
+          "profit_netto": "890000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Бургеры",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "12",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "126",
+      "product_name": "Бургер Классик",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 350,
+      "price": {
+        "1": "360000"
+      },
+      "profit": {
+        "1": "360000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "360000",
+          "profit": "360000",
+          "profit_netto": "360000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Бургеры",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "12",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "127",
+      "product_name": "Чизбургер",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 370,
+      "price": {
+        "1": "380000"
+      },
+      "profit": {
+        "1": "380000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "380000",
+          "profit": "380000",
+          "profit_netto": "380000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Закуски",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "128",
+      "product_name": "Начос",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 350,
+      "price": {
+        "1": "220000"
+      },
+      "profit": {
+        "1": "220000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "220000",
+          "profit": "220000",
+          "profit_netto": "220000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Закуски",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "129",
+      "product_name": "Гренки чесночные",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 150,
+      "price": {
+        "1": "120000"
+      },
+      "profit": {
+        "1": "120000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "120000",
+          "profit": "120000",
+          "profit_netto": "120000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Закуски",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "130",
+      "product_name": "Кольца кальмара",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 200,
+      "price": {
+        "1": "210000"
+      },
+      "profit": {
+        "1": "210000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "210000",
+          "profit": "210000",
+          "profit_netto": "210000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Закуски",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "131",
+      "product_name": "Брецель",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 150,
+      "price": {
+        "1": "120000"
+      },
+      "profit": {
+        "1": "120000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "120000",
+          "profit": "120000",
+          "profit_netto": "120000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Закуски",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "132",
+      "product_name": "Квашеная капуста",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 200,
+      "price": {
+        "1": "90000"
+      },
+      "profit": {
+        "1": "90000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "90000",
+          "profit": "90000",
+          "profit_netto": "90000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Казахская кухня",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "133",
+      "product_name": "Бешбармак",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": "400",
+      "price": {
+        "1": "420000"
+      },
+      "profit": {
+        "1": "420000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "420000",
+          "profit": "420000",
+          "profit_netto": "420000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Казахская кухня",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "134",
+      "product_name": "Қазы",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 150,
+      "price": {
+        "1": "380000"
+      },
+      "profit": {
+        "1": "380000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "380000",
+          "profit": "380000",
+          "profit_netto": "380000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Казахская кухня",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "135",
+      "product_name": "Манты",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 350,
+      "price": {
+        "1": "240000"
+      },
+      "profit": {
+        "1": "240000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "240000",
+          "profit": "240000",
+          "profit_netto": "240000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Казахская кухня",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "136",
+      "product_name": "Бауырсақ",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 150,
+      "price": {
+        "1": "90000"
+      },
+      "profit": {
+        "1": "90000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "90000",
+          "profit": "90000",
+          "profit_netto": "90000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Казахская кухня",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "137",
+      "product_name": "Куырдак",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 300,
+      "price": {
+        "1": "360000"
+      },
+      "profit": {
+        "1": "360000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "360000",
+          "profit": "360000",
+          "profit_netto": "360000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Казахская кухня",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "138",
+      "product_name": "Плов",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 400,
+      "price": {
+        "1": "280000"
+      },
+      "profit": {
+        "1": "280000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "280000",
+          "profit": "280000",
+          "profit_netto": "280000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пицца",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "139",
+      "product_name": "Пицца Маргарита",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 450,
+      "price": {
+        "1": "320000"
+      },
+      "profit": {
+        "1": "320000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "320000",
+          "profit": "320000",
+          "profit_netto": "320000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Пицца",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "140",
+      "product_name": "Пицца Пепперони",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 450,
+      "price": {
+        "1": "380000"
+      },
+      "profit": {
+        "1": "380000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "380000",
+          "profit": "380000",
+          "profit_netto": "380000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Паста",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "12",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "141",
+      "product_name": "Паста Карбонара",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 300,
+      "price": {
+        "1": "270000"
+      },
+      "profit": {
+        "1": "270000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "270000",
+          "profit": "270000",
+          "profit_netto": "270000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Паста",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "12",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "142",
+      "product_name": "Лазанья",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 320,
+      "price": {
+        "1": "290000"
+      },
+      "profit": {
+        "1": "290000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "290000",
+          "profit": "290000",
+          "profit_netto": "290000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Десерты",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "143",
+      "product_name": "Тирамису",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 120,
+      "price": {
+        "1": "190000"
+      },
+      "profit": {
+        "1": "190000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "190000",
+          "profit": "190000",
+          "profit_netto": "190000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Десерты",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "144",
+      "product_name": "Штрудель",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 150,
+      "price": {
+        "1": "170000"
+      },
+      "profit": {
+        "1": "170000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "170000",
+          "profit": "170000",
+          "profit_netto": "170000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Десерты",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "15",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "145",
+      "product_name": "Чизкейк",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 130,
+      "price": {
+        "1": "190000"
+      },
+      "profit": {
+        "1": "190000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "190000",
+          "profit": "190000",
+          "profit_netto": "190000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Коктейли",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "146",
+      "product_name": "Маргарита",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 250,
+      "price": {
+        "1": "250000"
+      },
+      "profit": {
+        "1": "250000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "250000",
+          "profit": "250000",
+          "profit_netto": "250000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Коктейли",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "147",
+      "product_name": "Мохито",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 300,
+      "price": {
+        "1": "240000"
+      },
+      "profit": {
+        "1": "240000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "240000",
+          "profit": "240000",
+          "profit_netto": "240000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Напитки",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "148",
+      "product_name": "Айран",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "3",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 0,
+      "price": {
+        "1": "50000"
+      },
+      "profit": {
+        "1": "50000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "50000",
+          "profit": "50000",
+          "profit_netto": "50000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Напитки",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "11",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "149",
+      "product_name": "Кофе американо",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 200,
+      "price": {
+        "1": "90000"
+      },
+      "profit": {
+        "1": "90000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "90000",
+          "profit": "90000",
+          "profit_netto": "90000",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Заготовки",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "0",
+      "menu_category_id": "16",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "150",
+      "product_name": "Бульон куриный (п/ф)",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "1",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 1000,
+      "price": {
+        "1": "0"
+      },
+      "profit": {
+        "1": "0"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "0",
+          "profit": "0",
+          "profit_netto": "0",
+          "visible": "1"
+        }
+      ]
+    },
+    {
+      "barcode": "",
+      "category_name": "Гриль",
+      "unit": "",
+      "cost": "0",
+      "cost_netto": "0",
+      "fiscal": "0",
+      "hidden": "1",
+      "menu_category_id": "13",
+      "workshop": "1",
+      "nodiscount": "0",
+      "photo": "",
+      "photo_origin": "",
+      "product_code": "",
+      "product_id": "151",
+      "product_name": "Скрытая позиция",
+      "sort_order": "999",
+      "tax_id": "0",
+      "product_tax_id": "0",
+      "type": "2",
+      "weight_flag": "0",
+      "color": "white",
+      "ingredient_id": "0",
+      "cooking_time": "0",
+      "different_spots_prices": "0",
+      "out": 100,
+      "price": {
+        "1": "100000"
+      },
+      "profit": {
+        "1": "100000"
+      },
+      "spots": [
+        {
+          "spot_id": "1",
+          "price": "100000",
+          "profit": "100000",
+          "profit_netto": "100000",
+          "visible": "1"
+        }
+      ]
+    }
+  ]
+}

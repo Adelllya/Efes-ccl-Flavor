@@ -16,6 +16,7 @@ class FlavorNoteSerializer(serializers.ModelSerializer):
             'id', 'name', 'technical_term', 'wheel_code',
             'category', 'category_display', 'description', 'icon',
             'reference_material', 'is_off_flavour', 'sort_order',
+            'slug', 'axes', 'tags',
         ]
 
 
@@ -51,6 +52,7 @@ class BrandListSerializer(serializers.ModelSerializer):
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
             'is_horeca_only', 'description', 'image',
             'is_active', 'note_count', 'profile', 'serving_recommendation',
+            'slug', 'display_name', 'style_family', 'abv_estimated', 'origin', 'tagline', 'accent',
         ]
 
     def get_image(self, obj):
@@ -104,6 +106,7 @@ class BrandDetailSerializer(serializers.ModelSerializer):
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
             'is_horeca_only', 'description', 'image',
             'is_active', 'serving_recommendation', 'pyramid',
+            'slug', 'display_name', 'style_family', 'abv_estimated', 'origin', 'tagline', 'accent', 'vector_override',
         ]
 
     def get_image(self, obj):
@@ -139,6 +142,7 @@ class BrandCreateUpdateSerializer(serializers.ModelSerializer):
             'name', 'brand_owner', 'style', 'abv',
             'density', 'fermentation_type', 'packaging_type', 'is_horeca_only',
             'description', 'image', 'is_active',
+            'slug', 'display_name', 'style_family', 'abv_estimated', 'origin', 'tagline', 'accent', 'vector_override',
         ]
 
 
@@ -214,6 +218,7 @@ class DishSerializer(serializers.ModelSerializer):
             'fat_level', 'fat_level_display',
             'cooking_method', 'cooking_method_display',
             'description', 'image',
+            'slug', 'display_name', 'emoji', 'vector', 'tags', 'synonyms',
         ]
 
 

@@ -1,0 +1,17 @@
+[
+  {"id": "efes-beer-garden-almaty", "name": "Efes Beer Garden", "city": "Алматы", "address": "пр. Абая, 10", "venue_type": "PUB",
+   "description": "Пилотное заведение Flavor Tree: разливная линейка Efes KZ и казахская кухня.",
+   "brands": ["severnoe-siyanie", "legenda-777", "13-region", "stary-melnik", "bochkovoe", "efes-pilsener", "kozel", "kruzhka-svezhego"],
+   "menu": ["beshbarmak", "kazy", "shashlyk", "manty", "samsa", "kuyrdak", "burger", "steak", "bbq-ribs", "nachos", "pretzel", "bratwurst", "kurt", "baursaki"],
+   "tables": 12, "token_prefix": "EBG"},
+  {"id": "bar-13-shymkent", "name": "Bar 13", "city": "Шымкент", "address": "ул. Байтурсынова, 13", "venue_type": "BAR",
+   "description": "Южный бар с локальными сортами и мясной кухней.",
+   "brands": ["13-region", "kruzhka-svezhego", "belyi-medved", "khmelnoy-los", "zhigulevskoe", "bochkovoe", "karagandinskoe"],
+   "menu": ["shashlyk", "kazy", "zhaya", "plov", "samsa", "buffalo-wings", "burger", "kurt", "pretzel", "bratwurst", "currywurst"],
+   "tables": 8, "token_prefix": "B13"},
+  {"id": "sakura-izakaya-astana", "name": "Sakura Izakaya", "city": "Астана", "address": "ул. Достык, 5", "venue_type": "RESTAURANT",
+   "description": "Японская изакая: лёгкие лагеры к суши, рамену и якитори.",
+   "brands": ["wukong-ju", "miller-genuine-draft", "efes-pilsener", "bavaria", "severnoe-siyanie"],
+   "menu": ["sushi", "ramen", "edamame", "tempura", "yakitori", "mochi", "tonkatsu"],
+   "tables": 10, "token_prefix": "SKR"}
+]

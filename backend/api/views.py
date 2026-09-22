@@ -19,6 +19,7 @@ from .serializers import (
     FlavorProfileBulkSerializer, ServingRecommendationUpsertSerializer,
     ServingRecommendationSerializer,
 )
+from .auth import ADMIN_AUTHENTICATION, IsSommelierAdminOrReadOnly, sommelier_only
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -33,7 +34,11 @@ class BrandViewSet(viewsets.ModelViewSet):
     PATCH/PUT /api/brands/{id}/ — обновить
     DELETE /api/brands/{id}/    — удалить (каскадно)
     GET  /api/brands/{id}/pyramid/ — вкусовая пирамида
+
+    Чтение открыто всем; POST/PUT/PATCH/DELETE и upload-image — только сомелье (см. api/auth.py).
     """
+    authentication_classes = ADMIN_AUTHENTICATION
+    permission_classes = [IsSommelierAdminOrReadOnly]
     queryset = Brand.objects.prefetch_related(
         'flavor_profiles__flavor_note',
         'serving_recommendation',
@@ -132,7 +137,11 @@ class FlavorNoteViewSet(viewsets.ModelViewSet):
     """
     GET /api/flavor-notes/              — справочник нот, фильтр ?category=, ?off_flavour=
     GET /api/flavor-notes/{id}/brands/  — обратный поиск: нота → бренды
+
+    Чтение открыто всем; POST/PUT/PATCH/DELETE — только сомелье (см. api/auth.py).
     """
+    authentication_classes = ADMIN_AUTHENTICATION
+    permission_classes = [IsSommelierAdminOrReadOnly]
     queryset = FlavorNote.objects.all()
     serializer_class = FlavorNoteSerializer
 
@@ -313,9 +322,14 @@ def health_check(request):
     return Response({'ok': True})
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
+@sommelier_only
 def seed_data(request):
-    """GET /api/seed/ — загрузка демо-данных и 17 сортов (идемпотентно)."""
+    """POST /api/seed/ — загрузка демо-данных и 17 сортов (идемпотентно). Только сомелье.
+
+    Перезаписывает сорта и пирамиды данными из data/*.json, поэтому закрыт токеном.
+    GET оставлен для совместимости со старыми скриптами.
+    """
     from django.core.management import call_command
     try:
         call_command('load_flavor_data')
@@ -329,9 +343,11 @@ def seed_data(request):
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  ADMIN (SOMMELIER) VIEWS
+#  Все закрыты @sommelier_only: токен FT_ADMIN_TOKEN или сотрудник Django (api/auth.py).
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @api_view(['GET', 'POST'])
+@sommelier_only
 def admin_brands(request):
     """
     GET  /api/admin/brands/ — список брендов со статусом профиля
@@ -350,6 +366,7 @@ def admin_brands(request):
 
 
 @api_view(['PUT'])
+@sommelier_only
 def admin_flavor_profiles(request):
     """
     PUT /api/admin/flavor-profiles/ — заменить вкусовую пирамиду бренда целиком.
@@ -405,6 +422,7 @@ def admin_flavor_profiles(request):
 
 
 @api_view(['PUT'])
+@sommelier_only
 def admin_serving_recommendations(request):
     """
     PUT /api/admin/serving-recommendations/ — upsert рекомендаций по подаче.
@@ -428,6 +446,7 @@ def admin_serving_recommendations(request):
 
 
 @api_view(['POST', 'PATCH', 'DELETE'])
+@sommelier_only
 def admin_flavor_notes(request):
     """
     POST   /api/admin/flavor-notes/ — создать ноту

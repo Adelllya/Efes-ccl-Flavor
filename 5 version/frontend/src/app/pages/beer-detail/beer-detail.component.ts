@@ -111,7 +111,9 @@ const MAX_ORBIT = 6;
             @if (photo(b); as src) {
               <img [src]="src" [alt]="'Бутылка ' + b.name" />
             } @else {
-              <span class="bd-fallback" aria-hidden="true">🍺</span>
+              <span class="bd-fallback" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3.5l2 3V21a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8.5l2-3V2Z"/><path d="M8 12h8"/></svg>
+              </span>
             }
           </span>
 
@@ -319,9 +321,23 @@ const MAX_ORBIT = 6;
       position: relative;
       z-index: 2;
       display: block;
-      width: min(100%, 320px);
-      height: clamp(300px, 34vw, 420px);
+      width: min(100%, 360px);
+      height: clamp(320px, 36vw, 460px);
       animation: bdBottle var(--duration-slow) var(--ease-spring) both 120ms;
+    }
+    /* Эллипс-тень под бутылкой: без неё фото висит в воздухе. */
+    .bd-bottle::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      width: 52%;
+      height: 26px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(69, 26, 3, 0.28), transparent 70%);
+      filter: blur(3px);
+      pointer-events: none;
     }
     .bd-bottle img {
       position: absolute;
@@ -332,8 +348,12 @@ const MAX_ORBIT = 6;
       max-height: 100%;
       margin: auto;
       object-fit: contain;
+      filter:
+        drop-shadow(0 26px 34px rgba(69, 26, 3, 0.3))
+        drop-shadow(0 3px 4px rgba(69, 26, 3, 0.2));
     }
-    .bd-fallback { position: absolute; inset: 0; display: grid; place-items: center; font-size: 4rem; }
+    .bd-fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--beer-mid); opacity: 0.35; }
+    .bd-fallback svg { width: 96px; height: 96px; }
 
     @keyframes bdBottle {
       from { opacity: 0; transform: translateY(26px) scale(0.94); }

@@ -86,7 +86,7 @@ interface PairCard {
                   @if (small(b); as src) {
                     <img [src]="src" [alt]="b.name" loading="lazy" />
                   } @else {
-                    <span class="bp-card-fallback" aria-hidden="true">🍺</span>
+                    <span class="bp-card-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3.5l2 3V21a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8.5l2-3V2Z"/><path d="M8 12h8"/></svg></span>
                   }
                 </span>
                 <span class="bp-card-name">{{ b.name }}</span>
@@ -108,7 +108,7 @@ interface PairCard {
               @if (big(b); as src) {
                 <img [src]="src" [alt]="'Бутылка ' + b.name" />
               } @else {
-                <span class="bp-card-fallback" aria-hidden="true">🍺</span>
+                <span class="bp-card-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3.5l2 3V21a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8.5l2-3V2Z"/><path d="M8 12h8"/></svg></span>
               }
             </span>
 
@@ -287,6 +287,8 @@ interface PairCard {
       gap: 6px;
       padding: var(--space-xl) var(--space-lg) var(--space-2xl);
       text-align: center;
+      /* Кнопка «Выбрать» прижата вниз через .bp-card-go { margin-top: auto } */
+      justify-content: flex-start;
       cursor: pointer;
       animation: bpRise 420ms var(--ease-out) both;
       animation-delay: calc(var(--i, 0) * 45ms);
@@ -299,15 +301,46 @@ interface PairCard {
       to   { opacity: 1; transform: none; }
     }
 
-    .bp-card-visual { position: relative; display: block; width: 100%; height: 150px; overflow: hidden; }
-    .bp-card-visual img { position: absolute; inset: 6px; width: auto; height: auto; max-width: calc(100% - 12px); max-height: calc(100% - 12px); margin: auto; object-fit: contain; }
-    .bp-card-fallback { font-size: 3rem; line-height: 1; }
+    .bp-card-visual {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 150px;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      /* Тёплая «полка» под бутылкой, как в каталоге сортов. */
+      background: radial-gradient(ellipse 58% 26% at 50% 96%, rgba(180, 83, 9, 0.14), transparent 70%);
+    }
+    .bp-card-visual img {
+      position: absolute;
+      inset: 6px;
+      width: auto;
+      height: auto;
+      max-width: calc(100% - 12px);
+      max-height: calc(100% - 12px);
+      margin: auto;
+      object-fit: contain;
+      transform: scale(1.22);
+      filter: drop-shadow(0 10px 12px rgba(69, 26, 3, 0.26));
+    }
+    .bp-card-fallback { color: var(--beer-mid); opacity: 0.35; }
+    .bp-card-fallback svg { width: 48px; height: 48px; }
 
-    .bp-card-name { font-family: var(--font-heading); font-size: 1rem; font-weight: 700; line-height: 1.25; }
+    /* Две строки максимум: иначе у длинных названий кнопка уезжает вниз. */
+    .bp-card-name {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
     .bp-card-style { font-size: 0.78rem; color: var(--muted); }
 
     .bp-card-go {
-      margin-top: var(--space-sm);
+      margin-top: auto;
       padding: 7px 18px;
       border-radius: var(--radius-full);
       background: var(--beer-glow);
