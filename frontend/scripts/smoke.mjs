@@ -125,9 +125,12 @@ await check('карта вкусов и тёмная тема', async () => {
   await page.goto(base + '/beers', { waitUntil: 'networkidle' });
   await tap(page.getByRole('button', { name: /Карта вкусов/ }));
   await page.waitForSelector('.map .pt');
-  await page.locator('button[title="Переключить тему"]').click();
-  const t = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-  if (t !== 'dark') throw new Error('тема: ' + t);
+  // Тёмная по умолчанию, кнопка крутит dark → light → auto → dark.
+  const theme = () => page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+  const btn = page.locator('button[title="Переключить тему"]');
+  const seen = [await theme()];
+  for (let i = 0; i < 3; i++) { await btn.click(); seen.push(await theme()); }
+  if (seen.join() !== 'dark,light,,dark') throw new Error('темы по кликам: ' + seen.join(' → '));
 });
 
 // ── SaaS: гостевое меню, кабинет, лендинг, печать QR ──
