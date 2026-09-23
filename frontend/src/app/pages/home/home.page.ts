@@ -37,13 +37,13 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
           </ul>
         }
       </form>
-      <a routerLink="/scan" class="scan-cta reveal reveal-4"><span class="sc-ico">📷</span><span><b>Сфотографируйте блюдо</b><br><span class="dim sm">ИИ-сомелье распознает еду и подберёт пиво за 5 секунд</span></span><ft-icon name="chevron-right" /></a>
+      <a routerLink="/scan" class="scan-cta reveal reveal-4"><span class="sc-ico">📷</span><span><b>Сфотографируйте блюдо</b><br><span class="dim sm">ИИ-сомелье распознает еду или этикетку и подберёт пару</span></span><ft-icon name="chevron-right" /></a>
 
       <div class="choices reveal reveal-4">
         <a routerLink="/pair" class="choice">
           <span class="ch-ico"><ft-icon name="dish" [size]="28" /></span>
           <span class="ch-t">У меня есть <em>блюдо</em></span>
-          <span class="ch-d">Подберу сорт по вкусовой пирамиде и объясню почему</span>
+          <span class="ch-d">Лучшие напитки из всех категорий — с причинами и уровнем доказательности</span>
           <span class="ch-cta">Выбрать <ft-icon name="arrow-right" [size]="16" /></span>
         </a>
         <a routerLink="/drinks" class="choice alt">
@@ -53,6 +53,7 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
           <span class="ch-cta">Выбрать <ft-icon name="arrow-right" [size]="16" /></span>
         </a>
       </div>
+      <a routerLink="/table" [queryParams]="{ preset: 'dastarkhan' }" class="scan-cta table-cta reveal reveal-4"><span class="sc-ico">🍽️</span><span><b>Весь стол сразу — дастархан</b><br><span class="dim sm">До 12 блюд: один напиток на весь стол или сет бокалов с порядком подачи</span></span><ft-icon name="chevron-right" /></a>
 
       <div class="stats reveal reveal-5">
         <span><b>{{ v2.drinks() ? v2.stats().drinks : '…' }}</b> напитков · {{ v2.drinks() ? v2.stats().nonEfes : '…' }} не Efes</span>
@@ -137,6 +138,7 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
     .scan-cta { display: flex; align-items: center; gap: 12px; max-width: 620px; margin: 12px auto 0; padding: 12px 14px; border-radius: var(--r-lg); background: var(--surface); border: 1.5px solid var(--line); box-shadow: var(--shadow-1); text-align: left; transition: transform var(--t-fast), border-color var(--t-fast); }
     .scan-cta:hover { transform: translateY(-2px); border-color: var(--amber-400); }
     .scan-cta > span:nth-child(2) { flex: 1; }
+    .table-cta { margin-top: 12px; }
     .sc-ico { width: 44px; height: 44px; border-radius: 14px; background: var(--grad-amber); display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0; }
     .hero-search .input { min-height: 56px; padding-right: 64px; border-radius: var(--r-lg); box-shadow: var(--shadow-1); }
     .go { position: absolute; right: 6px; top: 6px; bottom: 6px; min-height: 0; width: 48px; padding: 0; border-radius: 12px; }
@@ -190,12 +192,12 @@ export class HomePage {
   fact = computed(() => this.facts[this.factIdx()]);
 
   readonly scenarios: Scenario[] = [
-    { id: 'kz', icon: '🥩', title: 'Казахское застолье', desc: 'Бешбармак, казы, куырдак — умами и жир против солода и горечи.', link: ['/pair', 'beshbarmak'], badge: 'Казахская кухня' },
-    { id: 'grill', icon: '🔥', title: 'Мясо на гриле', desc: 'Шашлык, стейк, рёбрышки — дым ищет смолистый хмель и карамель.', link: ['/pair', 'shashlyk'], query: { occasion: 'evening' }, badge: 'Вечер' },
-    { id: 'hot', icon: '☀️', title: 'Освежиться в жару', desc: 'Лёгкие чистые сорта с высокой карбонизацией к любому обеду.', link: ['/pair', 'edamame'], query: { occasion: 'hot' }, badge: 'Свежесть 5–7 °C' },
-    { id: 'sushi', icon: '🍣', title: 'Суши и азиатский ужин', desc: 'Деликатная рыба не терпит хмеля — нужна рисовая лёгкость.', link: ['/pair', 'sushi'], badge: 'Японская кухня' },
-    { id: 'spicy', icon: '🌶️', title: 'Острое', desc: 'Крылышки Buffalo, тако, чили: солод гасит огонь, хмель разжигает.', link: ['/pair', 'buffalo-wings'], badge: 'Ловушка №1' },
-    { id: 'dessert', icon: '🥧', title: 'Десерт', desc: 'Штрудель и яблочный пирог просят карамельный янтарный лагер.', link: ['/pair', 'strudel'], query: { occasion: 'gourmet' }, badge: 'Bridge' },
+    { id: 'kz', icon: '🥩', title: 'Казахское застолье', desc: 'Бешбармак, казы, куырдак — жир и умами: что их режет лучше — пузырьки, кислота или танин.', link: ['/pair', 'beshbarmak'], badge: 'Казахская кухня' },
+    { id: 'grill', icon: '🔥', title: 'Мясо на гриле', desc: 'Шашлык, стейк, рёбрышки — корочка и дым ищут обжарку, карамель и танин.', link: ['/pair', 'shashlyk'], query: { occasion: 'evening' }, badge: 'Вечер' },
+    { id: 'hot', icon: '☀️', title: 'Освежиться в жару', desc: 'Повод «жара» поднимает лёгкое, холодное и с пузырьками.', link: ['/pair', 'edamame'], query: { occasion: 'hot' }, badge: 'Свежесть 5–7 °C' },
+    { id: 'sushi', icon: '🍣', title: 'Суши и азиатский ужин', desc: 'Деликатная рыба не терпит громкого и горького — нужно чистое и лёгкое.', link: ['/pair', 'sushi'], badge: 'Японская кухня' },
+    { id: 'spicy', icon: '🌶️', title: 'Острое', desc: 'Сахар, молочный белок и холод гасят жжение; спирт и сильная горечь его разжигают.', link: ['/pair', 'buffalo-wings'], badge: 'Ловушка №1' },
+    { id: 'dessert', icon: '🥧', title: 'Десерт', desc: 'Напиток не должен быть суше десерта — иначе покажется кислым и водянистым.', link: ['/pair', 'strudel'], query: { occasion: 'dessert' }, badge: 'Правило сладости' },
   ];
   readonly steps = computed<{ n: string; icon: IconName; title: string; text: string }[]>(() => [
     { n: '01', icon: 'glass', title: 'Напиток → вектор', text: 'Крепость с этикетки, IBU от производителя, профиль стиля по BJCP — 14 осей: сладость, кислотность, горечь, танины, газация, тело, обжарка, дым… У каждого профиля есть надёжность и источник.' },

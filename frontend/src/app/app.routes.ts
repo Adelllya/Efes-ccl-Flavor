@@ -6,6 +6,7 @@ export const routes: Routes = [
   { path: 'pair', loadComponent: () => import('./pages/pair/pair.page').then(m => m.PairPage), title: 'Подбор напитка к блюду', data: { tab: 'pair' } },
   { path: 'pair/:dishId', loadComponent: () => import('./pages/pair/pair-results.page').then(m => m.PairResultsPage), title: 'Результат подбора', data: { tab: 'pair' } },
   // ── каталог напитков v2 и методика ──
+  { path: 'table', loadComponent: () => import('./pages/table/table.page').then(m => m.TablePage), title: 'Дастархан — подбор на весь стол', data: { tab: 'pair' } },
   { path: 'drinks', loadComponent: () => import('./pages/drinks/drinks.page').then(m => m.DrinksPage), title: 'Напитки · каталог', data: { tab: 'drinks' } },
   { path: 'drinks/:id', loadComponent: () => import('./pages/drinks/drink-detail.page').then(m => m.DrinkDetailPage), title: 'Напиток', data: { tab: 'drinks' } },
   { path: 'method', loadComponent: () => import('./pages/method/method.page').then(m => m.MethodPage), title: 'Как мы считаем', data: { tab: 'home' } },

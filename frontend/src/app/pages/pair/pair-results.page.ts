@@ -77,6 +77,11 @@ const CUISINE: Record<string, [string, string, string]> = {
         </div>
         <button type="button" class="btn btn-icon btn-secondary share" (click)="share()" [attr.aria-label]="t('pair.share')"><ft-icon name="share" [size]="18" /></button>
       </header>
+      @if (dishId() !== 'custom') {
+        <a class="to-table mt12" routerLink="/table" [queryParams]="{ d: dishId() }" [attr.title]="t('v2.pair.toTableHint')">
+          <span class="tt-ico">🍽️</span><span class="grow"><b>{{ t('v2.pair.toTable') }}</b><span class="dim xs tt-sub">{{ t('v2.pair.toTableHint') }}</span></span><ft-icon name="chevron-right" [size]="18" />
+        </a>
+      }
 
       <section class="ctx card card-p mt12">
         <div class="ctx-row">
@@ -201,6 +206,10 @@ const CUISINE: Record<string, [string, string, string]> = {
     .axes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 16px; max-width: 540px; }
     @media (min-width: 640px) { .axes { grid-template-columns: repeat(3, 1fr); } }
     .ax { display: grid; grid-template-columns: 92px minmax(40px, 1fr); align-items: center; gap: 8px; font-size: .74rem; color: var(--ink-3); font-weight: 600; }
+    .to-table { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--r-lg); background: var(--surface); border: 1.5px solid var(--line); transition: border-color var(--t-fast), transform var(--t-fast); }
+    .to-table:hover { border-color: var(--amber-400); transform: translateY(-1px); }
+    .to-table .tt-ico { font-size: 1.4rem; }
+    .to-table .tt-sub { display: block; margin-top: 2px; }
     @media (max-width: 520px) { .dh { grid-template-columns: auto 1fr; } .share { grid-column: 2; justify-self: end; grid-row: 1; } .ph { width: 88px; } }
     .ctx { display: grid; gap: 12px; }
     .ctx-row { display: grid; gap: 6px; }
@@ -263,7 +272,7 @@ export class PairResultsPage {
   private listTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly occasions: OccasionChip[] = [
-    { id: null, l: 'pair.occasion.any' }, { id: 'meal', l: 'v2.pair.occasion.meal' }, { id: 'aperitif', l: 'v2.pair.occasion.aperitif' },
+    { id: null, l: 'pair.occasion.any' }, { id: 'meal', l: 'v2.pair.occasion.meal' }, { id: 'aperitif', l: 'v2.pair.occasion.aperitif' }, { id: 'dessert', l: 'v2.pair.occasion.dessert' },
     { id: 'hot', l: 'pair.occasion.hot' }, { id: 'evening', l: 'pair.occasion.evening' }, { id: 'party', l: 'pair.occasion.party' },
     { id: 'gourmet', l: 'pair.occasion.gourmet' }, { id: 'non_alcoholic', l: 'v2.pair.occasion.na' },
   ];

@@ -187,6 +187,32 @@ await check('кабинет: столы и печать QR', async () => {
   await page.goto(base + '/cabinet/print', { waitUntil: 'networkidle' });
   await page.waitForSelector('.qr img', { timeout: 8000 });
 });
+await check('подбор → «Весь стол»: блюдо переходит на дастархан', async () => {
+  await page.goto(base + '/pair/beshbarmak', { waitUntil: 'networkidle' });
+  await tap(page.locator('a.to-table'));
+  await page.waitForURL('**/table?d=beshbarmak');
+  await page.waitForSelector('.sel li');
+  const n = await page.locator('.sel li').count();
+  if (n !== 1) throw new Error('на столе должно быть 1 блюдо, а их ' + n);
+});
+await check('дастархан: готовый стол → один напиток и сет с порядком подачи', async () => {
+  await page.goto(base + '/table?preset=dastarkhan', { waitUntil: 'networkidle' });
+  await page.waitForSelector('article.single h3', { timeout: 15000 });
+  // после теста QR активна сессия заведения — подбор по его карте; выключаем, чтобы проверить весь пул
+  const venueChip = page.locator('button.chip[aria-pressed="true"]').filter({ has: page.locator('ft-icon[name="map-pin"]') });
+  if (await venueChip.count()) { await tap(venueChip); }
+  await page.waitForSelector('ol.flight > li', { timeout: 15000 });
+  const nums = await page.locator('article.single').first().locator('.num.big').allTextContents();
+  const [min, mean] = nums.map(x => Number(x.replace(',', '.')));
+  if (!(min > 0 && mean >= min)) throw new Error(`слабейшая пара ${min} и среднее ${mean} не сходятся`);
+  const crowns = await page.locator('.crown:not(.promoted)').count();
+  if (crowns !== 1) throw new Error('кубок должен быть ровно у одного напитка, а их ' + crowns);
+  const fl = await page.locator('ol.flight > li').count();
+  if (fl < 2) throw new Error('в сете меньше двух бокалов: ' + fl);
+  const body = await page.locator('main').innerText();
+  const raw = body.match(/\b(table|v2)\.[a-z]+\.[a-zA-Z.]+/);
+  if (raw) throw new Error('сырой ключ перевода: ' + raw[0]);
+});
 await check('лендинг: калькулятор считает, заявка отправляется', async () => {
   await page.goto(base + '/business', { waitUntil: 'networkidle' });
   const before = await page.locator('.co-big').textContent();
