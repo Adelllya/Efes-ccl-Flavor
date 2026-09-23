@@ -581,10 +581,16 @@ function drawCredits(c: Ctx2D, shown: readonly ShareDish[], L: ShareCardCommonLa
   const maxW = STORY_W - 2 * PAD;
   const tail = ' · ' + tplStr(L.credits, { url: `${host}/credits` });
   let text = '';
-  for (let n = parts.length; n >= 0; n--) {
-    const more = n < parts.length ? `${n ? ' ' : ''}${tplStr(L.more, { n: parts.length - n })}` : '';
+  for (let n = parts.length; n >= 1; n--) {
+    const more = n < parts.length ? ` ${tplStr(L.more, { n: parts.length - n })}` : '';
     text = `${L.photos}: ${parts.slice(0, n).join(', ')}${more}${tail}`;
     if (c.measureText(text).width <= maxW) break;
+    // не влез даже один автор — не выкидываем его («Фото: и ещё 1» без имени), а сокращаем имя
+    if (n === 1) {
+      const head = `${L.photos}: `;
+      const rest = `${more}${tail}`;
+      text = head + ellipsize(c, parts[0], maxW - c.measureText(head + rest).width) + rest;
+    }
   }
   c.fillText(ellipsize(c, text, maxW), PAD, y);
 }

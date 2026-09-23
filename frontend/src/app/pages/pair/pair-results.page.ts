@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DataV2Service, DishV2, DrinkV2 } from '../../core/data-v2.service';
 import { PairingV2Service, TabResult } from '../../core/pairing-v2.service';
@@ -75,7 +75,7 @@ const CUISINE: Record<string, [string, string, string]> = {
             }
           </div>
         </div>
-        <button type="button" class="btn btn-icon btn-secondary share" (click)="share()" [attr.aria-label]="t('pair.share')"><ft-icon name="share" [size]="18" /></button>
+        <button type="button" class="btn btn-icon btn-secondary share" (click)="openStory()" [attr.aria-label]="t('pair.share')"><ft-icon name="share" [size]="18" /></button>
       </header>
       @if (dishId() !== 'custom') {
         <a class="to-table mt12" routerLink="/table" [queryParams]="{ d: dishId() }" [attr.title]="t('v2.pair.toTableHint')">
@@ -195,6 +195,32 @@ const CUISINE: Record<string, [string, string, string]> = {
       <div class="card card-p center"><p class="dim">{{ t('pair.notFound') }}</p><a routerLink="/pair" class="btn btn-primary mt12">{{ t('pair.choose') }}</a></div>
     }
     <ft-sommelier [venue]="aiVenue()" [occasion]="aiOccasion()" />
+
+    <dialog #storyDlg class="share-dlg" aria-labelledby="story-h" (close)="onStoryClosed()" (click)="storyBackdrop($event)">
+      <div class="dlg-in">
+        <div class="dlg-head">
+          <h2 id="story-h" class="h-sm">{{ t('pair.story.title') }}</h2>
+          <button type="button" class="btn btn-icon btn-ghost" (click)="closeStory()" [attr.aria-label]="t('common.close')"><ft-icon name="x" [size]="18" /></button>
+        </div>
+        <div class="preview">
+          @if (storyUrl(); as u) {
+            <img [src]="u" width="1080" height="1920" [alt]="t('pair.story.alt')" />
+          } @else if (storyError()) {
+            <p class="dim sm center">{{ t('table.share.error') }}</p>
+          } @else {
+            <div class="pv-sk" role="status"><span class="pv-dot" aria-hidden="true"></span><span class="muted xs">{{ t('table.share.rendering') }}</span></div>
+          }
+        </div>
+        <div class="dlg-actions">
+          @if (canShareFiles) {
+            <button type="button" class="btn btn-primary" [disabled]="!storyBlob()" (click)="storyShare()"><ft-icon name="share" [size]="16" /> {{ t('table.share.send') }}</button>
+          }
+          <button type="button" class="btn" [class.btn-primary]="!canShareFiles" [class.btn-secondary]="canShareFiles" [disabled]="!storyBlob()" (click)="storyDownload()"><ft-icon name="download" [size]="16" /> {{ t('table.share.download') }}</button>
+          <button type="button" class="btn btn-ghost" (click)="share()"><ft-icon name="copy" [size]="16" /> {{ t('pair.story.link') }}</button>
+        </div>
+        @if (storyMsg()) { <p class="xs muted center" role="status">{{ storyMsg() }}</p> }
+      </div>
+    </dialog>
   `,
   styles: [`
     .dh { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: start; padding: 16px; }
@@ -240,6 +266,19 @@ const CUISINE: Record<string, [string, string, string]> = {
     .rv { display: grid; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
     .learned { margin: 2px 0 0; color: var(--ink-3); }
     .linkish { color: var(--gold-soft); text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
+
+    /* ── предпросмотр сторис (как на странице стола) ── */
+    .share-dlg { margin: auto; padding: 0; border: 1px solid rgba(229, 184, 73, .3); border-radius: var(--r-lg); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-3); width: min(420px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); }
+    .share-dlg::backdrop { background: rgba(6, 4, 3, .72); backdrop-filter: blur(6px); }
+    .dlg-in { display: grid; gap: 12px; padding: 14px 16px 16px; }
+    .dlg-head { display: flex; align-items: center; justify-content: space-between; }
+    .preview { display: grid; place-items: center; }
+    .preview img { width: auto; max-width: 100%; height: min(58dvh, 620px); aspect-ratio: 9 / 16; object-fit: contain; border-radius: 14px; box-shadow: var(--shadow-2); border: 1px solid var(--line); }
+    .pv-sk { height: min(58dvh, 620px); aspect-ratio: 9 / 16; border-radius: 14px; display: grid; place-content: center; justify-items: center; gap: 12px;
+      background: radial-gradient(80% 50% at 50% 0%, var(--gold-glow), transparent), var(--surface-2); border: 1px solid var(--line); }
+    .pv-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 18px var(--gold); animation: pv 1.1s ease-in-out infinite alternate; }
+    @keyframes pv { from { opacity: .35; transform: scale(.8); } to { opacity: 1; transform: scale(1.15); } }
+    .dlg-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
   `],
 })
 export class PairResultsPage {
@@ -451,6 +490,72 @@ export class PairResultsPage {
     });
     return out;
   }
+
+  // ── сторис: карточка пары (ui/share-card грузится только по нажатию) ──
+  private readonly storyDlg = viewChild.required<ElementRef<HTMLDialogElement>>('storyDlg');
+  readonly storyUrl = signal<string | null>(null);
+  readonly storyBlob = signal<Blob | null>(null);
+  readonly storyError = signal(false);
+  readonly storyMsg = signal('');
+  private storyRun = 0;
+  readonly canShareFiles = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function';
+  /** На карточку — пара с лучшим баллом на вкладке (кубок), а не поднятая правилом Efes: картинка без пометки о порядке. */
+  private storyPair(): Shown | null { const list = this.shown(); return list.find(x => x.crown) ?? list[0] ?? null; }
+
+  async openStory(): Promise<void> {
+    const top = this.storyPair(); const d = this.dish();
+    if (!top || !d) { await this.share(); return; }
+    const run = ++this.storyRun;
+    this.revokeStory(); this.storyBlob.set(null); this.storyError.set(false); this.storyMsg.set('');
+    const dlg = this.storyDlg().nativeElement;
+    if (!dlg.open) dlg.showModal();
+    try {
+      const { renderPairCard } = await import('../../ui/share-card');
+      const sub = [this.t(`v2.cat.${top.drink.category}` as I18nKey)];
+      if (top.drink.abv !== null && top.drink.abv !== undefined) sub.push(`${top.drink.flags?.abv_unknown ? '≈' : ''}${String(top.drink.abv).replace('.', this.i18n.locale() === 'en' ? '.' : ',')} %`);
+      const blob = await renderPairCard({
+        dish: { id: d.id === 'custom' ? '' : d.id, name: this.dishName(), emoji: this.emoji() },
+        drink: { ...top.drink, sub: sub.join(' · ') },
+        score: top.r.score, band_label: top.r.band_label, match_label: this.t(`v2.type.${top.r.match_type}` as I18nKey),
+        classic: top.r.classic, reasons: this.storyReasons(top.r),
+        locale: this.i18n.locale(),
+        labels: {
+          eyebrow: this.t('pair.story.eyebrow'), of: this.t('pair.story.of'), classic: this.t('v2.card.classic'),
+          footer: this.t('table.card.footer'), photos: this.t('table.card.photos'), more: this.t('table.card.more'), credits: this.t('table.card.credits'),
+        },
+      });
+      if (run !== this.storyRun) return;
+      this.storyBlob.set(blob);
+      this.storyUrl.set(URL.createObjectURL(blob));
+    } catch {
+      if (run === this.storyRun) this.storyError.set(true);
+    }
+  }
+  async storyShare(): Promise<void> {
+    const blob = this.storyBlob(); const top = this.storyPair();
+    if (!blob || !top) return;
+    const { shareImage } = await import('../../ui/share-card');
+    const res = await shareImage(blob, { filename: this.storyFile(), title: 'Flavor Tree',
+      text: this.t('pair.story.text', { dish: this.dishName(), drink: top.drink.name, score: top.r.score }), url: location.href });
+    this.storyMsg.set(res === 'shared' ? this.t('table.share.done') : res === 'downloaded' ? this.t('table.share.saved') : '');
+    if (res === 'shared') this.progress.award('share');
+  }
+  async storyDownload(): Promise<void> {
+    const blob = this.storyBlob(); if (!blob) return;
+    const { downloadBlob } = await import('../../ui/share-card');
+    downloadBlob(blob, this.storyFile());
+    this.storyMsg.set(this.t('table.share.saved'));
+  }
+  /** На сторис — причины про вкус; R1 (громкость и вес с числами) — только если других нет. */
+  private storyReasons(r: PairResult): string[] {
+    const rs = [...r.reasons].sort((a, b) => Number(a.rule === 'R1') - Number(b.rule === 'R1'));
+    return rs.slice(0, 2).map(m => m.text);
+  }
+  closeStory(): void { this.storyDlg().nativeElement.close(); }
+  onStoryClosed(): void { this.storyRun++; this.revokeStory(); this.storyBlob.set(null); }
+  storyBackdrop(e: MouseEvent): void { if (e.target === this.storyDlg().nativeElement) this.closeStory(); }
+  private storyFile(): string { return `flavor-tree-${this.dishId()}-${this.storyPair()?.drink.id ?? 'pair'}.jpg`; }
+  private revokeStory(): void { const u = this.storyUrl(); if (u) URL.revokeObjectURL(u); this.storyUrl.set(null); }
 
   async share(): Promise<void> {
     const top = this.shown()[0]; if (!top) return;
