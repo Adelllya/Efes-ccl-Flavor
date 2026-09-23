@@ -13,7 +13,7 @@ import { SectionHeadComponent } from '../../ui/section.component';
   template: `
     <section class="hero center">
       <span class="eyebrow">О проекте</span>
-      <h1>Первая в СНГ платформа <span class="grad-text">сенсорного образования</span> для пива</h1>
+      <h1>Честный подбор напитка к еде и <span class="grad-text">сенсорное образование</span></h1>
       <p class="lede" style="margin:12px auto 0">Помогаем людям слышать вкус, а брендам — быть понятыми. B2B2C через Efes Kazakhstan: QR на столе, без приложения и регистрации.</p>
     </section>
 
@@ -29,7 +29,7 @@ import { SectionHeadComponent } from '../../ui/section.component';
       <ft-section-head eyebrow="Решение" title="Вкусовая пирамида + движок пар" sub="«Fragrantica + Duolingo для пивной индустрии»" />
       <div class="grid grid-3">
         <div class="card card-p"><h3>🔺 Пирамида</h3><p class="dim sm mt8">Каждый сорт — Top (0–3 с), Heart (3–15 с), Base (15+ с). {{ data.stats().notes }} нот по стандарту FlavorActiV, {{ data.stats().pyramidNotes }} привязок к {{ data.stats().brands }} сортам.</p></div>
-        <div class="card card-p"><h3>🧠 Движок</h3><p class="dim sm mt8">Пирамида → 10-осевой сенсорный вектор. Блюдо → 13 осей. 15 объяснимых правил: интенсивность, очищение жира, острота, соль, десерт, кислота, умами, деликатность, корочка, мост, вердикт сомелье, повод, горечь, DNA. Один и тот же код на Python (API) и TypeScript (офлайн), паритет — 874 проверки.</p></div>
+        <div class="card card-p"><h3>🧠 Движок v2</h3><p class="dim sm mt8">Напиток → 14 осей (сладость, кислотность, горечь, танины, газация, тело, обжарка, дым…), блюдо → 16 осей. 18 правил и 7 вето, у каждого источник и уровень доказательности A–D. Проверка — 445 пар из литературы сомелье: проходит 357, на отложенных — 104 из 115. Один и тот же код на Python и TypeScript, паритет — 256 тыс. проверок.</p></div>
         <div class="card card-p"><h3>🎓 Школа сомелье</h3><p class="dim sm mt8">4 уровня, 12 уроков, 20 вопросов, XP и серии. 5000 XP — именной сертификат Efes с QR-верификацией. Учим гостей и официантов одним языком.</p></div>
       </div>
       <div class="flex g8 wrap mt16"><a routerLink="/pair/beshbarmak" class="btn btn-primary btn-sm">Демо: бешбармак</a><a routerLink="/beers/efes-pilsener" class="btn btn-secondary btn-sm">Демо: пирамида Efes Pilsener</a><a routerLink="/qr/EBG-05" class="btn btn-secondary btn-sm">Демо: QR на столе</a><a routerLink="/admin" class="btn btn-secondary btn-sm">Панель сомелье</a></div>
@@ -38,7 +38,7 @@ import { SectionHeadComponent } from '../../ui/section.component';
     <section class="section">
       <ft-section-head eyebrow="Уникальность" title="Почему это работает в Казахстане" />
       <div class="grid grid-3">
-        <div class="card card-p"><h3>🇰🇿 Казахская кухня</h3><p class="dim sm mt8">15 национальных блюд с сенсорной разметкой: бешбармак, казы, куырдак, курт… 0% рынка делает это осознанно — ниша без конкурентов.</p></div>
+        <div class="card card-p"><h3>🇰🇿 Казахская кухня</h3><p class="dim sm mt8">22 блюда казахской кухни с сенсорной разметкой: бешбармак, казы, куырдак, курт… В нашем опросе (n=20) никто не сочетал с ними напитки осознанно.</p></div>
         <div class="card card-p"><h3>📱 Zero-friction</h3><p class="dim sm mt8">QR на столе → браузер → ответ за 15 секунд. Без установки и аккаунта. Подбор учитывает, что реально на кранах заведения.</p></div>
         <div class="card card-p"><h3>🏢 B2B2C через Efes</h3><p class="dim sm mt8">Не App Store, а партнёрский канал: сомелье Efes ведёт пирамиды, HoReCa получает обученных официантов и рост чека.</p></div>
       </div>
@@ -52,10 +52,10 @@ import { SectionHeadComponent } from '../../ui/section.component';
     </section>
 
     <section class="section">
-      <ft-section-head eyebrow="Impact" title="Эффект для Efes Kazakhstan" />
+      <ft-section-head eyebrow="Impact" title="Эффект для Efes Kazakhstan" sub="Оценки команды и цели пилота — не измерения. Проверим в пилоте." />
       <div class="grid grid-3">
-        <div class="soft card-p"><div class="kv">+$1.5–3.0M</div><p class="dim sm">чистой прибыли в год при переходе 2% аудитории в премиум-сегмент</p></div>
-        <div class="soft card-p"><div class="kv">5–15 мин</div><p class="dim sm">контакта с брендом за сессию вместо 3 секунд рекламы</p></div>
+        <div class="soft card-p"><div class="kv">+$1.5–3.0M</div><p class="dim sm">чистой прибыли в год — наша оценка, если 2% аудитории перейдут в премиум-сегмент</p></div>
+        <div class="soft card-p"><div class="kv">5–15 мин</div><p class="dim sm">контакта с брендом за сессию (оценка) вместо 3 секунд рекламы</p></div>
         <div class="soft card-p"><div class="kv">+15–20%</div><p class="dim sm">к среднему чеку пива в партнёрских заведениях за 3 месяца (цель пилота)</p></div>
       </div>
     </section>
@@ -63,7 +63,7 @@ import { SectionHeadComponent } from '../../ui/section.component';
     <section class="section">
       <ft-section-head eyebrow="Наш ask" title="Что нужно для пилота" />
       <div class="grid grid-3">
-        <div class="card card-p"><h3>📊 Данные</h3><p class="dim sm mt8">Дегустация 17 сортов с сомелье Efes для верификации пирамид (сейчас — черновик, ABV части сортов оценочный).</p></div>
+        <div class="card card-p"><h3>📊 Данные</h3><p class="dim sm mt8">Техкарты сортов Efes (IBU, плотность) и дегустация спорных пар с сомелье. Сейчас профили лагеров построены по стилю BJCP: IBU не публикуется, поэтому они близки друг к другу.</p></div>
         <div class="card card-p"><h3>🍺 Пилот</h3><p class="dim sm mt8">3 заведения в Алматы, QR на столах, 8 недель. Метрики: QR-конверсия > 65%, time-to-pairing < 15 с, NPS > 50.</p></div>
         <div class="card card-p"><h3>🤝 Менторство</h3><p class="dim sm mt8">Trade-marketing Efes: интеграция в программу обучения персонала HoReCa.</p></div>
       </div>
@@ -103,15 +103,15 @@ export class AboutPage {
     { v: '80%', t: 'недовольны советами официантов' }, { v: '0%', t: 'осознанно сочетают с казахской кухней' },
   ];
   readonly money = [
-    { b: 'B2B', t: 'Подписка HoReCa', d: 'QR-меню + обучение персонала + аналитика кранов, от 25 000 ₸/мес за заведение.' },
+    { b: 'B2B', t: 'Подписка HoReCa', d: 'QR-меню, подбор по карте бара, стоп-лист и аналитика — от 14 900 ₸/мес за заведение, 14 дней бесплатно.' },
     { b: 'B2B', t: 'Бренд-контент Efes', d: 'Верифицированные пирамиды, кампании «сорт месяца», сезонные пары.' },
     { b: 'B2C', t: 'Сертификация', d: 'Платный экзамен сомелье уровня 4 и именной сертификат для персонала.' },
     { b: 'Data', t: 'Инсайты рынка', d: 'Обезличенная статистика: что едят с чем, Flavor DNA по городам, спрос на стили.' },
   ];
   readonly roadmap = [
-    { t: 'Q3 2026 — MVP', d: 'Пирамиды 17 сортов, 50 блюд, движок v1, офлайн-SPA, панель сомелье, QR-вход.', done: true },
+    { t: 'Q3 2026 — MVP', d: 'Движок v2: 412 напитков, 114 блюд, 445 пар сомелье для проверки; QR-меню и кабинет бара; ИИ-сомелье по фото; дастархан; ru/kk/en.', done: true },
     { t: 'Q4 2026 — Пилот', d: 'Дегустация с сомелье Efes, 3 заведения Алматы, метрики конверсии и чека.', done: false },
-    { t: 'Q1 2027 — Масштаб', d: 'Астана, Шымкент; kk/en локализация; Kozel Dark, пшеничные, сезонные сорта.', done: false },
-    { t: 'Q2 2027 — AI Food Scanner', d: 'Фото блюда → сенсорный вектор через vision-модель; Flavor DNA в соцсетях.', done: false },
+    { t: 'Q1 2027 — Масштаб', d: 'Астана, Шымкент; сезонные сорта; повторная калибровка движка по отзывам гостей и дегустации.', done: false },
+    { t: 'Q2 2027 — Сети и данные', d: 'API и выгрузки для сетей, радар портфеля для брендов, Flavor DNA в соцсетях.', done: false },
   ];
 }

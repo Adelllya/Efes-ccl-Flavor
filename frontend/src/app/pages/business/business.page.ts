@@ -78,7 +78,7 @@ import { IconComponent } from '../../ui/icon.component';
           <label>Средняя цена пива, ₸ <b>{{ fmt(beerPrice()) }}</b><input type="range" class="range" min="800" max="3500" step="50" [ngModel]="beerPrice()" (ngModelChange)="beerPrice.set(+$event)" /></label>
           <label>Доля гостей, открывающих QR <b>{{ scanRate() }}%</b><input type="range" class="range" min="10" max="70" step="5" [ngModel]="scanRate()" (ngModelChange)="scanRate.set(+$event)" /></label>
           <label>Из них берут пиво по подбору <b>{{ convRate() }}%</b><input type="range" class="range" min="10" max="50" step="5" [ngModel]="convRate()" (ngModelChange)="convRate.set(+$event)" /></label>
-          <p class="muted xs">Значения по умолчанию — из пилота: 40% сканов, 34% нажимают «Заказать». Считаем консервативно: +1 пиво на гостя, без учёта второго и третьего.</p>
+          <p class="muted xs">Значения по умолчанию — наше допущение, а не данные: пилота ещё не было. Подставьте цифры своего бара. Считаем консервативно: +1 пиво на гостя, без учёта второго и третьего.</p>
         </div>
         <div class="calc-out">
           <div class="co-big">+{{ fmt(monthly()) }} ₸<span>в месяц дополнительно</span></div>
@@ -95,6 +95,7 @@ import { IconComponent } from '../../ui/icon.component';
     <section class="section">
       <span class="eyebrow">Кабинет владельца</span>
       <h2>Цифры, а не ощущения</h2>
+      <p class="muted sm mt8">Пример экрана на демо-данных кабинета — не результаты реального заведения.</p>
       <div class="grid grid-4 mt16">
         <div class="kpi card card-p"><span class="kv">1 240</span><span class="kl">сканов за месяц</span></div>
         <div class="kpi card card-p"><span class="kv">40%</span><span class="kl">гостей открыли подбор</span></div>
