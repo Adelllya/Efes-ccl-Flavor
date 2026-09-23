@@ -13,6 +13,7 @@ router.register(r'courses', views.CourseViewSet)
 router.register(r'team', views.TeamMemberViewSet)
 router.register(r'dishes', views.DishViewSet)
 router.register(r'pairings', views.FoodPairingViewSet)
+router.register(r'food-icons', views.FoodIconViewSet)
 
 urlpatterns = [
     # Router-generated CRUD + custom actions (pyramid, brands)
@@ -21,6 +22,7 @@ urlpatterns = [
     # Standalone views
     path('landing/', views.landing_data, name='landing-data'),
     path('health/', views.health_check, name='health-check'),
+    path('settings/', views.site_settings, name='site-settings'),
     path('seed/', views.seed_data, name='seed-data'),
 
     # Движок подбора v2: все категории напитков, вкладки, объяснения (docs/PAIRING_ENGINE_V2.md)

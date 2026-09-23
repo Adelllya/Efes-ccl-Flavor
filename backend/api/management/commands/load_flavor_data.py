@@ -19,6 +19,26 @@ from api.models import (
 )
 
 
+# HD-фото бутылок из её версии (5 version): обычный файл → крупный. Нет в списке — HD нет.
+HD_BY_MEDIA = {
+    "Kruzhka_Svezhevo.png": "kruzhka_svezhego_hd.png",
+    "Belyi_Medved.png": "belyi_medved_hd.png",
+    "Efes_Pilsener.png": "efes_pilsener_hd.png",
+    "Miller.png": "miller_hd.png",
+    "Kozel.png": "kozel_hd.png",
+    "Bremen.png": "bremen_hd.png",
+    "Bavaria.png": "bavaria_hd.png",
+    "WuKong.png": "wukong_hd.png",
+    "Karagandinskoe.png": "karagandinskoe_hd.png",
+    "Slavna_ПРАГА.png": "praga_hd.png",
+    "Zhigulevskoe.png": "zhigulevskoe_hd.png",
+    "Khmelnyi_los.png": "khmelnoy_los_hd.png",
+    "Severnoye_Syiyanyie.png": "severnoe_siyanie_hd.png",
+    "777_razliv.png": "legenda_777_hd.png",
+    "13_region.png": "13_region_hd.png",
+}
+
+
 def _load(name: str):
     path = Path(settings.FLAVOR_DATA_DIR) / name
     with open(path, encoding="utf-8") as f:
@@ -60,6 +80,10 @@ class Command(BaseCommand):
             if media_file and (media_dir / media_file).exists() and not brand.image:
                 brand.image.name = f"brands/{media_file}"
                 brand.save(update_fields=["image"])
+            hd_file = HD_BY_MEDIA.get(media_file or "")
+            if hd_file and (media_dir / "hd" / hd_file).exists() and not brand.image_hd:
+                brand.image_hd.name = f"brands/hd/{hd_file}"
+                brand.save(update_fields=["image_hd"])
             brand_by_slug[b["id"]] = brand
             s = b.get("serving") or {}
             ServingRecommendation.objects.update_or_create(brand=brand, defaults={

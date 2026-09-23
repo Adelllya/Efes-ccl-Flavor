@@ -18,6 +18,10 @@ class FlavorNote(models.Model):
     category = models.CharField('Категория', max_length=10, choices=CATEGORY_CHOICES)
     description = models.TextField('Описание')
     icon = models.CharField('Иконка (emoji)', max_length=10)
+    image = models.ImageField(
+        'Фото вкуса', upload_to='flavor_notes/', null=True, blank=True, max_length=500,
+        help_text='Картинка ингредиента на прозрачном фоне: ромашка, колос, шишка хмеля, сота мёда. '
+                  'Показывается вокруг бутылки на странице сорта. Если пусто — берётся emoji.')
     reference_material = models.CharField('Эталонный материал', max_length=200, blank=True, default='')
     is_off_flavour = models.BooleanField('Off-flavour (дефект)', default=False)
     sort_order = models.IntegerField('Порядок сортировки', default=0)
@@ -57,7 +61,20 @@ class Brand(models.Model):
     is_horeca_only = models.BooleanField('Только HoReCa', default=False,
                                          help_text='Доступно только в заведениях HoReCa (обычно = True для разливного)')
     description = models.TextField('Описание', blank=True, default='')
-    image = models.ImageField('Изображение / Бутылка', upload_to='brands/', null=True, blank=True, max_length=500)
+    image = models.ImageField(
+        'Изображение / Бутылка', upload_to='brands/', null=True, blank=True, max_length=500,
+        help_text='Лёгкий файл для мелких мест: карточки каталога, список альтернатив, значок в подборе.')
+    image_hd = models.ImageField(
+        'Фото в высоком качестве', upload_to='brands/hd/', null=True, blank=True, max_length=500,
+        help_text='Крупная версия для страницы сорта и большой карточки подбора. '
+                  'Если пусто — там показывается обычное изображение.')
+    accent_color = models.CharField(
+        'Цвет страницы', max_length=9, blank=True, default='',
+        help_text='HEX вида #F5A623. Задаёт фон страницы сорта и подложку под бутылкой. '
+                  'Если пусто — берётся цвет темы сайта.')
+    tagline = models.CharField(
+        'Слоган', max_length=200, blank=True, default='',
+        help_text='Одна строка над названием на странице сорта, например «Классика пильзнера».')
     is_active = models.BooleanField('В наличии', default=True)
     # ── Flavor Tree v2 ──
     slug = models.SlugField('Slug', max_length=80, unique=True, null=True, blank=True)
@@ -66,7 +83,6 @@ class Brand(models.Model):
                                     help_text='PILSNER / LAGER / CZECH_LAGER / AMBER_LAGER / STRONG_LAGER / RICE_LAGER …')
     abv_estimated = models.BooleanField('ABV оценочный — уточнить', default=False)
     origin = models.CharField('Происхождение', max_length=200, blank=True, default='')
-    tagline = models.CharField('Короткий слоган', max_length=200, blank=True, default='')
     accent = models.CharField('Акцентный цвет (hex)', max_length=9, blank=True, default='')
     vector_override = models.JSONField('Ручной сенсорный вектор (override движка)', default=dict, blank=True)
     created_at = models.DateTimeField('Создано', auto_now_add=True)
@@ -775,3 +791,87 @@ class TrackingRate(models.Model):
 
     def __str__(self):
         return f'{self.key[:12]} · {self.minute:%H:%M} · {self.n}'
+
+
+class FoodIcon(models.Model):
+    """
+    Иллюстрация характеристики блюда: «жареное», «острое», «мясо».
+
+    Нужна двум экранам. В мастере подбора она заменяет emoji на кружке,
+    а на карточке пары становится вторым планом рядом с блюдом — тем самым
+    «вкусом жареного», который объясняет пару лучше слов.
+
+    Ключ должен совпадать с кодом из Dish: FRIED, SPICY, MEAT и так далее,
+    иначе картинка просто не подхватится и останется emoji.
+    """
+
+    KIND_CHOICES = [
+        ('CATEGORY', 'Категория блюда'),
+        ('COOKING', 'Способ приготовления'),
+        ('TASTE', 'Вкус'),
+        ('WEIGHT', 'Сытность'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    kind = models.CharField('Тип', max_length=20, choices=KIND_CHOICES)
+    key = models.CharField(
+        'Код', max_length=30,
+        help_text='Категория: MEAT, SALAD, SOUP, ASIAN, SEAFOOD, PIZZA, STREET, SIDES, DESSERT, SNACK. '
+                  'Приготовление: FRIED, GRILLED, BAKED, BOILED, STEAMED, RAW, CURED, FERMENTED. '
+                  'Вкус: SALTY, SWEET, SOUR, BITTER, UMAMI, SPICY, MIXED. '
+                  'Сытность: LIGHT, MEDIUM, HEAVY.')
+    label = models.CharField('Подпись', max_length=100, blank=True, default='',
+                             help_text='Если пусто — берётся название с фронтенда.')
+    image = models.ImageField('Картинка', upload_to='food_icons/', max_length=500,
+                              help_text='PNG на прозрачном фоне, примерно 400×400.')
+    sort_order = models.IntegerField('Порядок', default=0)
+
+    class Meta:
+        verbose_name = 'Иллюстрация блюда'
+        verbose_name_plural = 'Иллюстрации блюд'
+        ordering = ['kind', 'sort_order', 'key']
+        unique_together = [('kind', 'key')]
+
+    def __str__(self):
+        return f'{self.get_kind_display()}: {self.key}'
+
+
+class SiteSettings(models.Model):
+    """
+    Настройки витрины в одной записи. Всё, что маркетинг может захотеть
+    поменять без разработчика: сколько сортов показывать в подборе и
+    включён ли декор из колосьев.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    alternatives_count = models.IntegerField(
+        'Сколько альтернатив показывать', default=3,
+        help_text='Кроме лучшего сорта. 3 — показываем лучший и ещё три.')
+    min_score_to_show = models.IntegerField(
+        'Минимальная оценка пары', default=1,
+        help_text='Пары со звёздами ниже этой в подбор не попадают.')
+    show_wheat_decor = models.BooleanField(
+        'Колосья по бокам страницы', default=True,
+        help_text='Пшеница слева и справа, которая едет при прокрутке.')
+    pairing_intro = models.TextField(
+        'Подпись над парами', blank=True,
+        default='Мы разложили сорт на вкусовые ноты и нашли блюда, которые с ними совпадают.')
+
+    class Meta:
+        verbose_name = 'Настройки витрины'
+        verbose_name_plural = 'Настройки витрины'
+
+    def __str__(self):
+        return 'Настройки витрины'
+
+    def save(self, *args, **kwargs):
+        # Настройки одни на весь сайт: второй записи быть не должно.
+        if not self.pk and SiteSettings.objects.exists():
+            existing = SiteSettings.objects.first()
+            self.pk = existing.pk
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj = cls.objects.first()
+        return obj or cls()

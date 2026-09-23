@@ -3,6 +3,7 @@ from django.utils.html import format_html
 from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
+    FoodIcon, SiteSettings,
 )
 
 
@@ -37,10 +38,60 @@ class QRCodeInline(admin.TabularInline):
 
 @admin.register(FlavorNote)
 class FlavorNoteAdmin(admin.ModelAdmin):
-    list_display = ['icon', 'name', 'category', 'technical_term', 'is_off_flavour', 'sort_order']
-    list_filter = ['category', 'is_off_flavour']
+    list_display = ['thumb', 'icon', 'name', 'category', 'technical_term', 'is_off_flavour', 'sort_order']
+    list_filter = ['category', 'is_off_flavour', 'image']
     search_fields = ['name', 'technical_term']
     ordering = ['sort_order']
+    readonly_fields = ['preview']
+    fields = [
+        'name', 'technical_term', 'wheel_code', 'category', 'description',
+        'icon', 'image', 'preview', 'reference_material', 'is_off_flavour', 'sort_order',
+    ]
+
+    @admin.display(description='Фото')
+    def thumb(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="height:34px;width:auto;object-fit:contain" />', obj.image.url)
+        return '—'
+
+    @admin.display(description='Предпросмотр')
+    def preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height:220px;width:auto;object-fit:contain" />', obj.image.url)
+        return 'Загрузите фото — оно встанет вокруг бутылки на странице сорта.'
+
+
+@admin.register(FoodIcon)
+class FoodIconAdmin(admin.ModelAdmin):
+    list_display = ['thumb', 'kind', 'key', 'label', 'sort_order']
+    list_filter = ['kind']
+    search_fields = ['key', 'label']
+    ordering = ['kind', 'sort_order']
+    readonly_fields = ['preview']
+
+    @admin.display(description='Картинка')
+    def thumb(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="height:40px;width:auto;object-fit:contain" />', obj.image.url)
+        return '—'
+
+    @admin.display(description='Предпросмотр')
+    def preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height:220px;width:auto;object-fit:contain" />', obj.image.url)
+        return 'Загрузите PNG без фона — он заменит emoji в мастере подбора.'
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'alternatives_count', 'min_score_to_show', 'show_wheat_decor']
+
+    def has_add_permission(self, request):
+        # Запись одна: добавить вторую нельзя, только править существующую.
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Brand)
@@ -51,6 +102,12 @@ class BrandAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ['image_preview_large']
     inlines = [FlavorProfileInline, ServingRecommendationInline, FoodPairingInline]
+    fields = [
+        'name', 'brand_owner', 'style', 'abv', 'density', 'fermentation_type',
+        'packaging_type', 'is_horeca_only', 'description',
+        'image', 'image_hd', 'image_preview_large',
+        'accent_color', 'tagline', 'is_active',
+    ]
 
     @admin.display(description='Фото')
     def image_preview(self, obj):

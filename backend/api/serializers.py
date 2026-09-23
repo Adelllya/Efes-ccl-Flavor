@@ -2,29 +2,50 @@ from rest_framework import serializers
 from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
+    FoodIcon, SiteSettings,
 )
+
+
+def absolute_media(serializer, file_field):
+    """Полный URL картинки: фронтенд живёт на другом домене, относительный путь ему не поможет."""
+    if not file_field:
+        return None
+    name = str(getattr(file_field, 'name', '') or '')
+    if name.startswith(('http://', 'https://')):
+        return name
+    request = serializer.context.get('request')
+    return request.build_absolute_uri(file_field.url) if request else file_field.url
 
 
 # ─── FlavorNote ──────────────────────────────────────────────────────────────
 
 class FlavorNoteSerializer(serializers.ModelSerializer):
     category_display = serializers.CharField(source='get_category_display', read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = FlavorNote
         fields = [
             'id', 'name', 'technical_term', 'wheel_code',
-            'category', 'category_display', 'description', 'icon',
+            'category', 'category_display', 'description', 'icon', 'image',
             'reference_material', 'is_off_flavour', 'sort_order',
             'slug', 'axes', 'tags',
         ]
 
+    def get_image(self, obj):
+        return absolute_media(self, obj.image)
+
 
 class FlavorNoteMinimalSerializer(serializers.ModelSerializer):
     """Минимальный сериализатор для вложенных данных."""
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = FlavorNote
-        fields = ['id', 'name', 'icon', 'category']
+        fields = ['id', 'name', 'icon', 'image', 'category']
+
+    def get_image(self, obj):
+        return absolute_media(self, obj.image)
 
 
 # ─── ServingRecommendation ───────────────────────────────────────────────────
@@ -44,13 +65,17 @@ class BrandListSerializer(serializers.ModelSerializer):
     serving_recommendation = ServingRecommendationSerializer(read_only=True)
     packaging_type_display = serializers.CharField(source='get_packaging_type_display', read_only=True)
     image = serializers.SerializerMethodField()
+    image_hd = serializers.SerializerMethodField()
+
+    def get_image_hd(self, obj):
+        return absolute_media(self, obj.image_hd)
 
     class Meta:
         model = Brand
         fields = [
             'id', 'name', 'brand_owner', 'style', 'abv',
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
-            'is_horeca_only', 'description', 'image',
+            'is_horeca_only', 'description', 'image', 'image_hd', 'accent_color', 'tagline',
             'is_active', 'note_count', 'profile', 'serving_recommendation',
             'slug', 'display_name', 'style_family', 'abv_estimated', 'origin', 'tagline', 'accent',
         ]
@@ -97,14 +122,18 @@ class BrandDetailSerializer(serializers.ModelSerializer):
     serving_recommendation = ServingRecommendationSerializer(read_only=True)
     packaging_type_display = serializers.CharField(source='get_packaging_type_display', read_only=True)
     image = serializers.SerializerMethodField()
+    image_hd = serializers.SerializerMethodField()
     pyramid = serializers.SerializerMethodField()
+
+    def get_image_hd(self, obj):
+        return absolute_media(self, obj.image_hd)
 
     class Meta:
         model = Brand
         fields = [
             'id', 'name', 'brand_owner', 'style', 'abv',
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
-            'is_horeca_only', 'description', 'image',
+            'is_horeca_only', 'description', 'image', 'image_hd', 'accent_color', 'tagline',
             'is_active', 'serving_recommendation', 'pyramid',
             'slug', 'display_name', 'style_family', 'abv_estimated', 'origin', 'tagline', 'accent', 'vector_override',
         ]
@@ -141,7 +170,7 @@ class BrandCreateUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'name', 'brand_owner', 'style', 'abv',
             'density', 'fermentation_type', 'packaging_type', 'is_horeca_only',
-            'description', 'image', 'is_active',
+            'description', 'image', 'image_hd', 'accent_color', 'is_active',
             'slug', 'display_name', 'style_family', 'abv_estimated', 'origin', 'tagline', 'accent', 'vector_override',
         ]
 
@@ -170,16 +199,20 @@ class PyramidNoteSerializer(serializers.ModelSerializer):
     reference_material = serializers.CharField(source='flavor_note.reference_material')
     is_off_flavour = serializers.BooleanField(source='flavor_note.is_off_flavour')
     category_label = serializers.CharField(source='get_layer_display')
+    image = serializers.SerializerMethodField()
     # id здесь = id ноты (не профиля), для совместимости с Next.js API
     id = serializers.UUIDField(source='flavor_note.id')
 
     class Meta:
         model = FlavorProfile
         fields = [
-            'id', 'name', 'icon', 'description',
+            'id', 'name', 'icon', 'image', 'description',
             'technical_term', 'reference_material', 'is_off_flavour',
             'intensity', 'sommelier_note', 'sommelier_name', 'category_label',
         ]
+
+    def get_image(self, obj):
+        return absolute_media(self, obj.flavor_note.image)
 
 
 # ─── Course ──────────────────────────────────────────────────────────────────
@@ -262,3 +295,23 @@ class ServingRecommendationUpsertSerializer(serializers.Serializer):
     serving_temp_max = serializers.FloatField()
     glass_type = serializers.CharField()
     seasonality = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+# ─── FoodIcon и настройки витрины ────────────────────────────────────────────
+
+class FoodIconSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+
+    class Meta:
+        model = FoodIcon
+        fields = ['id', 'kind', 'kind_display', 'key', 'label', 'image', 'sort_order']
+
+    def get_image(self, obj):
+        return absolute_media(self, obj.image)
+
+
+class SiteSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteSettings
+        fields = ['alternatives_count', 'min_score_to_show', 'show_wheat_decor', 'pairing_intro']

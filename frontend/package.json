@@ -1,20 +1,12 @@
 {
-  "name": "flavor-tree",
-  "version": "2.0.0",
+  "name": "frontend",
+  "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "prebuild": "node scripts/sync-data.mjs",
-    "build": "ng build --configuration=production",
+    "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "test:engine": "node scripts/engine-parity.mjs",
-    "test:engine2": "node scripts/engine-parity-v2.mjs",
-    "test:import": "node scripts/menu-import-test.mjs",
-    "test:optimizer": "node scripts/menu-optimizer-test.mjs",
-    "test:table": "node scripts/table-planner-test.mjs",
-    "shots": "node scripts/screenshots.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {
@@ -26,9 +18,6 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
-    "@anthropic-ai/sdk": "^0.126.0",
-    "@types/qrcode": "^1.5.6",
-    "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.10"
@@ -38,14 +27,12 @@
     "@angular/cli": "^18.2.21",
     "@angular/compiler-cli": "^18.2.0",
     "@types/jasmine": "~5.1.0",
-    "@vercel/node": "^13.0.1",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "playwright-core": "^1.61.1",
     "typescript": "~5.5.2"
   }
 }

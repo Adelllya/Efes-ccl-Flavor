@@ -9,9 +9,10 @@ from django.utils.decorators import method_decorator
 
 from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
-    Course, TeamMember, Dish, FoodPairing,
+    Course, TeamMember, Dish, FoodPairing, FoodIcon, SiteSettings,
 )
 from .serializers import (
+    FoodIconSerializer, SiteSettingsSerializer,
     FlavorNoteSerializer, BrandListSerializer, BrandDetailSerializer,
     BrandCreateUpdateSerializer, FlavorProfileSerializer,
     PyramidNoteSerializer, CourseSerializer, TeamMemberSerializer,
@@ -187,14 +188,21 @@ class TeamMemberViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TeamMemberSerializer
 
 
-class DishViewSet(viewsets.ReadOnlyModelViewSet):
+class DishViewSet(viewsets.ModelViewSet):
     """
-    GET /api/dishes/ — каталог блюд для food pairing с фильтрами:
+    Каталог блюд. Чтение открыто всем, запись нужна панели модератора.
+
+    GET    /api/dishes/       — список с фильтрами:
     ?cuisine=KZ|ITALIAN|JAPANESE|AMERICAN|MEXICAN|GERMAN
     ?dominant_taste=SALTY|SWEET|SOUR|BITTER|UMAMI|SPICY|MIXED
     ?weight=LIGHT|MEDIUM|HEAVY
     ?fat_level=LOW|MEDIUM|HIGH
+    ?cooking_method=FRIED|GRILLED|BAKED|BOILED|STEAMED|RAW|CURED|FERMENTED|OTHER
+    ?category=подстрока_категории
     ?q=поиск_по_названию
+    POST   /api/dishes/       — добавить блюдо
+    PATCH  /api/dishes/{id}/  — изменить
+    DELETE /api/dishes/{id}/  — удалить вместе с его парами
     """
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
@@ -219,6 +227,17 @@ class DishViewSet(viewsets.ReadOnlyModelViewSet):
         if fat_level:
             queryset = queryset.filter(fat_level=fat_level.upper())
 
+        # Мастер подбора спрашивает способ приготовления отдельным шагом,
+        # поэтому фильтр по нему нужен так же, как по вкусу и весу.
+        cooking_method = params.get('cooking_method')
+        if cooking_method:
+            queryset = queryset.filter(cooking_method=cooking_method.upper())
+
+        # Категория — свободный текст, ищем по вхождению.
+        category = params.get('category')
+        if category:
+            queryset = queryset.filter(category__icontains=category)
+
         q = params.get('q')
         if q:
             queryset = queryset.filter(name__icontains=q)
@@ -226,12 +245,17 @@ class DishViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-class FoodPairingViewSet(viewsets.ReadOnlyModelViewSet):
+class FoodPairingViewSet(viewsets.ModelViewSet):
     """
-    GET /api/pairings/ — пары пиво ↔ блюдо с фильтрами:
+    Пары «пиво + блюдо». Чтение открыто всем, запись — панели модератора.
+
+    GET    /api/pairings/       — список с фильтрами:
     ?brand_id=uuid / ?brand_name=...
     ?dish_id=uuid / ?dish_name=...
     ?pairing_type=COMPLEMENT|CONTRAST|CLEANSE|BRIDGE
+    POST   /api/pairings/       — добавить пару
+    PATCH  /api/pairings/{id}/  — изменить
+    DELETE /api/pairings/{id}/  — удалить
     """
     queryset = FoodPairing.objects.select_related('brand', 'dish').all()
     serializer_class = FoodPairingSerializer
@@ -365,11 +389,11 @@ def admin_brands(request):
     return Response(BrandDetailSerializer(brand).data, status=status.HTTP_201_CREATED)
 
 
-@api_view(['PUT'])
+@api_view(['PUT', 'POST'])
 @sommelier_only
 def admin_flavor_profiles(request):
     """
-    PUT /api/admin/flavor-profiles/ — заменить вкусовую пирамиду бренда целиком.
+    PUT (или POST) /api/admin/flavor-profiles/ — заменить пирамиду бренда целиком.
     Body: { brand_id, notes: [{ flavor_note_id, layer, intensity, sommelier_note }] }
     """
     serializer = FlavorProfileBulkSerializer(data=request.data)
@@ -421,11 +445,11 @@ def admin_flavor_profiles(request):
     })
 
 
-@api_view(['PUT'])
+@api_view(['PUT', 'POST'])
 @sommelier_only
 def admin_serving_recommendations(request):
     """
-    PUT /api/admin/serving-recommendations/ — upsert рекомендаций по подаче.
+    PUT (или POST) /api/admin/serving-recommendations/ — сохранить рекомендации по подаче.
     Body: { brand_id, serving_temp_min, serving_temp_max, glass_type, seasonality }
     """
     serializer = ServingRecommendationUpsertSerializer(data=request.data)
@@ -476,3 +500,30 @@ def admin_flavor_notes(request):
         note = get_object_or_404(FlavorNote, id=note_id)
         note.delete()
         return Response({'ok': True, 'deleted': str(note_id)})
+
+
+# ─── Витрина: иллюстрации и настройки ────────────────────────────────────────
+
+class FoodIconViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Картинки характеристик блюда для мастера подбора и карточек пар.
+
+    GET /api/food-icons/         — все
+    GET /api/food-icons/?kind=COOKING  — только способы приготовления
+    """
+    queryset = FoodIcon.objects.all()
+    serializer_class = FoodIconSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        kind = self.request.query_params.get('kind')
+        if kind:
+            queryset = queryset.filter(kind=kind.upper())
+        return queryset
+
+
+@api_view(['GET'])
+def site_settings(request):
+    """GET /api/settings/ — сколько сортов показывать в подборе и прочие настройки витрины."""
+    return Response(SiteSettingsSerializer(SiteSettings.load()).data)

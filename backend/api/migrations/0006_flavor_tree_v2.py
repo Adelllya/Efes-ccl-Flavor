@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0005_alter_brand_image"),
+        ("api", "0007_brand_image_hd_alter_brand_image"),
     ]
 
     operations = [
@@ -56,13 +56,6 @@ class Migration(migrations.Migration):
                 help_text="PILSNER / LAGER / CZECH_LAGER / AMBER_LAGER / STRONG_LAGER / RICE_LAGER …",
                 max_length=30,
                 verbose_name="Семейство стиля (приор движка)",
-            ),
-        ),
-        migrations.AddField(
-            model_name="brand",
-            name="tagline",
-            field=models.CharField(
-                blank=True, default="", max_length=200, verbose_name="Короткий слоган"
             ),
         ),
         migrations.AddField(
