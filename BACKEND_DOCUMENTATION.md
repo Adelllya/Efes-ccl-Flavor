@@ -241,7 +241,7 @@ backend/
   "project": {
     "name": "Flavor Tree",
     "slogan": "Don't just drink – listen to the flavor",
-    "description": "Первая в СНГ платформа сенсорного образования для напитков.",
+    "description": "Платформа сенсорного образования и подбора пива. …",
     "championship": "OneIdea Championship 2026"
   },
   "team": [

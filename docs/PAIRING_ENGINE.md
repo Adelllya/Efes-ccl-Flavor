@@ -1,4 +1,4 @@
-# Flavor Tree Pairing Engine v1.0 — как работает подбор
+# Flavor Tree Pairing Engine v1.0 — как работал подбор (архив; текущий движок — docs/PAIRING_ENGINE_V2.md)
 
 > Детерминированный, объяснимый алгоритм подбора пива к еде. Один и тот же код на Python
 > (`backend/api/pairing/engine.py`, API) и TypeScript (`frontend/src/app/engine/pairing-engine.ts`, офлайн-SPA).
