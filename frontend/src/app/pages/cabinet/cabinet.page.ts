@@ -6,9 +6,11 @@ import { DataService } from '../../core/data.service';
 import { SaasService } from '../../core/saas.service';
 import { ItemKind, MenuItem, PLANS, Stats, TableRow } from '../../core/saas.models';
 import { IconComponent } from '../../ui/icon.component';
+import { CabinetReviewsComponent } from './cabinet-reviews.component';
+import { CabinetOptimizerComponent } from './cabinet-optimizer.component';
 import { plural } from '../../core/format';
 
-type Tab = 'overview' | 'menu' | 'tables' | 'settings';
+type Tab = 'overview' | 'menu' | 'optimizer' | 'tables' | 'reviews' | 'settings';
 interface Draft extends MenuItem { dirty?: boolean; }
 
 /**
@@ -18,7 +20,7 @@ interface Draft extends MenuItem { dirty?: boolean; }
 @Component({
   selector: 'ft-cabinet',
   standalone: true,
-  imports: [RouterLink, FormsModule, SlicePipe, IconComponent],
+  imports: [RouterLink, FormsModule, SlicePipe, IconComponent, CabinetReviewsComponent, CabinetOptimizerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!saas.authed()) {
@@ -76,7 +78,9 @@ interface Draft extends MenuItem { dirty?: boolean; }
       <nav class="tabs mt16" aria-label="Разделы кабинета">
         <button type="button" [class.on]="tab() === 'overview'" (click)="go('overview')"><ft-icon name="bolt" [size]="16" /> Обзор</button>
         <button type="button" [class.on]="tab() === 'menu'" (click)="go('menu')"><ft-icon name="dish" [size]="16" /> Меню и цены</button>
+        <button type="button" [class.on]="tab() === 'optimizer'" (click)="go('optimizer')"><ft-icon name="sparkles" [size]="16" /> Анализ карты</button>
         <button type="button" [class.on]="tab() === 'tables'" (click)="go('tables')"><ft-icon name="qr" [size]="16" /> Столы и QR</button>
+        <button type="button" [class.on]="tab() === 'reviews'" (click)="go('reviews')"><ft-icon name="star" [size]="16" /> Отзывы гостей</button>
         <button type="button" [class.on]="tab() === 'settings'" (click)="go('settings')"><ft-icon name="settings" [size]="16" /> Настройки</button>
       </nav>
 
@@ -221,6 +225,12 @@ interface Draft extends MenuItem { dirty?: boolean; }
           } @empty { <div class="card card-p dim">Столов пока нет — добавьте, чтобы напечатать QR.</div> }
         </div>
       }
+
+      <!-- ═══════════ АНАЛИЗ КАРТЫ ═══════════ -->
+      @if (tab() === 'optimizer') { <div class="mt16"><ft-cabinet-optimizer /></div> }
+
+      <!-- ═══════════ ОТЗЫВЫ ГОСТЕЙ ═══════════ -->
+      @if (tab() === 'reviews') { <div class="mt16"><ft-cabinet-reviews /></div> }
 
       <!-- ═══════════ НАСТРОЙКИ ═══════════ -->
       @if (tab() === 'settings') {

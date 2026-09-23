@@ -1,0 +1,550 @@
+{
+  "_doc": "English overlay for the v2 engine texts (docs/ENGINE_TEXTS.md): the same keys as data/engine_v2_params.json, texts and labels only; applied with merge_params / mergeParams on top of the params for locale en. No numbers except bands.list[].min: merge_params replaces arrays whole, so band ids and thresholds are an exact copy of params (verified by scripts/check_engine_texts.py). British spelling and “curly” quotes, as in frontend/src/app/core/i18n/en.ts; labels are bare nouns, articles and the possessive 's live in the templates.",
+  "R1": {
+    "texts": {
+      "loud": "{drink} is louder than the dish ({fb} ↔ {fd}) and may drown out {dish}",
+      "quiet": "{dish} is louder than the drink ({fd} ↔ {fb}) — {drink} stays in the background",
+      "match": "Matched flavour loudness ({fb} ↔ {fd})",
+      "w_boost": "the drink's body is lighter than the dish ({wb} ↔ {wd}) — {helper} makes up for it (CMS)",
+      "w_light": "the drink's body is lighter than the dish ({wb} ↔ {wd})",
+      "w_heavy": "the drink is heavier than the dish ({wb} ↔ {wd})",
+      "w_match": "matched weight ({wb} ↔ {wd})",
+      "join": "{loudness}; {weight}",
+      "helpers": {
+        "acid": "acidity",
+        "carbonation": "carbonation",
+        "salt": "salt",
+        "tannin": "tannin"
+      },
+      "loud_ok": "{drink} is a touch louder than the dish ({fb} ↔ {fd}) but doesn't drown out {dish}",
+      "quiet_ok": "{dish} is a touch louder than the drink ({fd} ↔ {fb}), but {drink} holds its own"
+    }
+  },
+  "R2": {
+    "texts": {
+      "tannin": "Tannins in the {cat_gen} bind the fat in the {fat_src} — astringency and richness cancel each other out (Peyrot des Gachons 2012)",
+      "bitter": "{bitter_cap} cuts through the richness of the {fat_src} and resets the palate",
+      "carbonation": "Bubbles rinse {coat} off the tongue — every sip tastes like the first (Oliver)",
+      "acid": "The {cat_gen}'s acidity cuts through the richness of the {fat_src}",
+      "roast": "Roasted notes in the {cat_gen} wipe the richness of the {fat_src} off the palate",
+      "alcohol": "Alcohol ({abv}% ABV) dissolves the fat in the {fat_src}",
+      "coat_cream": "the creamy coating",
+      "coat_fat": "the richness of the {fat_src}"
+    }
+  },
+  "R3": {
+    "texts": {
+      "dairy": "Milk protein in the {cat_gen} binds capsaicin — the burn of the {chili_gen} fades (Nolden 2019)",
+      "sweet": "The {cat_gen}'s sweetness tames the heat of the {chili_gen} (CMS: “Spicy + sugar = no fire”)",
+      "cold": "Served cold ({temp} °C), the drink cools the receptors — the heat of the {chili_gen} feels softer (Nasrawi 1990)",
+      "body": "The {cat_gen}'s full body softens the heat of the {chili_gen}",
+      "burn": "{abv}% alcohol fires the same receptors as chilli — the pairing will run hotter than you'd like (Trevisani 2002)",
+      "hop": "{bitter_cap} amplifies the burn of the {chili_gen} (BA: “Hop Bitterness emphasizes Spiciness”)",
+      "hop_abv": "{ibu_abv} amplify the burn of the {chili_gen} (Sam Adams panel)",
+      "ibu_abv": "{ibu} IBU and {abv}% alcohol",
+      "noibu_abv": "Bitterness and {abv}% alcohol",
+      "tannin": "The {cat_gen}'s tannins turn harsh with spicy food (Gaiser: “avoid tannin!”)",
+      "carbonation": "Strong carbonation irritates the same pain receptors as chilli (Garneau)",
+      "heat_lover": "Hops and alcohol play up the heat of the {chili_gen} — just the way you like it (BA: “Hop Bitterness emphasizes Spiciness”)"
+    }
+  },
+  "R4": {
+    "texts": {
+      "contrast": "Powerful hop bitterness{ibu_paren} cuts the cloying sweetness of {dish} — a contrast at equal loudness (BA)",
+      "match": "The {cat_gen}'s sweetness keeps pace with {dish} — the drink doesn't taste bitter (CMS: “Sweets need sweets”)",
+      "near": "The {cat_gen} is a touch less sweet than {dish} — well within range",
+      "gap": "{dish} is sweeter than the drink: next to it, {drink} will taste harsh and watery",
+      "roast": "Roasted notes in the {cat_gen} mirror the cocoa and balance the sweetness (BA: “Chocolate loves a dark beer”)",
+      "roast_sweet": "Roasted notes in the {cat_gen} balance the sweetness of {dish} (BA: “Roasted Malt balances Sweetness”)",
+      "fruit": " · fruit ↔ fruit",
+      "hot_contrast": "Hot {drink} and the sweetness of {dish} make a classic contrast: astringency and bitterness cut the cloying edge (tea tradition; THAC)"
+    }
+  },
+  "R5": {
+    "texts": {
+      "clean": "The {cat_gen}'s acidity keeps up with the dish's tartness ({acid_src}) — the pairing tastes clean (CMS: “Acidity needs acidity”)",
+      "flabby": "The dish's tartness ({acid_src}) outweighs the {cat_gen}'s acidity — the drink will taste flat (“flabby”, CMS)",
+      "vinegar_tannin": "Vinegar in {dish} is the enemy of tannins: {drink} will taste harsh and flat",
+      "tannin": " · acidity heightens the tannins' astringency",
+      "sweet": " · sweet and sour clash"
+    }
+  },
+  "R6": {
+    "texts": {
+      "forgive_bitter": "{salt_src_cap} tames the bitterness{ibu_paren} — malt and fruit come through brighter (Breslin & Beauchamp)",
+      "forgive_tannin": "{salt_src_cap} softens the {cat_gen}'s tannins (CMS: “Salt… softens tannins”)",
+      "clean_acid": "The {cat_gen}'s acidity balances the salt — the palate stays clean (CMS: “Acidity cuts saltiness”)",
+      "clean_carb": "The {cat_gen}'s bubbles rinse away the salt — the palate stays clean (NW Cider: “bubbles… cut… briny flavors”)",
+      "snack": "A salty snack is a classic: salt builds a thirst, bubbles and bitterness quench it",
+      "alco": "{salt_src_cap} heightens the burn of {abv}% alcohol (CMS)",
+      "tann": "Salt makes firm tannins even harsher (Gaiser; disputed)"
+    }
+  },
+  "R7": {
+    "texts": {
+      "pos": "The umami of the {umami_src} opens up alongside the {cat_gen}'s {helper} (Papazian)",
+      "helpers": {
+        "bitter": "bitterness",
+        "acid": "acidity"
+      },
+      "match": " · umami ↔ umami",
+      "neg": "Umami without salt or acid makes the {cat_gen}'s bitterness and tannins harsher (Hanni)"
+    }
+  },
+  "R8": {
+    "texts": {
+      "plus": "Protein and fat in the {protein_src} bind the {cat_gen}'s tannins — the drink turns softer and fruitier (WSET; Madrigal-Galan 2006)",
+      "fish": "Fish oil + the {cat_gen}'s tannins = a metallic taste (CMS)",
+      "green": "Iron-rich greens (asparagus, artichoke) leave a metallic finish with tannins (CMS)",
+      "dry": "The dish has little protein or fat — the {cat_gen}'s tannins have nothing to grip"
+    }
+  },
+  "R9": {
+    "texts": {
+      "carbonation": "The {cat_gen}'s bubbles refresh without masking the delicate flavour of {dish}",
+      "clean": "The {cat_gen}'s restrained aromatics don't overshadow the delicate flavour of {dish}",
+      "acid": "The {cat_gen}'s acidity lifts the freshness of {dish}",
+      "roast": "Roasted notes in the {cat_gen} overwhelm a delicate dish",
+      "body": "The {cat_gen}'s full body overwhelms a delicate dish",
+      "alcohol": "{abv}% alcohol drowns out the delicate flavour of {dish}",
+      "bitter": "The {cat_gen}'s strong bitterness masks the delicate flavour",
+      "smoke": "Smoke in the {cat_gen} overpowers the freshness of the dish",
+      "fish_hop": "Hop bitterness and oily fish make a harsh off-taste"
+    }
+  },
+  "R10": {
+    "texts": {
+      "main": "{crust_cap} echoes the {cat_gen}'s {note} (Maillard bridge)",
+      "none": "{crust_cap} finds no echo in the drink — no caramel, toast or roast",
+      "notes": {
+        "caramel": "caramel notes",
+        "roast": "roasted notes",
+        "bread": "bready notes",
+        "oak_vanilla": "oak and vanilla",
+        "toast": "toasty notes",
+        "nutty": "nutty notes"
+      }
+    }
+  },
+  "R11": {
+    "texts": {
+      "smoke": "Smoke in the {cat_gen} echoes {smoke_dat} (bridge: smoke)",
+      "roast": "Roasted notes in the {cat_gen} echo the smoke of {dish}",
+      "none": "The drink has nothing to answer the smoke of {dish}"
+    }
+  },
+  "R12": {
+    "texts": {
+      "main": "Shared aromas — {tags} — build a bridge between the drink and the dish"
+    }
+  },
+  "R13": {
+    "texts": {
+      "main": "Both contrast and harmony — the pairing works on two levels (BA: “should involve both”)"
+    }
+  },
+  "R14": {
+    "texts": {
+      "bitter": "Bitter on bitter: the dish's bitterness and the {cat_gen}'s add up",
+      "sweet": "A sweet drink with a sweetish main course — sugar on sugar"
+    }
+  },
+  "R15": {
+    "texts": {
+      "main": "Regional pairing: {cuisine} ↔ {drink}"
+    }
+  },
+  "R16": {
+    "texts": {
+      "meal_pos": "With a meal: a light, sparkling drink carries the whole dinner (Death & Co)",
+      "meal_neg": "A strong drink is for a single bite, not a whole meal (Death & Co)",
+      "aperitif_pos": "Aperitif: a touch of bitterness and bubbles whet the appetite (BA)",
+      "aperitif_neg": "A bit too full-bodied for an aperitif (BA: “light in body”)",
+      "dessert_pos": "Dessert time: a digestif's sweetness and strength fit right in",
+      "dessert_neg": "A bit dry for dessert",
+      "hot_pos": "Hot day: bubbles and freshness are just what you want",
+      "hot_neg": "In the heat, strong drinks wear you out",
+      "evening_pos": "Evening: a fuller body and warmth feel right",
+      "evening_neg": "A bit light for the evening",
+      "party_pos": "With friends: an easy-drinking pour that won't tire you out",
+      "party_neg": "A bit strong for a group",
+      "gourmet_pos": "Gourmet evening: the more complex the aromas, the better",
+      "gourmet_neg": "The aromas are a bit simple for a gourmet evening"
+    }
+  },
+  "R17": {
+    "texts": {
+      "bitter_like_pos": "You like bitterness — there's plenty here",
+      "bitter_like_neg": "You like bitterness, but there's little here",
+      "bitter_avoid_pos": "You avoid bitterness — there's not much here",
+      "bitter_avoid_neg": "You avoid bitterness, but there's a lot here",
+      "sweet_like_pos": "You like it sweet — this drink suits your taste",
+      "sweet_like_neg": "You like it sweet, but this drink is on the dry side",
+      "sweet_avoid_pos": "You prefer dry — this drink isn't cloying",
+      "sweet_avoid_neg": "You prefer dry, but this drink is on the sweet side",
+      "dna_pos": "Close to your Flavor DNA",
+      "dna_neg": "Far from your Flavor DNA"
+    }
+  },
+  "R20": {
+    "texts": {
+      "main": "A recognised classic: {source}",
+      "fallback_source": "a documented classic pairing"
+    }
+  },
+  "vetoes": {
+    "V1": {
+      "text": "{drink} shouts over {dish}: loudness {fb} vs {fd} (BA: “easily overpowers most main dishes”)"
+    },
+    "V2": {
+      "text": "{dish} is sweeter than the {cat_gen}: next to a dessert, a dry drink tastes sour and thin (CMS: “Sweets need sweets”)"
+    },
+    "V3": {
+      "text": "Heat + {abv}% alcohol = “fire” (CMS: “Alcohol + spicy = fire”; Trevisani 2002)"
+    },
+    "V4": {
+      "text": "Tannins + fish oil = a metallic taste (CMS)"
+    },
+    "V5": {
+      "text": "{abv}% alcohol with raw, delicate food — “palate destruction” (Whisky School)"
+    },
+    "V6": {
+      "text": "{dish} drowns out the drink: loudness {fd} vs {fb} — {drink} will get lost"
+    },
+    "V7": {
+      "text": "Not for an alcohol-free choice: {abv}% > {max_abv}%"
+    }
+  },
+  "bands": {
+    "avoid": {
+      "label": "Avoid"
+    },
+    "list": [
+      {
+        "id": "ideal",
+        "min": 85,
+        "label": "Perfect match"
+      },
+      {
+        "id": "excellent",
+        "min": 72,
+        "label": "Great pairing"
+      },
+      {
+        "id": "good",
+        "min": 60,
+        "label": "Good match"
+      },
+      {
+        "id": "neutral",
+        "min": 48,
+        "label": "Neutral"
+      },
+      {
+        "id": "not_recommended",
+        "min": 0,
+        "label": "Not recommended"
+      }
+    ]
+  },
+  "recommend": {
+    "policy_note": "Scores are honest and brand-blind. If drinks are within {window} pts of each other, the one from the Efes portfolio is listed first."
+  },
+  "labels": {
+    "category": {
+      "beer": "Beer",
+      "na_beer": "Non-alcoholic beer",
+      "radler": "Radlers",
+      "cider": "Cider",
+      "wine": "Wine",
+      "sparkling": "Sparkling wine",
+      "fortified": "Fortified wine",
+      "cocktail": "Cocktails",
+      "spirit": "Spirits",
+      "liqueur": "Liqueurs",
+      "kvass": "Kvass",
+      "lemonade": "Lemonades",
+      "soda": "Soda",
+      "dairy": "Fermented milk drinks",
+      "tea": "Tea",
+      "coffee": "Coffee",
+      "water": "Water"
+    },
+    "category_gen": {
+      "beer": "beer",
+      "na_beer": "non-alcoholic beer",
+      "radler": "radler",
+      "cider": "cider",
+      "wine": "wine",
+      "sparkling": "sparkling wine",
+      "fortified": "fortified wine",
+      "cocktail": "cocktail",
+      "spirit": "spirit",
+      "liqueur": "liqueur",
+      "kvass": "kvass",
+      "lemonade": "lemonade",
+      "soda": "soda",
+      "dairy": "fermented milk drink",
+      "tea": "tea",
+      "coffee": "coffee",
+      "water": "water"
+    },
+    "category_gen_default": "drink",
+    "bitter_ibu": "hop bitterness (≈ {ibu} IBU)",
+    "bitter_hop": "hop bitterness",
+    "bitter_other": "the {cat_gen}'s bitterness",
+    "ibu_paren": " (≈ {ibu} IBU)",
+    "protein_gen": {
+      "beef": "beef",
+      "lamb": "lamb",
+      "horse": "horse meat",
+      "pork": "pork",
+      "poultry": "poultry",
+      "white_fish": "fish",
+      "oily_fish": "oily fish",
+      "shellfish": "seafood",
+      "egg": "eggs",
+      "legume": "legumes",
+      "cheese_soft": "cheese",
+      "cheese_hard": "aged cheese",
+      "dairy": "cream"
+    },
+    "fat_sauce": {
+      "cream": "cream sauce",
+      "cheese": "cheese sauce"
+    },
+    "fat_tags": [
+      [
+        "fried",
+        "fried food"
+      ],
+      [
+        "butter",
+        "butter"
+      ],
+      [
+        "dairy_cream",
+        "cream"
+      ]
+    ],
+    "fat_default": "dish",
+    "salt_order": [
+      [
+        "cured",
+        "salt from the cured meat"
+      ],
+      [
+        "cheese",
+        "salt from the cheese"
+      ],
+      [
+        "brine",
+        "sea salt"
+      ],
+      [
+        "broth",
+        "salt from the broth"
+      ],
+      [
+        "salt",
+        "coarse salt"
+      ]
+    ],
+    "salt_sauce": {
+      "soy": "soy sauce",
+      "broth": "salt from the broth"
+    },
+    "salt_default": "the dish's salt",
+    "acid_type": {
+      "vinegar": "vinegar",
+      "citrus": "citrus",
+      "lactic": "lactic tang",
+      "tomato": "tomato"
+    },
+    "acid_tags": [
+      [
+        "tomato",
+        "tomato"
+      ],
+      [
+        "citrus",
+        "citrus"
+      ],
+      [
+        "sour_lactic",
+        "lactic tang"
+      ]
+    ],
+    "acid_default": "natural tartness",
+    "chili_tags": [
+      [
+        "chili",
+        "chilli"
+      ],
+      [
+        "pepper",
+        "pepper"
+      ]
+    ],
+    "chili_sauce": "chilli",
+    "chili_default": "spices",
+    "crust_cook": {
+      "grilled": "the chargrilled crust",
+      "fried": "the golden fried crust",
+      "baked": "the baked crust",
+      "smoked": "the smoked crust",
+      "braised": "the seared base"
+    },
+    "crust_tags": [
+      [
+        "char",
+        "the char from the coals"
+      ],
+      [
+        "fried",
+        "the golden fried crust"
+      ],
+      [
+        "caramel",
+        "caramelisation"
+      ],
+      [
+        "toast",
+        "the toasted crust"
+      ]
+    ],
+    "crust_default": "the dish's crust",
+    "smoke_cook": {
+      "grilled": "the charcoal smoke",
+      "smoked": "the smoked flavour",
+      "cured": "the smoked flavour"
+    },
+    "smoke_tags": [
+      [
+        "char",
+        "the charcoal smoke"
+      ],
+      [
+        "smoke",
+        "the smoked flavour"
+      ],
+      [
+        "cured",
+        "the smoked flavour"
+      ]
+    ],
+    "smoke_default": "the dish's smokiness",
+    "umami_tags": [
+      [
+        "broth",
+        "broth"
+      ],
+      [
+        "cheese",
+        "cheese"
+      ]
+    ],
+    "umami_sauce": {
+      "soy": "soy sauce",
+      "broth": "broth",
+      "cheese": "cheese"
+    },
+    "umami_default": "dish",
+    "tags": {
+      "citrus": "citrus",
+      "tropical_fruit": "tropical fruit",
+      "stone_fruit": "stone fruit",
+      "orchard_fruit": "apple and pear",
+      "red_fruit": "red berries",
+      "dark_fruit": "dried fruit",
+      "cherry": "cherry",
+      "banana": "banana",
+      "clove": "clove",
+      "pepper": "pepper",
+      "herbal": "herbs",
+      "floral": "flowers",
+      "pine_resin": "pine",
+      "grass": "grass",
+      "bread": "bread",
+      "grain": "grain",
+      "biscuit": "biscuit",
+      "toast": "toast",
+      "caramel": "caramel",
+      "honey": "honey",
+      "nutty": "nuts",
+      "chocolate": "chocolate",
+      "coffee": "coffee",
+      "roast": "roast",
+      "smoke": "smoke",
+      "oak_vanilla": "oak and vanilla",
+      "dairy_cream": "cream",
+      "sour_lactic": "lactic tang",
+      "mint": "mint",
+      "cucumber": "cucumber",
+      "brine": "sea salt",
+      "mineral": "minerality",
+      "warm_spice": "warm spice",
+      "anise": "anise",
+      "juniper": "juniper",
+      "agave": "agave",
+      "bitter_orange": "bitter orange",
+      "char": "char",
+      "cured": "cured meat",
+      "yeast": "yeast",
+      "rice": "rice",
+      "wheat": "wheat",
+      "cocoa": "cocoa",
+      "vanilla": "vanilla"
+    },
+    "cuisine": {
+      "kazakh": "Kazakh cuisine",
+      "central_asian": "Central Asian cuisine",
+      "uyghur": "Uyghur cuisine",
+      "russian": "Russian cuisine",
+      "caucasian": "Caucasian cuisine",
+      "turkish": "Turkish cuisine",
+      "german": "German cuisine",
+      "bavarian": "Bavarian cuisine",
+      "austrian": "Austrian cuisine",
+      "czech": "Czech cuisine",
+      "belgian": "Belgian cuisine",
+      "english": "English cuisine",
+      "irish": "Irish cuisine",
+      "french": "French cuisine",
+      "italian": "Italian cuisine",
+      "spanish": "Spanish cuisine",
+      "japanese": "Japanese cuisine",
+      "chinese": "Chinese cuisine",
+      "korean": "Korean cuisine",
+      "indian": "Indian cuisine",
+      "thai": "Thai cuisine",
+      "mexican": "Mexican cuisine",
+      "american": "American cuisine",
+      "argentinian": "Argentinian cuisine",
+      "tatar": "Tatar cuisine",
+      "international": "international cuisine"
+    },
+    "cuisine_default": "the same cuisine"
+  },
+  "rules_summary": {
+    "R1": "The drink and the dish should be equally matched: light with light, rich with rich. If the drink is much louder than the dish, it drowns it out, and the pairing's other strengths barely count (BA, CMS).",
+    "R2": "A rich dish calls for something that cuts the fat: tannins, bitterness, bubbles, acidity. Tannins work best — this has been measured in the lab (Peyrot des Gachons 2012).",
+    "R3": "Heat is tamed by sweetness, milk protein and cold, and amplified by strong alcohol, intense bitterness and tannins (Trevisani 2002, Nolden 2019). For those who like it hot, the penalty is almost lifted.",
+    "R4": "The drink shouldn't be drier than the dessert, or it will taste sour and thin (CMS). Exceptions: roasted malt with chocolate and sweets (BA), and hot tea or coffee — there the contrast does the work.",
+    "R5": "The drink's acidity should be no lower than the dish's, or the drink tastes flat (CMS). Vinegar is especially unforgiving.",
+    "R6": "Salt softens bitterness and astringency (Breslin, 1995 — measured) and gets along well with bubbles and acidity. Salty food with strong spirits is a minus.",
+    "R7": "Without salt, umami makes bitter and tannic flavours harsher; with salt and acidity it opens up (Hanni, Papazian). Experts disagree here, so the weight is moderate.",
+    "R8": "Tannins love protein and fat — think steak and red wine. With oily fish they turn metallic, with asparagus and spinach, bitter (CMS, WSET).",
+    "R9": "Raw and delicate food wants something light, clean, not bitter and bubbly. Roast, a heavy body and high alcohol drown such dishes out.",
+    "R10": "Caramel, toast and nuts in the drink echo the crust of fried and baked food (the Maillard reaction).",
+    "R11": "Smoke with smoke: smoked and charcoal-grilled dishes go with smoky and roasty drinks.",
+    "R12": "Shared aromas — citrus, bread, honey — build a “bridge” between the drink and the dish. This hasn't been tested scientifically, so its weight is small (level D).",
+    "R13": "The best pairings work on two levels at once — contrast and harmony (BA) — and earn a small bonus for it.",
+    "R14": "Bitter with bitter, or a sweet cocktail with a sweetish dish, is a minus: the flavours don't balance, they double up.",
+    "R15": "A drink and a cuisine from the same region get a small bonus: classic cuisines grew up alongside their drinks.",
+    "R16": "The occasion changes the pick: with dinner — light and fizzy, for an aperitif — a touch of bitterness and bubbles, in the heat — something refreshing, and “alcohol-free” is a strict filter.",
+    "R17": "Your taste: how you feel about bitterness and sweetness, “I like it hot” and sensitivity to bitterness shift the score by a few points.",
+    "R18": "Serving temperature changes how sweetness and bitterness come across. Switched off for now — we'll check it at a tasting.",
+    "R20": "Pairings named outright in textbooks and guides (oysters and dry stout, steak and cabernet) get a small bonus and a “classic” badge. Each comes with a source and a quote."
+  }
+}

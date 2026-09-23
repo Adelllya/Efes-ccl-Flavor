@@ -12,7 +12,7 @@ import {
 export type Locale = 'ru' | 'kk' | 'en';
 export type { I18nKey } from './i18n/ru';
 export type I18nParams = Record<string, string | number>;
-export type CountKey = 'count.beers' | 'count.dishes';
+export type CountKey = 'count.beers' | 'count.dishes' | 'count.drinks' | 'count.categories' | 'count.cuisines';
 
 /** Порядок = порядок кнопок в переключателе. label — на кнопке, name — для скринридера и подсказки. */
 export const LOCALES: readonly { id: Locale; label: string; name: string }[] = [

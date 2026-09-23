@@ -33,15 +33,18 @@ await check('главная: поиск «казы» ведёт к резуль�
   await page.waitForSelector('.suggest button');
   await page.keyboard.press('Enter');
   await page.waitForURL('**/pair/kazy');
-  await page.waitForSelector('ft-match');
-  const first = await page.locator('ft-match h3').first().textContent();
-  if (!/Efes Pilsener/.test(first)) throw new Error('ожидали Efes Pilsener первым, получили ' + first);
+  await page.waitForSelector('ft-drink-result');
+  // v2: честный подбор не обязан ставить первым конкретный бренд — проверяем, что есть результаты с баллами
+  const first = (await page.locator('ft-drink-result h3').first().textContent())?.trim();
+  if (!first) throw new Error('нет названия у первого результата');
+  const score = await page.locator('ft-drink-result ft-score').first().textContent();
+  if (!/\d/.test(score || '')) throw new Error('нет балла у первого результата');
 });
 await check('результаты: смена повода «Жара» перестраивает список', async () => {
-  const before = await page.locator('ft-match h3').allTextContents();
+  const before = await page.locator('ft-drink-result h3').allTextContents();
   await page.getByRole('button', { name: /Жара/ }).click();
   await page.waitForTimeout(200);
-  const after = await page.locator('ft-match h3').allTextContents();
+  const after = await page.locator('ft-drink-result h3').allTextContents();
   if (before.join() === after.join() && before.length < 2) throw new Error('список не изменился');
 });
 await check('результаты: разбор по правилам раскрывается', async () => {
@@ -59,9 +62,9 @@ await check('мастер «своё блюдо»: 4 шага → результ
   await page.getByRole('button', { name: 'Высокая' }).click();
   await page.getByRole('button', { name: /Дальше/ }).click();
   await page.getByRole('button', { name: /Варка/ }).click();
-  await page.getByRole('button', { name: /Подобрать пиво/ }).click();
+  await page.getByRole('button', { name: /Подобрать пару/ }).click();   // v2: мастер подбирает пару из всех категорий, не только пиво
   await page.waitForURL('**/pair/custom**');
-  await page.waitForSelector('ft-match');
+  await page.waitForSelector('ft-drink-result');
   const h1 = await page.locator('h1').first().textContent();
   if (!/лагман/i.test(h1)) throw new Error('название не перенесено: ' + h1);
 });
@@ -96,7 +99,7 @@ await check('QR: токен EBG-05 → заведение, стол 5, меню'
   await page.waitForSelector('p:has-text("стол 5")');
   await tap(page.locator('ft-dish-card'));
   await page.waitForURL('**/pair/**');
-  await page.waitForSelector('ft-match');
+  await page.waitForSelector('ft-drink-result');
   const chip = await page.getByRole('button', { name: /Только в наличии/ }).count();
   if (!chip) throw new Error('нет чипа заведения');
 });

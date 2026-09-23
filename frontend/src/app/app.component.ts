@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Injector, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -6,11 +6,10 @@ import { IconComponent, IconName } from './ui/icon.component';
 import { ProgressService } from './core/progress.service';
 import { VenueService } from './core/venue.service';
 import { ThemeService } from './core/theme.service';
-import { DataService } from './core/data.service';
 import { I18nKey, I18nService } from './core/i18n.service';
 import { LangSwitchComponent } from './ui/lang-switch.component';
 
-interface Tab { path: string; label: I18nKey; icon: IconName; exact?: boolean; }
+interface Tab { id: string; path: string; label: I18nKey; icon: IconName; exact?: boolean; }
 
 /** Оболочка: верхняя навигация (desktop) + нижняя панель вкладок (mobile) + переключатель языка + тост XP + фон с пузырьками. */
 @Component({
@@ -33,7 +32,7 @@ interface Tab { path: string; label: I18nKey; icon: IconName; exact?: boolean; }
         </a>
         <nav class="nav hide-mobile" [attr.aria-label]="t('shell.nav.aria')">
           @for (tab of tabs; track tab.path) {
-            <a [routerLink]="tab.path" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: !!tab.exact }">{{ t(tab.label) }}</a>
+            <a [routerLink]="tab.path" [class.on]="navOn(tab)" [attr.aria-current]="navOn(tab) ? 'page' : null">{{ t(tab.label) }}</a>
           }
           <a routerLink="/about" routerLinkActive="on">{{ t('shell.about') }}</a>
           <a routerLink="/business" routerLinkActive="on" class="biz">{{ t('shell.business') }}</a>
@@ -59,13 +58,13 @@ interface Tab { path: string; label: I18nKey; icon: IconName; exact?: boolean; }
     <footer class="ftr hide-mobile">
       <div class="container ftr-in">
         <div><strong>Flavor Tree</strong> · <span class="accent-serif">Don't just drink — listen to the flavor</span></div>
-        <div class="muted sm">OneIdea Championship 2026 × Efes Kazakhstan · {{ i18n.count(data.stats().brands, 'count.beers') }} · {{ i18n.count(data.stats().dishes, 'count.dishes') }} · {{ t('shell.footer.engine') }} · <a routerLink="/admin" class="amber">{{ t('shell.footer.admin') }}</a> · <a routerLink="/cabinet" class="amber">{{ t('shell.footer.cabinet') }}</a> · <a routerLink="/business" class="amber">{{ t('shell.footer.business') }}</a></div>
+        <div class="muted sm">OneIdea Championship 2026 × Efes Kazakhstan · @if (v2stats(); as s) { @if (s.drinks) { {{ i18n.count(s.drinks, 'count.drinks') }} · } {{ i18n.count(s.dishes, 'count.dishes') }} · }<a routerLink="/method" class="amber">{{ t('shell.footer.engine') }} · {{ t('shell.footer.method') }}</a> · <a routerLink="/insights" class="amber">{{ t('shell.footer.insights') }}</a> · <a routerLink="/admin" class="amber">{{ t('shell.footer.admin') }}</a> · <a routerLink="/cabinet" class="amber">{{ t('shell.footer.cabinet') }}</a> · <a routerLink="/business" class="amber">{{ t('shell.footer.business') }}</a></div>
       </div>
     </footer>
 
     <nav class="tabbar hide-desktop" [attr.aria-label]="t('shell.tabbar.aria')">
       @for (tab of tabs; track tab.path) {
-        <a [routerLink]="tab.path" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: !!tab.exact }" class="tab">
+        <a [routerLink]="tab.path" class="tab" [class.on]="activeTab() === tab.id" [attr.aria-current]="activeTab() === tab.id ? 'page' : null">
           <ft-icon [name]="tab.icon" [size]="22" [stroke]="1.9" /><span class="ellipsis">{{ t(tab.label) }}</span>
         </a>
       }
@@ -118,26 +117,48 @@ export class AppComponent {
   progress = inject(ProgressService);
   venue = inject(VenueService);
   theme = inject(ThemeService);
-  data = inject(DataService);
   i18n = inject(I18nService);
   private router = inject(Router);
+  private injector = inject(Injector);
+  /** Счётчики v2 для подвала — появляются после ленивой загрузки сервиса (drinks = 0, пока каталог не пришёл). */
+  readonly v2stats = signal<{ drinks: number; dishes: number } | null>(null);
   /** t() читает сигнал языка — вызов из шаблона подписывает шаблон на смену языка. */
   readonly t = this.i18n.t;
 
   /** label — ключ словаря, а не готовая строка: перевод берётся в шаблоне, иначе вкладки не переключались бы вместе с языком. */
   readonly tabs: Tab[] = [
-    { path: '/', label: 'shell.tab.home', icon: 'home', exact: true },
-    { path: '/pair', label: 'shell.tab.pair', icon: 'sparkles' },
-    { path: '/beers', label: 'shell.tab.beers', icon: 'beer' },
-    { path: '/academy', label: 'shell.tab.academy', icon: 'book' },
-    { path: '/dna', label: 'shell.tab.me', icon: 'user' },
+    { id: 'home', path: '/', label: 'shell.tab.home', icon: 'home', exact: true },
+    { id: 'pair', path: '/pair', label: 'shell.tab.pair', icon: 'sparkles' },
+    { id: 'drinks', path: '/drinks', label: 'shell.tab.drinks', icon: 'glass' },
+    { id: 'academy', path: '/academy', label: 'shell.tab.academy', icon: 'book' },
+    { id: 'me', path: '/dna', label: 'shell.tab.me', icon: 'user' },
   ];
   readonly themeKey = computed(() => `shell.theme.${this.theme.theme()}` as const);
   readonly bubbles = Array.from({ length: 14 }, (_, i) => ({ id: i, left: 3 + Math.random() * 94, size: 6 + Math.random() * 16, dur: 9 + Math.random() * 12, delay: -Math.random() * 20 }));
   scrolled = signal(false);
   private nav = toSignal(this.router.events.pipe(filter(e => e instanceof NavigationEnd)));
+  /** Вкладка нижней панели — из data.tab самого глубокого активного маршрута (пирамиды /beers → «Напитки», /about → «Главная»). */
+  readonly activeTab = computed(() => {
+    this.nav();
+    let r = this.router.routerState.snapshot.root;
+    while (r.firstChild) r = r.firstChild;
+    return (r.data['tab'] as string | undefined) ?? 'home';
+  });
+  private readonly path = computed(() => { this.nav(); return this.router.url.split(/[?#]/)[0]; });
 
   constructor() {
     window.addEventListener('scroll', () => this.scrolled.set(window.scrollY > 8), { passive: true });
+    // Каталог v2 (≈ 45 КБ gzip) нужен подбору, подвалу и счётчикам на главной — подгружаем на простое, не мешая первому кадру.
+    // Сервис импортируется динамически: параметры движка и блюда (~260 КБ) остаются вне начального бандла.
+    const warm = () => import('./core/data-v2.service').then(m => {
+      const v2 = this.injector.get(m.DataV2Service);
+      this.v2stats.set({ drinks: 0, dishes: v2.stats().dishes });
+      return v2.ensureDrinks().then(() => this.v2stats.set({ drinks: v2.stats().drinks, dishes: v2.stats().dishes }));
+    }).catch(() => { /* страницы покажут ошибку сами */ });
+    if ('requestIdleCallback' in window) (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(warm);
+    else setTimeout(warm, 1200);
   }
+
+  /** Верхняя навигация: «Главная» — только сама главная (у /about и /business свои ссылки), остальные — по data.tab. */
+  navOn(tab: Tab): boolean { return tab.exact ? this.path() === '/' : this.activeTab() === tab.id; }
 }

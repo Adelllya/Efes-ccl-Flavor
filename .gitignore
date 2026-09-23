@@ -33,3 +33,4 @@ frontend/.angular/
 # Генерируемые артефакты (пересобираются скриптами)
 docs/drink-art/gallery.html
 docs/drink-art/*.png
+docs/dish-photos/*.png

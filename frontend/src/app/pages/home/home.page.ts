@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } 
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../core/data.service';
-import { PairingService } from '../../core/pairing.service';
+import { DataV2Service } from '../../core/data-v2.service';
+import { cuisineLabel } from '../../core/cuisines-v2';
 import { ProgressService } from '../../core/progress.service';
 import { VenueService } from '../../core/venue.service';
 import { IconComponent, IconName } from '../../ui/icon.component';
@@ -22,7 +23,7 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
     <section class="hero">
       <span class="eyebrow reveal">OneIdea Championship 2026 × Efes Kazakhstan</span>
       <h1 class="reveal reveal-1">Что выберешь <span class="grad-text">сегодня?</span></h1>
-      <p class="lede reveal reveal-2">Flavor Tree раскладывает вкус каждого сорта на три слоя — как аромат в парфюмерии — и объясняет, почему это пиво подходит к вашему блюду. Без регистрации, за 15 секунд.</p>
+      <p class="lede reveal reveal-2">Flavor Tree переводит вкус напитка и блюда в числа и объясняет, почему именно эта пара работает — пиво, сидр, вино, коктейль или кумыс. Без регистрации, за 15 секунд.</p>
 
       <form class="search hero-search reveal reveal-3" role="search" (submit)="submit($event)">
         <ft-icon name="search" />
@@ -31,7 +32,7 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
         @if (focused() && hits().length) {
           <ul class="suggest" role="listbox">
             @for (h of hits(); track h.dish.id) {
-              <li><button type="button" (mousedown)="go(h.dish.id)"><span>{{ h.dish.emoji }}</span><span class="grow">{{ h.dish.display_name }}</span><span class="muted xs">{{ h.dish.cuisine_flag }} {{ h.dish.cuisine_label }}</span></button></li>
+              <li><button type="button" (mousedown)="go(h.dish.id)"><span>{{ h.dish.emoji }}</span><span class="grow">{{ h.dish.display_name || h.dish.name }}</span><span class="muted xs">{{ cuisineOf(h.dish.cuisine) }}</span></button></li>
             }
           </ul>
         }
@@ -45,19 +46,19 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
           <span class="ch-d">Подберу сорт по вкусовой пирамиде и объясню почему</span>
           <span class="ch-cta">Выбрать <ft-icon name="arrow-right" [size]="16" /></span>
         </a>
-        <a routerLink="/beers" class="choice alt">
-          <span class="ch-ico"><ft-icon name="beer" [size]="28" /></span>
-          <span class="ch-t">У меня есть <em>пиво</em></span>
-          <span class="ch-d">Покажу пирамиду сорта и блюда, с которыми он звучит</span>
+        <a routerLink="/drinks" class="choice alt">
+          <span class="ch-ico"><ft-icon name="glass" [size]="28" /></span>
+          <span class="ch-t">У меня есть <em>напиток</em></span>
+          <span class="ch-d">Покажу профиль вкуса, откуда взяты числа, и блюда, с которыми он звучит</span>
           <span class="ch-cta">Выбрать <ft-icon name="arrow-right" [size]="16" /></span>
         </a>
       </div>
 
       <div class="stats reveal reveal-5">
-        <span><b>{{ data.stats().brands }}</b> сортов Efes KZ</span>
-        <span><b>{{ data.stats().dishes }}</b> блюд · 6 кухонь</span>
-        <span><b>{{ data.stats().curated }}</b> пара сомелье</span>
-        <span><b>15</b> правил гастрономии</span>
+        <span><b>{{ v2.drinks() ? v2.stats().drinks : '…' }}</b> напитков · {{ v2.drinks() ? v2.stats().nonEfes : '…' }} не Efes</span>
+        <span><b>{{ v2.stats().dishes }}</b> блюд · {{ nCuisines() }} кухонь</span>
+        <span><b>{{ nRules() }}</b> правил · {{ nVetoes() }} вето</span>
+        <span><b>{{ v2.classicsList.length }}</b> классических пар с источником</span>
       </div>
     </section>
 
@@ -88,7 +89,7 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
     <section class="section">
       <ft-section-head eyebrow="Механика" title="Как Flavor Tree подбирает пару" sub="Не «нейросеть угадала», а сенсорика, которую можно проверить" />
       <div class="grid grid-3">
-        @for (st of steps; track st.n) {
+        @for (st of steps(); track st.n) {
           <div class="card card-p step">
             <div class="step-n">{{ st.n }}</div>
             <div class="step-ico"><ft-icon [name]="st.icon" [size]="24" /></div>
@@ -97,7 +98,7 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
           </div>
         }
       </div>
-      <div class="center mt16"><a routerLink="/about" class="btn btn-ghost">Подробнее про движок и пирамиду <ft-icon name="arrow-right" [size]="16" /></a></div>
+      <div class="center mt16"><a routerLink="/method" class="btn btn-ghost">Как мы считаем: правила, источники, ограничения <ft-icon name="arrow-right" [size]="16" /></a></div>
     </section>
 
     <!-- СОРТА -->
@@ -171,14 +172,18 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
 })
 export class HomePage {
   data = inject(DataService);
+  v2 = inject(DataV2Service);
   progress = inject(ProgressService);
   venue = inject(VenueService);
-  private pairing = inject(PairingService);
   private router = inject(Router);
 
   q = signal('');
   focused = signal(false);
-  hits = computed(() => this.pairing.searchDishes(this.q(), 6));
+  hits = computed(() => this.v2.searchDishes(this.q(), 6));
+  readonly nCuisines = computed(() => new Set(this.v2.dishes().flatMap(d => d.cuisine ?? [])).size);
+  /** Правила движка — ключи R* параметров без выключенных (R18 — опция); вето — params.vetoes.order. */
+  readonly nRules = computed(() => Object.entries(this.v2.params as unknown as Record<string, { enabled?: boolean }>).filter(([k, v]) => /^R\d+$/.test(k) && v?.enabled !== false).length);
+  readonly nVetoes = computed(() => this.v2.params.vetoes.order.length);
   featured = computed(() => ['efes-pilsener', 'kozel', 'legenda-777', 'khmelnoy-los', 'wukong-ju', 'stary-melnik'].map(id => this.data.brand(id)!).filter(Boolean));
   readonly facts = factsJson as { emoji: string; text: string }[];
   factIdx = signal(Math.floor(Math.random() * this.facts.length));
@@ -192,14 +197,15 @@ export class HomePage {
     { id: 'spicy', icon: '🌶️', title: 'Острое', desc: 'Крылышки Buffalo, тако, чили: солод гасит огонь, хмель разжигает.', link: ['/pair', 'buffalo-wings'], badge: 'Ловушка №1' },
     { id: 'dessert', icon: '🥧', title: 'Десерт', desc: 'Штрудель и яблочный пирог просят карамельный янтарный лагер.', link: ['/pair', 'strudel'], query: { occasion: 'gourmet' }, badge: 'Bridge' },
   ];
-  readonly steps: { n: string; icon: IconName; title: string; text: string }[] = [
-    { n: '01', icon: 'tree', title: 'Пирамида → вектор', text: 'Сомелье описывает сорт нотами Top / Heart / Base с интенсивностью 1–10. Ноты переводятся в 10 сенсорных осей: горечь, тело, солод, пузырьки, хмель…' },
-    { n: '02', icon: 'dish', title: 'Блюдо → вектор', text: '50 блюд размечены по 13 осям: соль, жир, умами, острота, дым, корочка, свежесть. Своё блюдо можно описать за 4 шага.' },
-    { n: '03', icon: 'bolt', title: '15 правил → оценка', text: 'Интенсивность, «жир + горечь = очищение», «острое не любит хмель», мосты ароматов, вердикт сомелье. Каждое правило объяснимо словами.' },
-  ];
+  readonly steps = computed<{ n: string; icon: IconName; title: string; text: string }[]>(() => [
+    { n: '01', icon: 'glass', title: 'Напиток → вектор', text: 'Крепость с этикетки, IBU от производителя, профиль стиля по BJCP — 14 осей: сладость, кислотность, горечь, танины, газация, тело, обжарка, дым… У каждого профиля есть надёжность и источник.' },
+    { n: '02', icon: 'dish', title: 'Блюдо → вектор', text: `${this.v2.stats().dishes} блюд размечены по 16 осям: соль, жир, умами, острота, дым, корочка, свежесть, рыбий жир. Своё блюдо можно описать за 4 шага — той же шкалой.` },
+    { n: '03', icon: 'bolt', title: `${this.nRules()} правил → оценка`, text: `Очищение жира, острота, сладость, танины и белок, мосты ароматов — у каждого правила источник и уровень доказательности A–D. ${this.nVetoes()} вето ставят потолок баллу. Балл от бренда не зависит.` },
+  ]);
 
   constructor() { effect(() => { const id = setInterval(() => this.nextFact(), 9000); return () => clearInterval(id); }); }
 
+  cuisineOf(c: string[] | undefined): string { return c?.length ? cuisineLabel(c[0], 'ru') : ''; }
   submit(e: Event): void { e.preventDefault(); const h = this.hits()[0]; if (h) this.go(h.dish.id); else this.router.navigate(['/pair'], { queryParams: { q: this.q() } }); }
   go(id: string): void { this.router.navigate(['/pair', id]); }
   blurSoon(): void { setTimeout(() => this.focused.set(false), 150); }

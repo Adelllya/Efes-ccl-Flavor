@@ -1,12 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DataService } from '../../core/data.service';
-import { PairingService, Match } from '../../core/pairing.service';
+import { DataV2Service, DishV2, DrinkV2 } from '../../core/data-v2.service';
+import { PairingV2Service } from '../../core/pairing-v2.service';
+import { GuestPrefsService } from '../../core/guest-prefs.service';
 import { SaasService } from '../../core/saas.service';
+import { TrackV2Service, poolBestOther, trackItems } from '../../core/track-v2.service';
 import { MenuItem, VenueMenu } from '../../core/saas.models';
-import { Brand, Dish } from '../../core/models';
+import { PairResult } from '../../engine/pairing-engine-v2';
 import { IconComponent } from '../../ui/icon.component';
+import { DrinkArtComponent } from '../../ui/drink-art.component';
+import { DishPhotoComponent } from '../../ui/dish-photo.component';
 import { ScoreRingComponent } from '../../ui/score-ring.component';
 import { SommelierChatComponent } from '../../ui/sommelier-chat.component';
 import { AiVenue } from '../../core/ai.service';
@@ -14,21 +18,22 @@ import { I18nKey, I18nService } from '../../core/i18n.service';
 import { ru } from '../../core/i18n/ru';
 import { LangSwitchComponent } from '../../ui/lang-switch.component';
 
-interface DishRow { item: MenuItem; dish: Dish; }
-interface BeerRow { item: MenuItem; brand: Brand; }
-interface Suggestion { match: Match; item: MenuItem; }
+interface DishRow { item: MenuItem; dish: DishV2; }
+interface DrinkRow { item: MenuItem; drink: DrinkV2; }
+interface Suggestion { r: PairResult; row: DrinkRow; best: boolean; }
 const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAURANT: 'menu.type.RESTAURANT', PUB: 'menu.type.PUB', CAFE: 'menu.type.CAFE' };
 
 /**
  * Гостевое меню заведения — то, что открывается после скана QR на столе.
- * Брендинг заведения, ИХ цены, подбор пива только из ИХ карты, кнопка «Заказать» → событие для владельца.
+ * Брендинг заведения, ИХ цены, подбор (движок v2) только из ИХ карты — любые напитки каталога, не только пиво,
+ * кнопка «Заказать» → событие для владельца. Позиции карты ссылаются на id напитка v2 или на slug сорта v1 (legacy_brand_id).
  * Язык ru/kk/en: строки интерфейса — через t(), подписи данных — через помощники I18nService; своё название
  * или описание позиции, заданное заведением, всегда важнее перевода.
  */
 @Component({
   selector: 'ft-venue-menu',
   standalone: true,
-  imports: [RouterLink, FormsModule, IconComponent, ScoreRingComponent, SommelierChatComponent, LangSwitchComponent],
+  imports: [RouterLink, FormsModule, IconComponent, ScoreRingComponent, SommelierChatComponent, LangSwitchComponent, DrinkArtComponent, DishPhotoComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (state() === 'loading') {
@@ -55,7 +60,7 @@ const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAUR
           <div class="chips">
             @if (m.venue.wifi) { <span class="hchip">📶 Wi-Fi: {{ m.venue.wifi }}</span> }
             @if (m.venue.instagram) { <span class="hchip">📷 {{ m.venue.instagram }}</span> }
-            <span class="hchip">🍺 {{ i18n.count(m.beers.length, 'count.beers') }} · 🍽 {{ i18n.count(m.dishes.length, 'count.dishes') }}</span>
+            <span class="hchip">{{ t('v2.menu.positions', { n: m.beers.length + m.dishes.length }) }}</span>
             <ft-lang-switch light />
           </div>
           <a routerLink="/scan" [queryParams]="{ venue: m.venue.slug, table: m.table }" class="scan-btn"><span class="sb-ico">📷</span><span><b>{{ t('menu.scan.title') }}</b><br><small>{{ t('menu.scan.sub') }}</small></span><ft-icon name="chevron-right" [size]="18" /></a>
@@ -73,12 +78,12 @@ const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAUR
       </section>
 
       <section class="section-sm">
-        <div class="lbl">{{ t('menu.section.dishes') }}</div>
+        <div class="lbl">{{ t('v2.menu.dishes') }}</div>
         <div class="rows">
           @for (r of dishRows(); track r.item.id) {
             <button type="button" class="row" (click)="open(r)" [class.on]="picked()?.item?.id === r.item.id">
-              <span class="em">{{ r.dish.emoji }}</span>
-              <span class="txt"><span class="nm">{{ r.item.name || i18n.dishName(r.dish) }}</span><span class="ct">{{ r.item.description || i18n.dishBlurb(r.dish) }}</span></span>
+              <span class="ph"><ft-dish-photo [dishId]="r.dish.id" [emoji]="r.dish.emoji || '🍽️'" variant="square" [name]="dishTitle(r)" /></span>
+              <span class="txt"><span class="nm">{{ dishTitle(r) }}</span><span class="ct">{{ r.item.description || dishBlurb(r.dish) }}</span></span>
               <span class="price"><span class="pv">{{ fmt(r.item.price) }} <small>{{ cur() }}</small></span>@if (r.item.is_featured) { <span class="hit">{{ t('menu.hit') }}</span> }</span>
             </button>
           } @empty {
@@ -88,13 +93,13 @@ const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAUR
       </section>
 
       <section class="section-sm">
-        <div class="lbl">{{ t('menu.section.beers') }}</div>
+        <div class="lbl">{{ t('v2.menu.drinks') }}</div>
         <div class="beers">
-          @for (b of beerRows(); track b.item.id) {
-            <a class="beer card hover" [routerLink]="['/beers', b.brand.id]" (click)="trackBeer(b)">
-              <img [src]="data.brandImage(b.brand)" alt="" loading="lazy" />
-              <span class="bn">{{ b.item.name || b.brand.display_name }}</span>
-              <span class="bs">{{ i18n.styleLabel(b.brand) }} · {{ b.brand.abv }}%</span>
+          @for (b of drinkRows(); track b.item.id) {
+            <a class="beer card hover" [routerLink]="['/drinks', b.drink.id]" (click)="trackDrink(b)">
+              <span class="bimg"><ft-drink-art [drink]="b.drink" [size]="92" [preferPhoto]="!!b.drink.image" /></span>
+              <span class="bn">{{ b.item.name || b.drink.name }}</span>
+              <span class="bs">{{ styleOf(b.drink) }}@if (b.drink.abv !== null && b.drink.abv !== undefined) { · {{ b.drink.flags?.abv_unknown ? '≈' : '' }}{{ b.drink.abv }}% }</span>
               <span class="bp">{{ fmt(b.item.price) }} {{ cur() }} <small>{{ i18n.volume(b.item.volume) }}</small></span>
             </a>
           }
@@ -108,32 +113,33 @@ const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAUR
         <div class="sheet" role="dialog" [attr.aria-label]="t('menu.sheet.aria', { dish: dishTitle(p) })" [style.--accent]="accent()">
           <div class="grab"></div>
           <div class="sh-head">
-            <span class="em">{{ p.dish.emoji }}</span>
+            <span class="ph"><ft-dish-photo [dishId]="p.dish.id" [emoji]="p.dish.emoji || '🍽️'" variant="square" [name]="dishTitle(p)" /></span>
             <div class="grow"><div class="eyebrow">{{ t('menu.sheet.eyebrow') }}</div><h2>{{ dishTitle(p) }}</h2></div>
             <button type="button" class="btn btn-icon btn-ghost" (click)="close()" [attr.aria-label]="t('common.close')"><ft-icon name="x" /></button>
           </div>
           @if (suggestions().length) {
             <div class="sugg">
-              @for (s of suggestions(); track s.item.id; let i = $index) {
+              @for (s of suggestions(); track s.row.item.id; let i = $index) {
                 <div class="sg" [class.top]="i === 0">
-                  <ft-score [score]="s.match.score" [size]="54" [stroke]="5" />
+                  <ft-score [score]="s.r.score" [size]="54" [stroke]="5" />
                   <div class="grow">
-                    <div class="sg-nm">{{ s.item.name || s.match.beer.display_name }} @if (i === 0) { <span class="best">{{ t('common.best') }}</span> } @if (s.match.sommelier_pick) { <span class="somm">{{ t('common.sommPick') }}</span> }</div>
-                    <div class="sg-why">{{ why(s.match) }}</div>
-                    <div class="sg-meta">{{ i18n.matchLabel(s.match.match_type, s.match.match_label) }} · {{ i18n.styleLabel(s.match.beer) }} · {{ i18n.volume(s.item.volume) }}</div>
+                    <div class="sg-nm">{{ s.row.item.name || s.row.drink.name }} @if (s.best) { <span class="best">{{ t('common.best') }}</span> } @if (s.r.classic) { <span class="somm">{{ t('v2.card.classic') }}</span> }</div>
+                    <div class="sg-band">{{ s.r.band_label }}</div>
+                    @if (why(s.r); as w) { <div class="sg-why"><span class="ev" [attr.data-ev]="w.evidence" [attr.title]="evTitle(w.evidence)">{{ w.evidence }}</span>{{ w.text }}</div> }
+                    <div class="sg-meta">{{ pairType(s.r.match_type) }} · {{ styleOf(s.row.drink) }} · {{ i18n.volume(s.row.item.volume) }}</div>
                   </div>
                   <div class="sg-buy">
-                    <div class="sg-price">{{ fmt(s.item.price) }} {{ cur() }}</div>
-                    <button type="button" class="btn btn-primary btn-sm" (click)="order(s)" [disabled]="ordered().has(s.item.id)">
-                      @if (ordered().has(s.item.id)) { <ft-icon name="check" [size]="14" /> {{ t('common.ordered') }} } @else { {{ t('common.order') }} }
+                    <div class="sg-price">{{ fmt(s.row.item.price) }} {{ cur() }}</div>
+                    <button type="button" class="btn btn-primary btn-sm" (click)="order(s)" [disabled]="ordered().has(s.row.item.id)">
+                      @if (ordered().has(s.row.item.id)) { <ft-icon name="check" [size]="14" /> {{ t('common.ordered') }} } @else { {{ t('common.order') }} }
                     </button>
                   </div>
                 </div>
               }
             </div>
-            <p class="muted xs mt12 center">{{ t('menu.sheet.hint') }}</p>
+            <p class="muted xs mt12 center">{{ t('v2.menu.hint') }}</p>
           } @else {
-            <p class="dim center">{{ t('menu.sheet.none') }}</p>
+            <p class="dim center">{{ t('v2.menu.none') }}</p>
           }
         </div>
       }
@@ -164,6 +170,13 @@ const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAUR
     .row { display: flex; gap: 12px; align-items: center; text-align: left; width: 100%; padding: 12px 14px; border-radius: var(--r-lg); background: var(--surface); border: 1.5px solid var(--line); transition: all var(--t-fast); }
     .row:hover, .row.on { border-color: var(--accent); box-shadow: var(--shadow-1); }
     .em { font-size: 1.7rem; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 13px; background: var(--grad-amber-soft); flex-shrink: 0; }
+    .ph { width: 52px; flex-shrink: 0; }
+    .sh-head .ph { width: 56px; }
+    .bimg { display: grid; place-items: center; min-height: 96px; }
+    .sg-band { font-family: var(--font-display); font-style: italic; color: var(--gold-soft); font-size: .86rem; margin-top: 2px; }
+    .sg-why { display: flex; gap: 6px; align-items: flex-start; }
+    .ev { flex-shrink: 0; display: inline-grid; place-items: center; width: 17px; height: 17px; margin-top: 1px; border-radius: 5px; font-size: .6rem; font-weight: 800; color: var(--evc, var(--gold)); border: 1px solid color-mix(in srgb, var(--evc, var(--gold)) 50%, transparent); cursor: help; }
+    .ev[data-ev="A"] { --evc: var(--ok); } .ev[data-ev="B"] { --evc: var(--info); } .ev[data-ev="D"] { --evc: var(--ink-3); }
     .txt { display: grid; gap: 2px; min-width: 0; flex: 1; }
     .nm { font-family: var(--font-display); font-weight: 700; }
     .ct { font-size: .76rem; color: var(--ink-3); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
@@ -174,7 +187,7 @@ const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAUR
     .beers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     @media (min-width: 640px) { .beers { grid-template-columns: repeat(4, 1fr); } }
     .beer { display: grid; gap: 4px; padding: 12px; text-align: center; }
-    .beer img { height: 92px; object-fit: contain; margin: 0 auto 4px; }
+
     .bn { font-family: var(--font-display); font-weight: 700; font-size: .9rem; }
     .bs { font-size: .72rem; color: var(--ink-3); }
     .bp { font-weight: 800; color: var(--amber-700); margin-top: 2px; }
@@ -206,9 +219,11 @@ const VENUE_TYPE_KEYS: Record<string, I18nKey> = { BAR: 'menu.type.BAR', RESTAUR
   `],
 })
 export class VenueMenuPage {
-  data = inject(DataService);
-  private pairing = inject(PairingService);
+  data = inject(DataV2Service);
+  private pairing = inject(PairingV2Service);
+  private prefs = inject(GuestPrefsService);
   private saas = inject(SaasService);
+  private track = inject(TrackV2Service);
   i18n = inject(I18nService);
   /** t() читает сигнал языка: шаблон и computed(), где он вызван, пересчитываются при смене языка. */
   readonly t = this.i18n.t;
@@ -223,6 +238,8 @@ export class VenueMenuPage {
   readonly picked = signal<DishRow | null>(null);
   readonly ordered = signal(new Set<string>());
   readonly toast = signal<string | null>(null);
+  /** id показанного в шторке списка (аналитика /api/v2/track/) — к нему привязываем «Заказать». */
+  private sheetListId: string | null = null;
 
   readonly cur = computed(() => this.menu()?.venue.currency || '₸');
   readonly accent = computed(() => this.menu()?.venue.accent || '#F7941D');
@@ -235,31 +252,45 @@ export class VenueMenuPage {
   readonly dishRowsAll = computed<DishRow[]>(() => (this.menu()?.dishes || [])
     .map(item => ({ item, dish: this.data.dish(item.ref_slug)! })).filter(r => !!r.dish)
     .sort((a, b) => a.item.sort_order - b.item.sort_order));
-  readonly categories = computed(() => [...new Set(this.dishRowsAll().map(r => r.item.category || r.dish.category).filter(Boolean))]);
+  readonly categories = computed(() => [...new Set(this.dishRowsAll().map(r => r.item.category || r.dish.category || '').filter(Boolean))]);
   readonly dishRows = computed(() => {
-    const q = this.q().trim().toLowerCase(); const c = this.cat();
+    const q = this.q().trim().toLowerCase().replace(/ё/g, 'е'); const c = this.cat();
     return this.dishRowsAll().filter(r => (!c || (r.item.category || r.dish.category) === c) &&
-      (!q || [r.item.name, r.dish.display_name, r.dish.name, this.i18n.dishName(r.dish), ...r.dish.synonyms].some(s => s?.toLowerCase().includes(q))));
+      (!q || [r.item.name, r.dish.display_name, r.dish.name, this.dishTitle(r), ...(r.dish.synonyms ?? [])]
+        .some(s => s?.toLowerCase().replace(/ё/g, 'е').includes(q))));
   });
-  readonly beerRows = computed<BeerRow[]>(() => (this.menu()?.beers || [])
-    .map(item => ({ item, brand: this.data.brand(item.ref_slug)! })).filter(r => !!r.brand)
-    .sort((a, b) => a.item.sort_order - b.item.sort_order));
+  /** Позиция карты → напиток v2: по id напитка или по slug сорта v1 (legacy_brand_id). */
+  readonly drinkRows = computed<DrinkRow[]>(() => {
+    const list = this.data.drinks(); if (!list) return [];
+    const byLegacy = new Map(list.filter(d => d.legacy_brand_id).map(d => [d.legacy_brand_id as string, d]));
+    return (this.menu()?.beers || [])
+      .map(item => ({ item, drink: (this.data.drink(item.ref_slug) ?? byLegacy.get(item.ref_slug))! })).filter(r => !!r.drink)
+      .sort((a, b) => a.item.sort_order - b.item.sort_order);
+  });
   readonly aiVenue = computed<AiVenue | null>(() => {
     const m = this.menu(); if (!m) return null;
     return { slug: m.venue.slug, name: m.venue.name, beers: m.beers.map(b => b.ref_slug), currency: m.venue.currency,
              prices: Object.fromEntries(m.beers.map(b => [b.ref_slug, b.price])), volumes: Object.fromEntries(m.beers.map(b => [b.ref_slug, b.volume])) };
   });
-  readonly beerItemBySlug = computed(() => Object.fromEntries(this.beerRows().map(r => [r.item.ref_slug, r.item])) as Record<string, MenuItem>);
 
-  /** Подбор только из того, что реально стоит на кранах этого заведения. */
+  /** Подбор движка v2 только из того, что реально есть в карте этого заведения (с учётом профиля гостя). */
   readonly suggestions = computed<Suggestion[]>(() => {
-    const p = this.picked(); if (!p) return [];
-    const slugs = this.beerRows().map(r => r.item.ref_slug);
-    return this.pairing.forDish(p.dish.id, {}, { venueBrands: slugs, limit: 3, diversify: true })
-      .map(match => ({ match, item: this.beerItemBySlug()[match.beer_id] })).filter(s => !!s.item);
+    const p = this.picked(); const rows = this.drinkRows(); if (!p || !rows.length) return [];
+    const byId = new Map(rows.map(r => [r.drink.id, r]));
+    const rec = this.pairing.forDish(p.dish, { ...this.prefs.ctx() }, { top: 3, venueDrinkIds: [...byId.keys()] });
+    const max = rec.items.reduce((m, r) => Math.max(m, r.score), -1);
+    let crowned = false;
+    const out: Suggestion[] = [];
+    for (const r of rec.items) {
+      const row = byId.get(r.drink_id); if (!row) continue;
+      const best = !crowned && r.score === max; if (best) crowned = true;
+      out.push({ r, row, best });
+    }
+    return out;
   });
 
   constructor() {
+    this.data.ensureDrinks().catch(() => { /* без каталога раздел напитков пуст, меню блюд работает */ });
     effect(async () => {
       const slug = this.slug(); const table = this.tableNo();
       this.state.set('loading');
@@ -268,31 +299,54 @@ export class VenueMenuPage {
       this.menu.set(m); this.state.set('ready');
       this.trackScan(slug, table);
     }, { allowSignalWrites: true });
+    // шторка блюда открылась и в ней есть подбор → показ списка (source venue_menu); повтор за 30 с сервис не шлёт
+    if (this.track.enabled) {
+      effect(() => {
+        const p = this.picked(); const sugg = this.suggestions(); const m = this.menu(); const table = this.tableNo();
+        if (!p || !m || !sugg.length) return;
+        const items = trackItems(sugg.map(s => s.r));
+        const venueIds = [...new Set(this.drinkRows().map(r => r.drink.id))]; const ctx = { ...this.prefs.ctx() };
+        untracked(() => {
+          // пул кандидатов шторки (вся карта заведения) — для честного места на сервере
+          const pool = this.pairing.forDish(p.dish, ctx, { top: 0, venueDrinkIds: venueIds }).items;
+          this.sheetListId = this.track.listShown({ source: 'venue_menu', dishId: p.dish.id, tab: null, venue: m.venue.slug, table, occasion: null,
+                                                    items, poolBestOther: poolBestOther(pool) });
+        });
+      });
+    }
   }
 
   fmt(n: number): string { return Math.round(n).toLocaleString('ru-RU'); }
-  /** Самая конкретная причина: «интенсивность совпадает» верна почти всегда, поэтому показываем её последней. */
-  why(m: Match): string { const r = m.reasons.find(x => x.rule !== 'intensity') ?? m.reasons[0]; return r ? this.i18n.reason(r) : this.i18n.verdict(m.verdict); }
+  /** Самая конкретная причина: «громкость совпадает» верна почти всегда, поэтому показываем её последней. */
+  why(r: PairResult): { text: string; evidence: string } | null { return r.reasons.find(x => x.rule !== 'R1') ?? r.reasons[0] ?? null; }
+  evTitle(ev: string): string { return ['A', 'B', 'C', 'D'].includes(ev) ? this.t(`v2.ev.${ev}` as I18nKey) : ev; }
+  pairType(type: string): string { return this.t(`v2.type.${type}` as I18nKey); }
+  styleOf(d: DrinkV2): string { return d.style?.name || this.t(`v2.cat.${d.category}` as I18nKey); }
   /** Название позиции от заведения важнее перевода из словаря. */
-  dishTitle(r: DishRow): string { return r.item.name || this.i18n.dishName(r.dish); }
+  dishTitle(r: DishRow): string { return r.item.name || this.i18n.dishName({ id: r.dish.id, display_name: r.dish.display_name || r.dish.name }); }
+  /** Описание блюда: по-русски — из каталога, на kk/en — кухня. */
+  dishBlurb(d: DishV2): string { return this.i18n.locale() === 'ru' ? (d.description ?? '') : (d.category ?? ''); }
 
   open(r: DishRow): void {
     this.picked.set(r);
     const v = this.menu()!.venue.slug;
     this.saas.track({ venue: v, kind: 'DISH_VIEW', dish: r.dish.id, table: this.tableNo() });
     const top = this.suggestions()[0];
-    if (top) this.saas.track({ venue: v, kind: 'PAIR_VIEW', dish: r.dish.id, beer: top.match.beer_id, score: top.match.score, table: this.tableNo() });
+    if (top) this.saas.track({ venue: v, kind: 'PAIR_VIEW', dish: r.dish.id, beer: top.row.item.ref_slug, score: top.r.score, table: this.tableNo() });
   }
-  close(): void { this.picked.set(null); }
+  close(): void { this.picked.set(null); this.sheetListId = null; }
 
   order(s: Suggestion): void {
     const p = this.picked(); if (!p) return;
-    this.saas.track({ venue: this.menu()!.venue.slug, kind: 'ORDER_INTENT', dish: p.dish.id, beer: s.match.beer_id,
-                      score: s.match.score, price: s.item.price, table: this.tableNo() });
-    this.ordered.update(set => new Set(set).add(s.item.id));
-    this.flash(this.t('menu.toast.order', { beer: s.item.name || s.match.beer.display_name, dish: this.dishTitle(p) }));
+    // сессия трекинга (не id гостя): сервер склеит это нажатие с order_intent ниже и хранит её только как HMAC
+    this.saas.track({ venue: this.menu()!.venue.slug, kind: 'ORDER_INTENT', dish: p.dish.id, beer: s.row.item.ref_slug,
+                      score: s.r.score, price: s.row.item.price, table: this.tableNo(), session: this.track.enabled ? this.track.session() : undefined });
+    this.track.action({ kind: 'order_intent', listId: this.sheetListId, drinkId: s.row.drink.id, dishId: p.dish.id,
+                        venue: this.menu()!.venue.slug });
+    this.ordered.update(set => new Set(set).add(s.row.item.id));
+    this.flash(this.t('menu.toast.order', { beer: s.row.item.name || s.row.drink.name, dish: this.dishTitle(p) }));
   }
-  trackBeer(b: BeerRow): void { this.saas.track({ venue: this.menu()!.venue.slug, kind: 'BEER_VIEW', beer: b.item.ref_slug, table: this.tableNo() }); }
+  trackDrink(b: DrinkRow): void { this.saas.track({ venue: this.menu()!.venue.slug, kind: 'BEER_VIEW', beer: b.item.ref_slug, table: this.tableNo() }); }
 
   private trackScan(slug: string, table: number | null): void {
     const key = `ft.scan.${slug}.${table ?? 0}`;

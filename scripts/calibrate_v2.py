@@ -61,7 +61,7 @@ RANK_MARGIN = 1.0      # запас по рангу для top3
 VETO_PENALTY = 10.0    # «good» с вето или «avoid» без вето
 ORDINAL_MARGIN = 1.0
 DIST_WEIGHT = 3.0      # вес штрафа за раздутую шкалу
-ORIGIN_WEIGHT = {"curated_efes": 0.5, "guests": 0.3}   # суждения команды — вдвое меньше литературы, отзывы гостей — слабый сигнал
+ORIGIN_WEIGHT = {"curated_efes": 0.5, "guests": 0.25}  # суждения команды — вдвое меньше литературы, отзывы гостей — слабый сигнал
 EVIDENCE_WEIGHT = {"D": 0.5}             # традиция / сайт бренда — половина веса экспертного консенсуса
 DIST_TARGET = {"median_lo": 58, "median_hi": 62, "ge72_max": 25.0, "le47_min": 20.0}
 
@@ -103,7 +103,16 @@ class Problem:
 
         self.pairs: List[Dict[str, Any]] = []
         self.skipped: List[Dict[str, Any]] = []
-        for p in ds.tests.get("pairs", []):
+        # отзывы гостей (manage.py export_guest_pairs → data/guest_pairs.json): только train, вес ORIGIN_WEIGHT["guests"]
+        guest_pairs: List[Dict[str, Any]] = []
+        gp_path = ROOT / "data" / "guest_pairs.json"
+        if gp_path.exists():
+            gp = json.loads(gp_path.read_text(encoding="utf-8"))
+            for g in (gp.get("pairs") if isinstance(gp, dict) else gp) or []:
+                guest_pairs.append(dict(g, split="train", origin="guests"))
+            if guest_pairs:
+                self.notes.append(f"пар из отзывов гостей: {len(guest_pairs)} (вес {ORIGIN_WEIGHT['guests']})")
+        for p in list(ds.tests.get("pairs", [])) + guest_pairs:
             if p["dish"] not in self.dishes or p["drink"] not in self.arch:
                 self.skipped.append(p)
                 continue

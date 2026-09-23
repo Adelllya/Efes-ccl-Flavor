@@ -1,0 +1,2082 @@
+{
+  "period": {
+    "days": 30,
+    "from": "2026-08-24",
+    "to": "2026-09-22"
+  },
+  "demo": true,
+  "has_demo_data": true,
+  "totals": {
+    "lists": 1500,
+    "impressions": 6465,
+    "sessions": 785,
+    "venues": 3,
+    "dishes": 92
+  },
+  "efes": {
+    "top1_share_shown": 0.606,
+    "top1_share_honest": 0.438,
+    "top3_share": 0.6947,
+    "impression_share": 0.5027,
+    "avg_score_efes_top": 78.3,
+    "avg_score_best": 80.0,
+    "avg_score_gap": 1.7,
+    "lists_with_efes": 1155
+  },
+  "policy_effect": {
+    "lists_where_efes_promoted_to_top1": 252,
+    "share": 0.168,
+    "note": "Баллы честные и от бренда не зависят. Политика показа: если напиток Efes уступает лучшему не больше 2 балла, он ставится первым. «Как показано» включает этот эффект, «по честному баллу» — нет: Efes засчитывается, только если его балл строго выше, чем у лучшего конкурента и в показанном списке, и во всём пуле кандидатов, из которого список собран.",
+    "window": 2,
+    "ties": 74,
+    "hidden_competitor": 6,
+    "lists_without_pool": 0
+  },
+  "trend": [
+    {
+      "date": "2026-08-24",
+      "lists": 46,
+      "efes_top1_shown": 24,
+      "efes_top1_honest": 16,
+      "orders": 2
+    },
+    {
+      "date": "2026-08-25",
+      "lists": 31,
+      "efes_top1_shown": 19,
+      "efes_top1_honest": 13,
+      "orders": 2
+    },
+    {
+      "date": "2026-08-26",
+      "lists": 40,
+      "efes_top1_shown": 23,
+      "efes_top1_honest": 20,
+      "orders": 1
+    },
+    {
+      "date": "2026-08-27",
+      "lists": 32,
+      "efes_top1_shown": 18,
+      "efes_top1_honest": 13,
+      "orders": 1
+    },
+    {
+      "date": "2026-08-28",
+      "lists": 81,
+      "efes_top1_shown": 39,
+      "efes_top1_honest": 26,
+      "orders": 1
+    },
+    {
+      "date": "2026-08-29",
+      "lists": 70,
+      "efes_top1_shown": 42,
+      "efes_top1_honest": 29,
+      "orders": 2
+    },
+    {
+      "date": "2026-08-30",
+      "lists": 66,
+      "efes_top1_shown": 40,
+      "efes_top1_honest": 29,
+      "orders": 1
+    },
+    {
+      "date": "2026-08-31",
+      "lists": 55,
+      "efes_top1_shown": 30,
+      "efes_top1_honest": 22,
+      "orders": 0
+    },
+    {
+      "date": "2026-09-01",
+      "lists": 34,
+      "efes_top1_shown": 20,
+      "efes_top1_honest": 17,
+      "orders": 2
+    },
+    {
+      "date": "2026-09-02",
+      "lists": 40,
+      "efes_top1_shown": 26,
+      "efes_top1_honest": 17,
+      "orders": 4
+    },
+    {
+      "date": "2026-09-03",
+      "lists": 44,
+      "efes_top1_shown": 25,
+      "efes_top1_honest": 14,
+      "orders": 0
+    },
+    {
+      "date": "2026-09-04",
+      "lists": 77,
+      "efes_top1_shown": 52,
+      "efes_top1_honest": 37,
+      "orders": 2
+    },
+    {
+      "date": "2026-09-05",
+      "lists": 77,
+      "efes_top1_shown": 45,
+      "efes_top1_honest": 33,
+      "orders": 6
+    },
+    {
+      "date": "2026-09-06",
+      "lists": 53,
+      "efes_top1_shown": 35,
+      "efes_top1_honest": 28,
+      "orders": 6
+    },
+    {
+      "date": "2026-09-07",
+      "lists": 41,
+      "efes_top1_shown": 26,
+      "efes_top1_honest": 17,
+      "orders": 1
+    },
+    {
+      "date": "2026-09-08",
+      "lists": 47,
+      "efes_top1_shown": 36,
+      "efes_top1_honest": 28,
+      "orders": 5
+    },
+    {
+      "date": "2026-09-09",
+      "lists": 52,
+      "efes_top1_shown": 30,
+      "efes_top1_honest": 20,
+      "orders": 1
+    },
+    {
+      "date": "2026-09-10",
+      "lists": 53,
+      "efes_top1_shown": 30,
+      "efes_top1_honest": 22,
+      "orders": 3
+    },
+    {
+      "date": "2026-09-11",
+      "lists": 71,
+      "efes_top1_shown": 46,
+      "efes_top1_honest": 33,
+      "orders": 8
+    },
+    {
+      "date": "2026-09-12",
+      "lists": 61,
+      "efes_top1_shown": 38,
+      "efes_top1_honest": 29,
+      "orders": 5
+    },
+    {
+      "date": "2026-09-13",
+      "lists": 34,
+      "efes_top1_shown": 15,
+      "efes_top1_honest": 12,
+      "orders": 2
+    },
+    {
+      "date": "2026-09-14",
+      "lists": 37,
+      "efes_top1_shown": 26,
+      "efes_top1_honest": 19,
+      "orders": 3
+    },
+    {
+      "date": "2026-09-15",
+      "lists": 54,
+      "efes_top1_shown": 29,
+      "efes_top1_honest": 26,
+      "orders": 1
+    },
+    {
+      "date": "2026-09-16",
+      "lists": 35,
+      "efes_top1_shown": 22,
+      "efes_top1_honest": 17,
+      "orders": 4
+    },
+    {
+      "date": "2026-09-17",
+      "lists": 29,
+      "efes_top1_shown": 14,
+      "efes_top1_honest": 12,
+      "orders": 2
+    },
+    {
+      "date": "2026-09-18",
+      "lists": 60,
+      "efes_top1_shown": 37,
+      "efes_top1_honest": 27,
+      "orders": 3
+    },
+    {
+      "date": "2026-09-19",
+      "lists": 49,
+      "efes_top1_shown": 26,
+      "efes_top1_honest": 20,
+      "orders": 4
+    },
+    {
+      "date": "2026-09-20",
+      "lists": 50,
+      "efes_top1_shown": 30,
+      "efes_top1_honest": 16,
+      "orders": 2
+    },
+    {
+      "date": "2026-09-21",
+      "lists": 39,
+      "efes_top1_shown": 32,
+      "efes_top1_honest": 24,
+      "orders": 1
+    },
+    {
+      "date": "2026-09-22",
+      "lists": 42,
+      "efes_top1_shown": 34,
+      "efes_top1_honest": 21,
+      "orders": 4
+    }
+  ],
+  "skus": [
+    {
+      "drink_id": "efes-pilsener",
+      "name": "Efes Pilsener",
+      "impressions": 550,
+      "top1": 143,
+      "top1_honest": 105,
+      "opens": 3,
+      "orders": 14,
+      "order_kzt": 17400.0,
+      "avg_score": 71.4,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "legenda-777",
+      "name": "Легенда 777",
+      "impressions": 484,
+      "top1": 357,
+      "top1_honest": 248,
+      "opens": 7,
+      "orders": 14,
+      "order_kzt": 25900.0,
+      "avg_score": 80.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "khmelnoy-los",
+      "name": "Хмельной Лось",
+      "impressions": 302,
+      "top1": 195,
+      "top1_honest": 170,
+      "opens": 9,
+      "orders": 15,
+      "order_kzt": 24750.0,
+      "avg_score": 77.2,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "kozel",
+      "name": "Velkopopovický Kozel",
+      "impressions": 302,
+      "top1": 4,
+      "top1_honest": 0,
+      "opens": 1,
+      "orders": 6,
+      "order_kzt": 6300.0,
+      "avg_score": 74.9,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "severnoe-siyanie",
+      "name": "Северное Сияние",
+      "impressions": 268,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 2,
+      "orders": 6,
+      "order_kzt": 11700.0,
+      "avg_score": 66.5,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "bochkovoe",
+      "name": "Бочковое",
+      "impressions": 229,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 6,
+      "order_kzt": 9000.0,
+      "avg_score": 65.4,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "coca-cola-coca-cola-zero",
+      "name": "Coca-Cola / Coca-Cola Zero",
+      "impressions": 205,
+      "top1": 46,
+      "top1_honest": 3,
+      "opens": 1,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 82.1,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "wukong-ju",
+      "name": "Wùkōng Jū",
+      "impressions": 170,
+      "top1": 127,
+      "top1_honest": 127,
+      "opens": 2,
+      "orders": 11,
+      "order_kzt": 14850.0,
+      "avg_score": 76.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "karagandinskoe",
+      "name": "Карагандинское",
+      "impressions": 163,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 1,
+      "orders": 6,
+      "order_kzt": 6600.0,
+      "avg_score": 63.5,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "bavaria",
+      "name": "Bavaria",
+      "impressions": 110,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 1,
+      "order_kzt": 1450.0,
+      "avg_score": 61.2,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "pilsner-urquell",
+      "name": "Pilsner Urquell",
+      "impressions": 110,
+      "top1": 23,
+      "top1_honest": 2,
+      "opens": 1,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 81.2,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "bavaria-0-0",
+      "name": "Bavaria 0.0",
+      "impressions": 53,
+      "top1": 5,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 80.3,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "fanta-sprite-schweppes",
+      "name": "Fanta / Sprite / Schweppes",
+      "impressions": 52,
+      "top1": 2,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 81.7,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "burn-monster",
+      "name": "Burn / Monster (энергетики)",
+      "impressions": 42,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 81.4,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "miller-genuine-draft",
+      "name": "Miller Genuine Draft",
+      "impressions": 37,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 60.2,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "velkopopovicky-kozel-cerny",
+      "name": "Velkopopovický Kozel Černý (Dark)",
+      "impressions": 34,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 78.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "efes-0-0-greypfrut-pomelo",
+      "name": "Efes 0.0 Грейпфрут-Помело",
+      "impressions": 28,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 83.1,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "belyi-medved",
+      "name": "Белый Медведь",
+      "impressions": 23,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 58.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "zhigulevskoe",
+      "name": "Жигулевское",
+      "impressions": 22,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 60.3,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "kruzhka-svezhego-cranberry-hit",
+      "name": "Кружка Свежего Cranberry Hit (радлер)",
+      "impressions": 16,
+      "top1": 1,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 85.8,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "13-region",
+      "name": "13 регион",
+      "impressions": 14,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 59.5,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "slavna-praga",
+      "name": "Slavna ПРАГА",
+      "impressions": 8,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 83.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "kruzhka-svezhego",
+      "name": "Кружка Свежего",
+      "impressions": 7,
+      "top1": 1,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 80.3,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "stary-melnik",
+      "name": "Старый мельник из бочонка",
+      "impressions": 7,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 79.1,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "efes-0-0",
+      "name": "Efes 0.0 (классическое)",
+      "impressions": 4,
+      "top1": 3,
+      "top1_honest": 2,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 82.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "efes-0-0-abrikos-malina",
+      "name": "Efes 0.0 Абрикос-Малина",
+      "impressions": 3,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 83.3,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "amsterdam-navigator",
+      "name": "Amsterdam Navigator",
+      "impressions": 2,
+      "top1": 2,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 76.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "karagandinskoe-krepkoe",
+      "name": "Карагандинское Крепкое",
+      "impressions": 2,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 76.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "bremen-von-lustig",
+      "name": "Bremen von Lustig",
+      "impressions": 1,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 84.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "peroni-nastro-azzurro",
+      "name": "Peroni Nastro Azzurro",
+      "impressions": 1,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 78.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "belyy-medved-osoboe",
+      "name": "Белый Медведь Особое",
+      "impressions": 1,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": 85.0,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "bonaqua",
+      "name": "BonAqua (вода)",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "efes-sun-light",
+      "name": "Efes Sun Light",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "fusetea",
+      "name": "FuseTea (холодный чай)",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "grolsch-premium-lager",
+      "name": "Grolsch Premium Lager",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "saphir-craft-beer",
+      "name": "Saphir Craft Beer",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "velkopopovicky-kozel-0-0",
+      "name": "Velkopopovický Kozel 0.0",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "belyy-medved-krepkoe",
+      "name": "Белый Медведь Крепкое",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "belyy-medved-myagkoe",
+      "name": "Белый Медведь Мягкое",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "karagandinskoe-light",
+      "name": "Карагандинское Light",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "kruzhka-svezhego-0-0",
+      "name": "Кружка Свежего 0.0",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "lyubitelskoe",
+      "name": "Любительское",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "nashe-shakhterskoe",
+      "name": "Наше Шахтёрское",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    },
+    {
+      "drink_id": "tyan-shan-svetloe",
+      "name": "Тянь-Шань Светлое",
+      "impressions": 0,
+      "top1": 0,
+      "top1_honest": 0,
+      "opens": 0,
+      "orders": 0,
+      "order_kzt": 0.0,
+      "avg_score": null,
+      "review_mean": null,
+      "review_n": 0
+    }
+  ],
+  "competitors": [
+    {
+      "category": "wine",
+      "label": "Вино",
+      "top1": 272,
+      "share": 0.1813
+    },
+    {
+      "category": "beer",
+      "label": "Пиво",
+      "top1": 152,
+      "share": 0.1013
+    },
+    {
+      "category": "cider",
+      "label": "Сидр",
+      "top1": 47,
+      "share": 0.0313
+    },
+    {
+      "category": "cocktail",
+      "label": "Коктейли",
+      "top1": 40,
+      "share": 0.0267
+    },
+    {
+      "category": "soda",
+      "label": "Газировка",
+      "top1": 28,
+      "share": 0.0187
+    },
+    {
+      "category": "tea",
+      "label": "Чай",
+      "top1": 17,
+      "share": 0.0113
+    },
+    {
+      "category": "sparkling",
+      "label": "Игристое",
+      "top1": 7,
+      "share": 0.0047
+    },
+    {
+      "category": "liqueur",
+      "label": "Ликёры",
+      "top1": 6,
+      "share": 0.004
+    },
+    {
+      "category": "spirit",
+      "label": "Крепкие напитки",
+      "top1": 6,
+      "share": 0.004
+    },
+    {
+      "category": "dairy",
+      "label": "Кисломолочные напитки",
+      "top1": 4,
+      "share": 0.0027
+    },
+    {
+      "category": "kvass",
+      "label": "Квас",
+      "top1": 4,
+      "share": 0.0027
+    },
+    {
+      "category": "na_beer",
+      "label": "Безалкогольное пиво",
+      "top1": 4,
+      "share": 0.0027
+    },
+    {
+      "category": "coffee",
+      "label": "Кофе",
+      "top1": 2,
+      "share": 0.0013
+    },
+    {
+      "category": "fortified",
+      "label": "Креплёное вино",
+      "top1": 2,
+      "share": 0.0013
+    }
+  ],
+  "dishes": [
+    {
+      "dish_id": "sushi",
+      "name": "Суши (нигири)",
+      "lists": 151,
+      "efes_top1_share": 0.8411,
+      "efes_top1_share_honest": 0.8411,
+      "top_competitor": {
+        "drink_id": "ittin-balasy",
+        "name": "Иттің баласы",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "shashlyk",
+      "name": "Шашлык",
+      "lists": 146,
+      "efes_top1_share": 0.6849,
+      "efes_top1_share_honest": 0.6849,
+      "top_competitor": {
+        "drink_id": "bacchus-fidele-cabernet",
+        "name": "Bacchus Fidele Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "burger",
+      "name": "Бургер",
+      "lists": 81,
+      "efes_top1_share": 0.5802,
+      "efes_top1_share_honest": 0.5802,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "ramen",
+      "name": "Рамен",
+      "lists": 67,
+      "efes_top1_share": 0.7313,
+      "efes_top1_share_honest": 0.6866,
+      "top_competitor": {
+        "drink_id": "doliny-gruzii-kindzmarauli",
+        "name": "Долины Грузии Киндзмараули",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "kazy",
+      "name": "Казы",
+      "lists": 53,
+      "efes_top1_share": 0.6981,
+      "efes_top1_share_honest": 0.6981,
+      "top_competitor": {
+        "drink_id": "bacchus-fidele-cabernet",
+        "name": "Bacchus Fidele Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "samsa",
+      "name": "Самса",
+      "lists": 53,
+      "efes_top1_share": 0.9057,
+      "efes_top1_share_honest": 0.4717,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "buffalo-wings",
+      "name": "Куриные крылышки Buffalo",
+      "lists": 46,
+      "efes_top1_share": 0.9348,
+      "efes_top1_share_honest": 0.5652,
+      "top_competitor": {
+        "drink_id": "pepsi-7up-mirinda-pepsi-zero",
+        "name": "Pepsi / 7Up / Mirinda / Pepsi Zero",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "beshbarmak",
+      "name": "Бешбармак",
+      "lists": 44,
+      "efes_top1_share": 0.9545,
+      "efes_top1_share_honest": 0.7045,
+      "top_competitor": {
+        "drink_id": "turgen-silver-saperavi",
+        "name": "Turgen Silver Saperavi",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "manty",
+      "name": "Манты",
+      "lists": 44,
+      "efes_top1_share": 0.9318,
+      "efes_top1_share_honest": 0.5227,
+      "top_competitor": {
+        "drink_id": "loic-raison-cidre-brut",
+        "name": "Loic Raison Cidre Brut",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "nachos",
+      "name": "Начос",
+      "lists": 38,
+      "efes_top1_share": 0.4474,
+      "efes_top1_share_honest": 0.3947,
+      "top_competitor": {
+        "drink_id": "raccoon-milkshake-ipa",
+        "name": "Raccoon Milkshake IPA",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "plov",
+      "name": "Плов",
+      "lists": 33,
+      "efes_top1_share": 0.9394,
+      "efes_top1_share_honest": 0.5758,
+      "top_competitor": {
+        "drink_id": "dark-n-stormy",
+        "name": "Dark 'n' Stormy",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "kurt",
+      "name": "Курт",
+      "lists": 32,
+      "efes_top1_share": 0.6562,
+      "efes_top1_share_honest": 0.6562,
+      "top_competitor": {
+        "drink_id": "lidskiy-kvas-belyy",
+        "name": "Лидский квас белый",
+        "category": "kvass"
+      }
+    },
+    {
+      "dish_id": "bratwurst",
+      "name": "Братвурст (сосиски)",
+      "lists": 31,
+      "efes_top1_share": 0.6129,
+      "efes_top1_share_honest": 0.6129,
+      "top_competitor": {
+        "drink_id": "bacchus-fidele-cabernet",
+        "name": "Bacchus Fidele Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "philadelphia-roll",
+      "name": "Ролл «Филадельфия»",
+      "lists": 30,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "fries",
+      "name": "Картофель фри",
+      "lists": 29,
+      "efes_top1_share": 0.8276,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "backwoods-cider",
+        "name": "Backwoods Cider (сладкий, яблоко)",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "salted-nuts",
+      "name": "Фисташки / арахис",
+      "lists": 29,
+      "efes_top1_share": 0.8966,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "chesters-cherry-semi-sweet",
+        "name": "Chester's Cherry Semi Sweet",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "garlic-croutons",
+      "name": "Гренки чесночные",
+      "lists": 25,
+      "efes_top1_share": 0.84,
+      "efes_top1_share_honest": 0.48,
+      "top_competitor": {
+        "drink_id": "sigma-kvass",
+        "name": "Sigma Kvass",
+        "category": "kvass"
+      }
+    },
+    {
+      "dish_id": "ribeye-steak",
+      "name": "Стейк рибай",
+      "lists": 25,
+      "efes_top1_share": 0.04,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "turgen-silver-cabernet",
+        "name": "Turgen Silver Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "cheeseburger",
+      "name": "Чизбургер",
+      "lists": 23,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "caesar-salad",
+      "name": "Салат «Цезарь» с курицей",
+      "lists": 22,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "auster-golden-ale",
+        "name": "Auster Golden Ale",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "mozzarella-sticks",
+      "name": "Сырные палочки",
+      "lists": 21,
+      "efes_top1_share": 0.9524,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "auster-golden-ale",
+        "name": "Auster Golden Ale",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "kuyrdak",
+      "name": "Куырдак",
+      "lists": 20,
+      "efes_top1_share": 0.4,
+      "efes_top1_share_honest": 0.4,
+      "top_competitor": {
+        "drink_id": "turgen-silver-cabernet",
+        "name": "Turgen Silver Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "steak",
+      "name": "Стейк",
+      "lists": 20,
+      "efes_top1_share": 0.4,
+      "efes_top1_share_honest": 0.4,
+      "top_competitor": {
+        "drink_id": "bacchus-fidele-cabernet",
+        "name": "Bacchus Fidele Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "shashlyk-chicken",
+      "name": "Шашлык из курицы",
+      "lists": 19,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "turgen-silver-saperavi",
+        "name": "Turgen Silver Saperavi",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "bbq-wings",
+      "name": "Куриные крылышки BBQ",
+      "lists": 18,
+      "efes_top1_share": 0.2778,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "belhaven-mccallums-sweet-stout",
+        "name": "Belhaven McCallum's Sweet Stout",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "baursaki",
+      "name": "Баурсаки",
+      "lists": 17,
+      "efes_top1_share": 0.8824,
+      "efes_top1_share_honest": 0.8824,
+      "top_competitor": {
+        "drink_id": "lidskiy-kvas-belyy",
+        "name": "Лидский квас белый",
+        "category": "kvass"
+      }
+    },
+    {
+      "dish_id": "bbq-ribs",
+      "name": "Рёбрышки BBQ",
+      "lists": 17,
+      "efes_top1_share": 0.4706,
+      "efes_top1_share_honest": 0.4118,
+      "top_competitor": {
+        "drink_id": "auster-oatmeal-milk-stout",
+        "name": "Auster Oatmeal Milk Stout",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "pelmeni",
+      "name": "Пельмени",
+      "lists": 17,
+      "efes_top1_share": 0.7647,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "loic-raison-cidre-brut",
+        "name": "Loic Raison Cidre Brut",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "calamari-rings",
+      "name": "Кальмары в кляре",
+      "lists": 16,
+      "efes_top1_share": 0.8125,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "dark-n-stormy",
+        "name": "Dark 'n' Stormy",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "pizza-pepperoni",
+      "name": "Пицца пепперони",
+      "lists": 16,
+      "efes_top1_share": 0.0625,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "cheese-plate",
+      "name": "Сырная тарелка",
+      "lists": 15,
+      "efes_top1_share": 0.1333,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "loic-raison-cidre-brut",
+        "name": "Loic Raison Cidre Brut",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "lagman",
+      "name": "Лагман",
+      "lists": 15,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "tonkatsu",
+      "name": "Тонкацу",
+      "lists": 15,
+      "efes_top1_share": 0.8667,
+      "efes_top1_share_honest": 0.8667,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "crayfish-boiled",
+      "name": "Раки варёные",
+      "lists": 14,
+      "efes_top1_share": 0.6429,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "zhaya",
+      "name": "Жая",
+      "lists": 14,
+      "efes_top1_share": 0.6429,
+      "efes_top1_share_honest": 0.6429,
+      "top_competitor": {
+        "drink_id": "turgen-silver-cabernet",
+        "name": "Turgen Silver Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "mochi",
+      "name": "Моти",
+      "lists": 13,
+      "efes_top1_share": 0.8462,
+      "efes_top1_share_honest": 0.8462,
+      "top_competitor": {
+        "drink_id": "kopparberg-strawberry-and-lime",
+        "name": "Kopparberg Strawberry & Lime",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "pretzel",
+      "name": "Брецель",
+      "lists": 13,
+      "efes_top1_share": 0.8462,
+      "efes_top1_share_honest": 0.4615,
+      "top_competitor": {
+        "drink_id": "5-okean-bogemskoe",
+        "name": "5 Океан Богемское",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "chebureki",
+      "name": "Чебуреки",
+      "lists": 12,
+      "efes_top1_share": 0.1667,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "cold-cuts",
+      "name": "Мясная нарезка",
+      "lists": 11,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "casillero-del-diablo-cabernet-sauvignon-reserva",
+        "name": "Casillero del Diablo Cabernet Sauvignon Reserva",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "fish-and-chips",
+      "name": "Фиш-энд-чипс",
+      "lists": 11,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "york",
+        "name": "York",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "pizza-margherita",
+      "name": "Пицца Маргарита",
+      "lists": 11,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "frescobaldi-castiglioni-chianti-docg",
+        "name": "Frescobaldi Castiglioni Chianti DOCG",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "lyulya-kebab",
+      "name": "Люля-кебаб",
+      "lists": 10,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "saperavi-sukhoe",
+        "name": "Саперави сухое (Teliani Valley / Marani)",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "tempura",
+      "name": "Темпура",
+      "lists": 10,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.8,
+      "top_competitor": {
+        "drink_id": "auster-golden-ale",
+        "name": "Auster Golden Ale",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "khinkali",
+      "name": "Хинкали",
+      "lists": 9,
+      "efes_top1_share": 0.8889,
+      "efes_top1_share_honest": 0.3333,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "shawarma",
+      "name": "Шаурма",
+      "lists": 9,
+      "efes_top1_share": 0.1111,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "turgen-silver-saperavi",
+        "name": "Turgen Silver Saperavi",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "yakitori",
+      "name": "Якитори",
+      "lists": 9,
+      "efes_top1_share": 0.6667,
+      "efes_top1_share_honest": 0.6667,
+      "top_competitor": {
+        "drink_id": "line-brew-caramel-porter",
+        "name": "Line Brew Caramel Porter",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "pork-knuckle",
+      "name": "Свиная рулька",
+      "lists": 8,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "saperavi-sukhoe",
+        "name": "Саперави сухое (Teliani Valley / Marani)",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "tom-yum",
+      "name": "Том ям",
+      "lists": 8,
+      "efes_top1_share": 0.125,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "aperol-spritz",
+        "name": "Aperol Spritz",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "currywurst",
+      "name": "Карривурст",
+      "lists": 7,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.5714,
+      "top_competitor": {
+        "drink_id": "line-brew-caramel-porter",
+        "name": "Line Brew Caramel Porter",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "edamame",
+      "name": "Эдамаме",
+      "lists": 7,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 1.0,
+      "top_competitor": null
+    },
+    {
+      "dish_id": "dolma",
+      "name": "Долма",
+      "lists": 6,
+      "efes_top1_share": 0.6667,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "vobla",
+      "name": "Вобла (вяленая рыба)",
+      "lists": 6,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "line-brew-karmeliet",
+        "name": "Line Brew Karmeliet",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "caprese",
+      "name": "Капрезе",
+      "lists": 5,
+      "efes_top1_share": 0.2,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "ayran-domashniy",
+        "name": "Айран домашний (ресторанный, разбавленный)",
+        "category": "dairy"
+      }
+    },
+    {
+      "dish_id": "pad-thai",
+      "name": "Пад тай",
+      "lists": 5,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "salmon-grilled",
+      "name": "Лосось на гриле",
+      "lists": 4,
+      "efes_top1_share": 0.75,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "whiskey-sour",
+        "name": "Whiskey Sour",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "achichuk",
+      "name": "Ачичук",
+      "lists": 3,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.6667,
+      "top_competitor": {
+        "drink_id": "ayran-domashniy",
+        "name": "Айран домашний (ресторанный, разбавленный)",
+        "category": "dairy"
+      }
+    },
+    {
+      "dish_id": "guacamole",
+      "name": "Гуакамоле",
+      "lists": 3,
+      "efes_top1_share": 0.3333,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "paloma",
+        "name": "Paloma",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "herring-shuba",
+      "name": "Сельдь под шубой",
+      "lists": 3,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "chesters-apple-semi-dry",
+        "name": "Chester's Apple Semi Dry",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "kartoffelsalat",
+      "name": "Картофельный салат",
+      "lists": 3,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "mort-subite-kriek",
+        "name": "Mort Subite Kriek",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "lasagna",
+      "name": "Лазанья",
+      "lists": 3,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "mukuzani",
+        "name": "Мукузани",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "quesadilla",
+      "name": "Кесадилья",
+      "lists": 3,
+      "efes_top1_share": 0.3333,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "mort-subite-kriek",
+        "name": "Mort Subite Kriek",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "sauerkraut",
+      "name": "Квашеная капуста",
+      "lists": 3,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "ittin-balasy",
+        "name": "Иттің баласы",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "strudel",
+      "name": "Штрудель",
+      "lists": 3,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.3333,
+      "top_competitor": {
+        "drink_id": "somersby-apple",
+        "name": "Somersby Apple",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "tiramisu",
+      "name": "Тирамису",
+      "lists": 3,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "auster-imperial-stout",
+        "name": "Auster Imperial Stout",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "burrata",
+      "name": "Буррата",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "ayran-foodmaster",
+        "name": "Айран FoodMaster (майлы айран / айран по-турецки 1.5%)",
+        "category": "dairy"
+      }
+    },
+    {
+      "dish_id": "burrito",
+      "name": "Буррито",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "kofe-s-kurtom-latte-s-talkanom-kapuchino-s-balkaymakom",
+        "name": "Кофе с куртом / латте с талканом / капучино с балкаймаком (TARY)",
+        "category": "coffee"
+      }
+    },
+    {
+      "dish_id": "chak-chak",
+      "name": "Чак-чак",
+      "lists": 2,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": null
+    },
+    {
+      "dish_id": "cheese-aged",
+      "name": "Выдержанный сыр / рокфор",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "auster-london-brown",
+        "name": "Auster London Brown",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "chili-con-carne",
+      "name": "Чили кон карне",
+      "lists": 2,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "sangria",
+        "name": "Sangria",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "dark-chocolate",
+      "name": "Тёмный шоколад 70%",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "auster-imperial-stout",
+        "name": "Auster Imperial Stout",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "ganfan",
+      "name": "Ганфан",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "khvanchkara",
+        "name": "Хванчкара (типичная позиция)",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "garlic-shrimp",
+      "name": "Креветки в чесночном соусе",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "paloma",
+        "name": "Paloma",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "greek-salad",
+      "name": "Греческий салат",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "kara-karakat",
+        "name": "Kara Karakat",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "medovik",
+      "name": "Медовик",
+      "lists": 2,
+      "efes_top1_share": 0.5,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "auster-oatmeal-milk-stout",
+        "name": "Auster Oatmeal Milk Stout",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "napoleon",
+      "name": "Торт «Наполеон»",
+      "lists": 2,
+      "efes_top1_share": 0.5,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "limoncello-dellisola",
+        "name": "Limoncello dell'Isola",
+        "category": "liqueur"
+      }
+    },
+    {
+      "dish_id": "pho-bo",
+      "name": "Фо бо",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "risotto",
+      "name": "Ризотто",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "loic-raison-cidre-brut",
+        "name": "Loic Raison Cidre Brut",
+        "category": "cider"
+      }
+    },
+    {
+      "dish_id": "tacos",
+      "name": "Тако",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "zheti-as",
+      "name": "Жети-ас (мясная нарезка)",
+      "lists": 2,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "bacchus-fidele-cabernet",
+        "name": "Bacchus Fidele Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "apple-pie",
+      "name": "Яблочный пирог",
+      "lists": 1,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 1.0,
+      "top_competitor": null
+    },
+    {
+      "dish_id": "baklava",
+      "name": "Пахлава",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "martini-rosso",
+        "name": "Martini Rosso",
+        "category": "fortified"
+      }
+    },
+    {
+      "dish_id": "baursaki-kaimak",
+      "name": "Баурсаки с каймаком",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "domashniy-kvas",
+        "name": "Домашний квас (розлив, летний, бочковой)",
+        "category": "kvass"
+      }
+    },
+    {
+      "dish_id": "borsch",
+      "name": "Борщ",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "cheesecake",
+      "name": "Чизкейк",
+      "lists": 1,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "goryachiy-shokolad",
+        "name": "Горячий шоколад",
+        "category": "coffee"
+      }
+    },
+    {
+      "dish_id": "kuyrdak-liver",
+      "name": "Куырдак из печени",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "arba-wine-saperavi",
+        "name": "Arba Wine Saperavi (Assa Valley)",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "lagman-spicy",
+      "name": "Лагман острый",
+      "lists": 1,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "rauchbier-marzen",
+        "name": "Rauchbier Märzen",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "mac-and-cheese",
+      "name": "Мак-энд-чиз",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "turgen-silver-saperavi",
+        "name": "Turgen Silver Saperavi",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "mussels-steamed",
+      "name": "Мидии на пару",
+      "lists": 1,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "thomas-henry-tonic",
+        "name": "Thomas Henry Tonic",
+        "category": "soda"
+      }
+    },
+    {
+      "dish_id": "plov-fergana",
+      "name": "Плов ферганский",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "sangria",
+        "name": "Sangria",
+        "category": "cocktail"
+      }
+    },
+    {
+      "dish_id": "schnitzel",
+      "name": "Шницель",
+      "lists": 1,
+      "efes_top1_share": 1.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "budweiser-budvar-svetly-lezak",
+        "name": "Budweiser Budvar Světlý Ležák",
+        "category": "beer"
+      }
+    },
+    {
+      "dish_id": "shuzhyk",
+      "name": "Шужык",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "turgen-silver-cabernet",
+        "name": "Turgen Silver Cabernet",
+        "category": "wine"
+      }
+    },
+    {
+      "dish_id": "solyanka",
+      "name": "Солянка мясная",
+      "lists": 1,
+      "efes_top1_share": 0.0,
+      "efes_top1_share_honest": 0.0,
+      "top_competitor": {
+        "drink_id": "turgen-silver-cabernet",
+        "name": "Turgen Silver Cabernet",
+        "category": "wine"
+      }
+    }
+  ],
+  "venues": [
+    {
+      "slug": "efes-beer-garden-almaty",
+      "name": "Efes Beer Garden",
+      "city": "Алматы",
+      "lists": 250,
+      "efes_top1_share": 0.988,
+      "efes_top1_share_honest": 0.984,
+      "contested_lists": 4,
+      "contested_top1_share_shown": 0.25,
+      "contested_top1_share_honest": 0.0,
+      "is_demo_venue": true,
+      "orders": 26,
+      "order_kzt": 37600.0
+    },
+    {
+      "slug": "sakura-izakaya-astana",
+      "name": "Sakura Izakaya",
+      "city": "Астана",
+      "lists": 227,
+      "efes_top1_share": 0.9648,
+      "efes_top1_share_honest": 0.9604,
+      "contested_lists": 9,
+      "contested_top1_share_shown": 0.1111,
+      "contested_top1_share_honest": 0.0,
+      "is_demo_venue": true,
+      "orders": 26,
+      "order_kzt": 40000.0
+    },
+    {
+      "slug": "bar-13-shymkent",
+      "name": "Bar 13",
+      "city": "Шымкент",
+      "lists": 167,
+      "efes_top1_share": 0.982,
+      "efes_top1_share_honest": 0.976,
+      "contested_lists": 4,
+      "contested_top1_share_shown": 0.25,
+      "contested_top1_share_honest": 0.0,
+      "is_demo_venue": true,
+      "orders": 27,
+      "order_kzt": 40350.0
+    }
+  ],
+  "actions": {
+    "open_drink": 77,
+    "expand_why": 231,
+    "order_intent": 79,
+    "review": 0
+  },
+  "reviews": {
+    "efes_mean": null,
+    "efes_n": 0,
+    "others_mean": null,
+    "others_n": 0
+  },
+  "contested": {
+    "lists": 873,
+    "top1_share_shown": 0.323,
+    "top1_share_honest": 0.0344,
+    "top3_share": 0.4754,
+    "impression_share": 0.263
+  },
+  "by_source": {
+    "pair": {
+      "lists": 984,
+      "top1_share_shown": 0.3994,
+      "top1_share_honest": 0.1433
+    },
+    "venue_menu": {
+      "lists": 516,
+      "top1_share_shown": 1.0,
+      "top1_share_honest": 1.0
+    }
+  },
+  "notes": [
+    "Демо-данные: сгенерированы движком на тестовом потоке, не реальные гости. Списки посчитаны настоящим движком v2 по настоящему каталогу, но гости, популярность блюд, клики и заказы заданы вероятностями генератора, а карта и цены демо-заведений выдуманы. Это иллюстрация того, как будет выглядеть отчёт, а не результат.",
+    "627 из 1500 списков (41,8 %) были без конкурентов: ни в списке, ни среди кандидатов, из которых он собран (карта заведения, фильтр «только в этом заведении»), не было напитков не из портфеля Efes. Там 1-е место не результат сравнения. В списках с конкурентами Efes первый в 32,3 % как показано и 3,4 % по честному баллу.",
+    "В 6 списках окно подняло Efes, а равный или более сильный конкурент в короткий показанный список не попал. Они учтены как эффект окна, а не как честная победа.",
+    "Заказы — нажатия «Заказать» (намерение, а не чек). Сумму в ₸ сервер считает по цене позиции в карте заведения, а не по цене из браузера; без заведения или позиции в карте нажатие считается, сумма — нет. В разделах «По дням», «Портфель по SKU» и «Заведения» — только напитки Efes, в «Что делают гости со списком» — все напитки."
+  ]
+}
