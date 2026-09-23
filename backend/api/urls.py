@@ -70,3 +70,25 @@ urlpatterns = [
     path('admin/serving-recommendations/', views.admin_serving_recommendations, name='admin-serving-recs'),
     path('admin/flavor-notes/', views.admin_flavor_notes, name='admin-flavor-notes'),
 ]
+
+# ── REVIEWS: отзывы гостей о парах напиток × блюдо (docs/REVIEWS.md, api/views_reviews.py) ──────────────
+from . import views_reviews  # noqa: E402
+
+urlpatterns += [
+    path('v2/reviews/', views_reviews.reviews_create, name='v2-reviews'),
+    path('v2/reviews/pair/', views_reviews.reviews_pair, name='v2-reviews-pair'),
+    path('v2/reviews/drink/<slug:drink_id>/', views_reviews.reviews_drink, name='v2-reviews-drink'),
+    path('v2/reviews/moderation/', views_reviews.moderation_queue, name='v2-reviews-moderation'),
+    path('v2/reviews/<uuid:review_id>/moderate/', views_reviews.moderate, name='v2-reviews-moderate'),
+    path('cabinet/reviews/', views_reviews.cabinet_reviews, name='cabinet-reviews'),
+]
+# ── конец блока REVIEWS ──
+
+# ── BRAND-TRACKING: показы подбора и действия гостей → аналитика бренда (docs/EFES_ANALYTICS.md) ──────────
+from . import views_brand, views_tracking  # noqa: E402
+
+urlpatterns += [
+    path('v2/track/', views_tracking.track, name='v2-track'),
+    path('brand/overview/', views_brand.overview, name='brand-overview'),
+]
+# ── конец блока BRAND-TRACKING ──

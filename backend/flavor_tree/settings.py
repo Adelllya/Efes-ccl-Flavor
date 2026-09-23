@@ -141,10 +141,13 @@ elif os.environ.get('DB_NAME'):
         }
     }
 else:
+    # FT_SQLITE_PATH — другой файл SQLite вместо backend/db.sqlite3: например, временная база, в которой
+    # seed_brand_demo собирает data/brand_demo_overview.json, не трогая рабочую (docs/EFES_ANALYTICS.md).
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': Path(os.environ['FT_SQLITE_PATH']).resolve() if os.environ.get('FT_SQLITE_PATH')
+            else BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -179,8 +182,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
 ] + _env_list('CORS_ALLOWED_ORIGINS')
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-# Authorization разрешён по умолчанию; X-Admin-Token — второй способ передать токен сомелье (api/auth.py)
-CORS_ALLOW_HEADERS = (*default_headers, 'x-admin-token')
+# Authorization разрешён по умолчанию; X-Admin-Token / X-Brand-Token — второй способ передать токен
+# сомелье и бренда (api/auth.py)
+CORS_ALLOW_HEADERS = (*default_headers, 'x-admin-token', 'x-brand-token')
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -195,3 +199,6 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
 }
+
+# Фото блюда или этикетки для ИИ-сомелье: клиент ужимает до ~0.3 МБ, сервер принимает до 5 МБ картинки в base64 (+ конверт)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024

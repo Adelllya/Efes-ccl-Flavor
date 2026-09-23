@@ -8,6 +8,8 @@ GET  /api/v2/pairing/dish/<id>/             подбор к блюду: топ +
 POST /api/v2/pairing/recommend/             {dish_id | dish: {...v2}, context, top, categories, venue}
 GET  /api/v2/pairing/explain/               ?drink=&dish=&occasion=…  — полный разбор пары по правилам
 
+?locale=kk|en в любом запросе — тексты объяснений на казахском / английском (баллы не меняются).
+
 Контекст (query или context{}): occasion (meal|aperitif|dessert|hot|evening|party|gourmet|non_alcoholic),
 bitter_pref, sweet_pref (−1..1), heat_lover (0|1), harsh_tol (sensitive|median|tolerant), categories, venue.
 
@@ -25,7 +27,7 @@ from rest_framework.response import Response
 
 from .models import Venue
 from .pairing import engine_v2 as E
-from .pairing.dataset_v2 import DatasetV2, get_dataset, is_guest_visible
+from .pairing.dataset_v2 import DatasetV2, get_dataset, get_dataset_locale, is_guest_visible
 
 OCCASIONS = ("meal", "aperitif", "dessert", "hot", "evening", "party", "gourmet", "non_alcoholic")
 SENSITIVITY = ("sensitive", "median", "tolerant")   # R17.harsh_tol (Hanni: ≈ 25 / 50 / 25 %)
@@ -39,8 +41,11 @@ DISH_LIST_FIELDS = ("id", "name", "display_name", "emoji", "cuisine", "category"
                     "description", "synonyms")
 
 
-def _ds() -> DatasetV2:
-    return get_dataset(str(getattr(settings, "FLAVOR_DATA_DIR", "")) or None)
+def _ds(request=None) -> DatasetV2:
+    """Набор данных; ?locale=kk|en — объяснения движка на языке гостя (баллы те же, см. docs/ENGINE_TEXTS.md)."""
+    data_dir = str(getattr(settings, "FLAVOR_DATA_DIR", "")) or None
+    locale = (request.query_params.get("locale") if request is not None else None) or "ru"
+    return get_dataset_locale(data_dir, locale) if locale != "ru" else get_dataset(data_dir)
 
 
 def _float(x: Any, lo: float, hi: float) -> Optional[float]:
@@ -179,7 +184,7 @@ def _pairing_payload(ds: DatasetV2, dish: Dict[str, Any], data, ctx: Dict[str, A
 # ─────────────────────────────────────────────────────────────────────────────
 @api_view(["GET"])
 def meta(request):
-    ds = _ds()
+    ds = _ds(request)
     counts: Dict[str, int] = {}
     for d in ds.drinks:
         counts[d["category"]] = counts.get(d["category"], 0) + 1
@@ -204,7 +209,7 @@ def meta(request):
 
 @api_view(["GET"])
 def drinks_list(request):
-    ds = _ds()
+    ds = _ds(request)
     q = (request.query_params.get("q") or "").strip().lower().replace("ё", "е")
     cats = set(_csv(request.query_params.get("category")))
     efes_only = _truthy(request.query_params.get("efes"))
@@ -228,7 +233,7 @@ def drinks_list(request):
 
 @api_view(["GET"])
 def drink_detail(request, drink_id):
-    ds = _ds()
+    ds = _ds(request)
     raw = ds.drink_raw_by_id.get(drink_id)
     if not raw:
         return Response({"detail": "Напиток не найден"}, status=status.HTTP_404_NOT_FOUND)
@@ -249,7 +254,7 @@ def drink_detail(request, drink_id):
 
 @api_view(["GET"])
 def dishes_list(request):
-    ds = _ds()
+    ds = _ds(request)
     q = (request.query_params.get("q") or "").strip().lower().replace("ё", "е")
     cuisine = request.query_params.get("cuisine")
     rows = []
@@ -266,7 +271,7 @@ def dishes_list(request):
 
 @api_view(["GET"])
 def pairing_for_dish(request, dish_id):
-    ds = _ds()
+    ds = _ds(request)
     dish = ds.dish_by_id.get(dish_id)
     if not dish:
         return Response({"detail": "Блюдо не найдено"}, status=status.HTTP_404_NOT_FOUND)
@@ -276,7 +281,7 @@ def pairing_for_dish(request, dish_id):
 
 @api_view(["POST"])
 def pairing_recommend(request):
-    ds = _ds()
+    ds = _ds(request)
     data = request.data if isinstance(request.data, dict) else None
     if data is None:
         return Response({"detail": "Ожидается JSON-объект"}, status=status.HTTP_400_BAD_REQUEST)
@@ -289,7 +294,7 @@ def pairing_recommend(request):
 
 @api_view(["GET"])
 def pairing_explain(request):
-    ds = _ds()
+    ds = _ds(request)
     drink_id = request.query_params.get("drink")
     dish_id = request.query_params.get("dish")
     b = ds.drink_by_id.get(drink_id) or ds.archetype_by_id.get(drink_id)

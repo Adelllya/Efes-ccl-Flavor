@@ -576,3 +576,202 @@ class Lead(models.Model):
 
     def __str__(self):
         return f'{self.venue_name} · {self.phone} · {self.get_status_display()}'
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Отзывы гостей о парах напиток × блюдо (docs/REVIEWS.md)
+#  Одна запись = оценка одной сессии гостя одной паре. Сырых IP, имён, телефонов
+#  не храним: IP и id сессии — только солёный HMAC (для лимитов и «одна оценка на пару»),
+#  телефоны и e-mail в тексте маскируются до записи. Логика — api/reviews_logic.py.
+# ═══════════════════════════════════════════════════════════════════════════
+
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+class PairingReview(models.Model):
+    """Отзыв гостя о паре: оценка 1–5, метки, необязательный текст, результат модерации и ИИ-разбора."""
+
+    STATUS_CHOICES = [
+        ('published', 'Опубликован'),
+        ('pending', 'На проверке'),
+        ('hidden', 'Скрыт модератором'),
+        ('spam', 'Спам'),
+    ]
+    LOCALE_CHOICES = [('ru', 'Русский'), ('kk', 'Қазақша'), ('en', 'English')]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # ── что оценивали ──
+    drink_id = models.CharField('Напиток (id в data/drinks.json)', max_length=80)
+    dish_id = models.CharField('Блюдо (id в data/dishes_v2.json или custom)', max_length=80)
+    dish_name = models.CharField('Название своего блюда (для custom)', max_length=120, blank=True, default='')
+    dish_key = models.CharField('Ключ блюда: id или custom:<название>', max_length=130, editable=False,
+                                help_text='Для «одна оценка на пару» и сводок по своему блюду')
+    # ── что сказал гость ──
+    rating = models.PositiveSmallIntegerField('Оценка 1–5', validators=[MinValueValidator(1), MaxValueValidator(5)])
+    helpful = models.BooleanField('Подбор помог', null=True, blank=True)
+    chips = models.JSONField('Метки (id из reviews_logic.REVIEW_CHIPS)', default=list, blank=True)
+    text = models.TextField('Текст (≤ 1000, телефоны и e-mail скрыты)', max_length=1000, blank=True, default='')
+    locale = models.CharField('Язык интерфейса гостя', max_length=5, choices=LOCALE_CHOICES, default='ru')
+    # ── где и в каком контексте ──
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='pairing_reviews', verbose_name='Заведение')
+    table_number = models.IntegerField('Стол', null=True, blank=True)
+    verified = models.BooleanField('Из заведения (была сессия QR)', default=False,
+                                   help_text='В заведении был скан QR той же сессией за последние 12 ч — вес ×1.5 в сводках')
+    session_hash = models.CharField('Сессия (HMAC)', max_length=64)
+    ip_hash = models.CharField('IP (HMAC)', max_length=64)
+    ua_short = models.CharField('Тип устройства', max_length=40, blank=True, default='')
+    engine_version = models.CharField('Версия движка', max_length=20, blank=True, default='')
+    calibration_version = models.CharField('Версия калибровки', max_length=40, blank=True, default='')
+    score_shown = models.SmallIntegerField('Балл движка, который видел гость', null=True, blank=True)
+    ctx = models.JSONField('Контекст подбора (повод, предпочтения)', default=dict, blank=True)
+    # ── обработка ──
+    status = models.CharField('Статус', max_length=10, choices=STATUS_CHOICES, default='published', db_index=True)
+    heuristics = models.JSONField('Офлайн-эвристики текста', default=dict, blank=True)
+    edit_count = models.PositiveSmallIntegerField('Правок текста с ИИ-разбором', default=0)
+    moderated_at = models.DateTimeField('Решение модератора', null=True, blank=True)
+    ai_sentiment = models.FloatField('ИИ: тональность −1..1', null=True, blank=True)
+    ai_aspects = models.JSONField('ИИ: метки из текста', default=list, blank=True)
+    ai_summary_ru = models.CharField('ИИ: пересказ', max_length=160, blank=True, default='')
+    ai_flags = models.JSONField('ИИ: флаги (spam, toxic, offtopic, other_dish)', default=dict, blank=True)
+    ai_model = models.CharField('ИИ: модель', max_length=60, blank=True, default='')
+    ai_analyzed_at = models.DateTimeField('ИИ: когда разобран', null=True, blank=True)
+    ai_error = models.CharField('ИИ: ошибка', max_length=200, blank=True, default='')
+    created_at = models.DateTimeField('Создан', auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField('Изменён', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Отзыв о паре'
+        verbose_name_plural = 'Отзывы о парах'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['drink_id', 'dish_id'], name='review_pair_idx'),
+            models.Index(fields=['ip_hash', 'updated_at'], name='review_ip_rate_idx'),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['session_hash', 'drink_id', 'dish_key'], name='review_one_per_session_pair'),
+            models.CheckConstraint(check=models.Q(rating__gte=1) & models.Q(rating__lte=5), name='review_rating_1_5'),
+        ]
+
+    def __str__(self):
+        dish = self.dish_name or self.dish_id
+        return f'{self.drink_id} × {dish}: {self.rating}★ ({self.get_status_display()})'
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Аналитика бренда: что движок показал гостю и что гость сделал (docs/EFES_ANALYTICS.md)
+#  Пишет только POST /api/v2/track/ (api/views_tracking.py) и seed_brand_demo (is_demo=True).
+#  Категорию, архетип и признак Efes сервер берёт из data/drinks.json, клиенту не верит.
+#  Сырых IP, имён, телефонов, e-mail нет: сессия и IP — только HMAC с солью из SECRET_KEY.
+#  Наружу (GET /api/brand/overview/) уходят только агрегаты.
+# ═══════════════════════════════════════════════════════════════════════════
+
+class PairingImpression(models.Model):
+    """Один напиток в показанном гостю списке рекомендаций. Список = все строки с одним list_id."""
+
+    SOURCE_CHOICES = [('pair', 'Подбор на сайте'), ('venue_menu', 'Меню заведения'), ('ai', 'ИИ-сомелье')]
+
+    list_id = models.UUIDField('Список (uuid клиента)')
+    source = models.CharField('Где показан', max_length=12, choices=SOURCE_CHOICES)
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='pairing_impressions', verbose_name='Заведение')
+    table_number = models.IntegerField('Стол', null=True, blank=True)
+    dish_id = models.CharField('Блюдо (id в dishes_v2 или custom)', max_length=80)
+    tab = models.CharField('Вкладка (best, beer, na …)', max_length=12, blank=True, default='')
+    occasion = models.CharField('Повод', max_length=20, blank=True, default='')
+    locale = models.CharField('Язык', max_length=5, default='ru')
+    rank = models.PositiveSmallIntegerField('Место в показанном списке')
+    honest_rank = models.PositiveSmallIntegerField('Место по баллу: 1 + сколько в списке строго выше')
+    drink_id = models.CharField('Напиток (id в drinks.json)', max_length=80)
+    category = models.CharField('Категория (из drinks.json)', max_length=20)
+    archetype = models.CharField('Архетип стиля (из drinks.json)', max_length=60, blank=True, default='')
+    efes = models.BooleanField('Портфель Efes (из drinks.json)', default=False)
+    score = models.PositiveSmallIntegerField('Балл движка')
+    # Лучший не-Efes во всём пуле кандидатов (до окна и диверсификации): окно может вытеснить равного или более
+    # сильного конкурента из короткого показанного списка, и без этого поля такой список сошёл бы за честную победу.
+    pool_best_other = models.PositiveSmallIntegerField(
+        'Лучший балл не-Efes во всём пуле кандидатов (0 — конкурентов в пуле нет, пусто — клиент не прислал)',
+        null=True, blank=True)
+    session_hash = models.CharField('Сессия (HMAC)', max_length=64)
+    ip_hash = models.CharField('IP (HMAC)', max_length=64)
+    engine_version = models.CharField('Версия движка', max_length=20, blank=True, default='')
+    calibration_version = models.CharField('Версия калибровки', max_length=40, blank=True, default='')
+    is_demo = models.BooleanField('Демо (seed_brand_demo)', default=False)
+    created_at = models.DateTimeField('Когда', default=timezone.now, db_index=True)
+
+    class Meta:
+        verbose_name = 'Показ напитка в подборе'
+        verbose_name_plural = 'Показы напитков в подборе'
+        ordering = ['-created_at', 'list_id', 'rank']
+        indexes = [
+            models.Index(fields=['efes', 'rank'], name='impr_efes_rank_idx'),
+            models.Index(fields=['dish_id'], name='impr_dish_idx'),
+            models.Index(fields=['venue', 'created_at'], name='impr_venue_time_idx'),
+            models.Index(fields=['is_demo', 'created_at'], name='impr_demo_time_idx'),
+            models.Index(fields=['session_hash', 'created_at'], name='impr_session_rate_idx'),
+            models.Index(fields=['ip_hash', 'created_at'], name='impr_ip_rate_idx'),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['list_id', 'drink_id'], name='impr_one_drink_per_list'),
+        ]
+
+    def __str__(self):
+        return f'{self.dish_id} → #{self.rank} {self.drink_id} ({self.score})'
+
+
+class PairingAction(models.Model):
+    """Действие гостя со списком или карточкой: открыл напиток, раскрыл «почему», «Заказать», отзыв."""
+
+    KIND_CHOICES = [
+        ('open_drink', 'Открыл карточку напитка'),
+        ('expand_why', 'Раскрыл «почему»'),
+        ('order_intent', 'Нажал «Заказать»'),
+        ('review', 'Оставил отзыв'),
+    ]
+
+    kind = models.CharField('Действие', max_length=16, choices=KIND_CHOICES)
+    list_id = models.UUIDField('Список (uuid клиента)', null=True, blank=True)
+    drink_id = models.CharField('Напиток (id в drinks.json)', max_length=80)
+    dish_id = models.CharField('Блюдо (id в dishes_v2 или custom)', max_length=80, blank=True, default='')
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='pairing_actions', verbose_name='Заведение')
+    efes = models.BooleanField('Портфель Efes (из drinks.json)', default=False)
+    price = models.DecimalField('Цена позиции, ₸', max_digits=10, decimal_places=2, null=True, blank=True)
+    session_hash = models.CharField('Сессия (HMAC)', max_length=64)
+    ip_hash = models.CharField('IP (HMAC)', max_length=64)
+    is_demo = models.BooleanField('Демо (seed_brand_demo)', default=False)
+    created_at = models.DateTimeField('Когда', default=timezone.now, db_index=True)
+
+    class Meta:
+        verbose_name = 'Действие гостя с подбором'
+        verbose_name_plural = 'Действия гостей с подбором'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['kind', 'created_at'], name='action_kind_time_idx'),
+            models.Index(fields=['venue', 'created_at'], name='action_venue_time_idx'),
+            models.Index(fields=['is_demo', 'created_at'], name='action_demo_time_idx'),
+            models.Index(fields=['session_hash', 'created_at'], name='action_session_rate_idx'),
+            models.Index(fields=['ip_hash', 'created_at'], name='action_ip_rate_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.get_kind_display()}: {self.drink_id} × {self.dish_id or "—"}'
+
+
+class TrackingRate(models.Model):
+    """Счётчик попыток POST /api/v2/track/ по минутам (api/views_tracking.py). Ключ — HMAC адреса (IPv6 — сети /64)
+    или «global». Считаются присланные события, а не записанные: пустые, повторные и ошибочные запросы тоже тратят
+    лимит. Строки старше часа удаляются при записи."""
+
+    key = models.CharField('Ключ (HMAC адреса или global)', max_length=64)
+    minute = models.DateTimeField('Минута')
+    n = models.PositiveIntegerField('Событий', default=0)
+
+    class Meta:
+        verbose_name = 'Лимит трекинга (минута)'
+        verbose_name_plural = 'Лимиты трекинга (минуты)'
+        constraints = [models.UniqueConstraint(fields=['key', 'minute'], name='track_rate_key_minute')]
+        indexes = [models.Index(fields=['minute'], name='track_rate_minute_idx')]
+
+    def __str__(self):
+        return f'{self.key[:12]} · {self.minute:%H:%M} · {self.n}'

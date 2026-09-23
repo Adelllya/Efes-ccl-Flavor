@@ -1,0 +1,1125 @@
+{
+ "_doc": "Сгенерировано api/tests/test_dish_autofill.py --write из scripts/build_dishes_v2.py autofill() — не править руками.",
+ "cases": [
+  {
+   "spec": {
+    "taste": "SALTY",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "raw",
+    "protein": "none",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {},
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.8,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 0.2,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.8,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SWEET",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "baked",
+    "protein": "none",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": true,
+    "tags": {
+     "chocolate": 0.8,
+     "dairy_cream": 0.5
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.0,
+    "sweet": 0.85,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 0.5,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.45,
+    "maillard": 0.5,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SOUR",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "fermented",
+    "protein": "none",
+    "sauce": "none",
+    "acid": "lactic",
+    "dessert": false,
+    "tags": {
+     "cabbage": 0.6
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 1.0,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 0.2,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.3,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "lactic"
+  },
+  {
+   "spec": {
+    "taste": "BITTER",
+    "weight": "MEDIUM",
+    "fat": "LOW",
+    "cook": "grilled",
+    "protein": "none",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "asparagus": 0.7
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.7,
+    "umami": 0.0,
+    "fat": 0.2,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.65,
+    "cream": 0.0,
+    "maillard": 0.7,
+    "smoke": 0.7,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.8
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "boiled",
+    "protein": "lamb",
+    "sauce": "broth",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "onion": 0.5,
+     "bread": 0.8
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.9,
+    "fat": 0.85,
+    "protein": 0.9,
+    "heat": 0.0,
+    "pungent": 0.3,
+    "weight": 0.85,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SPICY",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "boiled",
+    "protein": "lamb",
+    "sauce": "broth",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "onion": 0.5,
+     "pepper": 0.6
+    },
+    "heat": 0.7
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.9,
+    "fat": 0.85,
+    "protein": 0.9,
+    "heat": 0.7,
+    "pungent": 0.3,
+    "weight": 0.85,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "MIXED",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "fried",
+    "protein": "poultry",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "garlic": 0.5
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.4,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.5,
+    "fat": 0.6,
+    "protein": 0.7,
+    "heat": 0.0,
+    "pungent": 0.45,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.6,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "steamed",
+    "protein": "shellfish",
+    "sauce": "none",
+    "acid": "citrus",
+    "dessert": false,
+    "tags": {
+     "herbal": 0.4
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 0.5,
+    "protein": 0.5,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.4,
+    "fish_oil": 0.3,
+    "green_iron": 0.0
+   },
+   "acid": "citrus"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "MEDIUM",
+    "fat": "HIGH",
+    "cook": "grilled",
+    "protein": "oily_fish",
+    "sauce": "none",
+    "acid": "citrus",
+    "dessert": false,
+    "tags": {},
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 0.85,
+    "protein": 0.8,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.65,
+    "cream": 0.0,
+    "maillard": 0.7,
+    "smoke": 0.7,
+    "fresh": 0.0,
+    "fish_oil": 0.9,
+    "green_iron": 0.0
+   },
+   "acid": "citrus"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "raw",
+    "protein": "white_fish",
+    "sauce": "soy",
+    "acid": "vinegar",
+    "dessert": false,
+    "tags": {
+     "rice": 0.8,
+     "wasabi": 0.5
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.42,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.95,
+    "fat": 0.2,
+    "protein": 0.7,
+    "heat": 0.0,
+    "pungent": 0.8,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.8,
+    "fish_oil": 0.4,
+    "green_iron": 0.0
+   },
+   "acid": "vinegar"
+  },
+  {
+   "spec": {
+    "taste": "SALTY",
+    "weight": "MEDIUM",
+    "fat": "HIGH",
+    "cook": "cured",
+    "protein": "horse",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "cured": 0.7
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 1.0,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 1.0,
+    "fat": 0.85,
+    "protein": 0.9,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SALTY",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "smoked",
+    "protein": "pork",
+    "sauce": "bbq",
+    "acid": "none",
+    "dessert": false,
+    "tags": {},
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.62,
+    "sweet": 0.36,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.7,
+    "fat": 0.85,
+    "protein": 0.85,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.85,
+    "cream": 0.0,
+    "maillard": 0.4,
+    "smoke": 0.9,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "braised",
+    "protein": "beef",
+    "sauce": "tomato",
+    "acid": "none",
+    "dessert": false,
+    "tags": {},
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.21,
+    "bitter": 0.0,
+    "umami": 1.0,
+    "fat": 0.85,
+    "protein": 0.95,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.85,
+    "cream": 0.0,
+    "maillard": 0.3,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "tomato"
+  },
+  {
+   "spec": {
+    "taste": "MIXED",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "baked",
+    "protein": "cheese_hard",
+    "sauce": "cheese",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "bread": 0.6
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.5,
+    "sweet": 0.4,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 1.0,
+    "protein": 0.9,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.85,
+    "cream": 0.36,
+    "maillard": 0.5,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "MIXED",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "baked",
+    "protein": "cheese_soft",
+    "sauce": "tomato",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "bread": 0.8,
+     "herbal": 0.4
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.4,
+    "sour": 0.21,
+    "bitter": 0.0,
+    "umami": 0.5,
+    "fat": 0.5,
+    "protein": 0.5,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.5,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "tomato"
+  },
+  {
+   "spec": {
+    "taste": "SWEET",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "raw",
+    "protein": "dairy",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": true,
+    "tags": {
+     "coffee": 0.6,
+     "dairy_cream": 0.8
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.0,
+    "sweet": 0.85,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 0.2,
+    "protein": 0.15,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.25,
+    "cream": 0.72,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SWEET",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "fried",
+    "protein": "none",
+    "sauce": "sweet_glaze",
+    "acid": "none",
+    "dessert": true,
+    "tags": {
+     "honey": 0.7
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.0,
+    "sweet": 0.64,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 0.6,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.6,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SPICY",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "fried",
+    "protein": "poultry",
+    "sauce": "chili",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "chili": 0.8
+    },
+    "heat": 0.8
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.5,
+    "fat": 0.6,
+    "protein": 0.7,
+    "heat": 0.8,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.6,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SOUR",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "raw",
+    "protein": "none",
+    "sauce": "vinaigrette",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "cucumber": 0.6,
+     "herbal": 0.5
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.68,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 0.2,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.8,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "vinegar"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "boiled",
+    "protein": "egg",
+    "sauce": "cream",
+    "acid": "none",
+    "dessert": false,
+    "tags": {},
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.9,
+    "fat": 0.7,
+    "protein": 0.5,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.42,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "MEDIUM",
+    "fat": "LOW",
+    "cook": "steamed",
+    "protein": "legume",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "garlic": 0.3
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 0.2,
+    "protein": 0.5,
+    "heat": 0.0,
+    "pungent": 0.45,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.4,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SALTY",
+    "weight": "LIGHT",
+    "fat": "MEDIUM",
+    "cook": "fried",
+    "protein": "none",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "potato": 0.8,
+     "salt": 0.6
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.8,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 0.6,
+    "protein": 0.2,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.6,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "MIXED",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "grilled",
+    "protein": "beef",
+    "sauce": "bbq",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "char": 0.7,
+     "onion": 0.4
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.46,
+    "sweet": 0.52,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 0.5,
+    "protein": 0.95,
+    "heat": 0.0,
+    "pungent": 0.3,
+    "weight": 0.65,
+    "cream": 0.0,
+    "maillard": 0.7,
+    "smoke": 0.76,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "fried",
+    "protein": "pork",
+    "sauce": "none",
+    "acid": "lactic",
+    "dessert": false,
+    "tags": {
+     "mustard": 0.5
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 0.95,
+    "protein": 0.85,
+    "heat": 0.0,
+    "pungent": 0.5,
+    "weight": 0.85,
+    "cream": 0.0,
+    "maillard": 0.6,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "lactic"
+  },
+  {
+   "spec": {
+    "taste": "BITTER",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "raw",
+    "protein": "none",
+    "sauce": "none",
+    "acid": "citrus",
+    "dessert": false,
+    "tags": {
+     "artichoke": 0.5,
+     "spinach": 0.6
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.7,
+    "umami": 0.0,
+    "fat": 0.2,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.8,
+    "fish_oil": 0.0,
+    "green_iron": 0.8
+   },
+   "acid": "citrus"
+  },
+  {
+   "spec": {
+    "taste": "SWEET",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "baked",
+    "protein": "none",
+    "sauce": "cream",
+    "acid": "none",
+    "dessert": true,
+    "tags": {
+     "nutty": 0.5,
+     "caramel": 0.6
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.0,
+    "sweet": 0.85,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.0,
+    "fat": 1.0,
+    "protein": 0.0,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.85,
+    "cream": 0.42,
+    "maillard": 0.5,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SALTY",
+    "weight": "MEDIUM",
+    "fat": "HIGH",
+    "cook": "cured",
+    "protein": "beef",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "horseradish": 0.8
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 1.0,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 1.0,
+    "fat": 0.85,
+    "protein": 0.95,
+    "heat": 0.0,
+    "pungent": 0.8,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "smoked",
+    "protein": "white_fish",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "smoke": 0.8
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 0.5,
+    "protein": 0.7,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.4,
+    "smoke": 0.9,
+    "fresh": 0.0,
+    "fish_oil": 0.4,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "MIXED",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "steamed",
+    "protein": "none",
+    "sauce": "soy",
+    "acid": "none",
+    "dessert": false,
+    "tags": {
+     "noodles": 0.8
+    },
+    "heat": null
+   },
+   "vector": {
+    "salt": 0.58,
+    "sweet": 0.4,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.55,
+    "fat": 0.2,
+    "protein": 0.2,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.4,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SPICY",
+    "weight": "LIGHT",
+    "fat": "LOW",
+    "cook": "raw",
+    "protein": "none",
+    "sauce": "chili",
+    "acid": "lactic",
+    "dessert": false,
+    "tags": {
+     "cucumber": 0.5,
+     "radish": 0.5
+    },
+    "heat": 0.5
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.4,
+    "fat": 0.2,
+    "protein": 0.0,
+    "heat": 0.5,
+    "pungent": 0.4,
+    "weight": 0.25,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.8,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "lactic"
+  },
+  {
+   "spec": {
+    "taste": "UMAMI",
+    "weight": "HEAVY",
+    "fat": "HIGH",
+    "cook": "grilled",
+    "protein": "lamb",
+    "sauce": "none",
+    "acid": "none",
+    "dessert": false,
+    "tags": {},
+    "heat": 0.0
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.0,
+    "bitter": 0.0,
+    "umami": 0.8,
+    "fat": 0.85,
+    "protein": 0.9,
+    "heat": 0.0,
+    "pungent": 0.0,
+    "weight": 0.95,
+    "cream": 0.0,
+    "maillard": 0.7,
+    "smoke": 0.7,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "none"
+  },
+  {
+   "spec": {
+    "taste": "SOUR",
+    "weight": "MEDIUM",
+    "fat": "MEDIUM",
+    "cook": "boiled",
+    "protein": "beef",
+    "sauce": "broth",
+    "acid": "tomato",
+    "dessert": false,
+    "tags": {
+     "tomato": 0.6
+    },
+    "heat": 0.2
+   },
+   "vector": {
+    "salt": 0.4,
+    "sweet": 0.0,
+    "sour": 0.8,
+    "bitter": 0.0,
+    "umami": 0.9,
+    "fat": 0.5,
+    "protein": 0.95,
+    "heat": 0.2,
+    "pungent": 0.0,
+    "weight": 0.55,
+    "cream": 0.0,
+    "maillard": 0.0,
+    "smoke": 0.0,
+    "fresh": 0.0,
+    "fish_oil": 0.0,
+    "green_iron": 0.0
+   },
+   "acid": "tomato"
+  }
+ ]
+}

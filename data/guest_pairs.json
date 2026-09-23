@@ -1,0 +1,19 @@
+{
+  "pairs": [],
+  "ordinals": [],
+  "meta": {
+    "generator": "python manage.py export_guest_pairs",
+    "generated_at": "2026-09-22T21:29:18+00:00",
+    "origin": "guests",
+    "evidence": "G — реакции гостей в приложении (слабый сигнал; вес задаёт scripts/calibrate_v2.py)",
+    "thresholds": {
+      "min_reviews": 8,
+      "min_sessions": 5,
+      "good_mean_min": 4.2,
+      "bad_mean_max": 2.4
+    },
+    "published_reviews": 0,
+    "pair_groups": 0,
+    "skipped": {}
+  }
+}

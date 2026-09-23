@@ -134,3 +134,25 @@ class TestPairing(ApiV2Base):
         j = self.get("/api/v2/pairing/dish/beshbarmak/", venue="test-bar-v2", top=0)
         self.assertTrue(j["items"])
         self.assertTrue({x["drink_id"] for x in j["items"]} <= allowed)
+
+
+class TestLocales(ApiV2Base):
+    """?locale=kk|en меняет только слова: напитки, порядок, баллы, вето — те же, что на русском."""
+
+    def test_scores_identical_texts_translated(self):
+        for dish in ("beshbarmak", "lagman-spicy", "chak-chak", "sushi"):
+            if dish not in self.ds.dish_by_id:
+                continue
+            ru = self.get(f"/api/v2/pairing/dish/{dish}/", top=0)
+            for loc in ("kk", "en"):
+                other = self.get(f"/api/v2/pairing/dish/{dish}/", top=0, locale=loc)
+                self.assertEqual([(x["drink_id"], x["score"], x["vetoes"]) for x in ru["items"]],
+                                 [(x["drink_id"], x["score"], x["vetoes"]) for x in other["items"]], (dish, loc))
+                texts_ru = [m["text"] for x in ru["items"][:5] for m in x["reasons"]]
+                texts_loc = [m["text"] for x in other["items"][:5] for m in x["reasons"]]
+                self.assertNotEqual(texts_ru, texts_loc, (dish, loc))
+
+    def test_unknown_locale_falls_back_to_russian(self):
+        ru = self.get("/api/v2/pairing/dish/plov/")
+        xx = self.get("/api/v2/pairing/dish/plov/", locale="de")
+        self.assertEqual(ru["items"][0]["reasons"], xx["items"][0]["reasons"])

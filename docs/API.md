@@ -43,7 +43,58 @@ curl -X PUT http://127.0.0.1:8000/api/admin/flavor-profiles/ \
 
 Переменные окружения бэкенда — в [BACKEND_DOCUMENTATION.md](../BACKEND_DOCUMENTATION.md#переменные-окружения-env) и `backend/.env.example`.
 
-## Движок подбора
+## Движок подбора v2 (`/api/v2/…`)
+
+Все категории напитков (412 позиций), вкладки категорий, объяснения с уровнем доказательности. Реализация —
+`backend/api/views_engine_v2.py`, движок — [PAIRING_ENGINE_V2.md](PAIRING_ENGINE_V2.md). Баллы от бренда не зависят;
+политика Efes (порядок при разнице ≤ 2 баллов) описана в каждом ответе подбора в поле `policy.note`.
+
+| Метод и адрес | Что делает |
+|---|---|
+| `GET /api/v2/meta/` | версия движка и калибровки, оси, категории с числом напитков, политика Efes |
+| `GET /api/v2/drinks/?category=beer,cider&q=kozel&efes=1&limit=50&offset=0` | каталог; у каждой позиции `in_pairing` — участвует ли в подборе (черновики и неподтверждённые — нет) |
+| `GET /api/v2/drinks/<id>/?top=8` | карточка: полная запись (откуда числа, источники), вектор, W/F, профиль стиля, лучшие блюда |
+| `GET /api/v2/dishes/?q=&cuisine=kazakh` | блюда v2 (114) |
+| `GET /api/v2/pairing/dish/<id>/` | подбор к блюду: `items` (топ с диверсификацией), `categories` (вкладки, по 3 лучших), `best_partner` (лучший Efes с честным баллом), `policy` |
+| `POST /api/v2/pairing/recommend/` | то же для своего блюда: `{"dish": {"name", "vector": {16 осей}, "cook_method", "protein_source", "sauce", "acid_type", "is_dessert", "cuisine"}, "context": {…}}` или `{"dish_id": "…"}` |
+| `GET /api/v2/pairing/explain/?drink=&dish=` | полный разбор одной пары по правилам (mechanisms, reasons, warnings, vetoes, W/F) |
+
+Контекст (query или `context` в теле): `occasion` = `meal | aperitif | dessert | hot | evening | party | gourmet | non_alcoholic`,
+`bitter_pref` и `sweet_pref` от −1 до 1, `heat_lover=1`, `harsh_tol` = `sensitive | median | tolerant`, `non_alcoholic=1`,
+`categories=wine,tea`, `top` (0 — весь список без диверсификации), `venue=<slug>` — только напитки из карты заведения
+(позиции карты могут ссылаться на id напитка v2 или на slug сорта v1 — он переводится через `legacy_brand_id`).
+`locale=kk|en` — объяснения, вердикты и подписи на казахском / английском ([ENGINE_TEXTS.md](ENGINE_TEXTS.md)); напитки, порядок и баллы от языка не зависят (это проверяет тест).
+
+Пример ответа `GET /api/v2/pairing/dish/beshbarmak/` (сокращён):
+
+```json
+{
+  "engine": "2.2.1", "calibration": "cal-2026-09-23",
+  "dish": {"id": "beshbarmak", "name": "Бешбармак", "cuisine": ["kazakh"]},
+  "items": [
+    {"drink_id": "…", "score": 83, "band_label": "Отличное сочетание", "match_type": "cut", "secondary_type": "bridge",
+     "efes_partner": true, "reasons": [{"rule": "R2", "evidence": "C", "text": "Хмелевая горечь режет жирность баранины…"}],
+     "warnings": [], "drink": {"name": "…", "category": "beer", "abv": 7.3, "vector_confidence": 0.51, "in_pairing": true}}
+  ],
+  "best_partner": null,
+  "categories": [{"category": "wine", "label": "Вино", "n": 27, "best": {"…": "…"}, "items": ["…"]}],
+  "policy": {"partner_tie_window": 2, "note": "Баллы честные и не зависят от бренда. Если напитки отличаются не более чем на 2 балла, первым показывается напиток из портфеля Efes."}
+}
+```
+
+## Отзывы гостей (`/api/v2/reviews/…`)
+
+Подробно — [REVIEWS.md](REVIEWS.md): что храним и чего не храним, как считаются средние, как отзывы попадают в калибровку.
+
+| Метод и адрес | Доступ | Что делает |
+|---|---|---|
+| `POST /api/v2/reviews/` | публичный, лимиты | оценка пары 1–5, метки, текст; одна оценка на пару с устройства (повтор обновляет); в ответе — `applied_prefs` (что поменять в профиле гостя) и свежая сводка по паре |
+| `GET /api/v2/reviews/pair/?drink=&dish=` | публичный | сводка по паре (сглаженное среднее, показывается от 3 оценок) и последние опубликованные тексты |
+| `GET /api/v2/reviews/drink/<id>/` | публичный | сводка по напитку со всеми блюдами |
+| `GET /api/cabinet/reviews/?days=30` | кабинет | отзывы в заведении, слабые пары, частые метки |
+| `GET /api/v2/reviews/moderation/`, `POST /api/v2/reviews/<uuid>/moderate/` | сомелье | очередь модерации и решение по отзыву |
+
+## Движок подбора v1 (17 сортов Efes, остаётся для совместимости)
 
 ### `POST /api/pairing/recommend/`
 ```json

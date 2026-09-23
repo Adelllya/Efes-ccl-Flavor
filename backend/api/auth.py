@@ -12,6 +12,10 @@
 Нет учётных данных → 401 + WWW-Authenticate. Есть, но не подошли → 403.
 
 Токен кабинета заведения (views_saas) сюда не имеет отношения: это другой контур.
+
+Аналитика бренда (/api/brand/*, api/views_brand.py) — отдельный контур с теми же правилами:
+токен FT_BRAND_TOKEN (`Authorization: Bearer <token>` или `X-Brand-Token: <token>`) или сотрудник Django.
+Токен сомелье туда не пускает, токен бренда не пускает к сомелье.
 """
 from __future__ import annotations
 
@@ -34,15 +38,16 @@ def admin_token() -> str:
     return os.environ.get(ADMIN_TOKEN_ENV, '').strip()
 
 
-def presented_tokens(request) -> list[str]:
-    """Токены из запроса. Пустой список — заголовков нет вовсе (это 401, а не 403)."""
+def presented_tokens(request, direct_header: str = 'HTTP_X_ADMIN_TOKEN') -> list[str]:
+    """Токены из запроса. Пустой список — заголовков нет вовсе (это 401, а не 403).
+    direct_header — второй заголовок с токеном без схемы (X-Admin-Token у сомелье, X-Brand-Token у бренда)."""
     found = []
     header = request.META.get('HTTP_AUTHORIZATION')
     if header is not None:
         scheme, _, value = header.strip().partition(' ')
         # Чужая схема (Basic и т.п.) — учётные данные предъявлены, но не наши: даст 403.
         found.append(value.strip() if scheme.lower() == 'bearer' else '')
-    direct = request.META.get('HTTP_X_ADMIN_TOKEN')
+    direct = request.META.get(direct_header)
     if direct is not None:
         found.append(direct.strip())
     return found
@@ -108,4 +113,55 @@ def sommelier_only(view):
     """Для функций-вьюх; ставится ПОД @api_view — тот читает эти атрибуты при оборачивании."""
     view.authentication_classes = ADMIN_AUTHENTICATION
     view.permission_classes = [IsSommelierAdmin]
+    return view
+
+
+# ─────────────────────────  аналитика бренда (Efes)  ─────────────────────────
+
+BRAND_TOKEN_ENV = 'FT_BRAND_TOKEN'
+
+
+def brand_token() -> str:
+    return os.environ.get(BRAND_TOKEN_ENV, '').strip()
+
+
+class BrandTokenAuthentication(AdminTokenAuthentication):
+    """Как AdminTokenAuthentication: только ради 401 с WWW-Authenticate, решение принимает IsBrand."""
+
+    def authenticate_header(self, request):
+        return 'Bearer realm="flavor-tree-brand"'
+
+
+BRAND_AUTHENTICATION = [BrandTokenAuthentication, SessionAuthentication]
+
+
+class IsBrand(BasePermission):
+    """Токен FT_BRAND_TOKEN (Bearer или X-Brand-Token) или сотрудник Django. Правила — как у IsSommelierAdmin."""
+
+    def has_permission(self, request, view) -> bool:
+        user = getattr(request, 'user', None)
+        if user is not None and user.is_authenticated and user.is_staff:
+            return True
+
+        expected = brand_token()
+        if not expected:
+            if settings.DEBUG:
+                logger.warning('%s не задан: %s %s открыт только потому, что DEBUG=True',
+                               BRAND_TOKEN_ENV, request.method, request.path)
+                return True
+            logger.error('%s не задан при DEBUG=False: %s %s отклонён', BRAND_TOKEN_ENV, request.method, request.path)
+            raise PermissionDenied(f'Аналитика бренда закрыта: на сервере не задан {BRAND_TOKEN_ENV}')
+
+        tokens = presented_tokens(request, 'HTTP_X_BRAND_TOKEN')
+        if any([_same(t, expected) for t in tokens]):
+            return True
+        if not tokens and not (user is not None and user.is_authenticated):
+            raise NotAuthenticated('Нужен токен бренда')
+        raise PermissionDenied('Токен бренда не подошёл' if tokens else 'Недостаточно прав')
+
+
+def brand_only(view):
+    """Для функций-вьюх аналитики бренда; ставится ПОД @api_view."""
+    view.authentication_classes = BRAND_AUTHENTICATION
+    view.permission_classes = [IsBrand]
     return view

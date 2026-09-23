@@ -213,3 +213,37 @@ class MenuEventAdmin(admin.ModelAdmin):
     list_filter = ('kind', 'venue')
     search_fields = ('dish_slug', 'beer_slug')
     date_hierarchy = 'created_at'
+
+
+# ── Отзывы гостей о парах (docs/REVIEWS.md) ──────────────────────────────────
+from .models import PairingReview  # noqa: E402
+
+
+@admin.register(PairingReview)
+class PairingReviewAdmin(admin.ModelAdmin):
+    """Модерация отзывов: статус меняется действиями списка; хеши и разбор ИИ — только для чтения."""
+    list_display = ('created_at', 'drink_id', 'dish_id', 'rating', 'helpful', 'status', 'verified', 'venue', 'short_text')
+    list_filter = ('status', 'verified', 'rating', 'locale', 'venue')
+    search_fields = ('drink_id', 'dish_id', 'dish_name', 'text', 'ai_summary_ru')
+    date_hierarchy = 'created_at'
+    readonly_fields = [f.name for f in PairingReview._meta.fields if f.name not in ('status',)]
+    actions = ('publish', 'hide', 'mark_spam')
+
+    @admin.display(description='Текст')
+    def short_text(self, obj):
+        return (obj.text[:80] + '…') if len(obj.text) > 80 else obj.text
+
+    def has_add_permission(self, request):
+        return False   # отзывы оставляют только гости через API
+
+    @admin.action(description='Опубликовать')
+    def publish(self, request, queryset):
+        queryset.update(status='published', moderated_at=timezone.now())
+
+    @admin.action(description='Скрыть')
+    def hide(self, request, queryset):
+        queryset.update(status='hidden', moderated_at=timezone.now())
+
+    @admin.action(description='Пометить как спам')
+    def mark_spam(self, request, queryset):
+        queryset.update(status='spam', moderated_at=timezone.now())

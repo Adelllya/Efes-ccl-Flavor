@@ -201,11 +201,16 @@ def track(request):
         return Response({'ok': True})
 
     if kind in dict(MenuEvent.KIND_CHOICES):
+        # id гостя в событиях меню храним только как HMAC трекинга (тот же, что у PairingAction: по нему аналитика
+        # бренда склеивает дубли «Заказать»). Сырой id остаётся лишь в ScanEvent — по нему отзыв получает «гость
+        # заведения» (views_reviews). Импорт здесь: views_tracking сам импортирует этот модуль.
+        from .views_tracking import session_hash
         MenuEvent.objects.create(
             venue=venue, kind=kind,
             dish_slug=str(data.get('dish') or '')[:80], beer_slug=str(data.get('beer') or '')[:80],
             score=_int(data.get('score'), lo=-MAX_INT),
-            price=_price(data.get('price')) or Decimal('0'), table_number=table, session_key=session_key,
+            price=_price(data.get('price')) or Decimal('0'), table_number=table,
+            session_key=session_hash(session_key) if session_key else '',
         )
         return Response({'ok': True})
 

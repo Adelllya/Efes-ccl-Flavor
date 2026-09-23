@@ -197,6 +197,27 @@ def get_dataset(data_dir: Optional[str] = None) -> DatasetV2:
     return load_dataset(Path(data_dir) if data_dir else None)
 
 
+LOCALES = ("kk", "en")
+
+
+@lru_cache(maxsize=8)
+def get_dataset_locale(data_dir: Optional[str] = None, locale: str = "ru") -> DatasetV2:
+    """Набор для языка гостя: те же записи и баллы, слой текстов engine_v2_texts_{kk,en}.json поверх параметров.
+    Профили строятся заново — слова («жир баранины», «сыраның») вшиваются в профиль при построении.
+    Неизвестный язык или нет файла слоя — русский набор."""
+    base = get_dataset(data_dir)
+    if locale not in LOCALES:
+        return base
+    path = Path(data_dir or DATA_DIR) / f"engine_v2_texts_{locale}.json"
+    if not path.exists():
+        return base
+    params = E.merge_params(base.params, _read(path))
+    return DatasetV2(archetypes=base.archetypes, dishes=base.dishes, drinks=base.drinks, classics=base.classics,
+                     tests=base.tests, params=params, source=base.source, missing=base.missing,
+                     proposed_archetypes=base.proposed_archetypes, proposed_dishes=base.proposed_dishes,
+                     data_dir=base.data_dir, calibration=base.calibration)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # прототип → формат контракта (разработка / тесты / сравнение)
 # ─────────────────────────────────────────────────────────────────────────────
