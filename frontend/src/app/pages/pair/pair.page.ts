@@ -167,7 +167,8 @@ export class PairPage {
   /** Контекст для ИИ: если гость в заведении — только его карта, с ценами. */
   readonly aiVenue = computed<AiVenue | null>(() => {
     const v = this.venue.venue(); if (!v) return null;
-    const m = this.saas.localMenu(v.id, null);
+    // пустая локальная карта (режим с сервером) — как будто её нет: сорта заведения без цен
+    const m0 = this.saas.localMenu(v.id, null); const m = m0 && m0.beers.length ? m0 : null;
     return { slug: v.id, name: v.name, beers: m ? m.beers.map(b => b.ref_slug) : v.brands, currency: m?.venue.currency,
              prices: m ? Object.fromEntries(m.beers.map(b => [b.ref_slug, b.price])) : undefined };
   });

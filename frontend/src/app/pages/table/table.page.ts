@@ -725,7 +725,8 @@ export class TablePage implements OnInit {
   readonly venueDrinkIds = computed<string[] | null>(() => {
     if (!this.onlyVenue() || !this.venue.venue() || this.data.drinks() === null) return null;
     const menu = this.localMenu();
-    return this.pairing.venueDrinkIds(menu ? menu.beers.map(b => b.ref_slug) : this.venue.brandIds());
+    // пустая локальная карта (режим с сервером) — сорта заведения, как на странице подбора
+    return this.pairing.venueDrinkIds(menu && menu.beers.length ? menu.beers.map(b => b.ref_slug) : this.venue.brandIds());
   });
   readonly venueOn = computed(() => this.venueDrinkIds() !== null);
 

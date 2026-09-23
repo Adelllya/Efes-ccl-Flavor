@@ -357,7 +357,8 @@ export class PairResultsPage {
   readonly venueDrinkIds = computed<string[] | null>(() => {
     if (!this.onlyVenue() || !this.venue.venue() || this.data.drinks() === null) return null;
     const menu = this.localMenu();
-    const refs = menu ? menu.beers.map(b => b.ref_slug) : this.venue.brandIds();
+    // локальная карта пустая (режим с сервером: карту бара хранит API) — берём сорта заведения, иначе в подборе 0 напитков
+    const refs = menu && menu.beers.length ? menu.beers.map(b => b.ref_slug) : this.venue.brandIds();
     return this.pairing.venueDrinkIds(refs);
   });
   private readonly localMenu = computed(() => { const v = this.venue.venue(); return v ? this.saas.localMenu(v.id, null) : null; });
@@ -396,7 +397,7 @@ export class PairResultsPage {
 
   readonly aiVenue = computed<AiVenue | null>(() => {
     const v = this.venue.venue(); if (!v) return null;
-    const m = this.localMenu();
+    const m0 = this.localMenu(); const m = m0 && m0.beers.length ? m0 : null;   // пустая локальная карта — сорта заведения
     return { slug: v.id, name: v.name, beers: m ? m.beers.map(b => b.ref_slug) : v.brands, currency: m?.venue.currency,
              prices: m ? Object.fromEntries(m.beers.map(b => [b.ref_slug, b.price])) : undefined };
   });
