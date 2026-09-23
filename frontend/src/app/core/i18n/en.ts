@@ -487,6 +487,7 @@ export const en: Dict = {
   'method.score.bands': 'Bands',
   'method.score.from': 'from {n}',
   'method.score.avoid': '{label} — only when a veto fired, at most {n}',
+  'method.cal.tried': 'We tried calibrating against sommelier judgements ({n} coefficients fitted), but on held-out pairs it was no better than the literature values — so the engine runs on the literature values. Results of the attempt:',
   'method.cal.none': 'The engine currently runs on literature values: no calibration has been applied. Coefficients come from the specification, the signs and directions of the rules come from the sources.',
   'method.cal.applied': 'Calibration {version} of {date}: parameters changed — {n}.',
   'method.cal.set': 'Pair set',

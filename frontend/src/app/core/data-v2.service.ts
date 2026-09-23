@@ -71,6 +71,11 @@ interface EngineBundle {
   calibration_params: Record<string, number>;
   classics: ClassicPair[];
   classics_source: string;
+  calibration_candidate?: null | {
+    version?: string; fitted_at?: string; lambda?: number | null; params_changed?: number;
+    metrics?: NonNullable<EngineBundle['calibration']>['metrics'];
+    decision?: { applied?: boolean; why?: string; holdout_changes?: { lost?: string[]; gained?: string[]; mcnemar_p?: number } };
+  };
 }
 
 /** Группы вкладок подбора: категории движка сведены в понятные гостю разделы. */
@@ -99,6 +104,8 @@ export class DataV2Service {
   readonly params: ParamsV2 = this.bundle.params;
   readonly calibration = this.bundle.calibration;
   readonly calibrationParams = this.bundle.calibration_params;
+  /** Попытка калибровки, которая не прошла проверку на отложенных парах и не применяется (честно показываем её итог). */
+  readonly calibrationCandidate = this.bundle.calibration_candidate ?? null;
   readonly classics: ClassicIndex = indexClassics(this.bundle.classics);
   readonly classicsList: readonly ClassicPair[] = this.bundle.classics;
 

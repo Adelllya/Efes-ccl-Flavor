@@ -53,6 +53,7 @@ from api.pairing import engine_v2 as E  # noqa: E402
 import engine_eval_v2 as EV  # noqa: E402
 
 OVERLAY_PATH = ROOT / "data" / "engine_v2_calibration.json"
+CANDIDATE_PATH = ROOT / "data" / "research" / "engine_v2_calibration_candidate.json"   # не применяется автоматически
 REPORT_PATH = ROOT / "docs" / "CALIBRATION_V2.md"
 
 # ─────────────────────────────── настройки функции ошибки ───────────────────────────────
@@ -125,6 +126,7 @@ class Problem:
             q["weight"] = ORIGIN_WEIGHT.get(q["origin"], 1.0) * EVIDENCE_WEIGHT.get(p.get("evidence") or "", 1.0)
             self.pairs.append(q)
         self.ordinals: List[Dict[str, Any]] = []
+        self.balanced = False
         for o in ds.tests.get("ordinals", []):
             if o["dish"] not in self.dishes or o["a"] not in self.arch or o["b"] not in self.arch:
                 self.skipped.append(o)
@@ -150,6 +152,19 @@ class Problem:
                 self.notes.append(f"литературное значение {c['path']}={v0} вне границ [{lo}, {hi}] — зажато")
             self.space.append({"path": c["path"], "lo": lo, "hi": hi, "v0": min(hi, max(lo, v0))})
         self.z0 = tuple((s["v0"] - s["lo"]) / (s["hi"] - s["lo"]) for s in self.space)
+
+    def balance_classes(self) -> None:
+        """Балансировка классов ожиданий на обучающих парах: вес × N / (K · n_класса).
+        Прогон 23.09.2026 без неё сделал шкалу снисходительной к «плохим» парам (их в пять раз меньше «хороших»)."""
+        train = [q for q in self.pairs if q["split"] != "holdout"]
+        counts: Dict[str, int] = {}
+        for q in train:
+            counts[q["expect"]] = counts.get(q["expect"], 0) + 1
+        k, n = len(counts), len(train)
+        for q in self.pairs:
+            q["weight"] *= n / (k * counts.get(q["expect"], n)) if counts.get(q["expect"]) else 1.0
+        self.balanced = True
+        self.notes.append("веса классов: " + ", ".join(f"{e} ×{n / (k * c):.2f}" for e, c in sorted(counts.items())))
 
     # z (0..1 по каждому параметру) → словарь параметров
     def params_for(self, z: Sequence[float]) -> Dict[str, Any]:
@@ -503,11 +518,14 @@ def main() -> None:
     ap.add_argument("--max-iter", type=int, default=400)
     ap.add_argument("--quick", action="store_true", help="крупный шаг и 2 фолда — проверка пайплайна")
     ap.add_argument("--dry-run", action="store_true", help="ничего не записывать")
+    ap.add_argument("--no-balance", action="store_true", help="без балансировки классов ожиданий (как в прогоне 23.09.2026)")
     args = ap.parse_args()
 
     global _PB
     t0 = time.time()
     _PB = pb = Problem(prototype=args.prototype)
+    if not args.no_balance:
+        pb.balance_classes()
     steps = [0.2, 0.1] if args.quick else [0.2, 0.1, 0.05, 0.025]
     folds_k = 2 if args.quick else args.folds
     lambdas = [float(x) for x in args.lambdas.split(",")] if not args.quick else [0.3]
@@ -590,13 +608,23 @@ def main() -> None:
                     "matrix": {k: cal_eval["dist"][k] for k in ("median", "pct_ge72", "pct_le47", "p10", "p90")}},
         "params": pb.overlay_for(z),
     }
+    # Правило отложенной выборки: слой применяется, только если на holdout не хуже литературы.
+    overlay["balanced_classes"] = pb.balanced
+    worse_on_holdout = bool(hold) and ch[0] < bh[0]
+    target = CANDIDATE_PATH if worse_on_holdout else OVERLAY_PATH
+    if worse_on_holdout:
+        overlay["decision"] = {"applied": False, "why": f"на отложенных парах {ch[0]}/{ch[1]} против {bh[0]}/{bh[1]} у литературы"}
     if args.dry_run or args.prototype:
         print("(dry-run / prototype: файлы не записаны)")
         print(json.dumps(overlay["params"], ensure_ascii=False, indent=1))
     else:
-        OVERLAY_PATH.write_text(json.dumps(overlay, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if worse_on_holdout and OVERLAY_PATH.exists():
+            OVERLAY_PATH.unlink()   # старый слой не должен остаться применённым
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(overlay, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         write_report(pb, res, REPORT_PATH)
-        print(f"записано: {OVERLAY_PATH.relative_to(ROOT)}, {REPORT_PATH.relative_to(ROOT)}")
+        print(f"записано: {target.relative_to(ROOT)}{' (НЕ применяется: хуже на отложенных парах)' if worse_on_holdout else ''}, "
+              f"{REPORT_PATH.relative_to(ROOT)}")
     print(f"время: {time.time() - t0:.0f} с")
 
 

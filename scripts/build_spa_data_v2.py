@@ -82,6 +82,12 @@ def build_engine() -> str:
     from api.pairing import dataset_v2 as D
     params = D.effective_params()
     cal = D.load_calibration()
+    cand_path = ROOT / "data" / "research" / "engine_v2_calibration_candidate.json"
+    candidate = None
+    if cand_path.exists():
+        cand = json.loads(cand_path.read_text(encoding="utf-8"))
+        candidate = {k: cand.get(k) for k in ("version", "fitted_at", "lambda", "metrics", "decision", "balanced_classes")}
+        candidate["params_changed"] = len(cand.get("params") or {})
     classics_path = ROOT / "data" / "classic_pairs.json"
     if classics_path.exists():
         classics = D._as_records(json.loads(classics_path.read_text(encoding="utf-8")))
@@ -98,6 +104,8 @@ def build_engine() -> str:
         "calibration_params": cal["params"] if cal else {},
         "classics": classics,
         "classics_source": classics_src,
+        # кандидат калибровки, который НЕ применяется (см. decision) — показывается на странице «Как мы считаем»
+        "calibration_candidate": candidate,
     }
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n"
 

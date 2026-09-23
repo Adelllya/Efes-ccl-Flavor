@@ -1,0 +1,113 @@
+{
+  "_doc": "Кандидат калибровки — НЕ применяется (см. decision). Применяется только data/engine_v2_calibration.json, которого сейчас нет.",
+  "version": "cal-2026-09-23",
+  "engine_version": "2.2.0",
+  "params_version": "2.2.0",
+  "fitted_at": "2026-09-23 00:49 UTC",
+  "lambda": 0.03,
+  "data": {
+    "pairs_train": 330,
+    "pairs_holdout": 115,
+    "ordinals": 19,
+    "sources": {
+      "archetypes": "style_priors_v2.json",
+      "dishes": "dishes_v2.json",
+      "tests": "test_pairs.json",
+      "classics": "classic_pairs.json",
+      "drinks": "drinks.json"
+    }
+  },
+  "metrics": {
+    "train": {
+      "literature": [
+        253,
+        330
+      ],
+      "calibrated": [
+        279,
+        330
+      ]
+    },
+    "holdout": {
+      "literature": [
+        104,
+        115
+      ],
+      "calibrated": [
+        101,
+        115
+      ]
+    },
+    "cv": {
+      "literature": [
+        253,
+        330
+      ],
+      "calibrated": [
+        265,
+        330
+      ]
+    },
+    "ordinals": [
+      18,
+      19
+    ],
+    "matrix": {
+      "median": 65,
+      "pct_ge72": 15.7,
+      "pct_le47": 13.3,
+      "p10": 35,
+      "p90": 73
+    }
+  },
+  "params": {
+    "score.base": 50.0,
+    "score.k": 0.7,
+    "R1.k_loud": 40.0,
+    "R1.k_loud_strong": 20.75,
+    "R1.k_weight": 15.0,
+    "R1.light_boost": 0.355,
+    "R1.fit_offset": 0.1,
+    "R1.fit_span": 0.47,
+    "R3.k_aggr": 102.0,
+    "R3.heat_lover_relief": 0.8837,
+    "R4.k_gap": 20.0,
+    "R4.tolerance": 0.3,
+    "R5.k_gap": 14.0,
+    "R6.k_forgive": 5.6,
+    "R6.k_clean": 3.6,
+    "R6.k_alco": 6.0,
+    "R7.k_neg": 10.1,
+    "R7.k_pos": 5.2,
+    "R8.k_plus": 10.0,
+    "R8.k_fish": 23.2,
+    "R9.roast": 11.6,
+    "R10.k": 10.4,
+    "R11.k_smoke": 13.6,
+    "R12.k": 5.3,
+    "R13.points": 3.3,
+    "R15.points": 4.8,
+    "derived.burn.x0": 7.075,
+    "derived.F_B.bitter": 0.29,
+    "derived.F_D.salt": 0.1,
+    "R3.aggr_tannin": 0.2213
+  },
+  "decision": {
+    "applied": false,
+    "date": "2026-09-23",
+    "why": "На отложенных парах калибровка не лучше литературных значений: 101/115 против 104/115 (потеряно 4, выиграна 1; точный тест Макнемара p = 0.375). Все 4 потери — «плохие» пары, которым подгонка подняла балл выше порога: в обучающем наборе «хороших» пар в пять раз больше, и функция ошибки тянула шкалу вверх. Для честного подбора снисходительность к плохим парам недопустима, поэтому слой не применяется.",
+    "holdout_changes": {
+      "lost": [
+        "T21 beshbarmak × rice_lager 55→62",
+        "R191 dark-chocolate × cabernet 54→60",
+        "R298 baursaki × white_dry 56→62",
+        "R346 dark-chocolate × brut_sparkling 42→50"
+      ],
+      "gained": [
+        "R281 smoked-fish × vodka_neat 53→60"
+      ],
+      "mcnemar_p": 0.375
+    },
+    "next": "Балансировка классов в функции ошибки (--balance, по умолчанию с 2026-09-23) и новая отложенная выборка из дегустации с сомелье Efes и отзывов гостей."
+  }
+}

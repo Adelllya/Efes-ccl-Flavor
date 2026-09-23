@@ -178,9 +178,18 @@ const SECTIONS: { id: string; l: I18nKey }[] = [
               <div class="cr" role="row"><span role="cell">{{ t(m.k) }}</span><span class="num" role="cell">{{ rate(m.lit) }}</span><span class="num strong" role="cell">{{ rate(m.cal) }}</span></div>
             }
           </div>
+        } @else { @if (cand(); as c) {
+          <p class="p"><b>{{ t('method.cal.tried', { n: c.params_changed ?? 0 }) }}</b></p>
+          <div class="ctable mt12" role="table">
+            <div class="ch" role="row"><span role="columnheader">{{ t('method.cal.set') }}</span><span role="columnheader">{{ t('method.cal.lit') }}</span><span role="columnheader">{{ t('method.cal.cal') }}</span></div>
+            @for (m of candMetrics(); track m.k) {
+              <div class="cr" role="row"><span role="cell">{{ t(m.k) }}</span><span class="num strong" role="cell">{{ rate(m.lit) }}</span><span class="num" role="cell">{{ rate(m.cal) }}</span></div>
+            }
+          </div>
+          @if (ru() && c.decision?.why) { <p class="p mt12">{{ c.decision?.why }}</p> }
         } @else {
           <p class="p"><b>{{ t('method.cal.none') }}</b></p>
-        }
+        } }
         @if (ru()) {
           <p class="p mt12">Что вообще можно калибровать: только {{ calibratable() }} масштабов и порогов в заданных границах (base, k, коэффициенты интенсивности,
             масштабы правил). Знаки и направления правил зафиксированы литературой и не подбираются. Эталонный набор — пары из литературы с ожидаемым
@@ -373,14 +382,17 @@ export class MethodPage {
   readonly cal = computed(() => this.data.calibration);
   readonly changedParams = computed(() => Object.keys(this.data.calibrationParams ?? {}).length);
   readonly calibratable = computed(() => ((this.P as unknown as Loose)['calibratable'] as { params?: unknown[] } | undefined)?.params?.length ?? 0);
-  readonly metrics = computed<Metric[]>(() => {
-    const m = this.cal()?.metrics; if (!m) return [];
+  readonly cand = computed(() => this.data.calibrationCandidate);
+  readonly candMetrics = computed<Metric[]>(() => this.metricsOf(this.cand()?.metrics));
+  readonly metrics = computed<Metric[]>(() => this.metricsOf(this.cal()?.metrics));
+  private metricsOf(m: NonNullable<DataV2Service['calibration']>['metrics'] | undefined): Metric[] {
+    if (!m) return [];
     const pair = (x?: { literature: number[]; calibrated: number[] }, k?: I18nKey): Metric | null =>
       x && k ? { k, lit: this.tuple(x.literature), cal: this.tuple(x.calibrated) } : null;
     const rows = [pair(m.train, 'method.cal.train'), pair(m.cv, 'method.cal.cv'), pair(m.holdout, 'method.cal.holdout')];
     if (m.ordinals?.length) rows.push({ k: 'method.cal.ordinals', lit: null, cal: this.tuple(m.ordinals) });
     return rows.filter((r): r is Metric => !!r);
-  });
+  }
   readonly policyNote = computed(() => this.ru()
     ? this.P.recommend.policy_note.replace('{window}', String(this.P.recommend.partner_tie_window))
     : this.t('v2.pair.policy', { n: this.P.recommend.partner_tie_window }));
