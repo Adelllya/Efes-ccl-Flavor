@@ -21,6 +21,7 @@ const server = createServer((req, res) => {
 const routes = [
   ['home', '/'], ['pair', '/pair'], ['pair-results', '/pair/beshbarmak'], ['pair-custom', '/pair/custom?taste=SPICY&weight=HEAVY&fat=HIGH&cooking=GRILLED&heat=70&name=Лагман'],
   ['drinks', '/drinks'], ['drink-detail', '/drinks/kozel'], ['drink-detail-cider', '/drinks/issyk-wild-kazakh-cider'], ['method', '/method'], ['credits', '/credits'],
+  ['table', '/table?preset=dastarkhan'], ['insights', '/insights'], ['brand', '/brand'],
   ['beers', '/beers'], ['beer-detail', '/beers/efes-pilsener'], ['dishes', '/dishes'], ['academy', '/academy'], ['lesson', '/academy/expert'],
   ['dna', '/dna'], ['qr', '/qr/EBG-05'], ['admin', '/admin'], ['about', '/about'],
   ['venue-menu', '/m/efes-beer-garden-almaty/5'], ['business', '/business'], ['cabinet', '/cabinet'],
