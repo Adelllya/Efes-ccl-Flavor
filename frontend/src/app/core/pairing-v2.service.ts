@@ -18,7 +18,7 @@ export class PairingV2Service {
 
   /** Топ к блюду (диверсификация + политика Efes). venueDrinkIds — только напитки заведения. */
   forDish(dish: DishInput, ctx: Ctx = {}, opts: { top?: number; categories?: readonly string[] | null; venueDrinkIds?: readonly string[] | null } = {}): RecommendResult {
-    return recommend(dish, this.data.guestPool(), ctx, opts.top ?? null, this.data.activeParams(), this.data.classics,
+    return recommend(this.data.forEngine(dish), this.data.guestPool(), ctx, opts.top ?? null, this.data.activeParams(), this.data.classics,
       opts.categories ?? null, opts.venueDrinkIds ?? null);
   }
 
@@ -26,7 +26,7 @@ export class PairingV2Service {
   tabs(dish: DishInput, ctx: Ctx = {}, venueDrinkIds: readonly string[] | null = null, top = 5): TabResult[] {
     const out: TabResult[] = [];
     for (const g of TAB_GROUPS) {
-      const result = recommend(dish, this.data.guestPool(), ctx, top, this.data.activeParams(), this.data.classics, g.categories, venueDrinkIds);
+      const result = recommend(this.data.forEngine(dish), this.data.guestPool(), ctx, top, this.data.activeParams(), this.data.classics, g.categories, venueDrinkIds);
       if (result.items.length) out.push({ id: g.id, categories: g.categories, result });
     }
     return out;
@@ -34,7 +34,7 @@ export class PairingV2Service {
 
   explain(drinkId: string, dish: DishInput, ctx: Ctx = {}): PairResult | null {
     const b = this.data.drinkProfileById().get(drinkId);
-    return b ? scorePair(b, dish, ctx, this.data.activeParams(), this.data.classics) : null;
+    return b ? scorePair(b, this.data.forEngine(dish), ctx, this.data.activeParams(), this.data.classics) : null;
   }
 
   /** Лучшие блюда к напитку. */

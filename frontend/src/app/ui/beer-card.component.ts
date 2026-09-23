@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { I18nKey, I18nService } from '../core/i18n.service';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../core/data.service';
 import { Brand, PACKAGING_LABELS } from '../core/models';
@@ -19,10 +20,10 @@ import { IconComponent } from './icon.component';
         <span class="badge pk" [class.badge-dark]="brand().packaging_type !== 'DRAFT'" [class.pick]="brand().packaging_type === 'DRAFT'">{{ pkg() }}</span>
       </div>
       <div class="body">
-        <div class="meta"><span class="style">{{ brand().style_label }}</span><span class="abv">{{ abvText() }}</span></div>
+        <div class="meta"><span class="style">{{ i18n.styleLabel(brand()) }}</span><span class="abv">{{ abvText() }}</span></div>
         <h3 class="name">{{ brand().display_name }}</h3>
-        <p class="tag">{{ brand().tagline }}</p>
-        <div class="foot"><span class="origin ellipsis">{{ brand().origin }}</span><ft-icon name="chevron-right" [size]="18" /></div>
+        @if (i18n.locale() === 'ru') { <p class="tag">{{ brand().tagline }}</p> }
+        <div class="foot"><span class="origin ellipsis">{{ i18n.locale() === 'ru' ? brand().origin : '' }}</span><ft-icon name="chevron-right" [size]="18" /></div>
       </div>
     </a>
   `,
@@ -42,7 +43,9 @@ import { IconComponent } from './icon.component';
 export class BeerCardComponent {
   data = inject(DataService);
   brand = input.required<Brand>();
-  pkg = computed(() => PACKAGING_LABELS[this.brand().packaging_type]);
+  i18n = inject(I18nService);
+  /** Слоган и происхождение в brands.json — только по-русски: на kk/en их не показываем, чтобы не мешать языки. */
+  pkg = computed(() => this.i18n.locale() === 'ru' ? PACKAGING_LABELS[this.brand().packaging_type] : this.i18n.t(`beer.pkg.${this.brand().packaging_type}` as I18nKey));
   abvText = computed(() => abv(this.brand()));
   soft = computed(() => (this.brand().accent || '#E5B849') + '33');
 }

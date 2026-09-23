@@ -126,7 +126,14 @@ export class DataV2Service {
   readonly error = signal<string | null>(null);
 
   readonly dishById = computed(() => new Map(this.dishes().map(d => [d.id, d])));
-  readonly dishProfiles = computed<DishProfile[]>(() => { const P = this.activeParams(); return this.dishes().map(d => dishVector(d, P)); });
+  /** Блюдо для движка на языке гостя: название попадает только в тексты причин («…жирность «Бешбармака»…»), на балл не влияет. */
+  forEngine<T extends { id?: unknown; name?: unknown; display_name?: unknown }>(d: T): T {
+    if (this.i18n.locale() === 'ru' || typeof d.id !== 'string' || d.id === 'custom') return d;
+    const ru = String(d.display_name || d.name || d.id);
+    const local = this.i18n.dishNameById(d.id, ru);
+    return local === ru ? d : { ...d, display_name: local };
+  }
+  readonly dishProfiles = computed<DishProfile[]>(() => { const P = this.activeParams(); return this.dishes().map(d => dishVector(this.forEngine(d), P)); });
   readonly dishProfileById = computed(() => new Map(this.dishProfiles().map(p => [p.id, p])));
   readonly drinkById = computed(() => new Map((this.drinks() ?? []).map(d => [d.id, d])));
   readonly drinkProfiles = computed<DrinkProfile[]>(() => { const P = this.activeParams(); return (this.drinks() ?? []).map(d => drinkVector(d, P)); });

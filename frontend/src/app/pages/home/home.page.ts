@@ -9,9 +9,10 @@ import { VenueService } from '../../core/venue.service';
 import { IconComponent, IconName } from '../../ui/icon.component';
 import { BeerCardComponent } from '../../ui/beer-card.component';
 import { SectionHeadComponent } from '../../ui/section.component';
+import { I18nKey, I18nService } from '../../core/i18n.service';
 import factsJson from '../../../../../data/facts.json';
 
-interface Scenario { id: string; icon: string; title: string; desc: string; link: any[]; query?: Record<string, string>; badge: string; }
+interface Scenario { id: string; icon: string; title: I18nKey; desc: I18nKey; link: any[]; query?: Record<string, string>; badge: I18nKey; }
 
 @Component({
   selector: 'ft-home',
@@ -22,65 +23,65 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
     <!-- HERO -->
     <section class="hero">
       <span class="eyebrow reveal">OneIdea Championship 2026 × Efes Kazakhstan</span>
-      <h1 class="reveal reveal-1">Что выберешь <span class="grad-text">сегодня?</span></h1>
-      <p class="lede reveal reveal-2">Flavor Tree переводит вкус напитка и блюда в числа и объясняет, почему именно эта пара работает — пиво, сидр, вино, коктейль или кумыс. Без регистрации, за 15 секунд.</p>
+      <h1 class="reveal reveal-1">{{ t('home.h1a') }} <span class="grad-text">{{ t('home.h1b') }}</span></h1>
+      <p class="lede reveal reveal-2">{{ t('home.lede') }}</p>
 
       <form class="search hero-search reveal reveal-3" role="search" (submit)="submit($event)">
         <ft-icon name="search" />
-        <input class="input" type="search" name="q" autocomplete="off" enterkeyhint="search" placeholder="Что вы едите? Бешбармак, стейк, суши…" [ngModel]="q()" (ngModelChange)="q.set($event)" (focus)="focused.set(true)" (blur)="blurSoon()" aria-label="Поиск блюда" />
-        <button type="submit" class="btn btn-primary go" aria-label="Подобрать"><ft-icon name="arrow-right" /></button>
+        <input class="input" type="search" name="q" autocomplete="off" enterkeyhint="search" [placeholder]="t('home.search.ph')" [ngModel]="q()" (ngModelChange)="q.set($event)" (focus)="focused.set(true)" (blur)="blurSoon()" [attr.aria-label]="t('home.search.aria')" />
+        <button type="submit" class="btn btn-primary go" [attr.aria-label]="t('home.search.go')"><ft-icon name="arrow-right" /></button>
         @if (focused() && hits().length) {
           <ul class="suggest" role="listbox">
             @for (h of hits(); track h.dish.id) {
-              <li><button type="button" (mousedown)="go(h.dish.id)"><span>{{ h.dish.emoji }}</span><span class="grow">{{ h.dish.display_name || h.dish.name }}</span><span class="muted xs">{{ cuisineOf(h.dish.cuisine) }}</span></button></li>
+              <li><button type="button" (mousedown)="go(h.dish.id)"><span>{{ h.dish.emoji }}</span><span class="grow">{{ i18n.dishName({ id: h.dish.id, display_name: h.dish.display_name || h.dish.name }) }}</span><span class="muted xs">{{ cuisineOf(h.dish.cuisine) }}</span></button></li>
             }
           </ul>
         }
       </form>
-      <a routerLink="/scan" class="scan-cta reveal reveal-4"><span class="sc-ico">📷</span><span><b>Сфотографируйте блюдо</b><br><span class="dim sm">ИИ-сомелье распознает еду или этикетку и подберёт пару</span></span><ft-icon name="chevron-right" /></a>
+      <a routerLink="/scan" class="scan-cta reveal reveal-4"><span class="sc-ico">📷</span><span><b>{{ t('home.scan.t') }}</b><br><span class="dim sm">{{ t('home.scan.d') }}</span></span><ft-icon name="chevron-right" /></a>
 
       <div class="choices reveal reveal-4">
         <a routerLink="/pair" class="choice">
           <span class="ch-ico"><ft-icon name="dish" [size]="28" /></span>
-          <span class="ch-t">У меня есть <em>блюдо</em></span>
-          <span class="ch-d">Лучшие напитки из всех категорий — с причинами и уровнем доказательности</span>
-          <span class="ch-cta">Выбрать <ft-icon name="arrow-right" [size]="16" /></span>
+          <span class="ch-t">{{ t('home.ch.have') }} <em>{{ t('home.ch.dish') }}</em>{{ t('home.ch.post') }}</span>
+          <span class="ch-d">{{ t('home.ch.dishD') }}</span>
+          <span class="ch-cta">{{ t('home.ch.cta') }} <ft-icon name="arrow-right" [size]="16" /></span>
         </a>
         <a routerLink="/drinks" class="choice alt">
           <span class="ch-ico"><ft-icon name="glass" [size]="28" /></span>
-          <span class="ch-t">У меня есть <em>напиток</em></span>
-          <span class="ch-d">Покажу профиль вкуса, откуда взяты числа, и блюда, с которыми он звучит</span>
-          <span class="ch-cta">Выбрать <ft-icon name="arrow-right" [size]="16" /></span>
+          <span class="ch-t">{{ t('home.ch.have') }} <em>{{ t('home.ch.drink') }}</em>{{ t('home.ch.post') }}</span>
+          <span class="ch-d">{{ t('home.ch.drinkD') }}</span>
+          <span class="ch-cta">{{ t('home.ch.cta') }} <ft-icon name="arrow-right" [size]="16" /></span>
         </a>
       </div>
-      <a routerLink="/table" [queryParams]="{ preset: 'dastarkhan' }" class="scan-cta table-cta reveal reveal-4"><span class="sc-ico">🍽️</span><span><b>Весь стол сразу — дастархан</b><br><span class="dim sm">До 12 блюд: один напиток на весь стол или сет бокалов с порядком подачи</span></span><ft-icon name="chevron-right" /></a>
+      <a routerLink="/table" [queryParams]="{ preset: 'dastarkhan' }" class="scan-cta table-cta reveal reveal-4"><span class="sc-ico">🍽️</span><span><b>{{ t('home.table.t') }}</b><br><span class="dim sm">{{ t('home.table.d') }}</span></span><ft-icon name="chevron-right" /></a>
 
       <div class="stats reveal reveal-5">
-        <span><b>{{ v2.drinks() ? v2.stats().drinks : '…' }}</b> напитков · {{ v2.drinks() ? v2.stats().nonEfes : '…' }} не Efes</span>
-        <span><b>{{ v2.stats().dishes }}</b> блюд · {{ nCuisines() }} кухонь</span>
-        <span><b>{{ nRules() }}</b> правил · {{ nVetoes() }} вето</span>
-        <span><b>{{ v2.classicsList.length }}</b> классических пар с источником</span>
+        <span><b>{{ v2.drinks() ? v2.stats().drinks : '…' }}</b> {{ t('home.st.drinks', { m: v2.drinks() ? v2.stats().nonEfes : '…' }) }}</span>
+        <span><b>{{ v2.stats().dishes }}</b> {{ t('home.st.dishes', { c: nCuisines() }) }}</span>
+        <span><b>{{ nRules() }}</b> {{ t('home.st.rules', { v: nVetoes() }) }}</span>
+        <span><b>{{ v2.classicsList.length }}</b> {{ t('home.st.classics') }}</span>
       </div>
     </section>
 
     @if (venue.session(); as s) {
       <a class="soft venue-banner" routerLink="/qr/{{ s.token }}">
         <ft-icon name="map-pin" [size]="22" />
-        <span><b>{{ s.venue.name }}</b>, стол {{ s.table }} — подбор учитывает карту заведения ({{ s.venue.brands.length }} сортов в наличии)</span>
+        <span><b>{{ s.venue.name }}</b>{{ t('home.venue', { table: s.table, n: s.venue.brands.length }) }}</span>
         <ft-icon name="chevron-right" />
       </a>
     }
 
     <!-- СЦЕНАРИИ -->
     <section class="section">
-      <ft-section-head eyebrow="Экспресс-сценарии" title="Готовые ответы за один клик" sub="Повод или настроение — движок уже посчитал" />
+      <ft-section-head [eyebrow]="t('home.sc.eyebrow')" [title]="t('home.sc.title')" [sub]="t('home.sc.sub')" />
       <div class="grid grid-3">
         @for (s of scenarios; track s.id) {
           <a class="card hover card-p sc" [routerLink]="s.link" [queryParams]="s.query || null">
             <span class="sc-ico">{{ s.icon }}</span>
-            <h3>{{ s.title }}</h3>
-            <p class="dim sm">{{ s.desc }}</p>
-            <div class="flex jb ac mt12"><span class="badge">{{ s.badge }}</span><span class="amber b sm">Открыть →</span></div>
+            <h3>{{ t(s.title) }}</h3>
+            <p class="dim sm">{{ t(s.desc) }}</p>
+            <div class="flex jb ac mt12"><span class="badge">{{ t(s.badge) }}</span><span class="amber b sm">{{ t('home.sc.open') }}</span></div>
           </a>
         }
       </div>
@@ -88,7 +89,7 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
 
     <!-- КАК РАБОТАЕТ -->
     <section class="section">
-      <ft-section-head eyebrow="Механика" title="Как Flavor Tree подбирает пару" sub="Не «нейросеть угадала», а сенсорика, которую можно проверить" />
+      <ft-section-head [eyebrow]="t('home.how.eyebrow')" [title]="t('home.how.title')" [sub]="t('home.how.sub')" />
       <div class="grid grid-3">
         @for (st of steps(); track st.n) {
           <div class="card card-p step">
@@ -99,31 +100,31 @@ interface Scenario { id: string; icon: string; title: string; desc: string; link
           </div>
         }
       </div>
-      <div class="center mt16"><a routerLink="/method" class="btn btn-ghost">Как мы считаем: правила, источники, ограничения <ft-icon name="arrow-right" [size]="16" /></a></div>
+      <div class="center mt16"><a routerLink="/method" class="btn btn-ghost">{{ t('home.method') }} <ft-icon name="arrow-right" [size]="16" /></a></div>
     </section>
 
     <!-- СОРТА -->
     <section class="section">
-      <ft-section-head eyebrow="Портфель" title="Сорта Efes Kazakhstan" sub="Каждый — с вкусовой пирамидой и подачей"><a routerLink="/beers" class="btn btn-secondary btn-sm hide-mobile">Все {{ data.stats().brands }} сортов</a></ft-section-head>
+      <ft-section-head [eyebrow]="t('home.pf.eyebrow')" [title]="t('home.pf.title')" [sub]="t('home.pf.sub')"><a routerLink="/beers" class="btn btn-secondary btn-sm hide-mobile">{{ t('home.pf.all', { n: data.stats().brands }) }}</a></ft-section-head>
       <div class="scroll-x">
         @for (b of featured(); track b.id) { <div class="fb"><ft-beer-card [brand]="b" /></div> }
-        <a routerLink="/beers" class="card hover fb more"><ft-icon name="arrow-right" [size]="26" /><span>Все сорта</span></a>
+        <a routerLink="/beers" class="card hover fb more"><ft-icon name="arrow-right" [size]="26" /><span>{{ t('home.pf.more') }}</span></a>
       </div>
     </section>
 
     <!-- ФАКТ + АКАДЕМИЯ -->
     <section class="section grid grid-2">
       <div class="soft card-p fact">
-        <span class="eyebrow">Интересный факт</span>
-        <div class="fact-body pop" [attr.key]="factIdx()"><span class="fact-emoji">{{ fact().emoji }}</span><p>{{ fact().text }}</p></div>
-        <div class="flex g8 mt12"><button type="button" class="btn btn-secondary btn-sm" (click)="nextFact()"><ft-icon name="refresh" [size]="16" /> Ещё факт</button><span class="muted xs" style="align-self:center">{{ factIdx() + 1 }} / {{ facts.length }}</span></div>
+        <span class="eyebrow">{{ t('home.fact') }}</span>
+        <div class="fact-body pop" [attr.key]="factIdx()"><span class="fact-emoji">{{ fact().emoji }}</span><p>{{ factText() }}</p></div>
+        <div class="flex g8 mt12"><button type="button" class="btn btn-secondary btn-sm" (click)="nextFact()"><ft-icon name="refresh" [size]="16" /> {{ t('home.fact.next') }}</button><span class="muted xs" style="align-self:center">{{ factIdx() + 1 }} / {{ facts.length }}</span></div>
       </div>
       <div class="card card-p acad">
-        <span class="eyebrow">Школа сомелье</span>
+        <span class="eyebrow">{{ t('home.acad') }}</span>
         <h3 class="mt8">{{ progress.level().title }} · {{ progress.xp() }} XP</h3>
-        <p class="dim sm mt8">{{ progress.nextLevel() ? 'До уровня «' + progress.nextLevel()!.title + '» — ' + (progress.nextLevel()!.xp_required - progress.xp()) + ' XP' : 'Максимальный уровень достигнут' }}</p>
+        <p class="dim sm mt8">{{ progress.nextLevel() ? t('home.acad.next', { title: progress.nextLevel()!.title, xp: progress.nextLevel()!.xp_required - progress.xp() }) : t('home.acad.max') }}</p>
         <div class="bar mt12"><i [style.width.%]="progress.levelProgress() * 100"></i></div>
-        <div class="flex g8 mt16 wrap"><a routerLink="/academy" class="btn btn-primary btn-sm"><ft-icon name="book" [size]="16" /> Учиться</a><a routerLink="/dna" class="btn btn-secondary btn-sm"><ft-icon name="user" [size]="16" /> Мой Flavor DNA</a></div>
+        <div class="flex g8 mt16 wrap"><a routerLink="/academy" class="btn btn-primary btn-sm"><ft-icon name="book" [size]="16" /> {{ t('home.acad.learn') }}</a><a routerLink="/dna" class="btn btn-secondary btn-sm"><ft-icon name="user" [size]="16" /> {{ t('home.acad.dna') }}</a></div>
       </div>
     </section>
 
@@ -177,6 +178,8 @@ export class HomePage {
   v2 = inject(DataV2Service);
   progress = inject(ProgressService);
   venue = inject(VenueService);
+  i18n = inject(I18nService);
+  t = this.i18n.t;
   private router = inject(Router);
 
   q = signal('');
@@ -187,27 +190,28 @@ export class HomePage {
   readonly nRules = computed(() => Object.entries(this.v2.params as unknown as Record<string, { enabled?: boolean }>).filter(([k, v]) => /^R\d+$/.test(k) && v?.enabled !== false).length);
   readonly nVetoes = computed(() => this.v2.params.vetoes.order.length);
   featured = computed(() => ['efes-pilsener', 'kozel', 'legenda-777', 'khmelnoy-los', 'wukong-ju', 'stary-melnik'].map(id => this.data.brand(id)!).filter(Boolean));
-  readonly facts = factsJson as { emoji: string; text: string }[];
+  readonly facts = factsJson as { emoji: string; text: string; text_kk?: string; text_en?: string }[];
   factIdx = signal(Math.floor(Math.random() * this.facts.length));
   fact = computed(() => this.facts[this.factIdx()]);
+  factText = computed(() => { const f = this.fact(), l = this.i18n.locale(); return (l === 'kk' ? f.text_kk : l === 'en' ? f.text_en : null) ?? f.text; });
 
   readonly scenarios: Scenario[] = [
-    { id: 'kz', icon: '🥩', title: 'Казахское застолье', desc: 'Бешбармак, казы, куырдак — жир и умами: что их режет лучше — пузырьки, кислота или танин.', link: ['/pair', 'beshbarmak'], badge: 'Казахская кухня' },
-    { id: 'grill', icon: '🔥', title: 'Мясо на гриле', desc: 'Шашлык, стейк, рёбрышки — корочка и дым ищут обжарку, карамель и танин.', link: ['/pair', 'shashlyk'], query: { occasion: 'evening' }, badge: 'Вечер' },
-    { id: 'hot', icon: '☀️', title: 'Освежиться в жару', desc: 'Повод «жара» поднимает лёгкое, холодное и с пузырьками.', link: ['/pair', 'edamame'], query: { occasion: 'hot' }, badge: 'Свежесть 5–7 °C' },
-    { id: 'sushi', icon: '🍣', title: 'Суши и азиатский ужин', desc: 'Деликатная рыба не терпит громкого и горького — нужно чистое и лёгкое.', link: ['/pair', 'sushi'], badge: 'Японская кухня' },
-    { id: 'spicy', icon: '🌶️', title: 'Острое', desc: 'Сахар, молочный белок и холод гасят жжение; спирт и сильная горечь его разжигают.', link: ['/pair', 'buffalo-wings'], badge: 'Ловушка №1' },
-    { id: 'dessert', icon: '🥧', title: 'Десерт', desc: 'Напиток не должен быть суше десерта — иначе покажется кислым и водянистым.', link: ['/pair', 'strudel'], query: { occasion: 'dessert' }, badge: 'Правило сладости' },
+    { id: 'kz', icon: '🥩', title: 'home.sc.kz.t', desc: 'home.sc.kz.d', link: ['/pair', 'beshbarmak'], badge: 'home.sc.kz.b' },
+    { id: 'grill', icon: '🔥', title: 'home.sc.grill.t', desc: 'home.sc.grill.d', link: ['/pair', 'shashlyk'], query: { occasion: 'evening' }, badge: 'home.sc.grill.b' },
+    { id: 'hot', icon: '☀️', title: 'home.sc.hot.t', desc: 'home.sc.hot.d', link: ['/pair', 'edamame'], query: { occasion: 'hot' }, badge: 'home.sc.hot.b' },
+    { id: 'sushi', icon: '🍣', title: 'home.sc.sushi.t', desc: 'home.sc.sushi.d', link: ['/pair', 'sushi'], badge: 'home.sc.sushi.b' },
+    { id: 'spicy', icon: '🌶️', title: 'home.sc.spicy.t', desc: 'home.sc.spicy.d', link: ['/pair', 'buffalo-wings'], badge: 'home.sc.spicy.b' },
+    { id: 'dessert', icon: '🥧', title: 'home.sc.dessert.t', desc: 'home.sc.dessert.d', link: ['/pair', 'strudel'], query: { occasion: 'dessert' }, badge: 'home.sc.dessert.b' },
   ];
   readonly steps = computed<{ n: string; icon: IconName; title: string; text: string }[]>(() => [
-    { n: '01', icon: 'glass', title: 'Напиток → вектор', text: 'Крепость с этикетки, IBU от производителя, профиль стиля по BJCP — 14 осей: сладость, кислотность, горечь, танины, газация, тело, обжарка, дым… У каждого профиля есть надёжность и источник.' },
-    { n: '02', icon: 'dish', title: 'Блюдо → вектор', text: `${this.v2.stats().dishes} блюд размечены по 16 осям: соль, жир, умами, острота, дым, корочка, свежесть, рыбий жир. Своё блюдо можно описать за 4 шага — той же шкалой.` },
-    { n: '03', icon: 'bolt', title: `${this.nRules()} правил → оценка`, text: `Очищение жира, острота, сладость, танины и белок, мосты ароматов — у каждого правила источник и уровень доказательности A–D. ${this.nVetoes()} вето ставят потолок баллу. Балл от бренда не зависит.` },
+    { n: '01', icon: 'glass', title: this.t('home.how.1t'), text: this.t('home.how.1d') },
+    { n: '02', icon: 'dish', title: this.t('home.how.2t'), text: this.t('home.how.2d', { n: this.v2.stats().dishes }) },
+    { n: '03', icon: 'bolt', title: this.t('home.how.3t', { r: this.nRules() }), text: this.t('home.how.3d', { v: this.nVetoes() }) },
   ]);
 
   constructor() { effect(() => { const id = setInterval(() => this.nextFact(), 9000); return () => clearInterval(id); }); }
 
-  cuisineOf(c: string[] | undefined): string { return c?.length ? cuisineLabel(c[0], 'ru') : ''; }
+  cuisineOf(c: string[] | undefined): string { return c?.length ? cuisineLabel(c[0], this.i18n.locale()) : ''; }
   submit(e: Event): void { e.preventDefault(); const h = this.hits()[0]; if (h) this.go(h.dish.id); else this.router.navigate(['/pair'], { queryParams: { q: this.q() } }); }
   go(id: string): void { this.router.navigate(['/pair', id]); }
   blurSoon(): void { setTimeout(() => this.focused.set(false), 150); }

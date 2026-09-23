@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DataV2Service, DishV2 } from '../../core/data-v2.service';
 import { COOKING_LABELS, FAT_LABELS, TASTE_LABELS, WEIGHT_LABELS } from '../../core/pairing.service';
 import { VenueService } from '../../core/venue.service';
-import { I18nService } from '../../core/i18n.service';
+import { I18nKey, I18nService } from '../../core/i18n.service';
 import { cuisineLabel } from '../../core/cuisines-v2';
 import { Cooking, Fat, Taste, Weight } from '../../core/models';
 import { IconComponent } from '../../ui/icon.component';
@@ -28,54 +28,54 @@ type Step = 'pick' | 'taste' | 'body' | 'cook' | 'final';
   template: `
     @if (step() === 'pick') {
       <section class="top">
-        <span class="eyebrow">Шаг 1 из 2</span>
-        <h1>Что вы <span class="grad-text">едите?</span></h1>
-        <p class="dim mt8">Найдите блюдо — или опишите своё, если его нет в базе. Подберём пару из {{ nDrinks() }} напитков: пиво, сидр, вино, коктейли, кумыс, чай.</p>
+        <span class="eyebrow">{{ t('pk.step') }}</span>
+        <h1>{{ t('pk.h1a') }} <span class="grad-text">{{ t('pk.h1b') }}</span></h1>
+        <p class="dim mt8">{{ t('pk.lede', { n: nDrinks() }) }}</p>
         <div class="search mt16">
           <ft-icon name="search" />
-          <input class="input" type="search" autocomplete="off" enterkeyhint="search" placeholder="Название блюда: шашлык, суши, пицца…" [ngModel]="q()" (ngModelChange)="q.set($event)" (keydown.enter)="enter()" aria-label="Поиск блюда" autofocus />
+          <input class="input" type="search" autocomplete="off" enterkeyhint="search" [placeholder]="t('pk.search.ph')" [ngModel]="q()" (ngModelChange)="q.set($event)" (keydown.enter)="enter()" [attr.aria-label]="t('home.search.aria')" autofocus />
         </div>
-        <a routerLink="/scan" class="scan-cta mt12"><span class="sc-ico"><ft-icon name="camera" [size]="22" /></span><span><b>Или просто сфотографируйте</b><br><span class="dim sm">ИИ распознает блюдо и подберёт пару</span></span><ft-icon name="chevron-right" /></a>
+        <a routerLink="/scan" class="scan-cta mt12"><span class="sc-ico"><ft-icon name="camera" [size]="22" /></span><span><b>{{ t('pk.scan.t') }}</b><br><span class="dim sm">{{ t('pk.scan.d') }}</span></span><ft-icon name="chevron-right" /></a>
         @if (venue.venue(); as v) {
-          <div class="soft venue mt12"><ft-icon name="map-pin" [size]="18" /><span>Показываю меню <b>{{ v.name }}</b>. <button type="button" class="link" (click)="onlyMenu.set(!onlyMenu())">{{ onlyMenu() ? 'Показать все ' + data.dishes().length + ' блюд' : 'Только меню заведения' }}</button></span></div>
+          <div class="soft venue mt12"><ft-icon name="map-pin" [size]="18" /><span>{{ t('pk.venue') }} <b>{{ v.name }}</b>. <button type="button" class="link" (click)="onlyMenu.set(!onlyMenu())">{{ onlyMenu() ? t('pk.venue.all', { n: data.dishes().length }) : t('pk.venue.only') }}</button></span></div>
         }
       </section>
 
       @if (q().trim()) {
         <section class="section-sm">
           @if (hits().length) {
-            <div class="tiles">@for (h of hits(); track h.dish.id) { <a class="card hover tile" [routerLink]="['/pair', h.dish.id]" [attr.aria-label]="'Подобрать пару к блюду ' + name(h.dish)">
+            <div class="tiles">@for (h of hits(); track h.dish.id) { <a class="card hover tile" [routerLink]="['/pair', h.dish.id]" [attr.aria-label]="t('pk.tile.aria', { dish: name(h.dish) })">
               <ft-dish-photo [dishId]="h.dish.id" [emoji]="h.dish.emoji || '🍽️'" variant="square" [name]="name(h.dish)" />
               <span class="tb"><span class="tn">{{ name(h.dish) }}</span><span class="tc ellipsis">{{ sub(h.dish) }}</span></span>
             </a> }</div>
-            <button type="button" class="btn btn-secondary btn-block mt12" (click)="startCustom()"><ft-icon name="sparkles" [size]="16" /> Не то? Описать «{{ q() }}» за 4 шага</button>
+            <button type="button" class="btn btn-secondary btn-block mt12" (click)="startCustom()"><ft-icon name="sparkles" [size]="16" /> {{ t('pk.notIt', { q: q() }) }}</button>
           } @else {
-            <div class="card card-p center"><p class="dim">Такого блюда в базе нет.</p><button type="button" class="btn btn-primary mt12" (click)="startCustom()"><ft-icon name="sparkles" /> Описать «{{ q() }}» за 4 шага</button></div>
+            <div class="card card-p center"><p class="dim">{{ t('pk.none') }}</p><button type="button" class="btn btn-primary mt12" (click)="startCustom()"><ft-icon name="sparkles" /> {{ t('pk.describe', { q: q() }) }}</button></div>
           }
         </section>
       } @else {
         <section class="section-sm">
-          <div class="cuisines scroll-x" role="group" aria-label="Кухни">
-            <button type="button" class="chip" [class.on]="cuisine() === ''" [attr.aria-pressed]="cuisine() === ''" (click)="cuisine.set('')">Все <span class="n">{{ base().length }}</span></button>
+          <div class="cuisines scroll-x" role="group" [attr.aria-label]="t('pk.cuisines')">
+            <button type="button" class="chip" [class.on]="cuisine() === ''" [attr.aria-pressed]="cuisine() === ''" (click)="cuisine.set('')">{{ t('pk.all') }} <span class="n">{{ base().length }}</span></button>
             @for (c of cuisines(); track c.id) { <button type="button" class="chip" [class.on]="cuisine() === c.id" [attr.aria-pressed]="cuisine() === c.id" (click)="cuisine.set(cuisine() === c.id ? '' : c.id)">{{ c.label }} <span class="n">{{ c.n }}</span></button> }
           </div>
           <div class="tiles mt16">
             @for (d of list(); track d.id; let i = $index) {
-              <a class="card hover tile" [class]="'card hover tile' + (i < 12 ? ' reveal reveal-' + (i % 5 + 1) : '')" [routerLink]="['/pair', d.id]" [attr.aria-label]="'Подобрать пару к блюду ' + name(d)">
+              <a class="card hover tile" [class]="'card hover tile' + (i < 12 ? ' reveal reveal-' + (i % 5 + 1) : '')" [routerLink]="['/pair', d.id]" [attr.aria-label]="t('pk.tile.aria', { dish: name(d) })">
                 <ft-dish-photo [dishId]="d.id" [emoji]="d.emoji || '🍽️'" variant="square" [name]="name(d)" [priority]="i < 4" />
                 <span class="tb">
                   <span class="tn">{{ name(d) }}</span>
                   <span class="tc ellipsis">{{ sub(d) }}</span>
-                  @if (isHot(d)) { <span class="hot"><ft-icon name="flame" [size]="12" /> острое</span> }
+                  @if (isHot(d)) { <span class="hot"><ft-icon name="flame" [size]="12" /> {{ t('pk.hot') }}</span> }
                 </span>
               </a>
             } @empty {
-              <div class="card card-p center dim empty">Ничего не найдено</div>
+              <div class="card card-p center dim empty">{{ t('pk.empty') }}</div>
             }
           </div>
           <button type="button" class="card hover card-p custom mt16" (click)="startCustom()">
             <span class="ci"><ft-icon name="sparkles" [size]="24" /></span>
-            <span><b>Своё блюдо</b><br><span class="dim sm">Нет в списке? Опишите вкус, вес и способ готовки — движок посчитает вектор по той же шкале, что и у {{ data.dishes().length }} блюд каталога</span></span>
+            <span><b>{{ t('pk.custom.t') }}</b><br><span class="dim sm">{{ t('pk.custom.d', { n: data.dishes().length }) }}</span></span>
             <ft-icon name="chevron-right" />
           </button>
         </section>
@@ -83,42 +83,42 @@ type Step = 'pick' | 'taste' | 'body' | 'cook' | 'final';
     } @else {
       <!-- МАСТЕР «СВОЁ БЛЮДО» -->
       <section class="wiz">
-        <button type="button" class="btn btn-ghost btn-sm" (click)="back()"><ft-icon name="arrow-left" [size]="16" /> Назад</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="back()"><ft-icon name="arrow-left" [size]="16" /> {{ t('pk.back') }}</button>
         <div class="bar thin mt12"><i [style.width.%]="progress()"></i></div>
-        <div class="muted xs mt8">Шаг {{ stepIdx() }} из 4 · {{ name_() || 'своё блюдо' }}</div>
+        <div class="muted xs mt8">{{ t('pk.wiz.step', { i: stepIdx(), name: name_() || t('pk.wiz.own') }) }}</div>
 
         @switch (step()) {
           @case ('taste') {
-            <h2 class="mt12">Какой вкус доминирует?</h2>
+            <h2 class="mt12">{{ t('pk.wiz.taste') }}</h2>
             <div class="opts">
-              @for (t of tastes; track t.id) { <button type="button" class="opt" [class.on]="taste() === t.id" (click)="taste.set(t.id); next('body')"><span class="oe">{{ t.e }}</span><span class="ol">{{ t.l }}</span><span class="od">{{ t.d }}</span></button> }
+              @for (t of tastes; track t.id) { <button type="button" class="opt" [class.on]="taste() === t.id" (click)="taste.set(t.id); next('body')"><span class="oe">{{ t.e }}</span><span class="ol">{{ i18n.tasteLabel(t.id, t.l) }}</span><span class="od">{{ tr(t.d) }}</span></button> }
             </div>
           }
           @case ('body') {
-            <h2 class="mt12">Насколько сытное и жирное?</h2>
-            <div class="lbl mt12">Вес блюда</div>
-            <div class="seg">@for (w of weights; track w.id) { <button type="button" [class.on]="weight() === w.id" (click)="weight.set(w.id)">{{ w.l }}</button> }</div>
-            <div class="lbl mt16">Жирность</div>
-            <div class="seg">@for (f of fats; track f.id) { <button type="button" [class.on]="fat() === f.id" (click)="fat.set(f.id)">{{ f.l }}</button> }</div>
-            <button type="button" class="btn btn-primary btn-block mt24" (click)="next('cook')">Дальше <ft-icon name="arrow-right" /></button>
+            <h2 class="mt12">{{ t('pk.wiz.body') }}</h2>
+            <div class="lbl mt12">{{ t('pk.wiz.weight') }}</div>
+            <div class="seg">@for (w of weights; track w.id) { <button type="button" [class.on]="weight() === w.id" (click)="weight.set(w.id)">{{ i18n.weightLabel(w.id, w.l) }}</button> }</div>
+            <div class="lbl mt16">{{ t('pk.wiz.fat') }}</div>
+            <div class="seg">@for (f of fats; track f.id) { <button type="button" [class.on]="fat() === f.id" (click)="fat.set(f.id)">{{ i18n.fatLabel(f.id, f.l) }}</button> }</div>
+            <button type="button" class="btn btn-primary btn-block mt24" (click)="next('cook')">{{ t('pk.wiz.next') }} <ft-icon name="arrow-right" /></button>
           }
           @case ('cook') {
-            <h2 class="mt12">Как приготовлено?</h2>
+            <h2 class="mt12">{{ t('pk.wiz.cook') }}</h2>
             <div class="opts">
-              @for (c of cooks; track c.id) { <button type="button" class="opt" [class.on]="cooking() === c.id" (click)="cooking.set(c.id); next('final')"><span class="oe">{{ c.e }}</span><span class="ol">{{ c.l }}</span></button> }
+              @for (c of cooks; track c.id) { <button type="button" class="opt" [class.on]="cooking() === c.id" (click)="cooking.set(c.id); next('final')"><span class="oe">{{ c.e }}</span><span class="ol">{{ i18n.cookingLabel(c.id, c.l) }}</span></button> }
             </div>
           }
           @case ('final') {
-            <h2 class="mt12">Последний штрих</h2>
-            <div class="lbl mt12">Острота: {{ heatLabel() }}</div>
-            <input type="range" class="range" min="0" max="100" step="5" [ngModel]="heat()" (ngModelChange)="heat.set(+$event)" aria-label="Острота" />
-            <div class="lbl mt16">Название (необязательно)</div>
-            <input class="input" [ngModel]="name_()" (ngModelChange)="name_.set($event)" placeholder="Например: лагман с говядиной" />
+            <h2 class="mt12">{{ t('pk.wiz.final') }}</h2>
+            <div class="lbl mt12">{{ t('pk.wiz.heat', { v: heatLabel() }) }}</div>
+            <input type="range" class="range" min="0" max="100" step="5" [ngModel]="heat()" (ngModelChange)="heat.set(+$event)" [attr.aria-label]="t('pk.wiz.heatAria')" />
+            <div class="lbl mt16">{{ t('pk.wiz.name') }}</div>
+            <input class="input" [ngModel]="name_()" (ngModelChange)="name_.set($event)" [placeholder]="t('pk.wiz.namePh')" />
             <div class="summary card card-p mt16">
-              <div class="muted xs mb8">Итог</div>
-              <div class="flex g6 wrap"><span class="chip chip-sm">{{ tasteLabel() }}</span><span class="chip chip-sm">{{ weightLabel() }}</span><span class="chip chip-sm">жирность: {{ fatLabel() }}</span><span class="chip chip-sm">{{ cookLabel() }}</span>@if (heat() > 0) { <span class="chip chip-sm"><ft-icon name="flame" [size]="12" /> {{ heat() }}%</span> }</div>
+              <div class="muted xs mb8">{{ t('pk.wiz.sum') }}</div>
+              <div class="flex g6 wrap"><span class="chip chip-sm">{{ tasteLabel() }}</span><span class="chip chip-sm">{{ weightLabel() }}</span><span class="chip chip-sm">{{ t('pk.wiz.fatChip', { v: fatLabel() }) }}</span><span class="chip chip-sm">{{ cookLabel() }}</span>@if (heat() > 0) { <span class="chip chip-sm"><ft-icon name="flame" [size]="12" /> {{ heat() }}%</span> }</div>
             </div>
-            <button type="button" class="btn btn-primary btn-lg btn-block mt16" (click)="finish()"><ft-icon name="sparkles" /> Подобрать пару</button>
+            <button type="button" class="btn btn-primary btn-lg btn-block mt16" (click)="finish()"><ft-icon name="sparkles" /> {{ t('pk.wiz.go') }}</button>
           }
         }
       </section>
@@ -173,7 +173,9 @@ export class PairPage {
   });
   data = inject(DataV2Service);
   venue = inject(VenueService);
-  private i18n = inject(I18nService);
+  i18n = inject(I18nService);
+  t = this.i18n.t;
+  tr(k: I18nKey): string { return this.t(k); }
   private router = inject(Router);
 
   /** ?q= с главной */
@@ -185,10 +187,10 @@ export class PairPage {
   taste = signal<Taste>('UMAMI'); weight = signal<Weight>('MEDIUM'); fat = signal<Fat>('MEDIUM'); cooking = signal<Cooking>('GRILLED');
   heat = signal(0); name_ = signal('');
 
-  readonly tastes: { id: Taste; e: string; l: string; d: string }[] = [
-    { id: 'UMAMI', e: '🍖', l: 'Мясное · умами', d: 'мясо, бульон, сыр' }, { id: 'SALTY', e: '🧂', l: 'Солёное', d: 'закуски, колбасы' },
-    { id: 'SPICY', e: '🌶️', l: 'Острое', d: 'перец, чили, карри' }, { id: 'SWEET', e: '🍰', l: 'Сладкое', d: 'десерт, выпечка' },
-    { id: 'SOUR', e: '🍋', l: 'Кислое', d: 'салаты, соленья' }, { id: 'MIXED', e: '🥘', l: 'Микс', d: 'сладко-солёное' },
+  readonly tastes: { id: Taste; e: string; l: string; d: I18nKey }[] = [
+    { id: 'UMAMI', e: '🍖', l: 'Мясное · умами', d: 'pk.taste.UMAMI' }, { id: 'SALTY', e: '🧂', l: 'Солёное', d: 'pk.taste.SALTY' },
+    { id: 'SPICY', e: '🌶️', l: 'Острое', d: 'pk.taste.SPICY' }, { id: 'SWEET', e: '🍰', l: 'Сладкое', d: 'pk.taste.SWEET' },
+    { id: 'SOUR', e: '🍋', l: 'Кислое', d: 'pk.taste.SOUR' }, { id: 'MIXED', e: '🥘', l: 'Микс', d: 'pk.taste.MIXED' },
   ];
   readonly weights: { id: Weight; l: string }[] = [{ id: 'LIGHT', l: 'Лёгкое' }, { id: 'MEDIUM', l: 'Среднее' }, { id: 'HEAVY', l: 'Сытное' }];
   readonly fats: { id: Fat; l: string }[] = [{ id: 'LOW', l: 'Низкая' }, { id: 'MEDIUM', l: 'Средняя' }, { id: 'HIGH', l: 'Высокая' }];
@@ -199,7 +201,7 @@ export class PairPage {
   ];
 
   /** Число напитков в подборе (каталог грузится лениво; до загрузки — «сотен»). */
-  readonly nDrinks = computed(() => { const n = this.data.stats().inPairing; return n ? String(n) : 'сотен'; });
+  readonly nDrinks = computed(() => { const n = this.data.stats().inPairing; return n ? String(n) : this.t('pk.many'); });
   hits = computed(() => this.data.searchDishes(this.q(), 12));
   /** Блюда, доступные к выбору: карта заведения (v2 хранит id блюд v1) или весь каталог. */
   readonly base = computed<DishV2[]>(() => {
@@ -219,9 +221,9 @@ export class PairPage {
   });
   stepIdx = computed(() => ({ pick: 0, taste: 1, body: 2, cook: 3, final: 4 })[this.step()]);
   progress = computed(() => this.stepIdx() * 25);
-  heatLabel = computed(() => (this.heat() === 0 ? 'не острое' : this.heat() < 40 ? 'слегка' : this.heat() < 75 ? 'заметно' : 'огонь'));
-  tasteLabel = computed(() => TASTE_LABELS[this.taste()]); weightLabel = computed(() => WEIGHT_LABELS[this.weight()]);
-  fatLabel = computed(() => FAT_LABELS[this.fat()]); cookLabel = computed(() => COOKING_LABELS[this.cooking()]);
+  heatLabel = computed(() => this.t(this.heat() === 0 ? 'pk.heat.0' : this.heat() < 40 ? 'pk.heat.1' : this.heat() < 75 ? 'pk.heat.2' : 'pk.heat.3'));
+  tasteLabel = computed(() => this.i18n.tasteLabel(this.taste(), TASTE_LABELS[this.taste()])); weightLabel = computed(() => this.i18n.weightLabel(this.weight(), WEIGHT_LABELS[this.weight()]));
+  fatLabel = computed(() => this.i18n.fatLabel(this.fat(), FAT_LABELS[this.fat()])); cookLabel = computed(() => this.i18n.cookingLabel(this.cooking(), COOKING_LABELS[this.cooking()]));
 
   constructor() {
     queueMicrotask(() => { if (this.qParam()) this.q.set(this.qParam()); });
