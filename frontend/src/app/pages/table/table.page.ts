@@ -798,7 +798,8 @@ export class TablePage implements OnInit {
     this.data.ensureDrinks().catch(() => { /* ошибку показывает шаблон */ });
     // пересчёт плана: блюда, пул, контекст, язык (тексты причин), карта заведения, размер сета
     effect(() => {
-      const dishes = this.tableDishes();
+      // название блюда на языке гостя — только для текстов причин, баллы и кеш от него не зависят
+      const dishes = this.tableDishes().map(d => this.data.forEngine(d));
       const loaded = this.data.drinks() !== null;
       const pool = this.data.guestPool();
       const params = this.data.activeParams();
