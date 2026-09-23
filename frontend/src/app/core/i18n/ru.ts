@@ -250,7 +250,7 @@ export const ru = {
   'v2.src.expert_tasting': 'по дегустации',
   'v2.src.sommelier_override': 'поправлен сомелье',
   'v2.src.measured': 'измерен',
-  'v2.card.promoted': 'Efes · до {n} балла от лучшего',
+  'v2.card.promoted': 'Портфель Efes · {upto} от лучшего',
   'v2.card.classic': 'Классика',
   'v2.card.efes': 'Efes',
   'v2.card.profile': 'Профиль {source} · надёжность {conf}%',

@@ -237,7 +237,7 @@ export const en: Dict = {
   'v2.src.expert_tasting': 'from tasting',
   'v2.src.sommelier_override': 'set by a sommelier',
   'v2.src.measured': 'measured',
-  'v2.card.promoted': 'Efes · within {n} pts of the best',
+  'v2.card.promoted': 'Efes portfolio · {upto} of the best',
   'v2.card.classic': 'Classic',
   'v2.card.efes': 'Efes',
   'v2.card.profile': 'Profile {source} · confidence {conf}%',

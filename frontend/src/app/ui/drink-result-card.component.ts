@@ -25,7 +25,7 @@ const EVIDENCE = new Set(['A', 'B', 'C', 'D', 'G']);
   template: `
     <article class="card dr" [class.top]="rank() === 1" [class.gilded]="rank() === 1">
       @if (crown()) { <div class="crown"><ft-icon name="trophy" [size]="14" /> {{ t('match.best') }}</div> }
-      @else if (promoted()) { <div class="crown promoted" [attr.title]="t('v2.pair.policy', { n: window() })">{{ t('v2.card.promoted', { n: window() }) }}</div> }
+      @else if (promoted()) { <div class="crown promoted" [attr.title]="t('v2.pair.policy', { n: window() })">{{ t('v2.card.promoted', { upto: i18n.count(window(), 'table.upto') }) }}</div> }
       <div class="head">
         <a class="art" [routerLink]="['/drinks', drink().id]" [attr.aria-label]="drink().name">
           <ft-drink-art [drink]="drink()" [size]="rank() === 1 ? 84 : 72" [preferPhoto]="!!drink().image" [glow]="rank() === 1" />

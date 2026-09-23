@@ -245,7 +245,7 @@ export const kk: Dict = {
   'v2.src.expert_tasting': 'дәм тату бойынша',
   'v2.src.sommelier_override': 'сомелье түзеткен',
   'v2.src.measured': 'өлшенген',
-  'v2.card.promoted': 'Efes · үздігінен {n} балға дейін',
+  'v2.card.promoted': 'Efes портфелі · үздіктен {upto}',
   'v2.card.classic': 'Классика',
   'v2.card.efes': 'Efes',
   'v2.card.profile': 'Профиль {source} · сенімділік {conf}%',
