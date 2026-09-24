@@ -1,0 +1,18 @@
+<section class="section bg-warm" id="impact">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge">Что изменится</span>
+      <h2 class="section-title">
+        🌍 <span class="highlight">Impact</span>
+      </h2>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card impact-card" *ngFor="let impact of impacts">
+        <div class="card-icon">{{ impact.icon }}</div>
+        <h3 class="card-title">{{ impact.title }}</h3>
+        <p class="card-text">{{ impact.text }}</p>
+      </div>
+    </div>
+  </div>
+</section>
