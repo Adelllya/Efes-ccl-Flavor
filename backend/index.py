@@ -25,6 +25,9 @@ def _bootstrap_db():
     if executor.migration_plan(executor.loader.graph.leaf_nodes()):
         call_command('migrate', interactive=False, verbosity=0)
 
+    if _load_snapshot():
+        return
+
     from api.models import Brand
     if not Brand.objects.exists():
         # Порядок из BACKEND_DOCUMENTATION.md: seed чистит ноты, поэтому идёт первым,
@@ -35,6 +38,38 @@ def _bootstrap_db():
             except Exception:
                 log.exception('Bootstrap command %s failed', cmd)
     _apply_media_map()
+
+
+def _load_snapshot():
+    """Переносит на сервер копию локальной базы из data/snapshot.json.
+
+    Снимок делается локально командой dumpdata и в git не хранится (в нём хэши паролей).
+    Каждый новый снимок заливается один раз: его хэш запоминается в таблице ft_bootstrap.
+    Возвращает True, если снимок есть в деплое.
+    """
+    import hashlib
+    from pathlib import Path
+
+    from django.core.management import call_command
+    from django.db import connection, transaction
+
+    path = Path(__file__).parent / 'data' / 'snapshot.json'
+    if not path.exists():
+        return False
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    with connection.cursor() as cur:
+        cur.execute('CREATE TABLE IF NOT EXISTS ft_bootstrap (snapshot text PRIMARY KEY)')
+        cur.execute('SELECT 1 FROM ft_bootstrap WHERE snapshot = %s', [digest])
+        if cur.fetchone():
+            return True
+    with transaction.atomic():
+        call_command('flush', interactive=False, verbosity=0)
+        call_command('loaddata', str(path), verbosity=0)
+        with connection.cursor() as cur:
+            cur.execute('DELETE FROM ft_bootstrap')
+            cur.execute('INSERT INTO ft_bootstrap (snapshot) VALUES (%s)', [digest])
+    log.warning('Loaded database snapshot %s', digest[:12])
+    return True
 
 
 def _apply_media_map():
