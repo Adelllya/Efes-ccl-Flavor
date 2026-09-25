@@ -11,7 +11,7 @@ class RegisterLoginTests(TestCase):
         client = client_for()
         resp = client.post('/api/auth/register/', {
             'username': 'newbie', 'email': 'newbie@example.kz',
-            'password': 'very-secret-987', 'first_name': 'Айдар',
+            'password': 'very-secret-987', 'first_name': 'Айдар', 'consent': True,
         }, format='json')
         self.assertEqual(resp.status_code, 201, resp.content)
         self.assertIn('token', resp.data)
@@ -40,6 +40,26 @@ class RegisterLoginTests(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn('username', resp.data['errors'])
 
+    def test_register_requires_privacy_consent(self):
+        payload = {'username': 'noconsent', 'email': 'noconsent@example.kz', 'password': 'very-secret-987'}
+        for consent in (None, False, 'false', ''):
+            body = dict(payload) if consent is None else {**payload, 'consent': consent}
+            resp = client_for().post('/api/auth/register/', body, format='json')
+            self.assertEqual(resp.status_code, 400, consent)
+            self.assertEqual(resp.data['errors']['consent'], ['Подтвердите согласие на обработку персональных данных'])
+        self.assertFalse(User.objects.filter(username='noconsent').exists())
+
+        resp = client_for().post('/api/auth/register/', {**payload, 'consent': True}, format='json')
+        self.assertEqual(resp.status_code, 201, resp.content)
+
+    def test_register_reports_consent_together_with_field_errors(self):
+        resp = client_for().post('/api/auth/register/', {
+            'username': 'john doe', 'email': 'john@example.kz', 'password': 'very-secret-987',
+        }, format='json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('username', resp.data['errors'])
+        self.assertIn('consent', resp.data['errors'])
+
     def test_login_ignores_stale_token_header(self):
         make_user('somm', role='sommelier')
         client = client_for()
@@ -48,6 +68,7 @@ class RegisterLoginTests(TestCase):
         self.assertEqual(resp.status_code, 200, resp.content)
         resp = client.post('/api/auth/register/', {
             'username': 'fresh', 'email': 'fresh@example.kz', 'password': 'very-secret-987',
+            'consent': True,
         }, format='json')
         self.assertEqual(resp.status_code, 201, resp.content)
 

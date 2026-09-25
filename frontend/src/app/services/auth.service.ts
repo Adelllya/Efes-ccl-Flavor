@@ -15,6 +15,8 @@ export interface RegisterData {
   email: string;
   password: string;
   first_name?: string;
+  /** Согласие с /privacy: без true сервер отвечает 400. */
+  consent: boolean;
 }
 
 /** Какие вкладки панели открыты каждой роли. */
@@ -37,6 +39,7 @@ export const FIELD_LABELS: Record<string, string> = {
   email: 'Email',
   password: 'Пароль',
   first_name: 'Имя',
+  consent: 'Согласие',
   old_password: 'Старый пароль',
   new_password: 'Новый пароль',
   role: 'Роль',
