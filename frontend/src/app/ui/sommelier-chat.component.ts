@@ -1,0 +1,590 @@
+import {
+  Component, DestroyRef, ElementRef, EventEmitter, HostListener, Injector, Input, Output, afterNextRender, computed, effect, inject, signal,
+  untracked, viewChild
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
+import { TimeoutError, timeout } from 'rxjs';
+import { ApiService } from '../services/api.service';
+import { AuthService } from '../services/auth.service';
+import { SelectionService } from '../services/selection.service';
+import {
+  AiMessage, AiMode, AiPrefs, AiRequest, AiStatus, AiSuggestion, MenuDrink, MenuEntry, VenueMenu
+} from '../models/flavor-tree.models';
+import { CartLine, addToCart, notifyCartChanged, readCart } from '../pages/venue-menu/cart-storage';
+
+/** Сколько реплик уходит на сервер и сколько знаков в каждой: лимиты API. */
+const MAX_TURNS = 12;
+const MAX_CHARS = 1500;
+/** Сервер ждёт модель до 25 секунд; сверх этого показываем ошибку с повтором. */
+const REQUEST_TIMEOUT_MS = 45000;
+/** Сколько сообщений храним в sessionStorage. */
+const STORED_LIMIT = 40;
+const ADDED_FLASH_MS = 1600;
+
+/** Реплика в чате: у ответа сомелье ещё карточки и то, для какого заведения он дан. */
+interface ChatMessage extends AiMessage {
+  suggestions?: AiSuggestion[];
+  mode?: AiMode;
+  note?: string;
+  /** slug заведения на момент ответа; по нему решаем, можно ли класть карточку в заказ. */
+  venue?: string | null;
+}
+
+interface StoredChat {
+  messages: ChatMessage[];
+  prefs: AiPrefs;
+}
+
+const EMPTY_PREFS: AiPrefs = { no_bitter: false, light: false, no_alcohol: false };
+
+/** Ключ sessionStorage: история отдельная для каждого заведения и для каталога. */
+function historyKey(slug: string | null): string {
+  return `ft_ai_${slug || 'catalog'}`;
+}
+
+function readHistory(key: string): StoredChat | null {
+  try {
+    const raw = sessionStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) as Partial<StoredChat> : null;
+    if (!parsed || !Array.isArray(parsed.messages)) return null;
+    return { messages: parsed.messages, prefs: { ...EMPTY_PREFS, ...(parsed.prefs || {}) } };
+  } catch {
+    return null;
+  }
+}
+
+function writeHistory(key: string, chat: StoredChat | null): void {
+  try {
+    if (!chat) sessionStorage.removeItem(key);
+    else sessionStorage.setItem(key, JSON.stringify({ ...chat, messages: chat.messages.slice(-STORED_LIMIT) }));
+  } catch {
+    // без хранилища история живёт до перезагрузки
+  }
+}
+
+/** Последние реплики для запроса: не больше MAX_TURNS, первая и последняя от гостя. */
+function lastTurns(all: ChatMessage[]): AiMessage[] {
+  let turns = all.slice(-MAX_TURNS);
+  while (turns.length && turns[0].role !== 'user') turns = turns.slice(1);
+  return turns.map(t => ({ role: t.role, content: t.content.slice(0, MAX_CHARS) }));
+}
+
+/** Цена из подписи карточки "0,5 л · 2 200 ₸" -> "2200"; когда меню не загрузилось. */
+function priceFromSubtitle(subtitle: string): string {
+  const m = /(\d[\d\s ]*)\s*₸/.exec(subtitle || '');
+  return m ? m[1].replace(/\D/g, '') : '0';
+}
+
+/** Объём или порция из подписи: последняя часть без цены. */
+function subFromSubtitle(subtitle: string): string {
+  const parts = (subtitle || '').split('·').map(p => p.trim()).filter(p => p && !p.includes('₸'));
+  return parts.length ? parts[parts.length - 1] : '';
+}
+
+/**
+ * ИИ-сомелье: плавающая кнопка и чат для гостя.
+ *
+ * Монтируется один раз в AppComponent. Знает открытое заведение, стол и корзину
+ * через SelectionService и общую запись корзины, поэтому советует из карты бара
+ * и кладёт карточки прямо в заказ. Без заведения советует по общему каталогу.
+ * История хранится в памяти и в sessionStorage отдельно для каждого заведения.
+ */
+@Component({
+  selector: 'app-sommelier-chat',
+  standalone: true,
+  template: `
+    <button
+      type="button"
+      class="ai-fab"
+      [class.ai-fab-open]="open()"
+      [class.ai-fab-lift]="lift && !!slug()"
+      (click)="toggle()"
+      [attr.aria-expanded]="open()"
+      aria-controls="ai-sheet"
+      aria-label="ИИ-сомелье"
+      #fab
+    >
+      <!-- Пузырь диалога с кружкой пива внутри -->
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+        <path d="M9 9h5v6a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1z"/>
+        <path d="M14 10.5h1a1.5 1.5 0 0 1 0 3h-1"/>
+        <path d="M9 9c0-1 .8-1.5 2.5-1.5S14 8 14 9"/>
+      </svg>
+      <span class="ai-fab-label">ИИ-сомелье</span>
+    </button>
+
+    @if (open()) {
+      <section class="ai-sheet" id="ai-sheet" role="dialog" aria-labelledby="ai-title">
+        <header class="ai-head">
+          <div class="ai-head-text">
+            <h2 id="ai-title" class="ai-title">ИИ-сомелье</h2>
+            <span class="ai-sub">{{ contextLabel() }}</span>
+          </div>
+          @if (status(); as s) {
+            <span class="ai-status" [class.ai-status-on]="s.enabled" [title]="s.enabled && s.model ? s.model : ''">{{ s.enabled ? 'Claude' : 'локальный подбор' }}</span>
+          }
+          @if (messages().length) {
+            <button type="button" class="btn-ghost ai-icon-btn" (click)="clearHistory()" aria-label="Начать заново" title="Начать заново">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+          }
+          <button type="button" class="btn-ghost ai-icon-btn" (click)="close()" aria-label="Закрыть">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </header>
+
+        <div class="ai-list" #list aria-live="polite">
+          @if (!messages().length) {
+            <div class="ai-msg ai-msg-bot">
+              <div class="ai-bubble">{{ greeting() }}</div>
+            </div>
+          }
+          @for (m of messages(); track $index) {
+            <div class="ai-msg" [class.ai-msg-me]="m.role === 'user'" [class.ai-msg-bot]="m.role !== 'user'">
+              <div class="ai-bubble">{{ m.content }}</div>
+              @if (m.suggestions?.length) {
+                <div class="ai-cards">
+                  @for (s of m.suggestions ?? []; track $index) {
+                    <article class="ai-card">
+                      <div class="ai-card-head">
+                        <span class="ai-card-kind">{{ s.kind === 'DISH' ? 'Блюдо' : 'Напиток' }}</span>
+                        @if (s.score) {
+                          <span class="ai-score" role="img" [attr.aria-label]="'Совместимость ' + s.score + ' из 5'">
+                            @for (p of pips; track p) {
+                              <span class="ai-pip" [class.on]="p <= s.score"></span>
+                            }
+                            <span class="ai-score-num">{{ s.score }}/5</span>
+                          </span>
+                        }
+                      </div>
+                      <h3 class="ai-card-title">{{ s.title }}</h3>
+                      @if (s.subtitle) { <p class="ai-card-sub">{{ s.subtitle }}</p> }
+                      @if (pairedTitle(m, s); as t) { <p class="ai-card-pair">К блюду «{{ t }}»</p> }
+                      @if (s.reason) { <p class="ai-card-reason">{{ s.reason }}</p> }
+                      <div class="ai-card-actions">
+                        @if (canOrder(m)) {
+                          @if (isAvailable(s)) {
+                            <button type="button" class="ai-card-btn" [class.ai-card-btn-done]="isAdded(s)" (click)="addToOrder(s)">
+                              @if (isAdded(s)) {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                                Добавлено
+                              } @else {
+                                В заказ
+                              }
+                            </button>
+                          } @else {
+                            <span class="ai-card-off">Нет в наличии</span>
+                          }
+                          @if (brandIdOf(s); as b) {
+                            <button type="button" class="ai-card-link" (click)="openBrandPage(b)">О напитке</button>
+                          }
+                        } @else if (canOpen(m, s)) {
+                          <button type="button" class="ai-card-btn ai-card-btn-outline" (click)="openBrandPage(s.id)">Открыть</button>
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              }
+              @if (m.note) { <p class="ai-note">{{ m.note }}</p> }
+            </div>
+          }
+          @if (busy()) {
+            <div class="ai-msg ai-msg-bot">
+              <div class="ai-bubble ai-typing" role="status" aria-label="Сомелье печатает">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          }
+          @if (error()) {
+            <div class="ai-error" role="alert">
+              <span>{{ error() }}</span>
+              <button type="button" class="ai-retry" (click)="retry()">Повторить</button>
+            </div>
+          }
+        </div>
+
+        <div class="ai-foot">
+          <div class="ai-chips" aria-label="Быстрые вопросы">
+            @for (c of chips(); track c) {
+              <button type="button" class="ai-chip" (click)="send(c)" [disabled]="busy()">{{ c }}</button>
+            }
+          </div>
+          <div class="ai-prefs" role="group" aria-label="Пожелания">
+            <button type="button" class="ai-pref" [class.on]="prefs().no_bitter" [attr.aria-pressed]="!!prefs().no_bitter" (click)="togglePref('no_bitter')">Без горечи</button>
+            <button type="button" class="ai-pref" [class.on]="prefs().light" [attr.aria-pressed]="!!prefs().light" (click)="togglePref('light')">Полегче</button>
+            <button type="button" class="ai-pref" [class.on]="prefs().no_alcohol" [attr.aria-pressed]="!!prefs().no_alcohol" (click)="togglePref('no_alcohol')">Без алкоголя</button>
+          </div>
+          <form class="ai-input-row" (submit)="onSubmit($event); inputEl.value = ''">
+            <input
+              id="ai-input"
+              class="ai-input"
+              type="text"
+              [attr.maxlength]="maxChars"
+              autocomplete="off"
+              placeholder="Спросите сомелье..."
+              aria-label="Сообщение сомелье"
+              [value]="input()"
+              (input)="input.set($any($event.target).value)"
+              #inputEl
+            />
+            <button type="submit" class="ai-send" [disabled]="busy() || !input().trim()" aria-label="Отправить">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </button>
+          </form>
+        </div>
+      </section>
+    }
+  `,
+  styles: [`:host { display: contents; }`],
+})
+export class SommelierChatComponent {
+  private api = inject(ApiService);
+  private selection = inject(SelectionService);
+  private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
+
+  /** На странице меню кнопку поднимаем над полосой корзины (на узких экранах). */
+  @Input() lift = false;
+  /** Гость нажал «Открыть» или «О напитке»: AppComponent показывает страницу сорта. */
+  @Output() openBrand = new EventEmitter<string>();
+
+  readonly slug = this.selection.venueSlug;
+  readonly pips = [1, 2, 3, 4, 5];
+  readonly maxChars = MAX_CHARS;
+
+  open = signal(false);
+  status = signal<AiStatus | null>(null);
+  messages = signal<ChatMessage[]>([]);
+  prefs = signal<AiPrefs>({ ...EMPTY_PREFS });
+  input = signal('');
+  busy = signal(false);
+  error = signal('');
+  /** Карточки, которые только что положили в заказ: короткая подсветка. */
+  added = signal<Record<string, boolean>>({});
+
+  /** Меню открытого заведения: первая подсказка, цены и наличие для карточек. */
+  private venueMenu = signal<VenueMenu | null>(null);
+  private menuSlug: string | null = null;
+  private statusRequested = false;
+  private historyLoaded = false;
+  private currentKey = historyKey(null);
+  private addedTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+
+  private readonly list = viewChild<ElementRef<HTMLElement>>('list');
+  private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
+  private readonly fab = viewChild<ElementRef<HTMLButtonElement>>('fab');
+
+  constructor() {
+    // Сменилось заведение: показываем его историю, а не чужую
+    effect(() => {
+      const key = historyKey(this.selection.venueSlug());
+      untracked(() => this.switchHistory(key));
+    }, { allowSignalWrites: true });
+
+    // Лист открыт для заведения: подтягиваем его меню один раз
+    effect(() => {
+      const open = this.open();
+      const slug = this.selection.venueSlug();
+      untracked(() => {
+        if (!open) return;
+        if (slug && slug !== this.menuSlug) this.loadMenu(slug);
+        if (!slug) {
+          this.menuSlug = null;
+          this.venueMenu.set(null);
+        }
+      });
+    }, { allowSignalWrites: true });
+
+    // Новые сообщения и индикатор набора: список листаем вниз
+    effect(() => {
+      this.messages();
+      this.busy();
+      this.error();
+      untracked(() => this.scrollDown());
+    });
+
+    this.destroyRef.onDestroy(() => Object.values(this.addedTimers).forEach(t => clearTimeout(t)));
+  }
+
+  private readonly entries = computed(() => {
+    const m = this.venueMenu();
+    return new Map<string, MenuEntry>(m ? m.sections.flatMap(s => s.items).map(i => [i.id, i]) : []);
+  });
+  private readonly drinks = computed(() => {
+    const m = this.venueMenu();
+    return new Map<string, MenuDrink>(m ? m.drinks.map(d => [d.id, d]) : []);
+  });
+
+  /** Первое блюдо меню, лучше из тех, что в наличии. */
+  private readonly firstDish = computed(() => {
+    const items = this.venueMenu()?.sections.flatMap(s => s.items) ?? [];
+    return (items.find(i => i.is_available) ?? items[0])?.dish.name ?? '';
+  });
+
+  readonly chips = computed(() => {
+    const dish = this.firstDish();
+    return [
+      dish ? `Что взять к блюду «${dish}»?` : 'Что взять к бешбармаку?',
+      'Хочу что-то лёгкое',
+      'Не люблю горькое',
+      'Посоветуй ужин на двоих',
+    ];
+  });
+
+  readonly contextLabel = computed(() => {
+    const slug = this.slug();
+    if (!slug) return 'Совет по каталогу сортов';
+    const name = this.venueMenu()?.venue.name || 'Меню заведения';
+    const table = this.selection.tableNumber();
+    return table && table > 0 ? `${name} · стол ${table}` : name;
+  });
+
+  readonly greeting = computed(() => this.slug()
+    ? 'Здравствуйте! Подскажу, что взять из меню и какой напиток к этому подойдёт. Спросите или выберите подсказку ниже.'
+    : 'Здравствуйте! Помогу выбрать сорт под блюдо или настроение. Спросите или выберите подсказку ниже.');
+
+  // Открытие и закрытие
+
+  toggle(): void {
+    if (this.open()) this.close();
+    else this.show();
+  }
+
+  show(): void {
+    this.open.set(true);
+    if (!this.statusRequested) this.loadStatus();
+    // Отрисовка идёт после события (eventCoalescing), поэтому ждём её, а не setTimeout.
+    // На телефоне клавиатура закрыла бы половину чата, поэтому фокус только на широком экране
+    this.afterRender(() => {
+      if (window.matchMedia('(min-width: 769px)').matches) this.inputEl()?.nativeElement.focus();
+      this.scrollDown();
+    });
+  }
+
+  close(): void {
+    if (!this.open()) return;
+    this.open.set(false);
+    this.afterRender(() => this.fab()?.nativeElement.focus());
+  }
+
+  /** Escape закрывает чат, но не когда открыт лист стола или корзины: там Escape закрывает его. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (document.querySelector('dialog[open]')) return;
+    this.close();
+  }
+
+  // Сообщения
+
+  onSubmit(e: Event): void {
+    e.preventDefault();
+    this.send(this.input());
+  }
+
+  send(text: string): void {
+    const q = (text || '').trim();
+    if (!q || this.busy()) return;
+    this.input.set('');
+    this.error.set('');
+    this.push({ role: 'user', content: q.slice(0, MAX_CHARS) });
+    this.ask();
+  }
+
+  /** Повтор после ошибки: вопрос гостя уже в истории, заново его не добавляем. */
+  retry(): void {
+    if (this.busy()) return;
+    this.error.set('');
+    this.ask();
+  }
+
+  togglePref(key: keyof AiPrefs): void {
+    this.prefs.update(p => ({ ...p, [key]: !p[key] }));
+    this.persist();
+  }
+
+  clearHistory(): void {
+    this.messages.set([]);
+    this.error.set('');
+    this.added.set({});
+    this.persist();
+  }
+
+  private ask(): void {
+    const turns = lastTurns(this.messages());
+    if (!turns.length || turns[turns.length - 1].role !== 'user') return;
+    const key = this.currentKey;
+    const slug = this.slug();
+    const table = this.selection.tableNumber();
+    const p = this.prefs();
+    const body: AiRequest = {
+      venue: slug,
+      table: table && table > 0 ? table : null,
+      messages: turns,
+      prefs: { no_bitter: !!p.no_bitter, light: !!p.light, no_alcohol: !!p.no_alcohol },
+    };
+    if (slug) {
+      const cart = readCart(slug);
+      if (cart.length) body.cart = cart.map(l => ({ kind: l.kind, id: l.id, title: l.title, qty: l.qty }));
+    }
+
+    this.busy.set(true);
+    this.api.askSommelier(body).pipe(timeout(REQUEST_TIMEOUT_MS), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: r => {
+        this.busy.set(false);
+        // Пока ждали, гость открыл другое заведение: ответ относится к прошлой истории
+        if (key !== this.currentKey) return;
+        this.push({
+          role: 'assistant',
+          content: (r?.reply || '').trim() || 'Не нашёл, что посоветовать. Попробуйте спросить иначе.',
+          suggestions: Array.isArray(r?.suggestions) ? r.suggestions : [],
+          mode: r?.mode,
+          note: r?.note || '',
+          venue: slug,
+        });
+      },
+      error: (err: unknown) => {
+        this.busy.set(false);
+        if (key !== this.currentKey) return;
+        this.error.set(this.errorText(err));
+      },
+    });
+  }
+
+  private errorText(err: unknown): string {
+    if (err instanceof TimeoutError) return 'Сомелье долго не отвечает. Попробуйте ещё раз.';
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 429) return 'Слишком много вопросов подряд. Подождите минуту и повторите.';
+      if (err.status === 404) return 'ИИ-сомелье пока недоступен на сервере.';
+    }
+    return AuthService.errorText(err);
+  }
+
+  private push(m: ChatMessage): void {
+    this.messages.update(list => [...list, m]);
+    this.persist();
+  }
+
+  private persist(): void {
+    writeHistory(this.currentKey, { messages: this.messages(), prefs: this.prefs() });
+  }
+
+  private switchHistory(key: string): void {
+    if (key === this.currentKey && this.historyLoaded) return;
+    this.historyLoaded = true;
+    this.currentKey = key;
+    const saved = readHistory(key);
+    this.messages.set(saved?.messages ?? []);
+    this.prefs.set(saved?.prefs ?? { ...EMPTY_PREFS });
+    this.error.set('');
+    this.added.set({});
+  }
+
+  // Карточки
+
+  /** «В заказ» есть только для ответа по заведению, которое открыто сейчас. */
+  canOrder(m: ChatMessage): boolean {
+    const slug = this.slug();
+    return !!slug && m.venue === slug;
+  }
+
+  /** Без заведения id напитка - это сорт каталога, его страницу можно открыть. */
+  canOpen(m: ChatMessage, s: AiSuggestion): boolean {
+    return !m.venue && s.kind === 'DRINK';
+  }
+
+  /** Меню загружено и позиции в нём нет или она снята: класть в заказ нельзя. */
+  isAvailable(s: AiSuggestion): boolean {
+    if (!this.venueMenu()) return true;
+    const row = s.kind === 'DISH' ? this.entries().get(s.id) : this.drinks().get(s.id);
+    return !!row?.is_available;
+  }
+
+  /** Сорт каталога за напитком карты бара, чтобы дать ссылку «О напитке». */
+  brandIdOf(s: AiSuggestion): string | null {
+    return s.kind === 'DRINK' ? this.drinks().get(s.id)?.brand ?? null : null;
+  }
+
+  isAdded(s: AiSuggestion): boolean {
+    return !!this.added()[`${s.kind}:${s.id}`];
+  }
+
+  /** Название блюда, к которому предложен напиток: из этого же ответа или из меню. */
+  pairedTitle(m: ChatMessage, s: AiSuggestion): string | null {
+    if (!s.pairs_with || s.kind !== 'DRINK') return null;
+    const inReply = m.suggestions?.find(x => x.kind === 'DISH' && x.id === s.pairs_with);
+    if (inReply) return inReply.title;
+    return this.entries().get(s.pairs_with)?.dish.name ?? null;
+  }
+
+  addToOrder(s: AiSuggestion): void {
+    const slug = this.slug();
+    if (!slug || !this.isAvailable(s)) return;
+    addToCart(slug, this.lineFor(s));
+    notifyCartChanged(slug);
+    const key = `${s.kind}:${s.id}`;
+    this.added.update(a => ({ ...a, [key]: true }));
+    if (this.addedTimers[key]) clearTimeout(this.addedTimers[key]);
+    this.addedTimers[key] = setTimeout(() => {
+      this.added.update(a => ({ ...a, [key]: false }));
+      delete this.addedTimers[key];
+    }, ADDED_FLASH_MS);
+  }
+
+  openBrandPage(brandId: string): void {
+    this.selection.open(brandId);
+    this.openBrand.emit(brandId);
+    this.close();
+  }
+
+  /** Строка корзины из меню; если меню не загрузилось, цену и объём берём из подписи карточки. */
+  private lineFor(s: AiSuggestion): Omit<CartLine, 'qty'> {
+    if (s.kind === 'DISH') {
+      const e = this.entries().get(s.id);
+      if (e) return { kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price };
+    } else {
+      const d = this.drinks().get(s.id);
+      if (d) return { kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price };
+    }
+    return { kind: s.kind, id: s.id, title: s.title, sub: subFromSubtitle(s.subtitle), price: priceFromSubtitle(s.subtitle) };
+  }
+
+  // Загрузка
+
+  private loadStatus(): void {
+    this.statusRequested = true;
+    this.api.getAiStatus().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: s => this.status.set(s),
+      error: () => this.status.set({ enabled: false, model: '', mode: 'local' }),
+    });
+  }
+
+  private loadMenu(slug: string): void {
+    this.menuSlug = slug;
+    // Меню прошлого заведения не подходит для цен и наличия нового
+    this.venueMenu.set(null);
+    this.api.getVenueMenu(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: m => {
+        if (this.menuSlug === slug) this.venueMenu.set(m);
+      },
+      error: () => {
+        // Без меню карточки работают по подписи, а первая подсказка остаётся общей
+        if (this.menuSlug === slug) this.venueMenu.set(null);
+      },
+    });
+  }
+
+  private scrollDown(): void {
+    this.afterRender(() => {
+      const el = this.list()?.nativeElement;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+  }
+
+  /** Выполнить после ближайшей отрисовки: к этому моменту @if уже вставил элементы в DOM. */
+  private afterRender(fn: () => void): void {
+    afterNextRender(fn, { injector: this.injector });
+  }
+}

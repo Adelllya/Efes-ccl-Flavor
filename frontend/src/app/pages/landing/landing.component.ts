@@ -1,10 +1,15 @@
-import { Component, OnInit, inject, signal, computed, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, Output, EventEmitter, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { Brand, Dish, FoodPairing, CuisineType } from '../../models/flavor-tree.models';
+import { SelectionService } from '../../services/selection.service';
+import { Brand, Dish, FoodPairing, CuisineType, FoodIcon, SiteSettings } from '../../models/flavor-tree.models';
 import { ActiveTab } from '../../app.component';
 import { HeroComponent } from './hero/hero.component';
+import { DishWizardComponent } from './dish-wizard.component';
+import { DishResultComponent } from './dish-result.component';
+import { BeerPairingsComponent } from './beer-pairings.component';
+import { DishProfile, findDish } from './pairing-engine.data';
 
 interface MoodOption {
   id: string;
@@ -19,365 +24,80 @@ interface MoodOption {
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeroComponent],
+  imports: [
+    CommonModule, FormsModule, HeroComponent,
+    DishWizardComponent, DishResultComponent, BeerPairingsComponent,
+  ],
   template: `
-    <!-- ═══════════════════════════════════════════════════════════════
+    <!--
          1. HERO SECTION & VALUE PROPOSITION
-         ═══════════════════════════════════════════════════════════════ -->
-    <app-hero (choose)="scrollToSelector($event)" (dishSearch)="onHeroSearch($event)" />
+         -->
+    @if (stage() === 'idle') {
+      <app-hero (choose)="scrollToSelector($event)" (dishSearch)="onHeroSearch($event)" />
+    }
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         2. ИНТЕРАКТИВНЫЙ ПОДБОРЩИК (ГЛАВНЫЙ ИНСТРУМЕНТ)
-         ═══════════════════════════════════════════════════════════════ -->
+    <!--
+         2. ПОДБОР: ДВА ПУТИ - ОТ БЛЮДА И ОТ НАПИТКА
+         Вход только через две кнопки в hero. Дальше - мастер из четырёх
+         вопросов для блюда либо витрина сортов для напитка.
+         -->
+    @if (stage() !== 'idle') {
     <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel">
-      <div class="flex justify-between items-start flex-wrap gap-lg mb-3xl">
-        <div>
-          <span class="badge badge-accent mb-sm">AI Sommelier Engine</span>
-          <h2 class="section-header" style="margin-bottom: 6px;">Интерактивный навигатор вкуса</h2>
-          <p class="text-muted">Выберите направление поиска: от блюда к сорту или от сорта к идеальной трапезе</p>
-        </div>
-
-        <!-- Переключатель режима: По блюду vs По напитку -->
-        <div class="engine-mode-tabs">
-          <button
-            class="engine-mode-btn"
-            [class.active]="discoveryMode() === 'dish'"
-            (click)="setMode('dish')"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-            <span>По блюду → Пиво</span>
-          </button>
-          <button
-            class="engine-mode-btn"
-            [class.active]="discoveryMode() === 'brand'"
-            (click)="setMode('brand')"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
-            <span>По напитку → Блюда</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           РЕЖИМ 1: ПО БЛЮДУ (DISH -> BEER)
-           ═══════════════════════════════════════════════════════════════ -->
-      @if (discoveryMode() === 'dish') {
-        <!-- Кухни / Категории блюд -->
-        <div class="category-pills-row mb-xl">
-          <button
-            class="cat-pill"
-            [class.active]="selectedCuisine() === ''"
-            (click)="selectedCuisine.set('')"
-          >
-            🌐 Все кухни ({{ dishes().length }})
-          </button>
-          <button
-            class="cat-pill"
-            [class.active]="selectedCuisine() === 'KZ'"
-            (click)="selectedCuisine.set('KZ')"
-          >
-            🇰🇿 Казахская (Бешбармак, Казы...)
-          </button>
-          <button
-            class="cat-pill"
-            [class.active]="selectedCuisine() === 'GERMAN'"
-            (click)="selectedCuisine.set('GERMAN')"
-          >
-            🥩 Гриль & Мясо
-          </button>
-          <button
-            class="cat-pill"
-            [class.active]="selectedCuisine() === 'ITALIAN'"
-            (click)="selectedCuisine.set('ITALIAN')"
-          >
-            🍕 Пицца & Паста
-          </button>
-          <button
-            class="cat-pill"
-            [class.active]="selectedCuisine() === 'JAPANESE'"
-            (click)="selectedCuisine.set('JAPANESE')"
-          >
-            🍣 Суши & Азия
-          </button>
-          <button
-            class="cat-pill"
-            [class.active]="selectedCuisine() === 'AMERICAN'"
-            (click)="selectedCuisine.set('AMERICAN')"
-          >
-            🍔 Бургеры & BBQ
-          </button>
-          <button
-            class="cat-pill"
-            [class.active]="selectedCuisine() === 'MEXICAN'"
-            (click)="selectedCuisine.set('MEXICAN')"
-          >
-            🌮 Тако & Острое
-          </button>
-        </div>
-
-        <!-- Поиск блюда -->
-        <div class="dish-search-box mb-xl">
-          <svg class="dish-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input
-            type="text"
-            class="input dish-search-input"
-            [ngModel]="dishSearch()"
-            (ngModelChange)="dishSearch.set($event)"
-            placeholder="Быстрый поиск блюда: например, Бешбармак, Шашлык, Суши, Бургер, Пицца..."
+      @switch (stage()) {
+        @case ('wizard') {
+          <app-dish-wizard
+            [dishes]="dishes()"
+            [icons]="foodIcons()"
+            [restore]="dishProfile()"
+            (done)="onProfileReady($event)"
+            (dishPicked)="onExactDish($event)"
+            (exit)="resetFlow()"
           />
-          @if (dishSearch()) {
-            <button class="search-clear-btn" (click)="dishSearch.set('')">✕</button>
-          }
-        </div>
-
-        <!-- Быстрые чипсы блюд -->
-        <div class="dish-chips-carousel mb-3xl">
-          @for (dish of filteredDishes(); track dish.id) {
-            <button
-              class="dish-chip"
-              [class.active]="selectedDish()?.id === dish.id"
-              (click)="selectDish(dish)"
-            >
-              <span class="dish-chip-flag">{{ getCuisineFlag(dish.cuisine) }}</span>
-              <span class="dish-chip-title">{{ dish.name }}</span>
-              @if (dish.dominant_taste_display) {
-                <span class="dish-chip-taste">{{ dish.dominant_taste_display }}</span>
-              }
-            </button>
-          }
-        </div>
-
-        <!-- КАРТОЧКА РЕКОМЕНДАЦИИ СОМЕЛЬЕ (DISH + BEER MATCH) -->
-        @if (selectedDish(); as dish) {
-          <div class="pairing-result-showcase glass-card p-3xl stagger-item">
-            <!-- Блок выбранного блюда -->
-            <div class="pairing-dish-header mb-2xl">
-              <div class="flex items-center gap-md flex-wrap justify-between">
-                <div>
-                  <div class="flex items-center gap-sm mb-xs">
-                    <span class="badge badge-accent">{{ dish.cuisine_display || dish.cuisine }}</span>
-                    <span class="badge">{{ dish.dominant_taste_display || dish.dominant_taste }}</span>
-                    @if (dish.fat_level_display) {
-                      <span class="badge badge-dark">Жирность: {{ dish.fat_level_display }}</span>
-                    }
-                  </div>
-                  <h3 class="pairing-dish-title">{{ dish.name }}</h3>
-                  <p class="text-muted text-sm">{{ dish.description || (dish.category + ' · ' + dish.cooking_method_display) }}</p>
-                </div>
-                <div class="pairing-dish-status">
-                  <span class="text-xs text-muted font-bold uppercase">Пейринг-анализ</span>
-                  <div class="flex items-center gap-xs text-success font-bold">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                    Готово к подаче
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Главная рекомендация (Пиво) -->
-            @if (topPairingForDish(); as pair) {
-              <div class="matched-beer-box glass-panel p-2xl mb-xl">
-                <div class="matched-beer-grid">
-                  <!-- Бутылка / Превью -->
-                  <div class="matched-beer-visual">
-                    @if (pair.brandObj?.image) {
-                      <img [src]="pair.brandObj?.image" [alt]="pair.brand_name" class="matched-beer-img" />
-                    } @else {
-                      <div class="matched-beer-placeholder">
-                        <span style="font-size: 2.2rem;">🍺</span>
-                        <span class="text-xs font-bold text-muted uppercase">Flavor Tree</span>
-                      </div>
-                    }
-                  </div>
-
-                  <!-- Описание сорта и почему он подходит -->
-                  <div class="matched-beer-info">
-                    <div class="flex justify-between items-start flex-wrap gap-sm mb-xs">
-                      <div>
-                        <span class="badge badge-beer mb-xs">ТОП ВЫБОР СОМЕЛЬЕ</span>
-                        <h4 class="matched-beer-name">{{ pair.brand_name }}</h4>
-                        <span class="text-muted text-sm font-semibold">
-                          {{ pair.brandObj?.style }} · {{ pair.brandObj?.abv ? pair.brandObj?.abv + '% ABV' : '' }}
-                        </span>
-                      </div>
-
-                      <div class="score-pill">
-                        <span class="score-label">Совместимость</span>
-                        <div class="score-val">
-                          <span>⭐</span> {{ pair.compatibility_score }} / 5
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Принцип пейринга -->
-                    <div class="pairing-type-badge mb-md">
-                      <span class="badge badge-type" [ngClass]="'badge-' + pair.pairing_type.toLowerCase()">
-                        {{ getPairingTypeBadge(pair.pairing_type) }}
-                      </span>
-                    </div>
-
-                    <!-- Обоснование вердикта -->
-                    <div class="sommelier-verdict-box mb-lg">
-                      <div class="flex items-center gap-xs text-xs font-bold text-deep uppercase mb-xs">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        Сенсорное обоснование
-                      </div>
-                      <p class="sommelier-verdict-text">«{{ pair.explanation }}»</p>
-                    </div>
-
-                    <!-- Подача & Кнопка Пирамиды -->
-                    <div class="flex items-center justify-between flex-wrap gap-md">
-                      @if (pair.brandObj?.serving_recommendation; as rec) {
-                        <div class="serving-mini-info flex items-center gap-lg text-sm text-muted">
-                          <span>🌡️ <strong>{{ rec.serving_temp_min }}–{{ rec.serving_temp_max }}°C</strong></span>
-                          <span>🍷 <strong>{{ rec.glass_type }}</strong></span>
-                        </div>
-                      }
-                      <button
-                        class="btn-amber btn-sm"
-                        (click)="openPyramidModal(pair.brandObj || pair.brand_name)"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22"/></svg>
-                        Пирамида вкуса (0–15+ сек)
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Альтернативные сорта для этого блюда (если есть) -->
-              @if (alternativePairingsForDish().length > 0) {
-                <div class="alternative-pairings-block">
-                  <h5 class="text-sm font-bold uppercase text-muted mb-md">Другие отличные сочетания с этим блюдом:</h5>
-                  <div class="grid grid-2">
-                    @for (alt of alternativePairingsForDish(); track alt.id) {
-                      <div class="glass-card p-lg flex items-center justify-between gap-md alt-pairing-card" (click)="openPyramidModal(alt.brandObj || alt.brand_name)">
-                        <div>
-                          <div class="flex items-center gap-xs mb-xs">
-                            <span class="font-bold text-foam">{{ alt.brand_name }}</span>
-                            <span class="badge" style="font-size: 0.7rem;">{{ alt.compatibility_score }}/5</span>
-                          </div>
-                          <p class="text-xs text-muted" style="line-height: 1.3;">{{ alt.explanation }}</p>
-                        </div>
-                        <span class="text-beer font-bold" style="font-size: 1.2rem;">→</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            } @else {
-              <!-- Fallback если нет прямой пары -->
-              <div class="glass-panel text-center p-3xl">
-                <p class="text-muted mb-md">Для этого блюда сомелье рекомендует освежающий классический лагер или пильзнер.</p>
-                <button class="btn-amber btn-sm" (click)="openPyramidModal('Efes Pilsener')">Попробовать с Efes Pilsener</button>
-              </div>
-            }
-          </div>
         }
-      }
 
-      <!-- ═══════════════════════════════════════════════════════════════
-           РЕЖИМ 2: ПО НАПИТКУ (BEER -> FOOD)
-           ═══════════════════════════════════════════════════════════════ -->
-      @if (discoveryMode() === 'brand') {
-        <!-- Поиск пива -->
-        <div class="dish-search-box mb-xl">
-          <svg class="dish-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input
-            type="text"
-            class="input dish-search-input"
-            [ngModel]="brandSearch()"
-            (ngModelChange)="brandSearch.set($event)"
-            placeholder="Выберите сорт: Efes Pilsener, Kozel Dark, Wùkōng Jū, Кружка Свежего, Хмельной Лось..."
+        @case ('dish-result') {
+          @if (dishProfile(); as p) {
+            <app-dish-result
+              [profile]="p"
+              [brands]="brands()"
+              [dishes]="dishes()"
+              [pairings]="pairings()"
+              [icons]="foodIcons()"
+              [loaded]="dataLoaded()"
+              [alternatives]="settings().alternatives_count"
+              (openBrand)="openBrandPage($event)"
+              (back)="stage.set('wizard')"
+              (restart)="resetFlow()"
+            />
+          }
+        }
+
+        @case ('brand') {
+          <app-beer-pairings
+            [brands]="brands()"
+            [pairings]="pairings()"
+            [dishes]="dishes()"
+            [icons]="foodIcons()"
+            [loaded]="dataLoaded()"
+            [intro]="settings().pairing_intro"
+            [minScore]="settings().min_score_to_show"
+            [initial]="selectedBrand()"
+            (openBrand)="openBrandPage($event)"
+            (exit)="resetFlow()"
           />
-          @if (brandSearch()) {
-            <button class="search-clear-btn" (click)="brandSearch.set('')">✕</button>
-          }
-        </div>
-
-        <!-- Сетка / карусель сортов -->
-        <div class="grid grid-cards-sm mb-3xl">
-          @for (brand of filteredBrands(); track brand.id) {
-            <div
-              class="glass-card beer-select-card p-lg"
-              [class.active]="selectedBrand()?.id === brand.id"
-              (click)="selectBrand(brand)"
-            >
-              <div class="beer-select-visual">
-                @if (brand.image) {
-                  <img [src]="brand.image" [alt]="brand.name" />
-                } @else {
-                  <span>🍺</span>
-                }
-              </div>
-              <div class="beer-select-meta">
-                <span class="badge" style="font-size: 0.68rem;">{{ brand.style }}</span>
-                <h4 class="beer-select-name">{{ brand.name }}</h4>
-                <span class="text-xs text-muted">{{ brand.abv ? brand.abv + '% ABV' : '' }}</span>
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- РЕЗУЛЬТАТ: БЛЮДА К ВЫБРАННОМУ ПИВУ -->
-        @if (selectedBrand(); as brand) {
-          <div class="pairing-result-showcase glass-card p-3xl stagger-item">
-            <div class="flex justify-between items-start flex-wrap gap-lg mb-2xl">
-              <div>
-                <div class="flex items-center gap-sm mb-xs">
-                  <span class="badge badge-beer">{{ brand.style }}</span>
-                  <span class="badge">{{ brand.abv ? brand.abv + '% ABV' : 'Лагер' }}</span>
-                  @if (brand.is_horeca_only) {
-                    <span class="badge badge-horeca">HoReCa Exclusive</span>
-                  }
-                </div>
-                <h3 style="font-size: 1.8rem; margin: 0;">{{ brand.name }}</h3>
-                <p class="text-muted text-sm mt-xs">{{ brand.description }}</p>
-              </div>
-
-              <button class="btn-outline btn-sm" (click)="openPyramidModal(brand)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22"/></svg>
-                Вкусовая пирамида сорта
-              </button>
-            </div>
-
-            <!-- Список рекомендуемых блюд -->
-            <h4 class="text-md font-bold uppercase text-muted mb-lg flex items-center gap-xs">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-              Идеальные гастропары к {{ brand.name }}:
-            </h4>
-
-            <div class="grid grid-3">
-              @for (pair of pairingsForSelectedBrand(); track pair.id) {
-                <div class="glass-panel p-xl dish-match-item">
-                  <div class="flex justify-between items-center mb-sm">
-                    <span class="badge badge-type" [ngClass]="'badge-' + pair.pairing_type.toLowerCase()">
-                      {{ pair.pairing_type }}
-                    </span>
-                    <span class="font-bold text-beer">⭐ {{ pair.compatibility_score }} / 5</span>
-                  </div>
-                  <h4 class="dish-match-title mb-xs">{{ pair.dish_name }}</h4>
-                  <p class="text-dim text-xs" style="line-height: 1.4;">{{ pair.explanation }}</p>
-                </div>
-              } @empty {
-                <div class="glass-panel text-center p-3xl" style="grid-column: 1 / -1;">
-                  <p class="text-muted">Подбор пар для этого сорта обновляется сомелье. Рекомендуется к легким закускам и мясу на гриле.</p>
-                </div>
-              }
-            </div>
-          </div>
         }
       }
     </section>
+    }
 
-    <!-- ═══════════════════════════════════════════════════════════════
+    <!--
          3. ЭКСПРЕСС-ПОДБОР: ВКУСОВОЙ КОМПАС & НАСТРОЕНИЕ
-         ═══════════════════════════════════════════════════════════════ -->
+         -->
     <section class="page-section mb-4xl">
       <div class="mb-2xl">
         <span class="badge mb-xs">Экспресс-сценарии</span>
         <h2 class="section-header">Что выберешь сегодня?</h2>
-        <p class="section-subtitle">Выберите повод или гастрономическое настроение — получите готовую рекомендацию за 1 клик</p>
+        <p class="section-subtitle">Выберите повод или настроение - получите готовую рекомендацию за 1 клик</p>
       </div>
 
       <div class="grid grid-3">
@@ -398,9 +118,9 @@ interface MoodOption {
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════════
+    <!--
          4. ХРОНОМЕТРАЖ ГЛОТКА (СЕНСОРНАЯ ПИРАМИДА)
-         ═══════════════════════════════════════════════════════════════ -->
+         -->
     <section class="glass-panel p-4xl mb-4xl">
       <div class="text-center max-w-2xl mx-auto mb-3xl">
         <span class="badge badge-accent mb-sm">Методология дегустации</span>
@@ -410,14 +130,14 @@ interface MoodOption {
 
       <div class="grid grid-3">
         <div class="glass-card p-2xl stagger-item pyramid-info-card">
-          <div class="pyramid-time-badge top-time">0–3 сек</div>
+          <div class="pyramid-time-badge top-time">0-3 сек</div>
           <h3 class="mb-sm">Top Notes · Ароматическая вершина</h3>
           <p class="text-dim text-sm mb-md">Первое впечатление при поднесении бокала: эфирные масла хмеля, цитрусовые, хвойные и цветочные летучие ароматы.</p>
           <div class="text-xs font-semibold text-muted">Примеры: Цитрус, Хвоя, Зелёное яблоко, Травы</div>
         </div>
 
         <div class="glass-card p-2xl stagger-item pyramid-info-card">
-          <div class="pyramid-time-badge heart-time">3–15 сек</div>
+          <div class="pyramid-time-badge heart-time">3-15 сек</div>
           <h3 class="mb-sm">Heart Notes · Солодовое сердце</h3>
           <p class="text-dim text-sm mb-md">Полнота вкуса и тела на языке: баланс солодовой сладости, хлебной корочки, зерновых тонов и текстуры.</p>
           <div class="text-xs font-semibold text-muted">Примеры: Солод, Карамель, Хлебная корочка, Рис</div>
@@ -432,111 +152,6 @@ interface MoodOption {
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         5. МОДАЛЬНОЕ ОКНО: ПИРАМИДА ВКУСА
-         ═══════════════════════════════════════════════════════════════ -->
-    @if (modalBrand(); as brand) {
-      <div class="modal-overlay" (click)="closePyramidModal()">
-        <div class="modal-content glass-card" (click)="$event.stopPropagation()">
-          <button class="btn-outline modal-close" (click)="closePyramidModal()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            Закрыть
-          </button>
-
-          <div class="flex gap-2xl items-center mb-3xl flex-wrap">
-            @if (brand.image) {
-              <div style="height: 140px; width: 100px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.03); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 8px; flex-shrink: 0;">
-                <img [src]="brand.image" [alt]="brand.name" style="max-height: 100%; max-width: 100%; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.2));" />
-              </div>
-            }
-            <div>
-              <span class="badge mb-xs">{{ brand.style }} · ABV {{ brand.abv ? brand.abv + '%' : 'N/A' }}</span>
-              <h2 style="font-size: 1.8rem; margin: 0;">{{ brand.name }}</h2>
-              <p class="text-muted text-sm">{{ brand.brand_owner || 'Efes Kazakhstan' }}</p>
-            </div>
-          </div>
-
-          <!-- Пирамида слоев -->
-          @if (brand.pyramid) {
-            @if (brand.pyramid.top && brand.pyramid.top.length > 0) {
-              <div class="glass-panel pyramid-layer mb-lg">
-                <h3 class="pyramid-layer-title">Top Notes (0–3 сек · Аромат)</h3>
-                @for (item of brand.pyramid.top; track item.id) {
-                  <div class="pyramid-note">
-                    <div class="pyramid-note-header">
-                      <span>{{ item.icon }} {{ item.name }}</span>
-                      <span>Интенсивность: {{ item.intensity }}/10</span>
-                    </div>
-                    <div class="progress-track">
-                      <div class="progress-fill" [style.width.%]="item.intensity * 10"></div>
-                    </div>
-                    @if (item.sommelier_note) {
-                      <p class="pyramid-note-comment">«{{ item.sommelier_note }}»</p>
-                    }
-                  </div>
-                }
-              </div>
-            }
-
-            @if (brand.pyramid.heart && brand.pyramid.heart.length > 0) {
-              <div class="glass-panel pyramid-layer mb-lg">
-                <h3 class="pyramid-layer-title">Heart Notes (3–15 сек · Тело)</h3>
-                @for (item of brand.pyramid.heart; track item.id) {
-                  <div class="pyramid-note">
-                    <div class="pyramid-note-header">
-                      <span>{{ item.icon }} {{ item.name }}</span>
-                      <span>Интенсивность: {{ item.intensity }}/10</span>
-                    </div>
-                    <div class="progress-track">
-                      <div class="progress-fill" [style.width.%]="item.intensity * 10"></div>
-                    </div>
-                    @if (item.sommelier_note) {
-                      <p class="pyramid-note-comment">«{{ item.sommelier_note }}»</p>
-                    }
-                  </div>
-                }
-              </div>
-            }
-
-            @if (brand.pyramid.base && brand.pyramid.base.length > 0) {
-              <div class="glass-panel pyramid-layer mb-lg">
-                <h3 class="pyramid-layer-title">Base Notes (15+ сек · Послевкусие)</h3>
-                @for (item of brand.pyramid.base; track item.id) {
-                  <div class="pyramid-note">
-                    <div class="pyramid-note-header">
-                      <span>{{ item.icon }} {{ item.name }}</span>
-                      <span>Интенсивность: {{ item.intensity }}/10</span>
-                    </div>
-                    <div class="progress-track">
-                      <div class="progress-fill" [style.width.%]="item.intensity * 10"></div>
-                    </div>
-                    @if (item.sommelier_note) {
-                      <p class="pyramid-note-comment">«{{ item.sommelier_note }}»</p>
-                    }
-                  </div>
-                }
-              </div>
-            }
-          } @else {
-            <p class="text-center text-muted p-2xl">Сенсорная пирамида для данного сорта в обработке сомелье.</p>
-          }
-
-          <!-- Подача -->
-          @if (brand.serving_recommendation; as rec) {
-            <div class="glass-card p-xl serving-info mt-xl">
-              <div class="serving-item">
-                <span class="badge">Температура подачи</span>
-                <h4>{{ rec.serving_temp_min }}–{{ rec.serving_temp_max }} °C</h4>
-              </div>
-              <div class="serving-item">
-                <span class="badge">Бокал</span>
-                <h4>{{ rec.glass_type }}</h4>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
   `,
   styles: [`
     .pairing-engine-panel {
@@ -825,6 +440,7 @@ interface MoodOption {
 })
 export class LandingComponent implements OnInit {
   private api = inject(ApiService);
+  private selection = inject(SelectionService);
 
   @Output() navigate = new EventEmitter<ActiveTab>();
 
@@ -833,16 +449,37 @@ export class LandingComponent implements OnInit {
   dishes = signal<Dish[]>([]);
   pairings = signal<FoodPairing[]>([]);
 
-  // Состояние навигатора
-  discoveryMode = signal<'dish' | 'brand'>('dish');
-  selectedCuisine = signal<string>('');
-  dishSearch = signal<string>('');
-  brandSearch = signal<string>('');
+  /** Пока не пришли все три списка, подбор показывает скелет, а не "пусто". */
+  brandsLoaded = signal(false);
+  dishesLoaded = signal(false);
+  pairingsLoaded = signal(false);
+  dataLoaded = computed(() => this.brandsLoaded() && this.dishesLoaded() && this.pairingsLoaded());
 
-  selectedDish = signal<Dish | null>(null);
+  // Картинки характеристик и настройки витрины - из админки
+  foodIcons = signal<FoodIcon[]>([]);
+  settings = signal<SiteSettings>({
+    alternatives_count: 3,
+    min_score_to_show: 1,
+    show_wheat_decor: true,
+    pairing_intro: '',
+  });
+
+  /**
+   * Шаг подбора. Вход всегда через две кнопки: 'idle' - выбор пути,
+   * 'wizard' - четыре вопроса о блюде, 'dish-result' - сорта к блюду,
+   * 'brand' - витрина сортов и пары к выбранному.
+   */
+  stage = signal<'idle' | 'wizard' | 'dish-result' | 'brand'>('idle');
+
+  /** Ответы мастера: сохраняем, чтобы «изменить ответы» не начинало заново. */
+  dishProfile = signal<DishProfile | null>(null);
+
+  /** Сорт для витрины «у меня есть пиво»: экспресс-сценарий открывает её сразу на нём. */
   selectedBrand = signal<Brand | null>(null);
+  /** Экспресс-сценарий, нажатый до загрузки каталога: применим, когда данные придут. */
+  private pendingMood: MoodOption | null = null;
+  private readonly beerPairings = viewChild(BeerPairingsComponent);
 
-  modalBrand = signal<Brand | null>(null);
 
   // Экспресс-сценарии настроения (на основе CustDev-сегментов)
   moodPresets: MoodOption[] = [
@@ -850,7 +487,7 @@ export class LandingComponent implements OnInit {
       id: 'kazakh',
       icon: '🥩',
       title: 'Казахское застолье',
-      desc: 'Бешбармак, казы, куырдак — баланс плотного умами и солода.',
+      desc: 'Бешбармак, казы, куырдак - баланс плотного умами и солода.',
       targetType: 'dish',
       targetName: 'Бешбармак',
       badge: 'Казахская кухня'
@@ -859,7 +496,7 @@ export class LandingComponent implements OnInit {
       id: 'steak',
       icon: '🔥',
       title: 'Мясо на гриле & BBQ',
-      desc: 'Шашлык, стейк, рёбрышки — высокая горечь гасит жирность.',
+      desc: 'Шашлык, стейк, рёбрышки - высокая горечь гасит жирность.',
       targetType: 'dish',
       targetName: 'Шашлык',
       badge: 'Мясо & Гриль'
@@ -871,7 +508,7 @@ export class LandingComponent implements OnInit {
       desc: 'Хрустящий хмелевой профиль и чистый сухой финиш.',
       targetType: 'brand',
       targetName: 'Efes Pilsener',
-      badge: 'Свежесть 5–7°C'
+      badge: 'Свежесть 5-7°C'
     },
     {
       id: 'sushi',
@@ -902,187 +539,149 @@ export class LandingComponent implements OnInit {
     }
   ];
 
-  // Фильтрация блюд
-  filteredDishes = computed(() => {
-    const cuisine = this.selectedCuisine();
-    const query = this.dishSearch().trim().toLowerCase();
 
-    return this.dishes().filter(d => {
-      const matchCuisine = !cuisine || d.cuisine === cuisine;
-      const matchQuery = !query ||
-        d.name.toLowerCase().includes(query) ||
-        (d.category && d.category.toLowerCase().includes(query)) ||
-        (d.dominant_taste_display && d.dominant_taste_display.toLowerCase().includes(query));
-      return matchCuisine && matchQuery;
-    });
-  });
-
-  // Фильтрация пива
-  filteredBrands = computed(() => {
-    const query = this.brandSearch().trim().toLowerCase();
-    return this.brands().filter(b => {
-      return !query ||
-        b.name.toLowerCase().includes(query) ||
-        (b.style && b.style.toLowerCase().includes(query));
-    });
-  });
-
-  // Пары для выбранного блюда с прикрепленными объектами брендов
-  pairingsForSelectedDish = computed(() => {
-    const dish = this.selectedDish();
-    if (!dish) return [];
-
-    const pairs = this.pairings().filter(p =>
-      p.dish === dish.id ||
-      p.dish_name.toLowerCase() === dish.name.toLowerCase()
-    );
-
-    // Добавляем Brand объект для каждого пейринга
-    return pairs.map(p => {
-      const brandObj = this.brands().find(b =>
-        b.id === p.brand ||
-        b.name.toLowerCase() === p.brand_name.toLowerCase()
-      );
-      return {
-        ...p,
-        brandObj
-      };
-    }).sort((a, b) => b.compatibility_score - a.compatibility_score);
-  });
-
-  // Топ-пара для блюда
-  topPairingForDish = computed(() => {
-    const list = this.pairingsForSelectedDish();
-    return list.length > 0 ? list[0] : null;
-  });
-
-  // Альтернативные пары
-  alternativePairingsForDish = computed(() => {
-    const list = this.pairingsForSelectedDish();
-    return list.slice(1);
-  });
-
-  // Пары для выбранного пива
-  pairingsForSelectedBrand = computed(() => {
-    const brand = this.selectedBrand();
-    if (!brand) return [];
-
-    return this.pairings().filter(p =>
-      p.brand === brand.id ||
-      p.brand_name.toLowerCase() === brand.name.toLowerCase()
-    ).sort((a, b) => b.compatibility_score - a.compatibility_score);
-  });
 
   ngOnInit() {
-    this.api.getBrands().subscribe(brands => {
-      this.brands.set(brands);
-      if (brands.length > 0 && !this.selectedBrand()) {
-        this.selectedBrand.set(brands[0]);
-      }
+    this.api.getBrands().subscribe({
+      next: brands => {
+        this.brands.set(brands);
+        this.brandsLoaded.set(true);
+        this.applyPendingMood();
+      },
+      error: () => this.brandsLoaded.set(true),
     });
 
-    this.api.getDishes().subscribe(dishes => {
-      this.dishes.set(dishes);
-      if (dishes.length > 0 && !this.selectedDish()) {
-        // По умолчанию выберем Бешбармак (главный символ казахской кухни)
-        const besh = dishes.find(d => d.name.toLowerCase().includes('бешбармак')) || dishes[0];
-        this.selectedDish.set(besh);
-      }
+    this.api.getDishes().subscribe({
+      next: dishes => {
+        this.dishes.set(dishes);
+        this.dishesLoaded.set(true);
+        this.applyPendingMood();
+      },
+      error: () => this.dishesLoaded.set(true),
     });
 
-    this.api.getPairings().subscribe(pairings => {
-      this.pairings.set(pairings);
+    this.api.getPairings().subscribe({
+      next: pairings => {
+        this.pairings.set(pairings);
+        this.pairingsLoaded.set(true);
+      },
+      error: () => this.pairingsLoaded.set(true),
     });
+
+    this.api.getFoodIcons().subscribe(icons => this.foodIcons.set(icons));
+    this.api.getSettings().subscribe(settings => this.settings.set(settings));
   }
 
-  setMode(mode: 'dish' | 'brand') {
-    this.discoveryMode.set(mode);
+  // Переходы подбора
+
+  startDish(): void {
+    this.dishProfile.set(null);
+    this.stage.set('wizard');
   }
 
-  selectDish(dish: Dish) {
-    this.selectedDish.set(dish);
+  /** Витрина сортов; с initial сразу открывается второй шаг - пары к этому сорту. */
+  startBrand(initial: Brand | null = null): void {
+    this.selectedBrand.set(initial);
+    this.stage.set('brand');
+    // Витрина уже открыта и вход initial мог не измениться: переводим её напрямую.
+    // null тоже передаём - без цели гость возвращается к выбору сорта
+    this.beerPairings()?.selected.set(initial);
   }
 
-  selectBrand(brand: Brand) {
-    this.selectedBrand.set(brand);
+  /** Мастер пройден - показываем сорта под собранный профиль. */
+  onProfileReady(profile: DishProfile): void {
+    this.dishProfile.set(profile);
+    this.stage.set('dish-result');
+    this.scrollToSection();
   }
 
+  /**
+   * Человек назвал блюдо, которое уже есть в каталоге. Профиль собираем
+   * из его же характеристик - так подбор опирается на данные сомелье,
+   * а не на догадки по названию.
+   */
+  onExactDish(dish: Dish): void {
+    this.dishProfile.set({
+      category: null,
+      cooking: dish.cooking_method === 'OTHER' ? null : dish.cooking_method,
+      taste: dish.dominant_taste,
+      weight: dish.weight,
+      fat: dish.fat_level,
+      freeText: dish.name,
+    });
+    this.stage.set('dish-result');
+    this.scrollToSection();
+  }
+
+  resetFlow(): void {
+    this.dishProfile.set(null);
+    this.selectedBrand.set(null);
+    this.pendingMood = null;
+    this.stage.set('idle');
+    this.scrollToSection();
+  }
+
+  /** Кнопка «Узнать больше о напитке» ведёт на страницу сорта. */
+  openBrandPage(id: string): void {
+    this.selection.open(id);
+    this.navigate.emit('beer');
+  }
+
+  private scrollToSection(): void {
+    const el = document.getElementById('pairing-selector-section');
+    if (!el) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+
+
+
+
+  /** Две кнопки из hero - единственный вход в подбор. */
   scrollToSelector(mode: 'dish' | 'brand') {
-    this.discoveryMode.set(mode);
-    const el = document.getElementById('pairing-selector-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (mode === 'dish') this.startDish(); else this.startBrand();
+    this.scrollToSection();
   }
 
-  /** Поиск из hero: переключаемся на режим «по блюду», подставляем запрос и выбираем первое совпадение. */
+  /**
+   * Поиск из hero. Если блюдо нашлось в каталоге - сразу показываем сорта,
+   * иначе открываем мастер: по одному названию подобрать нечего.
+   */
   onHeroSearch(query: string) {
-    this.selectedCuisine.set('');
-    this.dishSearch.set(query);
-    if (query) {
-      const q = query.toLowerCase();
-      const found = this.dishes().find(d => d.name.toLowerCase().includes(q));
-      if (found) {
-        this.selectedDish.set(found);
-      }
-    }
-    this.scrollToSelector('dish');
+    const found = findDish(this.dishes(), query);
+    if (found) { this.onExactDish(found); return; }
+    this.startDish();
+    this.scrollToSection();
   }
 
+  /** Экспресс-сценарий: сразу ведём к результату, минуя вопросы. */
   applyMoodPreset(mood: MoodOption) {
+    this.pendingMood = null;
     if (mood.targetType === 'dish') {
-      this.discoveryMode.set('dish');
+      // Каталог ещё грузится: открываем ветку, а цель применим, когда данные придут
+      if (!this.dishesLoaded()) { this.pendingMood = mood; this.startDish(); this.scrollToSection(); return; }
       const found = this.dishes().find(d => d.name.toLowerCase().includes(mood.targetName.toLowerCase()));
-      if (found) {
-        this.selectedDish.set(found);
-      }
+      if (found) { this.onExactDish(found); return; }
+      this.startDish();
     } else {
-      this.discoveryMode.set('brand');
-      const found = this.brands().find(b => b.name.toLowerCase().includes(mood.targetName.toLowerCase()));
-      if (found) {
-        this.selectedBrand.set(found);
-      }
+      if (!this.brandsLoaded()) { this.pendingMood = mood; this.startBrand(); this.scrollToSection(); return; }
+      // Снятые с публикации сорта витрина не показывает, значит и пресет их не открывает
+      const found = this.brands().find(b =>
+        b.is_active !== false && b.name.toLowerCase().includes(mood.targetName.toLowerCase()));
+      this.startBrand(found ?? null);
     }
-    const el = document.getElementById('pairing-selector-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    this.scrollToSection();
   }
 
-  openPyramidModal(target: Brand | string) {
-    if (typeof target === 'string') {
-      const found = this.brands().find(b => b.name.toLowerCase() === target.toLowerCase());
-      if (found) {
-        this.api.getBrandDetail(found.id).subscribe(full => this.modalBrand.set(full));
-      }
-    } else {
-      this.api.getBrandDetail(target.id).subscribe(full => this.modalBrand.set(full));
-    }
+  /** Данные пришли: доигрываем экспресс-сценарий, нажатый во время загрузки. */
+  private applyPendingMood(): void {
+    const mood = this.pendingMood;
+    if (!mood) return;
+    const ready = mood.targetType === 'dish' ? this.dishesLoaded() : this.brandsLoaded();
+    if (ready) this.applyMoodPreset(mood);
   }
 
-  closePyramidModal() {
-    this.modalBrand.set(null);
-  }
 
-  getCuisineFlag(c: CuisineType): string {
-    switch (c) {
-      case 'KZ': return '🇰🇿';
-      case 'ITALIAN': return '🇮🇹';
-      case 'JAPANESE': return '🇯🇵';
-      case 'AMERICAN': return '🇺🇸';
-      case 'MEXICAN': return '🇲🇽';
-      case 'GERMAN': return '🇩🇪';
-      default: return '🍽️';
-    }
-  }
 
-  getPairingTypeBadge(type: string): string {
-    switch (type) {
-      case 'CONTRAST': return '⚡ Contrast · Горечь режет жирность';
-      case 'COMPLEMENT': return '🌿 Complement · Схожие ноты усиливают вкус';
-      case 'CLEANSE': return '💧 Cleanse · Освежает рецепторы';
-      case 'BRIDGE': return '🌉 Bridge · Общий мостик вкуса';
-      default: return 'Сочетание';
-    }
-  }
+
 }

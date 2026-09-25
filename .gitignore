@@ -23,3 +23,6 @@ Thumbs.db
 
 # Large archives (GitHub limit 100 MB)
 *.zip
+
+# Django collected static (generated on deploy)
+staticfiles/

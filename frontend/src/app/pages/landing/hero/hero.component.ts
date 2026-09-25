@@ -29,7 +29,7 @@ interface HeroPill {
 }
 
 /**
- * Hero «Что выберешь сегодня?» — первая секция главной страницы.
+ * Hero «Что выберешь сегодня?» - первая секция главной страницы.
  * Дизайн: fjisk.html (тёплый янтарный glassmorphism), реализация по
  * правилам ui-ux-pro-max: SVG вместо эмодзи, семантические токены,
  * видимый фокус, reduced-motion, тач-цели ≥44px.
@@ -61,9 +61,9 @@ interface HeroPill {
       </h1>
 
       <p class="hero-lede">
-        FlavorTree — платформа сенсорного образования для пива. Мы раскладываем вкус
+        FlavorTree - платформа сенсорного образования для пива. Мы раскладываем вкус
         каждого бренда на три слоя, как аромат в парфюмерии, и подбираем идеальное
-        гастрономическое сочетание.
+        сочетание с едой.
       </p>
 
       <ul class="hero-pills" aria-label="Что есть на платформе">
@@ -174,7 +174,6 @@ interface HeroPill {
         </button>
       </div>
 
-      <p class="facts-teaser"><span class="facts-dot" aria-hidden="true"></span>Интересные факты</p>
     </section>
 
     <ng-template #beerIcon>
@@ -202,7 +201,7 @@ interface HeroPill {
       border: 0;
     }
 
-    /* ── Hero ────────────────────────────────────────────────── */
+    /* ── Hero */
     .hero {
       text-align: center;
       padding: var(--space-6xl) var(--space-lg) var(--space-4xl);
@@ -237,7 +236,7 @@ interface HeroPill {
       font-weight: 500;
     }
 
-    /* ── Pills ───────────────────────────────────────────────── */
+    /* ── Pills */
     .hero-pills {
       list-style: none;
       display: flex;
@@ -270,7 +269,7 @@ interface HeroPill {
 
     .hero-pill-icon svg { width: 16px; height: 16px; }
 
-    /* ── Search ──────────────────────────────────────────────── */
+    /* ── Search */
     .hero-search {
       display: flex;
       align-items: center;
@@ -337,7 +336,7 @@ interface HeroPill {
     .hero-search-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -4px rgba(180, 83, 9, 0.5); }
     .hero-search-btn:active { transform: translateY(0); }
 
-    /* ── Two choice bubbles ──────────────────────────────────── */
+    /* ── Two choice bubbles */
     .choices {
       display: flex;
       justify-content: center;
@@ -528,29 +527,8 @@ interface HeroPill {
 
     .choice:hover .choice-cta { transform: scale(1.06); }
 
-    /* ── Facts teaser ────────────────────────────────────────── */
-    .facts-teaser {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: var(--space-sm);
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-family: var(--font-heading);
-    }
 
-    .facts-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--beer-mid);
-    }
-
-    /* ── Side beers (desktop only) ───────────────────────────── */
+    /* ── Side beers (desktop only) */
     .side-beers {
       position: fixed;
       top: 140px;
@@ -587,7 +565,7 @@ interface HeroPill {
     .side-beer svg { width: 28px; height: 28px; }
     .side-beer.visible { opacity: 1; }
 
-    /* ── Reduced motion ──────────────────────────────────────── */
+    /* ── Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       .choice,
       .choice--left.revealed,
@@ -605,7 +583,7 @@ interface HeroPill {
       .choice:hover .choice-cta { transform: none; }
     }
 
-    /* ── Responsive ──────────────────────────────────────────── */
+    /* ── Responsive */
     @media (max-width: 1280px) {
       .side-beers { display: none; }
     }

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
-import { Course, TeamMember } from '../../models/flavor-tree.models';
+import { Course, PAIRING_LABELS, TeamMember } from '../../models/flavor-tree.models';
 
 @Component({
   selector: 'app-academy',
@@ -14,6 +14,17 @@ import { Course, TeamMember } from '../../models/flavor-tree.models';
     </div>
 
     <!-- Сетка курсов -->
+    @if (!coursesLoaded()) {
+      <div class="skeleton-grid mb-5xl" aria-busy="true" aria-label="Загружаем курсы">
+        @for (i of skeletonCards; track i) {
+          <div class="skeleton-card">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+          </div>
+        }
+      </div>
+    } @else {
     <div class="grid grid-2 mb-5xl">
       @for (c of courses(); track c.id) {
         <div class="glass-card p-2xl stagger-item">
@@ -28,8 +39,13 @@ import { Course, TeamMember } from '../../models/flavor-tree.models';
             Сертификация сомелье Flavor Tree
           </div>
         </div>
+      } @empty {
+        <div class="glass-panel text-center p-4xl" style="grid-column: 1 / -1;">
+          <p class="text-muted">Курсы пока не добавлены.</p>
+        </div>
       }
     </div>
+    }
 
     <!-- Экспресс-квиз -->
     <section class="glass-panel p-4xl mb-5xl">
@@ -41,27 +57,28 @@ import { Course, TeamMember } from '../../models/flavor-tree.models';
 
       <div class="mb-xl">
         <h4 class="mb-lg" style="font-size: 1.15rem; line-height: 1.5;">
-          Какой принцип фуд-пейринга работает лучше всего при сочетании классического чешского Пилснера (Efes Pilsener) с традиционным жирным мясным блюдом Казы?
+          Какой принцип сочетания работает лучше всего, когда к жирному мясному блюду Казы подают классический чешский Пилснер (Efes Pilsener)?
         </h4>
         <div class="flex gap-md flex-wrap">
-          <button class="btn-outline" (click)="quizAnswer.set('wrong')">Complement (Удвоение сладости и мягкости)</button>
-          <button class="btn-outline" (click)="quizAnswer.set('correct')">Contrast (Хмелевая горечь и карбонизация режут жирность)</button>
+          @for (o of quizOptions; track o.id) {
+            <button class="btn-outline" [class.active]="quizAnswer() === o.id" (click)="quizAnswer.set(o.id)">{{ o.label }}</button>
+          }
         </div>
       </div>
 
       @if (quizAnswer() === 'correct') {
         <div class="quiz-result correct">
-          Абсолютно верно! Это классический пример Contrast-пары: благородная горечь хмеля Saaz и свежая карбонизация очищают вкусовые сосочки от насыщенных животных жиров вяленой конины.
+          Абсолютно верно! Это классический пример пары «{{ labels.CONTRAST }}»: благородная горечь хмеля Saaz и свежая карбонизация очищают вкусовые сосочки от насыщенных животных жиров вяленой конины.
         </div>
       } @else if (quizAnswer() === 'wrong') {
         <div class="quiz-result wrong">
-          Попробуйте еще раз! Жирные мясные деликатесы требуют хмелевого контраста (Contrast/Cleanse), чтобы освежить рецепторы.
+          Попробуйте ещё раз! Жирные мясные деликатесы требуют хмелевого контраста («{{ labels.CONTRAST }}» или «{{ labels.CLEANSE }}»), чтобы освежить рецепторы.
         </div>
       }
     </section>
 
     <!-- Команда сомелье -->
-    @if (team().length > 0) {
+    @if (teamLoaded() && team().length > 0) {
       <section>
         <h2 class="section-header mb-2xl">Эксперты и Сомелье Проекта</h2>
         <div class="grid grid-3">
@@ -81,10 +98,27 @@ export class AcademyComponent implements OnInit {
   private api = inject(ApiService);
   courses = signal<Course[]>([]);
   team = signal<TeamMember[]>([]);
+  /** Пока false - скелет вместо пустого списка. */
+  coursesLoaded = signal(false);
+  teamLoaded = signal(false);
   quizAnswer = signal<string | null>(null);
 
+  readonly skeletonCards = [1, 2, 3, 4];
+  /** Типы сочетаний подписываем так же, как на остальных страницах. */
+  readonly labels = PAIRING_LABELS;
+  readonly quizOptions = [
+    { id: 'wrong', label: `${PAIRING_LABELS.COMPLEMENT}: удвоение сладости и мягкости` },
+    { id: 'correct', label: `${PAIRING_LABELS.CONTRAST}: хмелевая горечь и карбонизация режут жирность` },
+  ];
+
   ngOnInit() {
-    this.api.getCourses().subscribe(data => this.courses.set(data));
-    this.api.getTeam().subscribe(data => this.team.set(data));
+    this.api.getCourses().subscribe({
+      next: data => { this.courses.set(data); this.coursesLoaded.set(true); },
+      error: () => this.coursesLoaded.set(true),
+    });
+    this.api.getTeam().subscribe({
+      next: data => { this.team.set(data); this.teamLoaded.set(true); },
+      error: () => this.teamLoaded.set(true),
+    });
   }
 }
