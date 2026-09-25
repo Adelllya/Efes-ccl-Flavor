@@ -503,18 +503,13 @@ def landing_data(request):
             'description': (
                 'Платформа сенсорного образования и подбора пива. '
                 'Каждый сорт раскладывается на «Вкусовую пирамиду»: '
-                'Top Notes, Heart Notes, Base Notes.'
+                'верхние ноты, сердце и послевкусие.'
             ),
             'partner': 'EFES Kazakhstan · One Idea University / Anadolu Group',
             'market': 'Казахстан',
         },
-        'quote': {
-            'text': (
-                'Сегодня я услышал пиво, а не просто выпил его. '
-                'Flavor Tree меняет то, как я отношусь к любимому напитку.'
-            ),
-            'author': 'Участник пилотной дегустации, Алматы',
-        },
+        # Отзывов гостей пока нет. После пилота сюда идёт настоящая цитата с согласия гостя.
+        'quote': None,
         'stats': {
             'brands': brands_count,
             'flavor_notes': notes_count,
