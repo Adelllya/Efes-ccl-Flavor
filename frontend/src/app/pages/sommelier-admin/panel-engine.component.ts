@@ -49,38 +49,40 @@ interface TuningState {
 
         @if (loading()) {
           <p class="wa-muted">Загрузка...</p>
-        } @else if (state(); as s) {
-          @if (s.updated_by) {
-            <p class="wa-muted text-sm">Последнее изменение: {{ s.updated_by }}</p>
-          }
-          <div class="wa-fields">
-            @for (k of s.knobs; track k.path) {
-              <label class="wa-field wa-field-wide">
-                <span class="wa-label">
-                  {{ k.label }}: <strong>{{ k.value }}</strong>
-                  @if (k.value !== k.base) { <span class="badge v2-efes">база {{ k.base }}</span> }
-                </span>
-                <input class="wa-range" type="range"
-                       [min]="k.min" [max]="k.max" [step]="k.step" [(ngModel)]="k.value" [name]="k.path" />
-                <span class="wa-muted text-xs">{{ k.hint }}</span>
-              </label>
-            }
-          </div>
-
-          @if (message()) {
-            <p class="text-sm" [class.text-danger]="isError()" style="margin-top: 12px;">{{ message() }}</p>
-          }
-
-          <div class="flex gap-md" style="margin-top: 16px;">
-            <button type="button" class="btn-amber" [disabled]="saving()" (click)="save()">
-              <panel-icon name="check" /> {{ saving() ? 'Сохраняю...' : 'Сохранить' }}
-            </button>
-            <button type="button" class="btn-outline" [disabled]="saving()" (click)="reset()">
-              <panel-icon name="refresh" /> Сбросить к базовым
-            </button>
-          </div>
         } @else {
-          <p class="text-danger">Не удалось загрузить настройки движка.</p>
+          @if (state(); as s) {
+            @if (s.updated_by) {
+              <p class="wa-muted text-sm">Последнее изменение: {{ s.updated_by }}</p>
+            }
+            <div class="wa-fields">
+              @for (k of s.knobs; track k.path) {
+                <label class="wa-field wa-field-wide">
+                  <span class="wa-label">
+                    {{ k.label }}: <strong>{{ k.value }}</strong>
+                    @if (k.value !== k.base) { <span class="badge v2-efes">база {{ k.base }}</span> }
+                  </span>
+                  <input class="wa-range" type="range"
+                         [min]="k.min" [max]="k.max" [step]="k.step" [(ngModel)]="k.value" [name]="k.path" />
+                  <span class="wa-muted text-xs">{{ k.hint }}</span>
+                </label>
+              }
+            </div>
+
+            @if (message()) {
+              <p class="text-sm" [class.text-danger]="isError()" style="margin-top: 12px;">{{ message() }}</p>
+            }
+
+            <div class="flex gap-md" style="margin-top: 16px;">
+              <button type="button" class="btn-amber" [disabled]="saving()" (click)="save()">
+                <panel-icon name="check" /> {{ saving() ? 'Сохраняю...' : 'Сохранить' }}
+              </button>
+              <button type="button" class="btn-outline" [disabled]="saving()" (click)="reset()">
+                <panel-icon name="refresh" /> Сбросить к базовым
+              </button>
+            </div>
+          } @else {
+            <p class="text-danger">Не удалось загрузить настройки движка.</p>
+          }
         }
       </div>
     </div>
