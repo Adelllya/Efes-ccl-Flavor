@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views, views_ai, views_auth, views_engine_v2, views_orders, views_requests
+from . import views, views_ai, views_auth, views_engine_v2, views_engine_tuning, views_orders, views_requests
 
 router = DefaultRouter()
 router.register(r'brands', views.BrandViewSet)
@@ -53,4 +53,9 @@ urlpatterns = [
     path('v2/pairing/dish/<slug:dish_id>/', views_engine_v2.pairing_for_dish, name='v2-pairing-dish'),
     path('v2/pairing/recommend/', views_engine_v2.pairing_recommend, name='v2-pairing-recommend'),
     path('v2/pairing/explain/', views_engine_v2.pairing_explain, name='v2-pairing-explain'),
+
+    # Подкрутка весов движка из админ-панели (moderator/sommelier)
+    path('v2/tuning/', views_engine_tuning.tuning_state, name='v2-tuning'),
+    path('v2/tuning/save/', views_engine_tuning.tuning_save, name='v2-tuning-save'),
+    path('v2/tuning/reset/', views_engine_tuning.tuning_reset, name='v2-tuning-reset'),
 ]

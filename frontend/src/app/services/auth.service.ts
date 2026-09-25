@@ -20,9 +20,9 @@ export interface RegisterData {
 /** Какие вкладки панели открыты каждой роли. */
 export const PANEL_ACCESS: Record<UserRole, readonly PanelTab[]> = {
   user: [],
-  sommelier: ['overview', 'brands', 'pairings'],
+  sommelier: ['overview', 'brands', 'pairings', 'engine'],
   restaurant_admin: ['overview', 'dishes', 'menu', 'orders'],
-  moderator: ['overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'users', 'settings', 'requests']
+  moderator: ['overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'engine', 'users', 'settings', 'requests']
 };
 
 /** Старые вкладки pyramid и serving стали частями вкладки brands. */

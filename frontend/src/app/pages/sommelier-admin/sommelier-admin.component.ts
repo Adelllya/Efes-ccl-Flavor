@@ -13,6 +13,7 @@ import { PanelMenuComponent } from './panel-menu.component';
 import { PanelOrdersComponent } from './panel-orders.component';
 import { PanelUsersComponent } from './panel-users.component';
 import { PanelSettingsComponent } from './panel-settings.component';
+import { PanelEngineComponent } from './panel-engine.component';
 import { environment } from '../../../environments/environment';
 
 interface PanelTabDef {
@@ -74,7 +75,8 @@ const ORDERS_POLL_MS = 20000;
   imports: [
     PanelIconComponent,
     PanelBrandsComponent, PanelRequestsComponent, PanelPairingsComponent, PanelNotesComponent,
-    PanelDishesComponent, PanelMenuComponent, PanelOrdersComponent, PanelUsersComponent, PanelSettingsComponent
+    PanelDishesComponent, PanelMenuComponent, PanelOrdersComponent, PanelUsersComponent, PanelSettingsComponent,
+    PanelEngineComponent
   ],
   template: `
     <div class="wa-shell">
@@ -208,6 +210,9 @@ const ORDERS_POLL_MS = 20000;
             <panel-orders [venue]="ordersVenue()" (venueChanged)="onOrdersVenue($event)" (changed)="refreshOrderCount()" />
           }
 
+          @case ('engine') {
+            <panel-engine />
+          }
           @case ('users') {
             <panel-users />
           }
@@ -250,6 +255,7 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     },
     { id: 'menu', label: 'Меню', icon: 'menu', description: 'Карточка заведения, позиции меню с ценами и карта напитков' },
     { id: 'orders', label: 'Заказы', icon: 'orders', description: 'Заказы гостей: стол, позиции, статус', count: () => this.newOrdersCount() || null },
+    { id: 'engine', label: 'Движок', icon: 'settings', description: 'Подкрутка весов подбора напитков к блюдам' },
     { id: 'users', label: 'Пользователи', icon: 'users', description: 'Роли и заведения пользователей' },
     { id: 'settings', label: 'Настройки', icon: 'settings', description: 'Витрина: сколько сортов показывать, вступительный текст' }
   ];

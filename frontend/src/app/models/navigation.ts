@@ -30,10 +30,11 @@ export type PanelTab =
   | 'orders'
   | 'users'
   | 'settings'
+  | 'engine'
   | 'pyramid'
   | 'serving';
 
 /** Порядок вкладок в панели. */
 export const PANEL_TABS: readonly PanelTab[] = [
-  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'users', 'settings'
+  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'engine', 'users', 'settings'
 ];

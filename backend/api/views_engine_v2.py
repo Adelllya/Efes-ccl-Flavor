@@ -45,7 +45,9 @@ def _ds(request=None) -> DatasetV2:
     """Набор данных; ?locale=kk|en — объяснения движка на языке гостя (баллы те же, см. docs/ENGINE_TEXTS.md)."""
     data_dir = str(getattr(settings, "FLAVOR_DATA_DIR", "")) or None
     locale = (request.query_params.get("locale") if request is not None else None) or "ru"
-    return get_dataset_locale(data_dir, locale) if locale != "ru" else get_dataset(data_dir)
+    # Веса из админки (если заданы) накладываются поверх базы; без них — обычный кэш.
+    from . import engine_tuning
+    return engine_tuning.tuned_dataset(data_dir, locale)
 
 
 def _float(x: Any, lo: float, hi: float) -> Optional[float]:

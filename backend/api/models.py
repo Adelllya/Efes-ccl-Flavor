@@ -657,3 +657,34 @@ class SiteSettings(models.Model):
     def load(cls):
         obj = cls.objects.first()
         return obj or cls()
+
+
+class EnginePairingWeights(models.Model):
+    """Подкрутка весов движка подбора из админки. Одна запись на весь сайт.
+
+    overrides — плоский словарь dotted-путей параметров движка (например
+    {"R1.k_loud": 60, "score.base": 48}); накладывается поверх
+    data/engine/engine_v2_params.json при загрузке датасета (см. api/engine_tuning.py).
+    Базовый JSON не меняется, поэтому «сбросить к базовым» = пустой overrides."""
+    overrides = models.JSONField('Переопределения весов', default=dict, blank=True)
+    version = models.PositiveIntegerField('Версия', default=0)
+    updated_by = models.CharField('Кто менял', max_length=150, blank=True, default='')
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Веса движка подбора'
+        verbose_name_plural = 'Веса движка подбора'
+
+    def __str__(self):
+        return 'Веса движка подбора (v%s)' % self.version
+
+    def save(self, *args, **kwargs):
+        # Одна запись на весь сайт; версия растёт при каждом сохранении (ключ кэша датасета).
+        if not self.pk and EnginePairingWeights.objects.exists():
+            self.pk = EnginePairingWeights.objects.first().pk
+        self.version = (self.version or 0) + 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        return cls.objects.first() or cls()
