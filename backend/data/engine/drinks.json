@@ -7542,7 +7542,13 @@
   ],
   "status": "auto",
   "description": "Belgian Fruit Beer (cherry): живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 8.0%. Подавайте при 4-8°C.",
-  "image": null
+  "image": "img/beers/kasteel-rouge.webp",
+  "image_credit": {
+   "author": "Romaine",
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "File:Kasteel Rouge.jpg"
+  }
  },
  {
   "id": "kronenbourg-1664-blanc",
@@ -24918,10 +24924,10 @@
   "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C.",
   "image": "img/beers/somersby-apple.webp",
   "image_credit": {
-   "author": "Bahnfrend",
-   "license": "CC BY-SA 4.0",
-   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-   "source": "File:Somersby Cider, Varsity Waterford, 2026 (01).jpg"
+   "author": "FakirNL",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "File:Somersby Apple.jpg"
   }
  },
  {
@@ -33181,13 +33187,7 @@
   ],
   "status": "auto",
   "description": "Коктейль Virgin Colada: сочная сладость, ароматный букет. Подавайте охлаждённым.",
-  "image": "img/beers/virgin-colada.webp",
-  "image_credit": {
-   "author": "User Barmix on de.wikipedia",
-   "license": "Public domain",
-   "license_url": "",
-   "source": "File:Piña Colada.jpg"
-  }
+  "image": null
  },
  {
   "id": "virgin-mojito",
@@ -35543,10 +35543,10 @@
   "description": "blended Irish whiskey: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
   "image": "img/beers/jameson.webp",
   "image_credit": {
-   "author": "Brian Adler 12:26, 31 May 2007 (UTC)",
-   "license": "Public domain",
-   "license_url": "",
-   "source": "File:Bottles of Jameson Irish Whiskey.JPG"
+   "author": "Michael Bentley",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0",
+   "source": "File:Jameson Irish Whiskey (11898467796).jpg"
   }
  },
  {
@@ -35765,10 +35765,10 @@
   "description": "blended Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
   "image": "img/beers/johnnie-walker-red-label.webp",
   "image_credit": {
-   "author": "Feel free to use my photos, but please mention me as the author and if you want ",
-   "license": "CC BY-SA 3.0 at",
-   "license_url": "https://creativecommons.org/licenses/by-sa/3.0/at/deed.en",
-   "source": "File:Johnnie Walker Splash.JPG"
+   "author": "Kimjon12",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "File:Johnnie Walker Red Label 2.jpg"
   }
  },
  {
@@ -37120,10 +37120,10 @@
   "description": "single malt Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
   "image": "img/beers/the-glenlivet-12-y-o.webp",
   "image_credit": {
-   "author": "Atom Supplies LTD, trading as That Boutique-y Whisky Company",
-   "license": "CC BY-SA 2.0",
-   "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
-   "source": "File:That Boutique-y Whisky Company - Braes o' Glenlivet Batch 1.jpg"
+   "author": "CCFoodTravel.com",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0",
+   "source": "File:The Glenlivet 12.jpg"
   }
  },
  {
