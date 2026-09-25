@@ -12,7 +12,8 @@ export type ActiveTab =
   | 'menu'
   | 'login'
   | 'register'
-  | 'profile';
+  | 'profile'
+  | 'privacy';
 
 /**
  * Вкладки панели. Какие видит пользователь, решает AuthService.can().
