@@ -62,6 +62,8 @@ export interface Brand {
   brand_owner?: string;
   style: string;
   abv?: number | null;
+  /** Производитель крепость не публикует, это оценка по стилю из каталога движка: пишем «около». */
+  abv_estimated?: boolean;
   density?: string;
   fermentation_type?: string;
   packaging_type: PackagingType;

@@ -48,6 +48,15 @@ export interface BrandFilters {
   q?: string;
 }
 
+/** Счётчики каталога из /api/landing/: число на главной берём отсюда, а не пишем текстом. */
+export interface LandingStats {
+  brands: number;
+  flavor_notes: number;
+  flavor_profiles: number;
+  courses: number;
+  team_members: number;
+}
+
 /** Пока админ не завёл настройки, витрина работает на этих. */
 const DEFAULT_SETTINGS: SiteSettings = {
   alternatives_count: 3,
@@ -228,7 +237,15 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}/pairings/${id}/`);
   }
 
-  // 5. Курсы и Команда
+  // 5. Курсы, команда и счётчики главной
+  /** null, если сервер не ответил: тогда число на главной просто не показываем. */
+  getLandingStats(): Observable<LandingStats | null> {
+    return this.http.get<{ stats?: LandingStats }>(`${this.baseUrl}/landing/`).pipe(
+      map(res => res?.stats ?? null),
+      catchError(() => of(null))
+    );
+  }
+
   getCourses(): Observable<Course[]> {
     return this.http.get<PaginatedResponse<Course> | Course[]>(`${this.baseUrl}/courses/`).pipe(
       map(res => Array.isArray(res) ? res : res.results || []),
@@ -447,7 +464,6 @@ export class ApiService {
         name: 'Efes Pilsener',
         style: 'Pilsner',
         abv: 5.0,
-        density: '12%',
         packaging_type: 'BOTTLE',
         packaging_type_display: 'Бутылка',
         is_horeca_only: false,
@@ -477,8 +493,7 @@ export class ApiService {
         id: 'b2',
         name: 'Кружка Свежего',
         style: 'Lager (draft-style)',
-        abv: 4.5,
-        density: '11%',
+        abv: 4.0,
         packaging_type: 'BOTTLE',
         packaging_type_display: 'Бутылка',
         is_horeca_only: false,
@@ -519,7 +534,7 @@ export class ApiService {
         pairing_type: 'CONTRAST',
         pairing_type_display: 'Контрастирует (Contrast)',
         compatibility_score: 5,
-        explanation: 'Высокая base-горечь пильзнера режет жирность вяленого мяса'
+        explanation: 'Выраженная горечь в послевкусии пильзнера режет жирность вяленого мяса'
       },
       {
         id: 'p2',
@@ -537,16 +552,17 @@ export class ApiService {
 
   private getMockCourses(): Course[] {
     return [
-      { id: 'c1', level: 1, level_display: 'Новичок', title: 'Сенсорный старт: Анатомия вкуса', description: 'Учимся различать базовые вкусы, температуру подачи и влияние бокала на аромат.' },
-      { id: 'c2', level: 2, level_display: 'Исследователь', title: 'Архитектура Вкусовой Пирамиды', description: 'Разбор нот 0-3 сек (Top), 3-15 сек (Heart) и послевкусия (Base).' },
-      { id: 'c3', level: 3, level_display: 'Знаток', title: 'Искусство сочетаний: что подать к блюду', description: '4 золотых правила сочетания блюда и напитка: Complement, Contrast, Cleanse, Bridge.' },
-      { id: 'c4', level: 4, level_display: 'Сомелье', title: 'Мастер Пивной Сомелье', description: 'Дефекты вкуса (off-flavours), составление дегустационных карт и сертификация.' }
+      { id: 'c1', level: 1, level_display: 'Новичок', title: 'Первое знакомство', description: 'Стили пива, крепость и плотность. Как пробовать и на что обращать внимание в первом глотке.' },
+      { id: 'c2', level: 2, level_display: 'Исследователь', title: 'Вкусовая пирамида', description: 'Верхние ноты, сердце и послевкусие: как раскрывается глоток и чем хмель отличается от солода.' },
+      { id: 'c3', level: 3, level_display: 'Знаток', title: 'Пиво и еда', description: 'Четыре типа сочетаний: дополняет, контраст, очищает и мостик. Температура подачи и бокал.' },
+      { id: 'c4', level: 4, level_display: 'Сомелье', title: 'Подбор для гостей', description: 'Дегустация вслепую, описание вкуса по колесу вкусов пива и подбор напитка к блюдам из меню заведения.' }
     ];
   }
 
   private getMockTeam(): TeamMember[] {
     return [
-      { id: 't1', name: 'Главный Сомелье Efes', role: 'Шеф-сомелье проекта', bio: 'Пиво - это симфония зерна, воды и хмеля, где каждая секунда глотка открывает новую главу.' }
+      { id: 't1', name: 'Аджибаева Аделия', role: 'Сооснователь', bio: 'Разработчик Flavor Tree: сайт, сервер и данные.' },
+      { id: 't2', name: 'Абуталифулы Ералы', role: 'Сооснователь', bio: 'Разработчик Flavor Tree: сайт, сервер и данные.' }
     ];
   }
 }

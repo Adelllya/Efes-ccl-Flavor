@@ -6,6 +6,8 @@ import { Brand } from '../../models/flavor-tree.models';
 import { SelectionService } from '../../services/selection.service';
 import { countOf } from '../venue-menu/plural';
 import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
+import { V2ApiService } from '../drinks-v2/v2-api.service';
+import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
 
 @Component({
   selector: 'app-brand-explorer',
@@ -18,7 +20,7 @@ import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
         Сорта Efes{{ loaded() ? ' (' + brands().length + ')' : '' }}
       </button>
       <button class="btn-outline" [class.active]="mode() === 'all'" (click)="mode.set('all')">
-        Все напитки (412)
+        Все напитки{{ drinksTotal() ? ' (' + drinksTotal() + ')' : '' }}
       </button>
     </div>
 
@@ -31,7 +33,7 @@ import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
     } @else {
     <div class="flex justify-between items-start mb-3xl flex-wrap gap-lg">
       <div>
-        <h1 class="section-header">Каталог {{ loaded() ? countOf(brands().length, 'сорта', 'сортов', 'сортов') : 'сортов' }} & Вкусовая пирамида</h1>
+        <h1 class="section-header">Каталог {{ loaded() ? countOf(brands().length, 'сорта', 'сортов', 'сортов') : 'сортов' }} и вкусовая пирамида</h1>
         <p class="text-muted">Исследуйте сенсорные профили, температуру подачи, бокалы и подходящие блюда</p>
       </div>
       <div style="position: relative; min-width: 280px; max-width: 380px; width: 100%;">
@@ -117,9 +119,10 @@ import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
             <div>
               <div class="beer-card-meta">
                 <span class="badge">{{ brand.style }}</span>
-                <span class="beer-card-abv">
-                  {{ brand.abv !== null && brand.abv !== undefined ? brand.abv + '% ABV' : 'N/A' }}
-                </span>
+                <!-- Крепости нет: бейдж не показываем. Оценку по стилю подписываем «около». -->
+                @if (abvText(brand.abv, brand.abv_estimated); as abv) {
+                  <span class="beer-card-abv" [attr.title]="brand.abv_estimated ? abvHint : 'Крепость'">{{ abv }}</span>
+                }
               </div>
               <h3 class="beer-card-name">{{ brand.name }}</h3>
               @if (brand.brand_owner) {
@@ -129,16 +132,15 @@ import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
             </div>
 
             <div class="beer-card-footer">
-              <div class="flex justify-between items-center text-sm mb-md">
-                <span class="text-muted">Пирамида:</span>
-                @if (brand.profile?.complete) {
-                  <span class="font-bold" style="color: var(--success);">Заполнен</span>
-                } @else {
-                  <span class="font-semibold text-deep">Черновик</span>
-                }
-              </div>
+              <!-- Внутренний статус пирамиды (черновик или заполнена) гостю не показываем, только число нот -->
+              @if (brand.note_count) {
+                <div class="flex justify-between items-center text-sm mb-md">
+                  <span class="text-muted">Вкусовая пирамида:</span>
+                  <span class="font-semibold text-deep">{{ countOf(brand.note_count, 'нота', 'ноты', 'нот') }}</span>
+                </div>
+              }
               <button class="btn-amber btn-block btn-sm" (click)="$event.stopPropagation(); openBrandDetail(brand)">
-                Пирамида & Подача
+                Пирамида и подача
               </button>
             </div>
           </div>
@@ -166,6 +168,7 @@ import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
 })
 export class BrandExplorerComponent implements OnInit {
   private api = inject(ApiService);
+  private v2 = inject(V2ApiService);
   private selection = inject(SelectionService);
 
   /** Просит показать страницу сорта - маршрут выбирает AppComponent. */
@@ -177,6 +180,10 @@ export class BrandExplorerComponent implements OnInit {
   searchQuery = signal<string>('');
 
   readonly countOf = countOf;
+  readonly abvText = abvText;
+  readonly abvHint = ABV_ESTIMATE_HINT;
+  /** Сколько напитков в каталоге движка: число берём из /api/v2/meta/, а не пишем текстом. */
+  drinksTotal = signal<number | null>(null);
   /** efes - 17 сортов с пирамидой, all - все напитки движка подбора. */
   mode = signal<'efes' | 'all'>('efes');
   readonly skeletonCards = [1, 2, 3, 4, 5, 6];
@@ -200,6 +207,7 @@ export class BrandExplorerComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.v2.meta().subscribe({ next: m => this.drinksTotal.set(m.drinks || null), error: () => {} });
     this.api.getBrands().subscribe({
       // Снятые с публикации сорта в каталог не попадают
       next: data => { this.brands.set(data.filter(b => b.is_active !== false)); this.loaded.set(true); },

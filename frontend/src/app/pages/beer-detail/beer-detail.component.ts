@@ -4,6 +4,13 @@ import { ApiService } from '../../services/api.service';
 import { SelectionService } from '../../services/selection.service';
 import { Brand, Dish, FoodPairing, PAIRING_LABELS, PairingType, PyramidNoteItem } from '../../models/flavor-tree.models';
 import { CATEGORIES, COOKING, TASTES, bigImage, smallImage } from '../landing/pairing-engine.data';
+import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
+
+/**
+ * Подписи черновых пирамид: команда Flavor Tree, а до update_public_content ещё и
+ * выдуманные «сомелье» старого seed. Если все ноты сорта с такой подписью, пирамида черновая.
+ */
+const DRAFT_AUTHORS = new Set(['', 'Команда Flavor Tree', 'Главный Сомелье Efes', 'Айгерим Нурланова']);
 
 /**
  * Места для вкусов вокруг бутылки - своя раскладка на каждое число нот.
@@ -91,7 +98,9 @@ const MAX_ORBIT = 6;
           <dl class="bd-specs">
             <div class="bd-row"><dt>Тип</dt><dd>{{ b.packaging_type_display || b.packaging_type }}</dd></div>
             <div class="bd-row"><dt>Стиль</dt><dd>{{ b.style }}</dd></div>
-            @if (b.abv) { <div class="bd-row"><dt>Алкоголь</dt><dd>{{ b.abv }} %</dd></div> }
+            @if (abvText(b.abv, b.abv_estimated); as abv) {
+              <div class="bd-row"><dt>Крепость</dt><dd [attr.title]="b.abv_estimated ? abvHint : null">{{ abv }}</dd></div>
+            }
             @if (b.density) { <div class="bd-row"><dt>Плотность</dt><dd>{{ b.density }}</dd></div> }
             @if (b.fermentation_type) { <div class="bd-row"><dt>Брожение</dt><dd>{{ b.fermentation_type }}</dd></div> }
           </dl>
@@ -146,7 +155,10 @@ const MAX_ORBIT = 6;
       <section class="bd-section">
         <span class="badge mb-xs">Вкусовая пирамида</span>
         <h2 class="section-header">Как раскрывается глоток</h2>
-        <p class="section-subtitle">Три слоя по времени: аромат, тело и послевкусие. Цифра - насколько нота выражена, от 1 до 10.</p>
+        <p class="section-subtitle">
+          Три слоя по времени: аромат, тело и послевкусие. Цифра - насколько нота выражена, от 1 до 10.
+          @if (pyramidIsDraft()) { Пирамида пока черновик команды Flavor Tree: ноты подобраны по стилю и описанию сорта, без дегустации. }
+        </p>
 
         @if (hasPyramid()) {
           <div class="bd-layers">
@@ -168,13 +180,12 @@ const MAX_ORBIT = 6;
                         <div class="progress-track" role="img" [attr.aria-label]="n.name + ': интенсивность ' + n.intensity + ' из 10'">
                           <div class="progress-fill" [style.width.%]="n.intensity * 10"></div>
                         </div>
-                        @if (n.technical_term) { <span class="text-xs text-muted italic">{{ n.technical_term }}</span> }
                         @if (n.sommelier_note) { <span class="text-sm text-dim">«{{ n.sommelier_note }}»</span> }
                       </li>
                     }
                   </ul>
                 } @else {
-                  <p class="text-sm text-muted">Этот слой ещё не заполнен сомелье.</p>
+                  <p class="text-sm text-muted">Этот слой ещё не заполнен.</p>
                 }
               </article>
             }
@@ -182,7 +193,6 @@ const MAX_ORBIT = 6;
         } @else {
           <div class="glass-card bd-empty">
             <p class="text-dim">Пирамида этого сорта ещё не заполнена.</p>
-            <p class="text-sm text-muted">Её заполняет сомелье в своей панели после дегустации.</p>
           </div>
         }
       </section>
@@ -534,6 +544,8 @@ export class BeerDetailComponent implements OnInit {
 
   readonly photo = bigImage;
   readonly thumb = smallImage;
+  readonly abvText = abvText;
+  readonly abvHint = ABV_ESTIMATE_HINT;
   readonly skeletonCards = [1, 2, 3];
 
   constructor() {
@@ -642,6 +654,13 @@ export class BeerDetailComponent implements OnInit {
   hasPyramid = computed(() => {
     const p = this.brand()?.pyramid;
     return !!p && ((p.top?.length ?? 0) + (p.heart?.length ?? 0) + (p.base?.length ?? 0)) > 0;
+  });
+
+  /** Все ноты подписаны командой: честно пишем, что это черновик без дегустации. */
+  pyramidIsDraft = computed(() => {
+    const p = this.brand()?.pyramid;
+    const notes = [...(p?.top ?? []), ...(p?.heart ?? []), ...(p?.base ?? [])];
+    return notes.length > 0 && notes.every(n => DRAFT_AUTHORS.has((n.sommelier_name ?? '').trim()));
   });
 
   layers = computed<{ key: string; name: string; time: string; notes: PyramidNoteItem[] }[]>(() => {
