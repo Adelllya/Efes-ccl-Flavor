@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views, views_ai, views_auth, views_orders, views_requests
+from . import views, views_ai, views_auth, views_engine_v2, views_orders, views_requests
 
 router = DefaultRouter()
 router.register(r'brands', views.BrandViewSet)
@@ -44,4 +44,13 @@ urlpatterns = [
     path('admin/flavor-profiles/', views.admin_flavor_profiles, name='admin-flavor-profiles'),
     path('admin/serving-recommendations/', views.admin_serving_recommendations, name='admin-serving-recs'),
     path('admin/flavor-notes/', views.admin_flavor_notes, name='admin-flavor-notes'),
+
+    # Подбор v2: 412 напитков всех категорий, 114 блюд (движок api/pairing/engine_v2.py)
+    path('v2/meta/', views_engine_v2.meta, name='v2-meta'),
+    path('v2/drinks/', views_engine_v2.drinks_list, name='v2-drinks'),
+    path('v2/drinks/<slug:drink_id>/', views_engine_v2.drink_detail, name='v2-drink-detail'),
+    path('v2/dishes/', views_engine_v2.dishes_list, name='v2-dishes'),
+    path('v2/pairing/dish/<slug:dish_id>/', views_engine_v2.pairing_for_dish, name='v2-pairing-dish'),
+    path('v2/pairing/recommend/', views_engine_v2.pairing_recommend, name='v2-pairing-recommend'),
+    path('v2/pairing/explain/', views_engine_v2.pairing_explain, name='v2-pairing-explain'),
 ]

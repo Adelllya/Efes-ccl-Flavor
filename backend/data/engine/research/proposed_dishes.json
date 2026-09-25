@@ -1,0 +1,1111 @@
+[
+ {
+  "id": "berries-dessert",
+  "name": "Ягодный десерт / фруктовый тарт",
+  "cuisine": [
+   "international"
+  ],
+  "is_dessert": true,
+  "vector": {
+   "salt": 0.0,
+   "sweet": 0.7,
+   "sour": 0.35,
+   "bitter": 0.0,
+   "umami": 0.0,
+   "fat": 0.3,
+   "protein": 0.1,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.35,
+   "cream": 0.3,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 0.5,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "baked",
+  "protein_source": "dairy",
+  "sauce": "none",
+  "acid_type": "citrus",
+  "serve_temp": "cold",
+  "tags": {
+   "red_fruit": 1,
+   "dairy_cream": 0.3,
+   "biscuit": 0.3
+  },
+  "synonyms": [
+   "ягодный тарт",
+   "панна-котта с ягодами",
+   "фруктовый десерт"
+  ],
+  "emoji": "🍓",
+  "description": "Свежие ягоды со сливками/кремом или фруктовый тарт",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Сладко-кислый, лёгкий десерт.",
+   "needed_for": "fruit beer / Moscato / demi-sec к фруктовым десертам (спорно)",
+   "used_by_pairs": [
+    "R107",
+    "R171",
+    "R345"
+   ]
+  }
+ },
+ {
+  "id": "blini-caviar",
+  "name": "Блины с икрой",
+  "cuisine": [
+   "russian"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.8,
+   "sweet": 0.0,
+   "sour": 0.1,
+   "bitter": 0.0,
+   "umami": 0.75,
+   "fat": 0.55,
+   "protein": 0.45,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.35,
+   "cream": 0.4,
+   "maillard": 0.3,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.6,
+   "green_iron": 0.0
+  },
+  "cook_method": "fried",
+  "protein_source": "oily_fish",
+  "sauce": "cream",
+  "acid_type": "lactic",
+  "serve_temp": "room",
+  "tags": {
+   "brine": 1,
+   "bread": 0.5,
+   "dairy_cream": 0.5
+  },
+  "synonyms": [
+   "блины с икрой",
+   "икра"
+  ],
+  "emoji": "🥞",
+  "description": "Тонкие блины с красной/чёрной икрой и сметаной",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Икра: соль и рыбий жир; блин и сметана добавляют жир и cream.",
+   "needed_for": "шампанское/водка к икре",
+   "used_by_pairs": [
+    "R085",
+    "R190",
+    "R341"
+   ]
+  }
+ },
+ {
+  "id": "blue-cheese",
+  "name": "Голубой сыр (горгонзола, рокфор, стилтон)",
+  "cuisine": [
+   "french",
+   "italian",
+   "english"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.85,
+   "sweet": 0.0,
+   "sour": 0.15,
+   "bitter": 0.15,
+   "umami": 0.8,
+   "fat": 0.85,
+   "protein": 0.8,
+   "heat": 0.0,
+   "pungent": 0.3,
+   "weight": 0.6,
+   "cream": 0.5,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "fermented",
+  "protein_source": "cheese_soft",
+  "sauce": "none",
+  "acid_type": "lactic",
+  "serve_temp": "room",
+  "tags": {
+   "cheese": 1,
+   "dairy_cream": 0.5,
+   "brine": 0.4,
+   "nutty": 0.3
+  },
+  "synonyms": [
+   "горгонзола",
+   "рокфор",
+   "стилтон",
+   "дор блю"
+  ],
+  "emoji": "🧀",
+  "description": "Сыр с голубой плесенью",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Соль/умами/жир выше, чем у cheese-aged; BA: «one as powerful as Stilton».",
+   "needed_for": "BA/Oliver: barley wine, IPA; Sauternes/port × Roquefort/Stilton; торфяной виски",
+   "used_by_pairs": [
+    "R003",
+    "R010",
+    "R065",
+    "R103",
+    "R117",
+    "R129",
+    "R134",
+    "R153",
+    "R172",
+    "R206",
+    "R215",
+    "R236",
+    "R274",
+    "R289"
+   ]
+  }
+ },
+ {
+  "id": "brie",
+  "name": "Бри / камамбер",
+  "cuisine": [
+   "french"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.45,
+   "sweet": 0.0,
+   "sour": 0.1,
+   "bitter": 0.05,
+   "umami": 0.5,
+   "fat": 0.8,
+   "protein": 0.5,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.45,
+   "cream": 0.9,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "fermented",
+  "protein_source": "cheese_soft",
+  "sauce": "none",
+  "acid_type": "lactic",
+  "serve_temp": "room",
+  "tags": {
+   "dairy_cream": 1,
+   "cheese": 0.8,
+   "nutty": 0.2
+  },
+  "synonyms": [
+   "бри",
+   "камамбер"
+  ],
+  "emoji": "🧀",
+  "description": "Мягкий сыр с белой плесенью",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Очень сливочный (cream .9), умеренно солёный.",
+   "needed_for": "BA: fruit beer × Brie; игристое × бри",
+   "used_by_pairs": [
+    "R045",
+    "R068",
+    "R069",
+    "R104",
+    "R138",
+    "R140",
+    "R161",
+    "R278"
+   ]
+  }
+ },
+ {
+  "id": "brisket-smoked",
+  "name": "Брискет копчёный",
+  "cuisine": [
+   "american"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.55,
+   "sweet": 0.15,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.85,
+   "fat": 0.85,
+   "protein": 0.9,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.9,
+   "cream": 0.0,
+   "maillard": 0.8,
+   "smoke": 1.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "smoked",
+  "protein_source": "beef",
+  "sauce": "none",
+  "acid_type": "none",
+  "serve_temp": "hot",
+  "tags": {
+   "beef": 1,
+   "smoke": 1,
+   "char": 0.6,
+   "pepper": 0.5
+  },
+  "synonyms": [
+   "брискет",
+   "говяжья грудинка копчёная"
+  ],
+  "emoji": "🍖",
+  "description": "Говяжья грудинка, томлённая в дыму 10–14 часов",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Жир .85, дым 1.0 — тяжелее рёбер BBQ по мясу, без сладкого соуса.",
+   "needed_for": "BA: DIPA «Smoked beef brisket»",
+   "used_by_pairs": [
+    "R004",
+    "R112"
+   ]
+  }
+ },
+ {
+  "id": "carrot-cake",
+  "name": "Морковный торт",
+  "cuisine": [
+   "american"
+  ],
+  "is_dessert": true,
+  "vector": {
+   "salt": 0.0,
+   "sweet": 0.85,
+   "sour": 0.1,
+   "bitter": 0.0,
+   "umami": 0.0,
+   "fat": 0.6,
+   "protein": 0.15,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.6,
+   "cream": 0.6,
+   "maillard": 0.4,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "baked",
+  "protein_source": "dairy",
+  "sauce": "none",
+  "acid_type": "lactic",
+  "serve_temp": "room",
+  "tags": {
+   "warm_spice": 0.7,
+   "nutty": 0.4,
+   "dairy_cream": 0.6,
+   "caramel": 0.3
+  },
+  "synonyms": [
+   "морковный торт",
+   "carrot cake"
+  ],
+  "emoji": "🍰",
+  "description": "Пряный морковный бисквит с крем-чизом",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Сладкий плотный пряный десерт; крем-чиз — cream .6.",
+   "needed_for": "BA: IPA и DIPA к морковному торту",
+   "used_by_pairs": [
+    "R002",
+    "R128"
+   ]
+  }
+ },
+ {
+  "id": "ceviche",
+  "name": "Севиче",
+  "cuisine": [
+   "international"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.45,
+   "sweet": 0.0,
+   "sour": 0.8,
+   "bitter": 0.0,
+   "umami": 0.5,
+   "fat": 0.15,
+   "protein": 0.6,
+   "heat": 0.3,
+   "pungent": 0.35,
+   "weight": 0.25,
+   "cream": 0.0,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 1.0,
+   "fish_oil": 0.3,
+   "green_iron": 0.0
+  },
+  "cook_method": "raw",
+  "protein_source": "white_fish",
+  "sauce": "none",
+  "acid_type": "citrus",
+  "serve_temp": "cold",
+  "tags": {
+   "citrus": 1,
+   "herbal": 0.6,
+   "onion": 0.5,
+   "chili": 0.3,
+   "fish": 0.8
+  },
+  "synonyms": [
+   "севиче",
+   "ceviche"
+  ],
+  "emoji": "🐟",
+  "description": "Сырая рыба, маринованная в соке лайма",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Очень кислое и деликатное.",
+   "needed_for": "Whisky School: cask strength × ceviche — анти-пара",
+   "used_by_pairs": [
+    "R121",
+    "R251"
+   ]
+  }
+ },
+ {
+  "id": "creme-brulee",
+  "name": "Крем-брюле",
+  "cuisine": [
+   "french"
+  ],
+  "is_dessert": true,
+  "vector": {
+   "salt": 0.0,
+   "sweet": 0.85,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.0,
+   "fat": 0.7,
+   "protein": 0.2,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.5,
+   "cream": 0.9,
+   "maillard": 0.5,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "baked",
+  "protein_source": "dairy",
+  "sauce": "none",
+  "acid_type": "none",
+  "serve_temp": "cold",
+  "tags": {
+   "caramel": 0.9,
+   "dairy_cream": 1,
+   "vanilla": 0.7
+  },
+  "synonyms": [
+   "крем-брюле"
+  ],
+  "emoji": "🍮",
+  "description": "Заварной сливочный крем с карамельной корочкой",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Очень сливочный и сладкий, карамель сверху.",
+   "needed_for": "BA: DIPA; pommeau (Alcohol Professor); Sauternes",
+   "used_by_pairs": [
+    "R006",
+    "R141",
+    "R169",
+    "R226"
+   ]
+  }
+ },
+ {
+  "id": "duck-roast",
+  "name": "Утка запечённая",
+  "cuisine": [
+   "french",
+   "chinese",
+   "russian"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.45,
+   "sweet": 0.15,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.75,
+   "fat": 0.85,
+   "protein": 0.85,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.75,
+   "cream": 0.0,
+   "maillard": 0.75,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "baked",
+  "protein_source": "poultry",
+  "sauce": "none",
+  "acid_type": "none",
+  "serve_temp": "hot",
+  "tags": {
+   "caramel": 0.3,
+   "dark_fruit": 0.2
+  },
+  "synonyms": [
+   "утка",
+   "утиная грудка",
+   "утка по-пекински"
+  ],
+  "emoji": "🦆",
+  "description": "Запечённая утка или утиная грудка",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Жирная птица: жир .85, корочка .75.",
+   "needed_for": "Oliver: kriek × duck; BA doppelbock; pinot noir × duck",
+   "used_by_pairs": [
+    "R048",
+    "R175",
+    "R275"
+   ]
+  }
+ },
+ {
+  "id": "fried-chicken",
+  "name": "Жареная курица",
+  "cuisine": [
+   "american",
+   "korean"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.55,
+   "sweet": 0.0,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.55,
+   "fat": 0.75,
+   "protein": 0.7,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.6,
+   "cream": 0.0,
+   "maillard": 0.7,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "fried",
+  "protein_source": "poultry",
+  "sauce": "none",
+  "acid_type": "none",
+  "serve_temp": "hot",
+  "tags": {
+   "fried": 0.9,
+   "bread": 0.4,
+   "pepper": 0.3
+  },
+  "synonyms": [
+   "курица во фритюре",
+   "фрайд чикен",
+   "KFC"
+  ],
+  "emoji": "🍗",
+  "description": "Курица в панировке, жаренная во фритюре",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Фритюр: жир .75, maillard .7; белок птицы .7.",
+   "needed_for": "BA: Maibock «great with fried chicken»; Champagne × fried chicken",
+   "used_by_pairs": [
+    "R039",
+    "R113",
+    "R160",
+    "R173",
+    "R271",
+    "R286"
+   ]
+  }
+ },
+ {
+  "id": "fruit-salad",
+  "name": "Фруктовый салат",
+  "cuisine": [
+   "international"
+  ],
+  "is_dessert": true,
+  "vector": {
+   "salt": 0.0,
+   "sweet": 0.5,
+   "sour": 0.35,
+   "bitter": 0.0,
+   "umami": 0.0,
+   "fat": 0.02,
+   "protein": 0.05,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.2,
+   "cream": 0.0,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 1.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "raw",
+  "protein_source": "none",
+  "sauce": "none",
+  "acid_type": "citrus",
+  "serve_temp": "cold",
+  "tags": {
+   "tropical_fruit": 0.5,
+   "orchard_fruit": 0.5,
+   "citrus": 0.4,
+   "red_fruit": 0.4
+  },
+  "synonyms": [
+   "фруктовая тарелка"
+  ],
+  "emoji": "🍉",
+  "description": "Свежие фрукты",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Сладко-кислое, очень лёгкое.",
+   "needed_for": "лёгкие десертные пары",
+   "used_by_pairs": [
+    "R166"
+   ]
+  }
+ },
+ {
+  "id": "goat-cheese",
+  "name": "Козий сыр (шевр)",
+  "cuisine": [
+   "french"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.5,
+   "sweet": 0.0,
+   "sour": 0.5,
+   "bitter": 0.0,
+   "umami": 0.3,
+   "fat": 0.5,
+   "protein": 0.5,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.3,
+   "cream": 0.7,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 0.5,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "fermented",
+  "protein_source": "cheese_soft",
+  "sauce": "none",
+  "acid_type": "lactic",
+  "serve_temp": "room",
+  "tags": {
+   "cheese": 0.8,
+   "sour_lactic": 0.7,
+   "dairy_cream": 0.7,
+   "herbal": 0.2
+  },
+  "synonyms": [
+   "шевр",
+   "козий сыр",
+   "chèvre"
+  ],
+  "emoji": "🧀",
+  "description": "Свежий кисломолочный козий сыр",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Кислый, сливочный, лёгкий.",
+   "needed_for": "BA/Oliver: hefeweizen, kriek; Sancerre × chèvre",
+   "used_by_pairs": [
+    "R024",
+    "R047",
+    "R122",
+    "R146",
+    "R202",
+    "R262"
+   ]
+  }
+ },
+ {
+  "id": "grilled-lamb",
+  "name": "Баранина на гриле (каре, котлетки на кости)",
+  "cuisine": [
+   "international",
+   "caucasian"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.5,
+   "sweet": 0.0,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.85,
+   "fat": 0.7,
+   "protein": 0.9,
+   "heat": 0.0,
+   "pungent": 0.2,
+   "weight": 0.75,
+   "cream": 0.0,
+   "maillard": 0.8,
+   "smoke": 0.5,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "grilled",
+  "protein_source": "lamb",
+  "sauce": "none",
+  "acid_type": "none",
+  "serve_temp": "hot",
+  "tags": {
+   "lamb": 1,
+   "char": 0.7,
+   "herbal": 0.5,
+   "garlic": 0.3
+  },
+  "synonyms": [
+   "каре ягнёнка",
+   "бараньи котлетки",
+   "lamb chops"
+  ],
+  "emoji": "🍖",
+  "description": "Каре ягнёнка или бараньи котлетки на кости с гриля",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Близко к шашлыку, но крупный кусок на кости и меньше дыма углей (smoke .5 против .85).",
+   "needed_for": "Decanter/Wine Folly: вина к баранине; BA: DIPA × grilled lamb",
+   "used_by_pairs": [
+    "R151",
+    "R182",
+    "R212"
+   ]
+  }
+ },
+ {
+  "id": "herring",
+  "name": "Сельдь с картофелем и луком",
+  "cuisine": [
+   "russian"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.85,
+   "sweet": 0.0,
+   "sour": 0.35,
+   "bitter": 0.0,
+   "umami": 0.6,
+   "fat": 0.6,
+   "protein": 0.6,
+   "heat": 0.0,
+   "pungent": 0.5,
+   "weight": 0.45,
+   "cream": 0.0,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 0.2,
+   "fish_oil": 0.9,
+   "green_iron": 0.0
+  },
+  "cook_method": "cured",
+  "protein_source": "oily_fish",
+  "sauce": "vinaigrette",
+  "acid_type": "vinegar",
+  "serve_temp": "cold",
+  "tags": {
+   "brine": 1,
+   "cured": 0.8,
+   "onion": 0.7,
+   "potato": 0.5,
+   "herbal": 0.3
+  },
+  "synonyms": [
+   "селёдка",
+   "сельдь",
+   "селедка"
+  ],
+  "emoji": "🐟",
+  "description": "Малосольная сельдь с отварным картофелем, луком и маслом",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Солёная жирная рыба: salt .85, fish_oil .9; уксус/лук — pungent .5.",
+   "needed_for": "водка к селёдке — канон русского застолья",
+   "used_by_pairs": [
+    "R070",
+    "R096",
+    "R097",
+    "R147",
+    "R188",
+    "R249",
+    "R337",
+    "R338"
+   ]
+  }
+ },
+ {
+  "id": "lemon-tart",
+  "name": "Лимонный тарт",
+  "cuisine": [
+   "french"
+  ],
+  "is_dessert": true,
+  "vector": {
+   "salt": 0.0,
+   "sweet": 0.75,
+   "sour": 0.6,
+   "bitter": 0.0,
+   "umami": 0.0,
+   "fat": 0.55,
+   "protein": 0.2,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.45,
+   "cream": 0.5,
+   "maillard": 0.2,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "baked",
+  "protein_source": "dairy",
+  "sauce": "none",
+  "acid_type": "citrus",
+  "serve_temp": "cold",
+  "tags": {
+   "citrus": 1,
+   "biscuit": 0.5,
+   "butter": 0.5
+  },
+  "synonyms": [
+   "лимонный тарт",
+   "лимонный пирог"
+  ],
+  "emoji": "🍋",
+  "description": "Песочная основа с лимонным курдом",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Кислый и сладкий одновременно.",
+   "needed_for": "Sauternes / witbier к цитрусовым десертам",
+   "used_by_pairs": [
+    "R118",
+    "R154"
+   ]
+  }
+ },
+ {
+  "id": "meat-stew",
+  "name": "Тушёное мясо / сырне / рагу",
+  "cuisine": [
+   "kazakh",
+   "international"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.5,
+   "sweet": 0.0,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.85,
+   "fat": 0.75,
+   "protein": 0.85,
+   "heat": 0.0,
+   "pungent": 0.3,
+   "weight": 0.85,
+   "cream": 0.0,
+   "maillard": 0.35,
+   "smoke": 0.15,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "braised",
+  "protein_source": "lamb",
+  "sauce": "broth",
+  "acid_type": "none",
+  "serve_temp": "hot",
+  "tags": {
+   "lamb": 0.7,
+   "beef": 0.4,
+   "onion": 0.5,
+   "potato": 0.4,
+   "herbal": 0.3,
+   "broth": 0.4
+  },
+  "synonyms": [
+   "сырне",
+   "сірне",
+   "рагу",
+   "тушёная баранина",
+   "тушёная говядина",
+   "beef stew"
+  ],
+  "emoji": "🍲",
+  "description": "Мясо (баранина или говядина), тушённое или жаренное в казане с луком и картофелем; казахское сірне, европейское рагу",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Тяжёлое тушёное мясо: белок и жир высокие, корочка умеренная; у сірне из казана лёгкий дым.",
+   "needed_for": "SWN (каберне фран × сырне), Storton (пилснер «задавлен» рагу)",
+   "used_by_pairs": [
+    "R100",
+    "R305"
+   ]
+  }
+ },
+ {
+  "id": "pickles",
+  "name": "Соленья (огурцы, капуста, помидоры)",
+  "cuisine": [
+   "russian",
+   "kazakh"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.8,
+   "sweet": 0.0,
+   "sour": 0.75,
+   "bitter": 0.0,
+   "umami": 0.2,
+   "fat": 0.02,
+   "protein": 0.05,
+   "heat": 0.0,
+   "pungent": 0.4,
+   "weight": 0.15,
+   "cream": 0.0,
+   "maillard": 0.0,
+   "smoke": 0.0,
+   "fresh": 0.4,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "fermented",
+  "protein_source": "none",
+  "sauce": "none",
+  "acid_type": "lactic",
+  "serve_temp": "cold",
+  "tags": {
+   "cucumber": 0.8,
+   "brine": 0.8,
+   "sour_lactic": 0.8,
+   "garlic": 0.4,
+   "herbal": 0.5
+  },
+  "synonyms": [
+   "соленья",
+   "солёные огурцы",
+   "малосольные огурцы"
+  ],
+  "emoji": "🥒",
+  "description": "Квашеные/солёные овощи, закуска к крепкому",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Соль и молочная кислота, без жира и белка.",
+   "needed_for": "водка к солёным огурцам — классика",
+   "used_by_pairs": [
+    "R248",
+    "R339"
+   ]
+  }
+ },
+ {
+  "id": "roast-chicken",
+  "name": "Курица запечённая",
+  "cuisine": [
+   "international"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.45,
+   "sweet": 0.0,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.6,
+   "fat": 0.5,
+   "protein": 0.8,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.6,
+   "cream": 0.0,
+   "maillard": 0.7,
+   "smoke": 0.0,
+   "fresh": 0.0,
+   "fish_oil": 0.0,
+   "green_iron": 0.0
+  },
+  "cook_method": "baked",
+  "protein_source": "poultry",
+  "sauce": "none",
+  "acid_type": "none",
+  "serve_temp": "hot",
+  "tags": {
+   "herbal": 0.4,
+   "butter": 0.3,
+   "caramel": 0.3
+  },
+  "synonyms": [
+   "запечённая курица",
+   "курица гриль",
+   "цыплёнок"
+  ],
+  "emoji": "🍗",
+  "description": "Целая курица или четвертины, запечённые с травами",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Средний вес, корочка .7, жир кожи .5.",
+   "needed_for": "BA/Oliver: pale ale, amber lager к жареной курице; вина к курице",
+   "used_by_pairs": [
+    "R043",
+    "R044",
+    "R165",
+    "R273"
+   ]
+  }
+ },
+ {
+  "id": "smoked-fish",
+  "name": "Копчёная рыба (скумбрия, лосось)",
+  "cuisine": [
+   "russian",
+   "international"
+  ],
+  "is_dessert": false,
+  "vector": {
+   "salt": 0.75,
+   "sweet": 0.0,
+   "sour": 0.0,
+   "bitter": 0.0,
+   "umami": 0.7,
+   "fat": 0.7,
+   "protein": 0.8,
+   "heat": 0.0,
+   "pungent": 0.0,
+   "weight": 0.45,
+   "cream": 0.0,
+   "maillard": 0.0,
+   "smoke": 0.8,
+   "fresh": 0.0,
+   "fish_oil": 0.8,
+   "green_iron": 0.0
+  },
+  "cook_method": "smoked",
+  "protein_source": "oily_fish",
+  "sauce": "none",
+  "acid_type": "none",
+  "serve_temp": "cold",
+  "tags": {
+   "smoke": 1,
+   "cured": 0.6,
+   "brine": 0.5,
+   "fish": 0.8
+  },
+  "synonyms": [
+   "копчёная скумбрия",
+   "лосось холодного копчения"
+  ],
+  "emoji": "🐟",
+  "description": "Рыба горячего/холодного копчения как закуска",
+  "vector_source": "manual",
+  "legacy": false,
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Жирная рыба (fish_oil .8) + дым .8 + соль .75.",
+   "needed_for": "BA: amber lager / dry stout к копчёной рыбе",
+   "used_by_pairs": [
+    "R041",
+    "R042",
+    "R073",
+    "R074",
+    "R162",
+    "R222",
+    "R241",
+    "R281",
+    "R282",
+    "R292"
+   ]
+  }
+ }
+]

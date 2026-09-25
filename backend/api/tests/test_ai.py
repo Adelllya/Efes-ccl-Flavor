@@ -5,7 +5,11 @@ import uuid
 from unittest.mock import patch
 
 import anthropic
-import httpx
+try:
+    # anthropic 1.x (его ставит requirements.txt) работает на httpx2, 0.x - на httpx
+    import httpx2 as httpx
+except ImportError:
+    import httpx
 from django.conf import settings
 from django.core.cache import cache
 from django.test import TestCase
