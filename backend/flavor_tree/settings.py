@@ -140,6 +140,10 @@ STORAGES = {
     },
 }
 
+# На Vercel collectstatic не запускается, поэтому WhiteNoise берёт статику
+# (админка, DRF) прямо из пакетов.
+WHITENOISE_USE_FINDERS = True
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 

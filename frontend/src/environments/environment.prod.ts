@@ -1,7 +1,6 @@
-// ПРОДАКШЕН. Замените домен на реальный адрес бекенда с Railway
-// (например, https://flavor-production-ab12.up.railway.app). Схема https, без слэша на конце домена.
+// ПРОДАКШЕН. Адрес бекенда на Vercel (проект flavor-tree-backend). Схема https, без слэша на конце домена.
 export const environment = {
   production: true,
-  apiBase: 'https://REPLACE_WITH_RAILWAY_DOMAIN/api',
-  adminUrl: 'https://REPLACE_WITH_RAILWAY_DOMAIN/admin/',
+  apiBase: 'https://flavor-tree-backend.vercel.app/api',
+  adminUrl: 'https://flavor-tree-backend.vercel.app/admin/',
 };
