@@ -109,7 +109,12 @@ const PAGE = 48;
 
         @if (d.image && d.image_credit; as c) {
           <p class="v2-credit mb-md">
-            Фото: <a [href]="c.source" target="_blank" rel="noopener">{{ c.author || 'Wikimedia Commons' }}</a>, {{ c.license }}
+            Фото: <a [href]="c.source" target="_blank" rel="noopener">{{ c.author || 'Wikimedia Commons' }}</a>,
+            @if (c.license_url) {
+              <a [href]="c.license_url" target="_blank" rel="noopener license">{{ c.license }}</a>
+            } @else {
+              {{ c.license }}
+            }
           </p>
         }
 

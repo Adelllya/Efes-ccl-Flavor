@@ -42,7 +42,7 @@ export interface V2Drink {
   description?: string;
   image?: string | null;
   /** Автор и лицензия фото из открытых источников (CC BY / BY-SA требуют подписи). */
-  image_credit?: { author: string; license: string; source: string } | null;
+  image_credit?: { author: string; license: string; license_url?: string; source: string } | null;
   in_pairing?: boolean;
 }
 
