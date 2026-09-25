@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { FoodPairing, Dish, CuisineType, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { countOf } from '../venue-menu/plural';
+import { PairingV2Component } from '../drinks-v2/pairing-v2.component';
 
 /** Короткое пояснение к типу сочетания на бейдже карточки. */
 const PAIRING_HINT: Record<PairingType, string> = {
@@ -25,7 +26,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
 @Component({
   selector: 'app-food-pairing',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PairingV2Component],
   template: `
     <div class="mb-3xl">
       <h1 class="section-header">Что подать к блюду</h1>
@@ -51,8 +52,17 @@ const CUISINES: { id: CuisineType; label: string }[] = [
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
           {{ dishesLoaded() ? 'Каталог ' + countOf(dishes().length, 'блюда', 'блюд', 'блюд') : 'Каталог блюд' }}
         </button>
+        <button
+          class="btn-outline"
+          [class.active]="viewMode() === 'drinks'"
+          (click)="viewMode.set('drinks')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></svg>
+          Подбор из 412 напитков
+        </button>
       </div>
 
+      @if (viewMode() !== 'drinks') {
       <div style="position: relative; min-width: 260px; max-width: 360px; width: 100%;">
         <input
           type="text"
@@ -70,6 +80,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
           >&#x2715;</button>
         }
       </div>
+      }
     </div>
 
     @if (viewMode() === 'pairings') {
@@ -128,6 +139,9 @@ const CUISINES: { id: CuisineType; label: string }[] = [
           }
         </div>
       }
+    } @else if (viewMode() === 'drinks') {
+      <!-- Подбор из всех напитков движка v2 -->
+      <app-pairing-v2 />
     } @else {
       <!-- Каталог блюд -->
       <div class="flex gap-sm mb-2xl flex-wrap">
@@ -183,7 +197,7 @@ export class FoodPairingComponent implements OnInit {
   /** Пока false - скелет; "не найдено" показываем только после загрузки. */
   pairingsLoaded = signal(false);
   dishesLoaded = signal(false);
-  viewMode = signal<'pairings' | 'dishes'>('pairings');
+  viewMode = signal<'pairings' | 'dishes' | 'drinks'>('pairings');
   activeFilter = signal<string>('');
   cuisineFilter = signal<string>('');
   searchQuery = signal<string>('');

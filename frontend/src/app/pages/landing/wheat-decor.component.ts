@@ -19,6 +19,9 @@ interface Stalk {
 /** Дальше этого колос не уедет - иначе он выйдет за слой и обрежется. */
 const MAX_SHIFT = 50;
 
+/** Колосья показываем только на широком экране: на узком они лезут на текст. */
+const WIDE_QUERY = '(min-width: 1181px)';
+
 /**
  * Пшеница по краям страницы.
  *
@@ -39,11 +42,14 @@ const MAX_SHIFT = 50;
   selector: 'app-wheat-decor',
   standalone: true,
   template: `
+    <!-- На узком экране колосьев нет совсем: картинки не качаются и прокрутку не слушаем -->
+    @if (wide()) {
     <div class="wheat" aria-hidden="true">
       @for (s of stalks; track $index) {
         <img
           [src]="s.src"
           alt=""
+          decoding="async"
           [class.right]="s.side === 'right'"
           [class.from-bottom]="s.anchor === 'bottom'"
           [style.top]="s.anchor === 'top' ? s.at + '%' : null"
@@ -54,6 +60,7 @@ const MAX_SHIFT = 50;
         />
       }
     </div>
+    }
   `,
   styles: [`
     :host { display: contents; }
@@ -82,7 +89,7 @@ const MAX_SHIFT = 50;
     }
     .wheat img.right { left: auto; right: 0; }
 
-    /* На узком экране колосья лезут на текст - там их нет. */
+    /* На узком экране колосья лезут на текст - там их нет (см. WIDE_QUERY). */
     @media (max-width: 1180px) { .wheat { display: none; } }
   `],
 })
@@ -92,31 +99,42 @@ export class WheatDecorComponent implements OnInit {
 
   private scrollY = signal(0);
 
+  /** Экран достаточно широкий для колосьев. */
+  readonly wide = signal(false);
+
   /**
    * Колосья расставлены по всей высоте страницы: верхние отмеряются от
    * верха, нижние - от низа, поэтому на короткой странице они не
    * слипаются, а на длинной не собираются в начале.
    */
   readonly stalks: Stalk[] = [
-    { src: 'decor/corn6.png', side: 'right', at: 8,  anchor: 'top',    hide: 52, width: 300, tilt: 76, lag: 0.16, opacity: 0.85 },
-    { src: 'decor/corn2.png', side: 'left',  at: 16, anchor: 'top',    hide: 50, width: 260, tilt: 72, lag: 0.10, opacity: 0.75 },
-    { src: 'decor/corn4.png', side: 'left',  at: 44, anchor: 'top',    hide: 48, width: 210, tilt: 78, lag: 0.18, opacity: 0.6 },
-    { src: 'decor/corn6.png', side: 'right', at: 40, anchor: 'top',    hide: 54, width: 280, tilt: 74, lag: 0.13, opacity: 0.7 },
-    { src: 'decor/corn3.png', side: 'left',  at: 34, anchor: 'bottom', hide: 46, width: 200, tilt: 80, lag: 0.09, opacity: 0.6 },
-    { src: 'decor/corn5.png', side: 'right', at: 28, anchor: 'bottom', hide: 46, width: 175, tilt: 72, lag: 0.17, opacity: 0.55 },
-    { src: 'decor/corn2.png', side: 'left',  at: 16, anchor: 'bottom', hide: 50, width: 240, tilt: 75, lag: 0.12, opacity: 0.55 },
-    { src: 'decor/corn6.png', side: 'right', at: 12, anchor: 'bottom', hide: 52, width: 260, tilt: 77, lag: 0.15, opacity: 0.5 },
+    { src: 'decor/corn6.webp', side: 'right', at: 8,  anchor: 'top',    hide: 52, width: 300, tilt: 76, lag: 0.16, opacity: 0.85 },
+    { src: 'decor/corn2.webp', side: 'left',  at: 16, anchor: 'top',    hide: 50, width: 260, tilt: 72, lag: 0.10, opacity: 0.75 },
+    { src: 'decor/corn4.webp', side: 'left',  at: 44, anchor: 'top',    hide: 48, width: 210, tilt: 78, lag: 0.18, opacity: 0.6 },
+    { src: 'decor/corn6.webp', side: 'right', at: 40, anchor: 'top',    hide: 54, width: 280, tilt: 74, lag: 0.13, opacity: 0.7 },
+    { src: 'decor/corn3.webp', side: 'left',  at: 34, anchor: 'bottom', hide: 46, width: 200, tilt: 80, lag: 0.09, opacity: 0.6 },
+    { src: 'decor/corn5.webp', side: 'right', at: 28, anchor: 'bottom', hide: 46, width: 175, tilt: 72, lag: 0.17, opacity: 0.55 },
+    { src: 'decor/corn2.webp', side: 'left',  at: 16, anchor: 'bottom', hide: 50, width: 240, tilt: 75, lag: 0.12, opacity: 0.55 },
+    { src: 'decor/corn6.webp', side: 'right', at: 12, anchor: 'bottom', hide: 52, width: 260, tilt: 77, lag: 0.15, opacity: 0.5 },
   ];
 
   private animate = true;
 
   ngOnInit(): void {
+    const wideMq = window.matchMedia?.(WIDE_QUERY);
+    this.wide.set(wideMq ? wideMq.matches : true);
+    if (wideMq) {
+      const onChange = (e: MediaQueryListEvent) => this.zone.run(() => this.wide.set(e.matches));
+      wideMq.addEventListener('change', onChange);
+      this.destroyRef.onDestroy(() => wideMq.removeEventListener('change', onChange));
+    }
+
     this.animate = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (!this.animate) return;
 
     let ticking = false;
     const onScroll = () => {
-      if (ticking) return;
+      if (ticking || !this.wide()) return;
       ticking = true;
       requestAnimationFrame(() => {
         this.zone.run(() => this.scrollY.set(window.scrollY));

@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { Component, HostListener, NgZone, OnDestroy, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LandingComponent } from './pages/landing/landing.component';
 import { BrandExplorerComponent } from './pages/brand-explorer/brand-explorer.component';
@@ -104,7 +104,7 @@ function parsePath(pathname: string): ParsedPath {
         <!-- Логотип -->
         <div class="nav-logo" (click)="goTo('landing')">
           <div class="nav-logo-icon">
-            <img src="decor/logo.png" alt="" />
+            <img src="decor/logo-sm.webp" alt="" width="44" height="44" decoding="async" />
           </div>
           <div>
             <span class="nav-brand-name">FLAVOR TREE</span>
@@ -152,7 +152,7 @@ function parsePath(pathname: string): ParsedPath {
         </div>
 
         <!-- Гамбургер (мобильный) -->
-        <button class="nav-hamburger" [class.open]="mobileMenuOpen()" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()" aria-label="Открыть меню">
+        <button class="nav-hamburger" [class.open]="mobileMenuOpen()" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()" aria-controls="nav-mobile-menu" [attr.aria-label]="mobileMenuOpen() ? 'Закрыть меню' : 'Открыть меню'">
           <span></span>
           <span></span>
           <span></span>
@@ -162,7 +162,7 @@ function parsePath(pathname: string): ParsedPath {
 
     <!-- Мобильное меню (slide-out) -->
     <div class="nav-mobile-backdrop" [class.open]="mobileMenuOpen()" (click)="closeMobileMenu()"></div>
-    <div class="nav-mobile-menu" [class.open]="mobileMenuOpen()">
+    <div class="nav-mobile-menu" id="nav-mobile-menu" [class.open]="mobileMenuOpen()">
       <button class="btn-outline" [class.active]="activeTab() === 'landing'" (click)="goTo('landing')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Главная
@@ -208,8 +208,10 @@ function parsePath(pathname: string): ParsedPath {
     </div>
 
     <!-- Основной контент -->
-    <main style="position: relative; z-index: 1; max-width: var(--container-max); margin: 32px auto; padding: 0 var(--container-padding) 80px;">
-      <!-- Каждый @case монтирует свою обёртку .page-enter, поэтому раздел плавно появляется при каждом переключении -->
+    <main class="app-main" [class.has-tabbar]="showTabBar()">
+      <!-- Каждый @case монтирует свою обёртку .page-enter, поэтому раздел плавно появляется при каждом переключении.
+           Разделы, кроме главной, грузятся отдельными чанками (@defer): на телефон при первом входе
+           приходит только то, что нужно открытой странице. Пока чанк едет, стоит скелетон. -->
       @switch (activeTab()) {
         @case ('landing') {
           <div class="page-enter">
@@ -217,29 +219,49 @@ function parsePath(pathname: string): ParsedPath {
           </div>
         }
         @case ('explorer') {
-          <div class="page-enter">
-            <app-brand-explorer (openBrand)="goTo('beer')" />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-brand-explorer (openBrand)="goTo('beer')" />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          }
         }
         @case ('beer') {
-          <div class="page-enter">
-            <app-beer-detail (back)="goTo('explorer')" />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-beer-detail (back)="goTo('explorer')" />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          }
         }
         @case ('pairing') {
-          <div class="page-enter">
-            <app-food-pairing />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-food-pairing />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          }
         }
         @case ('academy') {
-          <div class="page-enter">
-            <app-academy />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-academy />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          }
         }
         @case ('menu') {
-          <div class="page-enter">
-            <app-venue-menu (openBrand)="goTo('beer')" />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-venue-menu (openBrand)="goTo('beer')" />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          }
         }
         @case ('admin') {
           <div class="page-enter">
@@ -247,40 +269,114 @@ function parsePath(pathname: string): ParsedPath {
             @if (!auth.ready()) {
               <p class="text-muted text-center p-4xl">Проверяем сессию...</p>
             } @else if (auth.canSeePanel()) {
-              <app-sommelier-admin (openMenu)="openVenueMenu($event)" />
+              @defer (on immediate) {
+                <app-sommelier-admin (openMenu)="openVenueMenu($event)" />
+              } @placeholder {
+                <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+              }
             } @else {
               @if (auth.isLoggedIn()) {
                 <p class="text-muted text-center mb-lg">Аккаунту {{ auth.user()?.username }} панель недоступна. Войдите под другой учётной записью.</p>
               }
-              <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
+              @defer (on immediate) {
+                <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
+              } @placeholder {
+                <div class="page-placeholder page-placeholder-narrow" aria-busy="true"><div class="skeleton-card"></div></div>
+              }
             }
           </div>
         }
         @case ('login') {
-          <div class="page-enter">
-            <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder page-placeholder-narrow" aria-busy="true"><div class="skeleton-card"></div></div>
+          }
         }
         @case ('register') {
-          <div class="page-enter">
-            <app-auth mode="register" (done)="afterAuth()" (switchMode)="goTo($event)" />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-auth mode="register" (done)="afterAuth()" (switchMode)="goTo($event)" />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder page-placeholder-narrow" aria-busy="true"><div class="skeleton-card"></div></div>
+          }
         }
         @case ('profile') {
-          <div class="page-enter">
-            <app-profile (navigate)="goTo($event)" />
-          </div>
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-profile (navigate)="goTo($event)" />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          }
         }
       }
     </main>
 
-    <!-- ИИ-сомелье: плавающая кнопка и чат. В панели и на формах входа не нужен -->
+    <!-- Нижняя панель разделов на телефоне (на десктопе те же разделы в шапке).
+         В меню заведения её нет: там снизу своя полоса корзины -->
+    @if (showTabBar()) {
+      <nav class="tabbar" aria-label="Разделы">
+        <button type="button" class="tabbar-item" [class.active]="activeTab() === 'landing'" [attr.aria-current]="activeTab() === 'landing' ? 'page' : null" (click)="goTo('landing')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Главная</span>
+        </button>
+        <button type="button" class="tabbar-item" [class.active]="activeTab() === 'explorer' || activeTab() === 'beer'" [attr.aria-current]="activeTab() === 'explorer' ? 'page' : null" (click)="goTo('explorer')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>Каталог</span>
+        </button>
+        <button type="button" class="tabbar-item" [class.active]="activeTab() === 'pairing'" [attr.aria-current]="activeTab() === 'pairing' ? 'page' : null" (click)="goTo('pairing')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+          <span>К блюду</span>
+        </button>
+        <button type="button" class="tabbar-item" [class.active]="activeTab() === 'menu'" [attr.aria-current]="activeTab() === 'menu' ? 'page' : null" (click)="goTo('menu')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>Меню</span>
+        </button>
+        @if (auth.isLoggedIn()) {
+          <button type="button" class="tabbar-item" [class.active]="activeTab() === 'profile' || activeTab() === 'admin'" [attr.aria-current]="activeTab() === 'profile' ? 'page' : null" (click)="goTo('profile')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Профиль</span>
+          </button>
+        } @else {
+          <button type="button" class="tabbar-item" [class.active]="activeTab() === 'login' || activeTab() === 'register'" [attr.aria-current]="activeTab() === 'login' ? 'page' : null" (click)="goTo('login')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+            <span>Войти</span>
+          </button>
+        }
+      </nav>
+    }
+
+    <!-- ИИ-сомелье: плавающая кнопка и чат. В панели и на формах входа не нужен.
+         Грузится отдельным чанком, когда браузер освободится после первой отрисовки -->
     @if (activeTab() !== 'admin' && activeTab() !== 'login' && activeTab() !== 'register') {
-      <app-sommelier-chat [lift]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
+      @defer (on idle) {
+        <app-sommelier-chat [lift]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
+      }
     }
   `,
   styles: [`
     :host { position: relative; display: block; }
+
+    .app-main {
+      position: relative;
+      z-index: 1;
+      max-width: var(--container-max);
+      margin: 32px auto;
+      padding: 0 var(--container-padding) 80px;
+    }
+
+    /* Скелетон, пока грузится чанк раздела */
+    .page-placeholder {
+      display: grid;
+      gap: var(--space-2xl);
+      grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+    }
+    .page-placeholder-narrow { max-width: 440px; margin: var(--space-3xl) auto 0; grid-template-columns: 1fr; }
+    .page-placeholder .skeleton-card { min-height: 180px; }
 
     .nav-admin-btn {
       flex-shrink: 0;
@@ -421,16 +517,24 @@ function parsePath(pathname: string): ParsedPath {
       .nav-admin-btn {
         display: none;
       }
+
+      .app-main { margin-top: 24px; }
+      /* Место под нижнюю панель разделов и полосу жестов iPhone */
+      .app-main.has-tabbar { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
     }
   `]
 })
 export class AppComponent implements OnInit, OnDestroy {
   readonly auth = inject(AuthService);
   private readonly selection = inject(SelectionService);
+  private readonly zone = inject(NgZone);
 
   activeTab = signal<ActiveTab>('landing');
   mobileMenuOpen = signal(false);
   showStickyTitle = signal(false);
+
+  /** Нижняя панель разделов (видна только на телефоне). В меню заведения снизу своя полоса корзины. */
+  readonly showTabBar = computed(() => !(this.activeTab() === 'menu' && !!this.selection.venueSlug()));
 
   constructor() {
     // Адрес читаем до первого запуска эффекта, иначе он перепишет его на главную
@@ -454,10 +558,20 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Сессию AuthService проверяет сам в конструкторе (loadMe), второй запрос не нужен
     window.addEventListener('popstate', this.onPopState);
+    // Прокрутку слушаем вне зоны Angular: иначе каждое событие scroll запускало бы
+    // проверку изменений во всём приложении, на телефоне это заметно при листании
+    this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScrollEvent, { passive: true }));
   }
 
   ngOnDestroy() {
     window.removeEventListener('popstate', this.onPopState);
+    window.removeEventListener('scroll', this.onScrollEvent);
+  }
+
+  /** Esc закрывает мобильное меню. */
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    if (this.mobileMenuOpen()) this.closeMobileMenu();
   }
 
   /** Кнопки назад/вперёд браузера: адрес уже сменился, разбираем его без нового pushState. */
@@ -481,15 +595,25 @@ export class AppComponent implements OnInit, OnDestroy {
     if (canonical !== pathname || location.search) history.replaceState({}, '', canonical);
   }
 
-  /** Показываем липкий заголовок, когда H1 главной ушёл за навбар. */
-  @HostListener('window:scroll')
+  private scrollTicking = false;
+
+  private readonly onScrollEvent = () => {
+    if (this.scrollTicking) return;
+    this.scrollTicking = true;
+    requestAnimationFrame(() => {
+      this.scrollTicking = false;
+      this.onScroll();
+    });
+  };
+
+  /** Показываем липкий заголовок, когда H1 главной ушёл за навбар. В зону заходим, только если он меняется. */
   onScroll() {
-    if (this.activeTab() !== 'landing') {
-      this.showStickyTitle.set(false);
-      return;
+    let show = false;
+    if (this.activeTab() === 'landing') {
+      const h1 = document.getElementById('hero-title');
+      show = !!h1 && h1.getBoundingClientRect().bottom < 90;
     }
-    const h1 = document.getElementById('hero-title');
-    this.showStickyTitle.set(!!h1 && h1.getBoundingClientRect().bottom < 90);
+    if (show !== this.showStickyTitle()) this.zone.run(() => this.showStickyTitle.set(show));
   }
 
   // Генерируем 18 микро-пузырьков с разными размерами и скоростью подъема

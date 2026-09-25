@@ -30,9 +30,9 @@ import {
   AiRequest,
   AiReply
 } from '../models/flavor-tree.models';
-
 import { environment } from '../../environments/environment';
 
+/** Локально http://127.0.0.1:8000/api, на проде /api на том же домене (src/environments). */
 export const API_BASE = environment.apiBase;
 
 export interface PaginatedResponse<T> {

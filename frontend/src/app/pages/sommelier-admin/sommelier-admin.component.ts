@@ -3,7 +3,6 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { PanelTab } from '../../models/navigation';
 import { Brand, Dish, FlavorNote, FoodPairing, UserRole } from '../../models/flavor-tree.models';
-import { environment } from '../../../environments/environment';
 import { PanelIconComponent } from './panel-icons';
 import { PanelBrandsComponent } from './panel-brands.component';
 import { PanelRequestsComponent } from './panel-requests.component';
@@ -14,6 +13,7 @@ import { PanelMenuComponent } from './panel-menu.component';
 import { PanelOrdersComponent } from './panel-orders.component';
 import { PanelUsersComponent } from './panel-users.component';
 import { PanelSettingsComponent } from './panel-settings.component';
+import { environment } from '../../../environments/environment';
 
 interface PanelTabDef {
   id: PanelTab;
@@ -223,6 +223,7 @@ const ORDERS_POLL_MS = 20000;
 export class SommelierAdminComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   readonly auth = inject(AuthService);
+  /** Django admin: локально на :8000, на проде /admin/ того же домена. */
   readonly adminUrl = environment.adminUrl;
 
   /** Slug заведения: AppComponent открывает его гостевое меню. */

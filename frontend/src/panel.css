@@ -1288,6 +1288,9 @@
   }
   .wa-list { max-height: 70vh; }
   .wa-page.has-selection .wa-list { display: none; }
+  /* Шапка карточки: аватар и название в строку, чипы строкой ниже во всю ширину */
+  .wa-card-head { flex-wrap: wrap; }
+  .wa-card-head > .wa-chips { flex-basis: 100%; }
   .wa-page:not(.has-selection) .wa-detail { display: none; }
   .wa-page-single { display: block; }
   .wa-back { display: inline-flex; }

@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 export type AuthMode = 'login' | 'register';
 
@@ -95,7 +96,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
           }
         </p>
 
-        @if (isLogin) {
+        @if (isLogin && showDemo) {
           <div class="auth-demo">
             <div class="auth-demo-title">Тестовые аккаунты</div>
             @for (a of demo; track a.username) {
@@ -121,6 +122,8 @@ export class AuthComponent {
   @Output() switchMode = new EventEmitter<AuthMode>();
 
   readonly demo = DEMO_ACCOUNTS;
+  /** Только локально: на проде у этих учёток другие пароли. */
+  readonly showDemo = environment.demoAccounts;
 
   username = '';
   email = '';

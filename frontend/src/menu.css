@@ -514,8 +514,10 @@
   max-width: 100%;
   height: auto;
   max-height: 88vh;
+  max-height: 88dvh;
   margin: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0;
   color: var(--foam);
   background: var(--bg-0);
@@ -721,6 +723,16 @@
 @keyframes vmRise {
   from { transform: translateY(16px); opacity: 0; }
   to { transform: none; opacity: 1; }
+}
+
+/* Узкий телефон: «+ В заказ» и «Подобрать напиток» помещаются в одну строку,
+   у названий напитков нормальная зона нажатия */
+@media (max-width: 400px) {
+  .vm-rec-toggle { gap: 6px; padding: 0 12px; }
+}
+@media (max-width: 768px) {
+  .vm-alt-name, .vm-drink-name { min-height: 32px; padding: 5px 0; }
+  .vm-facts a { display: inline-block; padding: 6px 0; }
 }
 
 @media (min-width: 769px) {

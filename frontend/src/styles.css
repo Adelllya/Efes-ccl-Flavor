@@ -4,8 +4,6 @@
    Typography: Outfit (headings) + Plus Jakarta Sans (body)
    */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
 /* ── Design Tokens */
 :root {
   /* Цвета - тёплая янтарная палитра */
@@ -82,6 +80,10 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS не раздувает шрифт при повороте в landscape */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(245, 158, 11, 0.12);
 }
 
 body {
@@ -204,10 +206,12 @@ h4 { font-size: 1.1rem; font-weight: 600; }
     border-color var(--duration-normal) var(--ease-out);
 }
 
-.glass-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-hover);
-  border-color: rgba(180, 83, 9, 0.35);
+@media (hover: hover) {
+  .glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(180, 83, 9, 0.35);
+  }
 }
 
 .glass-card.interactive {
@@ -240,9 +244,11 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   white-space: nowrap;
 }
 
-.btn-amber:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px -6px rgba(180, 83, 9, 0.55);
+@media (hover: hover) {
+  .btn-amber:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px -6px rgba(180, 83, 9, 0.55);
+  }
 }
 
 .btn-amber:active {
@@ -569,10 +575,17 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: var(--space-sm);
+  width: 44px;
+  height: 44px;
+  margin-right: -6px;
+  padding: 0;
+  border-radius: var(--radius-md);
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 5px;
   z-index: 110;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .nav-hamburger span {
@@ -599,28 +612,38 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   display: none;
   position: fixed;
   top: 0;
-  right: -100%;
-  width: 300px;
+  right: 0;
+  width: min(300px, 86vw);
   height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--glass-strong);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-left: 1px solid var(--line);
-  padding: 80px var(--space-2xl) var(--space-2xl);
+  padding: calc(104px + env(safe-area-inset-top)) var(--space-2xl) calc(var(--space-2xl) + env(safe-area-inset-bottom));
   flex-direction: column;
   gap: var(--space-sm);
-  z-index: 105;
-  transition: right var(--duration-slow) var(--ease-out);
+  /* Ниже шапки (100): гамбургер-крестик остаётся поверх панели и закрывает её */
+  z-index: 90;
+  transform: translateX(105%);
+  visibility: hidden;
+  transition: transform var(--duration-slow) var(--ease-out), visibility 0s linear var(--duration-slow);
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
 }
 
 .nav-mobile-menu.open {
-  right: 0;
+  transform: none;
+  visibility: visible;
+  transition: transform var(--duration-slow) var(--ease-out);
 }
 
 .nav-mobile-menu .btn-outline,
 .nav-mobile-menu .btn-amber {
   width: 100%;
+  min-height: 48px;
+  flex-shrink: 0;
   justify-content: flex-start;
   padding: var(--space-md) var(--space-lg);
 }
@@ -630,13 +653,28 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.3);
-  z-index: 104;
+  z-index: 89;
   opacity: 0;
-  transition: opacity var(--duration-normal) ease;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) ease, visibility 0s linear var(--duration-normal);
 }
 
 .nav-mobile-backdrop.open {
   opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity var(--duration-normal) ease;
+}
+
+/* Пока открыто мобильное меню, страница под ним не прокручивается */
+body:has(.nav-mobile-menu.open) {
+  overflow: hidden;
+}
+
+/* Нижняя панель разделов: на десктопе разделы в шапке, поэтому её нет */
+.tabbar {
+  display: none;
 }
 
 /* ── Паттерны секций */
@@ -681,8 +719,10 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   transition: transform var(--duration-slow) var(--ease-spring);
 }
 
-.beer-card:hover .beer-card-image img {
-  transform: scale(1.2) translateY(-2px);
+@media (hover: hover) {
+  .beer-card:hover .beer-card-image img {
+    transform: scale(1.2) translateY(-2px);
+  }
 }
 
 .beer-card-image .badge {
@@ -940,7 +980,7 @@ h4 { font-size: 1.1rem; font-weight: 600; }
 .skeleton-grid {
   display: grid;
   gap: var(--space-2xl);
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
 }
 
 .skeleton-card {
@@ -1098,10 +1138,11 @@ h4 { font-size: 1.1rem; font-weight: 600; }
     font-size: 1.1rem;
   }
 
+  /* minmax(0, 1fr): длинное содержимое карточки не распирает колонку шире экрана */
   .grid-cards,
   .grid-cards-sm,
   .grid-cards-lg {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .modal-content {
@@ -1924,4 +1965,167 @@ ft-select { display: block; position: relative; width: 100%; }
   .ai-sheet { animation: none; }
   .ai-typing span { animation: none; opacity: 0.7; }
   .ai-fab, .ai-fab:hover, .ai-card-btn:hover, .ai-send:hover { transform: none; }
+}
+
+/* ── Телефон: нижняя панель разделов, формы без автозума, облегчённые эффекты */
+@media (max-width: 768px) {
+  .tabbar {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    /* Под подложкой мобильного меню (89): открытое меню её притеняет */
+    z-index: 88;
+    padding: 6px;
+    background: var(--glass-strong);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 12px 32px -12px rgba(180, 83, 9, 0.3), var(--shadow-warm);
+  }
+
+  .tabbar-item {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    min-height: 52px;
+    padding: 4px 2px;
+    border: none;
+    border-radius: var(--radius-lg);
+    background: transparent;
+    color: var(--foam-dim);
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 180ms ease, box-shadow 180ms ease, transform 120ms ease;
+  }
+
+  .tabbar-item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Активный раздел как активный таб в шапке: янтарный градиент в ::before */
+  .tabbar-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+
+  .tabbar-item.active {
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(180, 83, 9, 0.35);
+  }
+
+  .tabbar-item.active::before { opacity: 1; }
+  .tabbar-item:active { transform: scale(0.96); }
+
+  .tabbar-item:focus-visible {
+    outline: 2px solid var(--beer-light);
+    outline-offset: 2px;
+  }
+
+  /* Кнопка ИИ-сомелье стоит над нижней панелью */
+  .tabbar ~ app-sommelier-chat .ai-fab {
+    bottom: calc(86px + env(safe-area-inset-bottom));
+  }
+
+  /* Открытое мобильное меню: кнопка сомелье не лезет поверх него */
+  .nav-mobile-menu.open ~ app-sommelier-chat .ai-fab {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* iOS Safari увеличивает страницу при фокусе на поле со шрифтом меньше 16px */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Размытие фона на каждой карточке дорого для телефона при прокрутке, а на ровном
+     фоне его почти не видно. Оставляем его только липким полосам (шапка, полоса меню) */
+  .glass-panel:not(.nav-bar),
+  .skeleton-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .glass-panel:not(.nav-bar) {
+    background: rgba(255, 255, 255, 0.86);
+  }
+
+  /* Крупные внутренние отступы панелей съедают треть ширины телефона */
+  .p-4xl { padding: var(--space-2xl) var(--space-xl); }
+  .p-3xl { padding: var(--space-2xl) var(--space-xl); }
+
+  /* Кнопка с длинным текстом переносит строку, а не раздвигает страницу */
+  .btn-amber,
+  .btn-outline {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  /* Текстовые ссылки-кнопки («Зарегистрироваться», «Войти»): зона нажатия выше строки */
+  .auth-link {
+    padding: 10px 4px;
+    margin: -10px -4px;
+  }
+
+  .ai-pref { min-height: 36px; }
+
+  /* Пузырьков вдвое меньше */
+  .bubble:nth-child(n + 10) {
+    display: none;
+  }
+
+  .modal-overlay {
+    padding: var(--space-md);
+  }
+
+  .modal-content {
+    max-height: calc(100dvh - 2 * var(--space-md));
+    margin: 0;
+  }
+
+  .modal-close {
+    top: var(--space-lg);
+    right: var(--space-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Строка «слева / справа» (бейджи, заголовок и кнопка) переносится, если не помещается */
+  .flex.justify-between {
+    flex-wrap: wrap;
+    row-gap: var(--space-sm);
+  }
+}
+
+@media (max-width: 360px) {
+  .p-2xl { padding: var(--space-xl) var(--space-lg); }
+  .tabbar { left: 8px; right: 8px; gap: 2px; padding: 5px; }
+  .tabbar-item { padding: 4px 0; font-size: 0.69rem; }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .tabbar-item:active { transform: none; }
 }

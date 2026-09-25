@@ -1,7 +1,7 @@
 import {
   Component,
   ElementRef,
-  HostListener,
+  NgZone,
   OnDestroy,
   AfterViewInit,
   inject,
@@ -308,6 +308,7 @@ interface HeroPill {
       font-family: inherit;
       font-weight: 500;
       padding: 0 var(--space-sm);
+      text-overflow: ellipsis;
     }
 
     .hero-search-input::placeholder { color: var(--muted); }
@@ -612,6 +613,7 @@ interface HeroPill {
 })
 export class HeroComponent implements AfterViewInit, OnDestroy {
   private host = inject(ElementRef<HTMLElement>);
+  private zone = inject(NgZone);
 
   /** Пользователь выбрал направление подбора. */
   choose = output<DiscoveryMode>();
@@ -624,7 +626,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   sideTransform = signal<string[]>(['', '', '', '', '', '']);
 
   pills: HeroPill[] = [
-    { id: 'brands', label: '5 брендов Efes KZ', icon: 'beer' },
+    { id: 'brands', label: '17 брендов Efes KZ', icon: 'beer' },
     { id: 'pyramid', label: 'Вкусовая пирамида', icon: 'pyramid' },
     { id: 'ai', label: 'AI-Сомелье', icon: 'sparkle' },
     { id: 'school', label: 'Школа вкуса', icon: 'book' },
@@ -641,6 +643,9 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private static readonly SIDE_THRESHOLDS = [60, 200, 360];
 
   ngAfterViewInit(): void {
+    if (!this.reducedMotion) {
+      this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScrollEvent, { passive: true }));
+    }
     if (this.reducedMotion || typeof IntersectionObserver === 'undefined') {
       this.revealed.set(true);
       return;
@@ -664,9 +669,23 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.observer?.disconnect();
+    window.removeEventListener('scroll', this.onScrollEvent);
   }
 
-  @HostListener('window:scroll')
+  /** Боковые кружки видны только шире 1280px (см. стили), на узком экране прокрутку не считаем. */
+  private readonly sideMq = typeof window !== 'undefined' ? window.matchMedia?.('(min-width: 1281px)') : undefined;
+  private scrollTicking = false;
+
+  /** Прокрутка слушается вне зоны Angular (ngAfterViewInit), считаем не чаще кадра. */
+  private readonly onScrollEvent = () => {
+    if (this.scrollTicking || (this.sideMq && !this.sideMq.matches)) return;
+    this.scrollTicking = true;
+    requestAnimationFrame(() => {
+      this.scrollTicking = false;
+      this.zone.run(() => this.onScroll());
+    });
+  };
+
   onScroll(): void {
     if (this.reducedMotion) return;
     const y = window.scrollY;

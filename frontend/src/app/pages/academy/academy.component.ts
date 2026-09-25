@@ -61,7 +61,7 @@ import { Course, PAIRING_LABELS, TeamMember } from '../../models/flavor-tree.mod
         </h4>
         <div class="flex gap-md flex-wrap">
           @for (o of quizOptions; track o.id) {
-            <button class="btn-outline" [class.active]="quizAnswer() === o.id" (click)="quizAnswer.set(o.id)">{{ o.label }}</button>
+            <button class="btn-outline quiz-option" [class.active]="quizAnswer() === o.id" (click)="quizAnswer.set(o.id)">{{ o.label }}</button>
           }
         </div>
       </div>
@@ -92,7 +92,15 @@ import { Course, PAIRING_LABELS, TeamMember } from '../../models/flavor-tree.mod
         </div>
       </section>
     }
-  `
+  `,
+  styles: [`
+    /* Длинные варианты ответа переносятся, а не вылезают за экран */
+    .quiz-option { white-space: normal; text-align: left; line-height: 1.4; }
+
+    @media (max-width: 768px) {
+      .quiz-option { width: 100%; min-height: 48px; }
+    }
+  `]
 })
 export class AcademyComponent implements OnInit {
   private api = inject(ApiService);

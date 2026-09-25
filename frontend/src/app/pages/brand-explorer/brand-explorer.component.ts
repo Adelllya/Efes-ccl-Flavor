@@ -5,12 +5,30 @@ import { ApiService } from '../../services/api.service';
 import { Brand } from '../../models/flavor-tree.models';
 import { SelectionService } from '../../services/selection.service';
 import { countOf } from '../venue-menu/plural';
+import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
 
 @Component({
   selector: 'app-brand-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DrinksCatalogComponent],
   template: `
+    <!-- Сорта Efes с пирамидой или все напитки движка подбора -->
+    <div class="flex gap-md flex-wrap mb-2xl">
+      <button class="btn-outline" [class.active]="mode() === 'efes'" (click)="mode.set('efes')">
+        Сорта Efes{{ loaded() ? ' (' + brands().length + ')' : '' }}
+      </button>
+      <button class="btn-outline" [class.active]="mode() === 'all'" (click)="mode.set('all')">
+        Все напитки (412)
+      </button>
+    </div>
+
+    @if (mode() === 'all') {
+      <div class="mb-3xl">
+        <h1 class="section-header">Все напитки</h1>
+        <p class="text-muted">Пиво, вино, крепкое, коктейли и безалкогольное: всё, с чем работает подбор к блюдам</p>
+      </div>
+      <app-drinks-catalog (openBrand)="openBrandById($event)" />
+    } @else {
     <div class="flex justify-between items-start mb-3xl flex-wrap gap-lg">
       <div>
         <h1 class="section-header">Каталог {{ loaded() ? countOf(brands().length, 'сорта', 'сортов', 'сортов') : 'сортов' }} & Вкусовая пирамида</h1>
@@ -85,7 +103,7 @@ import { countOf } from '../venue-menu/plural';
               <span class="badge badge-dark beer-card-image-badge">{{ brand.packaging_type_display || brand.packaging_type }}</span>
             }
             @if (brand.image) {
-              <img [src]="brand.image" [alt]="brand.name" />
+              <img [src]="brand.image" [alt]="brand.name" loading="lazy" decoding="async" />
             } @else {
               <div class="beer-card-placeholder">
                 <span>🍺</span>
@@ -133,6 +151,7 @@ import { countOf } from '../venue-menu/plural';
       }
     </div>
     }
+    }
   `,
   styles: [`
     .beer-card-image-badge {
@@ -158,6 +177,8 @@ export class BrandExplorerComponent implements OnInit {
   searchQuery = signal<string>('');
 
   readonly countOf = countOf;
+  /** efes - 17 сортов с пирамидой, all - все напитки движка подбора. */
+  mode = signal<'efes' | 'all'>('efes');
   readonly skeletonCards = [1, 2, 3, 4, 5, 6];
   selectedPackaging = signal<string>('');
   onlyHoreca = signal<boolean>(false);
@@ -190,6 +211,11 @@ export class BrandExplorerComponent implements OnInit {
     this.searchQuery.set('');
     this.selectedPackaging.set('');
     this.onlyHoreca.set(false);
+  }
+
+  openBrandById(id: string) {
+    const brand = this.brands().find(b => b.id === id);
+    if (brand) this.openBrandDetail(brand);
   }
 
   /** Каталог и подбор ведут на одну и ту же страницу сорта. */

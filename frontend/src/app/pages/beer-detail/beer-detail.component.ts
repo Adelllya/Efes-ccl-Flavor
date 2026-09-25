@@ -498,6 +498,15 @@ const MAX_ORBIT = 6;
       .bd-taste { width: 84px; margin-left: -42px; }
       .bd-taste-face { width: 58px; height: 58px; }
       .bd-taste-emoji { font-size: 1.5rem; }
+      /* Подписи на телефоне не мельче 11px */
+      .bd-taste-int { font-size: 0.7rem; }
+      .bd-serve-label { font-size: 0.72rem; }
+    }
+
+    @media (max-width: 480px) {
+      .bd-hero { padding: var(--space-xl); }
+      .bd-layer { padding: var(--space-xl); }
+      .bd-section { margin-bottom: var(--space-5xl); }
     }
 
     @media (prefers-reduced-motion: reduce) {
