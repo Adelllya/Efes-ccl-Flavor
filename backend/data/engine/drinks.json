@@ -221,7 +221,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский светлый эль. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Belgian Blond Ale: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.0%. Подавайте при 5-9°C."
  },
  {
   "id": "5-okean-grand-ale",
@@ -325,7 +325,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский крепкий золотой эль. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Belgian Strong Golden Ale: живая карбонизация, яркий хмелевой аромат. Крепость 6.2%. Подавайте при 6-10°C."
  },
  {
   "id": "5-okean-belgiyskoe",
@@ -419,7 +419,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Witbier: живая карбонизация, яркий хмелевой аромат. Крепость 4.5%. Подавайте при 3-7°C."
  },
  {
   "id": "5-okean-bogemskoe",
@@ -509,7 +509,7 @@
    }
   ],
   "status": "auto",
-  "description": "Янтарный лагер (венский / мерцен). Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Vienna/Amber Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 5.2%. Подавайте при 6-10°C."
  },
  {
   "id": "5-okean-nemetskoe",
@@ -598,7 +598,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Munich Helles-type: живая карбонизация, плотное солодовое тело. Крепость 4.0%. Подавайте при 4-8°C."
  },
  {
   "id": "5-okean-prazhskoe",
@@ -688,7 +688,7 @@
    }
   ],
   "status": "auto",
-  "description": "Янтарный лагер (венский / мерцен). Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Czech Amber Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 4.5%. Подавайте при 6-10°C."
  },
  {
   "id": "adyraspan",
@@ -778,7 +778,7 @@
    }
   ],
   "status": "auto",
-  "description": "Двойной IPA. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Double IPA: выраженная хмелевая горечь, яркий хмелевой аромат, живая карбонизация. Крепость 7.5%. Подавайте при 8-12°C."
  },
  {
   "id": "amsterdam-navigator",
@@ -975,7 +975,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мутный IPA (NEIPA). Производитель: Anarkist (LT)."
+  "description": "Hazy IPA: яркий хмелевой аромат, плотное солодовое тело, живая карбонизация. Крепость 7.5%. Подавайте при 6-10°C."
  },
  {
   "id": "asahi-super-dry",
@@ -1077,7 +1077,7 @@
    }
   ],
   "status": "auto",
-  "description": "Рисовый лагер. Производитель: Asahi (JP).",
+  "description": "Japanese Rice Lager: живая карбонизация. Крепость 5.0%. Подавайте при 2-6°C.",
   "image": null
  },
  {
@@ -1180,7 +1180,7 @@
    }
   ],
   "status": "auto",
-  "description": "Американский пейл-эль. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "American Pale Ale: яркий хмелевой аромат, живая карбонизация, выраженная хмелевая горечь. Крепость 5.5%. Подавайте при 6-10°C."
  },
  {
   "id": "auster-blanche-de-chymkent",
@@ -1272,7 +1272,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Witbier: живая карбонизация, яркий хмелевой аромат. Крепость 5.0%. Подавайте при 3-7°C."
  },
  {
   "id": "auster-english-ipa",
@@ -1365,7 +1365,7 @@
    }
   ],
   "status": "auto",
-  "description": "Английский IPA. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "English IPA: яркий хмелевой аромат, живая карбонизация, плотное солодовое тело. Крепость 5.4%. Подавайте при 7-11°C."
  },
  {
   "id": "auster-golden-ale",
@@ -1459,7 +1459,7 @@
    }
   ],
   "status": "auto",
-  "description": "Светлый эль (блонд). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Blonde/Golden Ale: живая карбонизация. Крепость 4.5%. Подавайте при 4-8°C."
  },
  {
   "id": "auster-gose",
@@ -1552,7 +1552,7 @@
    }
   ],
   "status": "auto",
-  "description": "Гозе (кисло-солёное пшеничное). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Gose: живая карбонизация, яркий хмелевой аромат. Крепость 4.2%. Подавайте при 3-7°C."
  },
  {
   "id": "auster-imperial-stout",
@@ -1644,7 +1644,7 @@
    }
   ],
   "status": "auto",
-  "description": "Имперский стаут. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Imperial Stout: плотное солодовое тело, ноты жжёного солода и кофе, яркий хмелевой аромат. Крепость 13.0%. Подавайте при 10-14°C."
  },
  {
   "id": "auster-kolsch",
@@ -1736,7 +1736,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кёльш. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Kölsch: живая карбонизация. Крепость 4.9%. Подавайте при 3-7°C."
  },
  {
   "id": "auster-lambic-kriek",
@@ -1829,7 +1829,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крик / фруктовый ламбик. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Fruit Lambic: живая карбонизация, яркий хмелевой аромат. Крепость 6.0%. Подавайте при 4-8°C."
  },
  {
   "id": "auster-london-brown",
@@ -1931,7 +1931,7 @@
    }
   ],
   "status": "auto",
-  "description": "Английский коричневый эль. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "British Brown Ale: плотное солодовое тело, яркий хмелевой аромат, живая карбонизация. Крепость 3.5%. Подавайте при 8-12°C."
  },
  {
   "id": "auster-new-england-ipa",
@@ -2023,7 +2023,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мутный IPA (NEIPA). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Hazy IPA: яркий хмелевой аромат, плотное солодовое тело, живая карбонизация. Крепость 5.8%. Подавайте при 6-10°C."
  },
  {
   "id": "auster-oatmeal-milk-stout",
@@ -2126,7 +2126,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий (молочный) стаут. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Oatmeal/Sweet Stout: плотное солодовое тело, ноты жжёного солода и кофе, яркий хмелевой аромат. Крепость 5.1%. Подавайте при 9-13°C."
  },
  {
   "id": "auster-premium-pils",
@@ -2228,7 +2228,7 @@
    }
   ],
   "status": "auto",
-  "description": "Немецкий пилс. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "German Pils: живая карбонизация. Крепость 4.9%. Подавайте при 3-7°C."
  },
  {
   "id": "auster-weizen",
@@ -2321,7 +2321,7 @@
    }
   ],
   "status": "auto",
-  "description": "Баварское пшеничное (вайсбир). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Weissbier: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 5.0%. Подавайте при 4-8°C."
  },
  {
   "id": "ayinger-brauweisse",
@@ -2415,7 +2415,7 @@
    }
   ],
   "status": "auto",
-  "description": "Баварское пшеничное (вайсбир). Производитель: Ayinger (DE).",
+  "description": "Weissbier: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 5.1%. Подавайте при 4-8°C.",
   "image": "img/beers/ayinger-brauweisse.webp",
   "image_credit": {
    "author": "JIP",
@@ -2517,7 +2517,7 @@
    }
   ],
   "status": "auto",
-  "description": "Доппельбок. Производитель: Ayinger (DE)."
+  "description": "Doppelbock: плотное солодовое тело, яркий хмелевой аромат, солодовая сладость. Крепость 6.7%. Подавайте при 8-12°C."
  },
  {
   "id": "bakalar-pale-lager",
@@ -2631,7 +2631,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский светлый лагер (výčepní). Производитель: Pivovar Rakovník (CZ)."
+  "description": "Czech Pale Lager: живая карбонизация, плотное солодовое тело. Крепость 4.0%. Подавайте при 4-8°C."
  },
  {
   "id": "bakalar-premium-lager",
@@ -2745,7 +2745,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский премиальный светлый лагер (пилзнер). Производитель: Pivovar Rakovník (CZ)."
+  "description": "Czech Premium Pale Lager: выраженная хмелевая горечь, плотное солодовое тело, живая карбонизация. Крепость 4.9%. Подавайте при 4-8°C."
  },
  {
   "id": "bavaria",
@@ -3016,7 +3016,7 @@
    }
   ],
   "status": "auto",
-  "description": "Тёмный лагер (международный). Производитель: Baza Brewery (Алматы)."
+  "description": "Dark Lager: живая карбонизация. Крепость 5.1%. Подавайте при 4-8°C."
  },
  {
   "id": "bazavyy-lager",
@@ -3115,7 +3115,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Baza Brewery (Алматы)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "beerkhan",
@@ -3203,7 +3203,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Strong Lager (Malt Liquor): плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 10.0%. Подавайте при 6-10°C."
  },
  {
   "id": "belhaven-black-scottish-stout",
@@ -3306,7 +3306,7 @@
    }
   ],
   "status": "auto",
-  "description": "Ирландский сухой стаут. Производитель: Belhaven (UK)."
+  "description": "Stout: ноты жжёного солода и кофе, плотное солодовое тело, яркий хмелевой аромат. Крепость 4.2%. Подавайте при 9-13°C."
  },
  {
   "id": "belhaven-mccallums-sweet-stout",
@@ -3409,7 +3409,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий (молочный) стаут. Производитель: Belhaven (UK)."
+  "description": "Sweet Stout: плотное солодовое тело, ноты жжёного солода и кофе, яркий хмелевой аромат. Крепость 4.1%. Подавайте при 9-13°C."
  },
  {
   "id": "birra-antoniana-dubbel",
@@ -3515,7 +3515,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский дуббель. Производитель: Birrificio Antoniano (IT)."
+  "description": "Belgian Dubbel: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.2%. Подавайте при 8-12°C."
  },
  {
   "id": "birra-antoniana-marechiaro",
@@ -3619,7 +3619,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Birrificio Antoniano (IT)."
+  "description": "Italian Pale Lager: живая карбонизация. Крепость 5.2%. Подавайте при 3-7°C."
  },
  {
   "id": "birra-antoniana-portello",
@@ -3723,7 +3723,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский крепкий золотой эль. Производитель: Birrificio Antoniano (IT)."
+  "description": "Belgian Strong Ale: живая карбонизация, яркий хмелевой аромат. Крепость 6.5%. Подавайте при 6-10°C."
  },
  {
   "id": "bitburger-premium-pils",
@@ -3825,7 +3825,7 @@
    }
   ],
   "status": "auto",
-  "description": "Немецкий пилс. Производитель: Bitburger (DE).",
+  "description": "German Pils: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C.",
   "image": "img/beers/bitburger-premium-pils.webp",
   "image_credit": {
    "author": "5snake5",
@@ -3924,7 +3924,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Балтика (RU) / Galanz."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "bremen-von-lustig",
@@ -4191,7 +4191,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский премиальный светлый лагер (пилзнер). Производитель: Budějovický Budvar (CZ)."
+  "description": "Czech Premium Pale Lager: выраженная хмелевая горечь, плотное солодовое тело, живая карбонизация. Крепость 5.0%. Подавайте при 4-8°C."
  },
  {
   "id": "carlsberg",
@@ -4307,7 +4307,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan.",
+  "description": "International Pale Lager: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C.",
   "image": null
  },
  {
@@ -4435,7 +4435,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: AB InBev (MX).",
+  "description": "International Pale Lager: живая карбонизация. Крепость 4.5%. Подавайте при 3-7°C.",
   "image": "img/beers/corona-extra.webp",
   "image_credit": {
    "author": "Paul Hermans",
@@ -4531,7 +4531,7 @@
    }
   ],
   "status": "auto",
-  "description": "Нефильтрованный лагер (келлербир). Производитель: DorFFman Beer Club (Астана)."
+  "description": "Unfiltered Lager (brewpub): плотное солодовое тело, живая карбонизация. Крепость 5.05%. Подавайте при 5-9°C."
  },
  {
   "id": "efes-pilsener",
@@ -4918,7 +4918,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Damm (ES).",
+  "description": "International Pale Lager: живая карбонизация. Крепость 4.6%. Подавайте при 3-7°C.",
   "image": "img/beers/estrella-damm.webp",
   "image_credit": {
    "author": "Kgbo",
@@ -5028,7 +5028,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Hijos de Rivera (ES).",
+  "description": "International Pale Lager: живая карбонизация. Крепость 5.5%. Подавайте при 3-7°C.",
   "image": "img/beers/estrella-galicia.webp",
   "image_credit": {
    "author": "Metukkalihis",
@@ -5125,7 +5125,7 @@
    }
   ],
   "status": "auto",
-  "description": "Американский пейл-эль. Производитель: Fire Bat Brewing Co. (Алматы)."
+  "description": "American Pale Ale: яркий хмелевой аромат, живая карбонизация, выраженная хмелевая горечь. Крепость 5.35%. Подавайте при 6-10°C."
  },
  {
   "id": "fire-bat-ipa",
@@ -5226,7 +5226,7 @@
    }
   ],
   "status": "auto",
-  "description": "Американский IPA. Производитель: Fire Bat Brewing Co. (Алматы)."
+  "description": "American IPA: яркий хмелевой аромат, выраженная хмелевая горечь, живая карбонизация. Крепость 6.5%. Подавайте при 6-10°C."
  },
  {
   "id": "fire-bat-light-gravity",
@@ -5319,7 +5319,7 @@
    }
   ],
   "status": "auto",
-  "description": "Светлый эль (блонд). Производитель: Fire Bat Brewing Co. (Алматы)."
+  "description": "Light Ale: живая карбонизация. Крепость 4.65%. Подавайте при 4-8°C."
  },
  {
   "id": "fire-bat-weizen",
@@ -5411,7 +5411,7 @@
    }
   ],
   "status": "auto",
-  "description": "Баварское пшеничное (вайсбир). Производитель: Fire Bat Brewing Co. (Алматы)."
+  "description": "Weissbier: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 4.95%. Подавайте при 4-8°C."
  },
  {
   "id": "fullers-london-pride",
@@ -5514,7 +5514,7 @@
    }
   ],
   "status": "auto",
-  "description": "Английский биттер. Производитель: Fuller's (UK).",
+  "description": "British Bitter / Pale Ale: яркий хмелевой аромат, плотное солодовое тело. Крепость 4.7%. Подавайте при 8-12°C.",
   "image": "img/beers/fullers-london-pride.webp",
   "image_credit": {
    "author": "Kuriosatempel",
@@ -5627,7 +5627,7 @@
    }
   ],
   "status": "auto",
-  "description": "Светлый эль (блонд). Производитель: Fuller's (UK).",
+  "description": "Golden Ale (honey): живая карбонизация. Крепость 5.0%. Подавайте при 4-8°C.",
   "image": "img/beers/fullers-organic-honey-dew.webp",
   "image_credit": {
    "author": "LeeKeoma",
@@ -5738,7 +5738,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский светлый лагер (výčepní). Производитель: Plzeňský Prazdroj."
+  "description": "Czech Pale Lager: живая карбонизация, плотное солодовое тело. Крепость 4.3%. Подавайте при 4-8°C."
  },
  {
   "id": "grave-digger",
@@ -5830,7 +5830,7 @@
    }
   ],
   "status": "auto",
-  "description": "Американский IPA. Производитель: Sigma Bräu / Auster (Шымкент).",
+  "description": "West Coast IPA: выраженная хмелевая горечь, яркий хмелевой аромат, живая карбонизация. Крепость 6.5%. Подавайте при 6-10°C.",
   "image": null
  },
  {
@@ -5922,7 +5922,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: Carlsberg Kazakhstan.",
+  "description": "Witbier: живая карбонизация, яркий хмелевой аромат. Крепость 6.0%. Подавайте при 3-7°C.",
   "image": "img/beers/grimbergen-blanche.webp",
   "image_credit": {
    "author": "Koefbac",
@@ -6021,7 +6021,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский светлый эль. Производитель: Carlsberg Kazakhstan.",
+  "description": "Belgian Blond Ale (abbey): живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.7%. Подавайте при 5-9°C.",
   "image": "img/beers/grimbergen-blonde.webp",
   "image_credit": {
    "author": "Ludovic Péron",
@@ -6121,7 +6121,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский дуббель. Производитель: Carlsberg Kazakhstan.",
+  "description": "Belgian Dubbel / Amber: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.5%. Подавайте при 8-12°C.",
   "image": "img/beers/grimbergen-double-ambree.webp",
   "image_credit": {
    "author": "5snake5",
@@ -6230,7 +6230,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Carlsberg Kazakhstan."
+  "description": "Fruit Beer (Belgian): живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 6.0%. Подавайте при 4-8°C."
  },
  {
   "id": "grolsch-premium-lager",
@@ -6459,7 +6459,7 @@
    }
   ],
   "status": "auto",
-  "description": "Ирландский сухой стаут. Производитель: Diageo (IE).",
+  "description": "Irish Dry Stout: ноты жжёного солода и кофе, плотное солодовое тело, яркий хмелевой аромат. Крепость 4.2%. Подавайте при 9-13°C.",
   "image": "img/beers/guinness-draught.webp",
   "image_credit": {
    "author": "Harald Bischoff",
@@ -6570,7 +6570,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хеллес экспорт. Производитель: Paulaner Gruppe (DE)."
+  "description": "Munich Helles / Export: плотное солодовое тело, живая карбонизация. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "heineken",
@@ -6696,7 +6696,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Heineken / Первый Пивзавод.",
+  "description": "International Pale Lager: живая карбонизация. Крепость 5.0%. Подавайте при 3-7°C.",
   "image": "img/beers/heineken.webp",
   "image_credit": {
    "author": "StockyPics",
@@ -6790,7 +6790,7 @@
    }
   ],
   "status": "auto",
-  "description": "Лёгкий лагер. Производитель: Шымкентпиво (Шымкентский пивзавод).",
+  "description": "Light Lager (Japanese-style): живая карбонизация. Крепость 3.6%. Подавайте при 2-6°C.",
   "image": null
  },
  {
@@ -6898,7 +6898,7 @@
    }
   ],
   "status": "auto",
-  "description": "Английский IPA. Производитель: Wychwood / Marston's (UK)."
+  "description": "English IPA: яркий хмелевой аромат, выраженная хмелевая горечь, живая карбонизация. Крепость 5.3%. Подавайте при 7-11°C."
  },
  {
   "id": "hoegaarden-grapefruit",
@@ -6993,7 +6993,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: AB InBev."
+  "description": "Fruit Witbier: живая карбонизация, яркий хмелевой аромат. Крепость 4.6%. Подавайте при 3-7°C."
  },
  {
   "id": "hoegaarden-wit",
@@ -7121,7 +7121,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: AB InBev (BE).",
+  "description": "Witbier: живая карбонизация, яркий хмелевой аромат. Крепость 4.9%. Подавайте при 3-7°C.",
   "image": "img/beers/hoegaarden-wit.webp",
   "image_credit": {
    "author": "Squirrelforest",
@@ -7216,7 +7216,7 @@
    }
   ],
   "status": "auto",
-  "description": "Лёгкий лагер. Производитель: Carlsberg Kazakhstan.",
+  "description": "Light Lager: живая карбонизация. Крепость 4.0%. Подавайте при 2-6°C.",
   "image": null
  },
  {
@@ -7332,7 +7332,7 @@
    }
   ],
   "status": "auto",
-  "description": "Немецкий пилс. Производитель: Carlsberg Kazakhstan."
+  "description": "German-style Pilsner: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C."
  },
  {
   "id": "kara-karakat",
@@ -7439,7 +7439,7 @@
    }
   ],
   "status": "auto",
-  "description": "Гозе (кисло-солёное пшеничное). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Fruited Gose: живая карбонизация, яркий хмелевой аромат. Крепость 4.0%. Подавайте при 3-7°C."
  },
  {
   "id": "kasteel-rouge",
@@ -7541,7 +7541,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Van Honsebrouck (BE).",
+  "description": "Belgian Fruit Beer (cherry): живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 8.0%. Подавайте при 4-8°C.",
   "image": null
  },
  {
@@ -7659,7 +7659,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: Carlsberg Kazakhstan.",
+  "description": "Witbier (fruit-flavoured): живая карбонизация, яркий хмелевой аромат. Крепость 4.3%. Подавайте при 3-7°C.",
   "image": "img/beers/kronenbourg-1664-blanc.webp",
   "image_credit": {
    "author": "Chris Woodrich",
@@ -7766,7 +7766,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский премиальный светлый лагер (пилзнер). Производитель: Heineken / Первый Пивзавод.",
+  "description": "Czech Premium Pale Lager: выраженная хмелевая горечь, плотное солодовое тело, живая карбонизация. Крепость 5.0%. Подавайте при 4-8°C.",
   "image": "img/beers/krusovice-imperial.webp",
   "image_credit": {
    "author": "McKaby",
@@ -7878,7 +7878,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский светлый эль. Производитель: AB InBev (BE)."
+  "description": "Belgian Blond Ale (abbey): живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.6%. Подавайте при 5-9°C."
  },
  {
   "id": "leffe-brune",
@@ -7984,7 +7984,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский дуббель. Производитель: AB InBev (BE).",
+  "description": "Belgian Dubbel-style: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.5%. Подавайте при 8-12°C.",
   "image": "img/beers/leffe-brune.webp",
   "image_credit": {
    "author": "5snake5",
@@ -8086,7 +8086,7 @@
    }
   ],
   "status": "auto",
-  "description": "Янтарный лагер (венский / мерцен). Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Amber Ale/Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 5.1%. Подавайте при 6-10°C."
  },
  {
   "id": "line-brew-blackcurrant",
@@ -8178,7 +8178,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Fruit Beer: живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "line-brew-brune",
@@ -8271,7 +8271,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский дуббель. Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Belgian Dark Ale: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.8%. Подавайте при 8-12°C."
  },
  {
   "id": "line-brew-caramel-porter",
@@ -8387,7 +8387,7 @@
    }
   ],
   "status": "auto",
-  "description": "Портер. Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Porter (sweet): плотное солодовое тело, ноты жжёного солода и кофе, яркий хмелевой аромат. Крепость 5.5%. Подавайте при 9-13°C."
  },
  {
   "id": "line-brew-karmeliet",
@@ -8479,7 +8479,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский трипель. Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Belgian Tripel-style: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 8.5%. Подавайте при 6-10°C."
  },
  {
   "id": "line-brew-kriek",
@@ -8574,7 +8574,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Fruit Beer (cherry): живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "line-brew-pomegranate",
@@ -8666,7 +8666,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Fruit Beer: живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "line-brew-premium-lager",
@@ -8793,7 +8793,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Line Brew Bottlers (Алматы)."
+  "description": "International Pale Lager: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C."
  },
  {
   "id": "line-brew-raspberry-lime",
@@ -8887,7 +8887,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Fruit Beer: живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "line-brew-wheat",
@@ -8991,7 +8991,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Belgian Witbier / Weissbier: живая карбонизация, яркий хмелевой аромат. Крепость 5.0%. Подавайте при 3-7°C."
  },
  {
   "id": "line-brew-wild-strawberry",
@@ -9083,7 +9083,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Line Brew Bottlers (Алматы)."
+  "description": "Fruit Beer: живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "marstons-oyster-stout",
@@ -9187,7 +9187,7 @@
    }
   ],
   "status": "auto",
-  "description": "Ирландский сухой стаут. Производитель: Marston's (UK).",
+  "description": "Stout: ноты жжёного солода и кофе, плотное солодовое тело, яркий хмелевой аромат. Крепость 4.5%. Подавайте при 9-13°C.",
   "image": "img/beers/marstons-oyster-stout.webp",
   "image_credit": {
    "author": "LeeKeoma",
@@ -9297,7 +9297,7 @@
    }
   ],
   "status": "auto",
-  "description": "Янтарный лагер (венский / мерцен). Производитель: Birra Menabrea (IT)."
+  "description": "Amber Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 5.0%. Подавайте при 6-10°C."
  },
  {
   "id": "menabrea-la-bionda",
@@ -9400,7 +9400,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Birra Menabrea (IT)."
+  "description": "Italian Pale Lager: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C."
  },
  {
   "id": "miller-genuine-draft",
@@ -9686,7 +9686,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крик / фруктовый ламбик. Производитель: Alken-Maes (BE).",
+  "description": "Fruit Lambic (kriek): живая карбонизация, яркий хмелевой аромат. Крепость 4.0%. Подавайте при 4-8°C.",
   "image": "img/beers/mort-subite-kriek.webp",
   "image_credit": {
    "author": "Squirrelforest",
@@ -9783,7 +9783,7 @@
    }
   ],
   "status": "auto",
-  "description": "Американский лагер. Производитель: Pabst / Первый Пивзавод.",
+  "description": "American Lager: живая карбонизация. Крепость 4.6%. Подавайте при 2-6°C.",
   "image": "img/beers/pabst-blue-ribbon.webp",
   "image_credit": {
    "author": "JiriMatejicek",
@@ -9884,7 +9884,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский тёмный (дункель). Производитель: Paulaner Bräuhaus Almaty."
+  "description": "Munich Dunkel (brewpub): плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 5.05%. Подавайте при 6-10°C."
  },
  {
   "id": "paulaner-brauhaus-freerider-hell",
@@ -9979,7 +9979,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Paulaner Bräuhaus Almaty."
+  "description": "Munich Helles (brewpub): живая карбонизация, плотное солодовое тело. Крепость 5.05%. Подавайте при 4-8°C."
  },
  {
   "id": "paulaner-hefe-weissbier-naturtrub",
@@ -10107,7 +10107,7 @@
    }
   ],
   "status": "auto",
-  "description": "Баварское пшеничное (вайсбир). Производитель: Paulaner (DE)."
+  "description": "Weissbier: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "paulaner-munchner-hell",
@@ -10219,7 +10219,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Paulaner (DE).",
+  "description": "Munich Helles: живая карбонизация, плотное солодовое тело. Крепость 4.9%. Подавайте при 4-8°C.",
   "image": "img/beers/paulaner-munchner-hell.webp",
   "image_credit": {
    "author": "Radosław Drożdżewski (Zwiadowca21)",
@@ -10555,7 +10555,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовое пиво (сладкое). Производитель: Pinta (Алматы/Шымкент)."
+  "description": "Fruit Beer: живая карбонизация, яркий хмелевой аромат, солодовая сладость. Крепость 5.5%. Подавайте при 4-8°C."
  },
  {
   "id": "pinta-white",
@@ -10657,7 +10657,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: Pinta (Алматы/Шымкент).",
+  "description": "Witbier: живая карбонизация, яркий хмелевой аромат. Крепость 5.0%. Подавайте при 3-7°C.",
   "image": null
  },
  {
@@ -10761,7 +10761,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский тёмный лагер. Производитель: Pivovar Samson (CZ)."
+  "description": "Czech Dark Lager: плотное солодовое тело, яркий хмелевой аромат, живая карбонизация. Крепость 4.5%. Подавайте при 7-11°C."
  },
  {
   "id": "praga-premium-pils",
@@ -10863,7 +10863,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский светлый лагер (výčepní). Производитель: Pivovar Samson (CZ)."
+  "description": "Czech Pale Lager: живая карбонизация, плотное солодовое тело. Крепость 4.7%. Подавайте при 4-8°C."
  },
  {
   "id": "prazacka",
@@ -10978,7 +10978,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский светлый лагер (výčepní). Производитель: Line Brew Bottlers / импорт CZ."
+  "description": "Czech Pale Lager: живая карбонизация, плотное солодовое тело. Крепость 4.0%. Подавайте при 4-8°C."
  },
  {
   "id": "qazaqstan",
@@ -11068,7 +11068,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Sigma Bräu / Auster (Шымкент).",
+  "description": "Pale Lager: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C.",
   "image": null
  },
  {
@@ -11164,7 +11164,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мутный IPA (NEIPA). Производитель: Raccoon Brewing Co. (Бишкек/Алматы)."
+  "description": "Milkshake IPA: яркий хмелевой аромат, плотное солодовое тело, живая карбонизация. Крепость 7.5%. Подавайте при 6-10°C."
  },
  {
   "id": "rauchbier-marzen",
@@ -11254,7 +11254,7 @@
    }
   ],
   "status": "auto",
-  "description": "Раухбир (копчёное пиво). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Rauchbier: яркий хмелевой аромат, живая карбонизация, плотное солодовое тело. Крепость 5.3%. Подавайте при 7-11°C."
  },
  {
   "id": "saphir-craft-beer",
@@ -11445,7 +11445,7 @@
    }
   ],
   "status": "auto",
-  "description": "Рисовый лагер. Производитель: Sapporo (JP)."
+  "description": "Japanese Rice Lager: живая карбонизация. Крепость 4.7%. Подавайте при 2-6°C."
  },
  {
   "id": "sigma-dunkelweizen",
@@ -11538,7 +11538,7 @@
    }
   ],
   "status": "auto",
-  "description": "Тёмное пшеничное (дункельвайцен). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Dunkles Weissbier: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 5.0%. Подавайте при 5-9°C."
  },
  {
   "id": "sigma-hefeweizen",
@@ -11631,7 +11631,7 @@
    }
   ],
   "status": "auto",
-  "description": "Баварское пшеничное (вайсбир). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Weissbier: живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 4.8%. Подавайте при 4-8°C."
  },
  {
   "id": "sigma-lager",
@@ -11733,7 +11733,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Sigma Bräu / Auster (Шымкент).",
+  "description": "Pale Lager (German-style): живая карбонизация, плотное солодовое тело. Крепость 4.0%. Подавайте при 4-8°C.",
   "image": null
  },
  {
@@ -11838,7 +11838,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский премиальный светлый лагер (пилзнер). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Czech Pilsner: плотное солодовое тело, живая карбонизация. Крепость 3.6%. Подавайте при 4-8°C."
  },
  {
   "id": "slavna-praga",
@@ -12139,7 +12139,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Spaten (AB InBev, DE)."
+  "description": "Munich Helles: живая карбонизация, плотное солодовое тело. Крепость 5.2%. Подавайте при 4-8°C."
  },
  {
   "id": "staropramen-premium",
@@ -12243,7 +12243,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский премиальный светлый лагер (пилзнер). Производитель: Staropramen (Molson Coors, CZ).",
+  "description": "Czech Premium Pale Lager: выраженная хмелевая горечь, плотное солодовое тело, живая карбонизация. Крепость 5.0%. Подавайте при 4-8°C.",
   "image": "img/beers/staropramen-premium.webp",
   "image_credit": {
    "author": "Purodha",
@@ -12377,7 +12377,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: AB InBev."
+  "description": "International Pale Lager: живая карбонизация. Крепость 5.0%. Подавайте при 3-7°C."
  },
  {
   "id": "stiegl-hell",
@@ -12468,7 +12468,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Stiegl (AT)."
+  "description": "Munich Helles-type: живая карбонизация, плотное солодовое тело. Крепость 4.5%. Подавайте при 4-8°C."
  },
  {
   "id": "stuttgart-premium",
@@ -12557,7 +12557,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Шымкентпиво (Шымкентский пивзавод).",
+  "description": "German-style Pale Lager: живая карбонизация, плотное солодовое тело. Крепость 5.0%. Подавайте при 4-8°C.",
   "image": null
  },
  {
@@ -12660,7 +12660,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Wellpark (UK)."
+  "description": "International Pale Lager: живая карбонизация. Крепость 5.0%. Подавайте при 3-7°C."
  },
  {
   "id": "tennents-stout",
@@ -12763,7 +12763,7 @@
    }
   ],
   "status": "auto",
-  "description": "Ирландский сухой стаут. Производитель: Wellpark (UK)."
+  "description": "Stout: ноты жжёного солода и кофе, плотное солодовое тело, яркий хмелевой аромат. Крепость 4.7%. Подавайте при 9-13°C."
  },
  {
   "id": "tennents-whisky-oak",
@@ -12864,7 +12864,7 @@
    }
   ],
   "status": "auto",
-  "description": "Пиво, выдержанное с дубом. Производитель: Wellpark (UK)."
+  "description": "Wood-aged Lager: яркий хмелевой аромат, плотное солодовое тело, живая карбонизация. Крепость 6.0%. Подавайте при 6-10°C."
  },
  {
   "id": "tropicana-ale",
@@ -12954,7 +12954,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мутный IPA (NEIPA). Производитель: Baza Brewery (Алматы)."
+  "description": "Hazy IPA: яркий хмелевой аромат, плотное солодовое тело, живая карбонизация. Крепость 4.2%. Подавайте при 6-10°C."
  },
  {
   "id": "tsingtao",
@@ -13069,7 +13069,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Tsingtao (CN)."
+  "description": "International Pale Lager: живая карбонизация. Крепость 4.7%. Подавайте при 3-7°C."
  },
  {
   "id": "tuborg-green",
@@ -13174,7 +13174,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan.",
+  "description": "International Pale Lager: живая карбонизация. Крепость 4.6%. Подавайте при 3-7°C.",
   "image": "img/beers/tuborg-green.webp",
   "image_credit": {
    "author": "Kgbo",
@@ -13585,7 +13585,7 @@
    }
   ],
   "status": "auto",
-  "description": "Немецкий пилс. Производитель: Veltins (DE)."
+  "description": "German Pils: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C."
  },
  {
   "id": "volny-vlk",
@@ -13677,7 +13677,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский светлый лагер (výčepní). Производитель: Балтика (RU) / Galanz."
+  "description": "Czech-style Pale Lager: живая карбонизация, плотное солодовое тело. Крепость 3.55%. Подавайте при 4-8°C."
  },
  {
   "id": "warsteiner-premium",
@@ -13779,7 +13779,7 @@
    }
   ],
   "status": "auto",
-  "description": "Немецкий пилс. Производитель: Warsteiner (DE)."
+  "description": "German Pils: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C."
  },
  {
   "id": "wukong-ju",
@@ -14047,7 +14047,7 @@
    }
   ],
   "status": "auto",
-  "description": "Рисовый лагер. Производитель: Первый Пивзавод (Алматинская обл.).",
+  "description": "Rice/Pale Lager (Chinese-style): живая карбонизация. Крепость 4.0%. Подавайте при 2-6°C.",
   "image": null
  },
  {
@@ -14140,7 +14140,7 @@
    }
   ],
   "status": "auto",
-  "description": "Английский биттер. Производитель: Brewery Restaurant (Астана)."
+  "description": "English-style Ale (brewpub): яркий хмелевой аромат, плотное солодовое тело. Крепость 4.2%. Подавайте при 8-12°C."
  },
  {
   "id": "zatecky-gus-cerny",
@@ -14255,7 +14255,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский тёмный лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Czech-style Dark Lager: плотное солодовое тело, яркий хмелевой аромат, живая карбонизация. Крепость 3.5%. Подавайте при 7-11°C."
  },
  {
   "id": "zatecky-gus-export",
@@ -14347,7 +14347,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хеллес экспорт. Производитель: Carlsberg Kazakhstan."
+  "description": "Export Lager: плотное солодовое тело, живая карбонизация. Крепость 5.4%. Подавайте при 4-8°C."
  },
  {
   "id": "zatecky-gus-mild",
@@ -14435,7 +14435,7 @@
    }
   ],
   "status": "auto",
-  "description": "Лёгкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Light Lager: живая карбонизация. Крепость 4.0%. Подавайте при 2-6°C."
  },
  {
   "id": "zatecky-gus-strong",
@@ -14523,7 +14523,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Strong Pale Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 8.0%. Подавайте при 6-10°C."
  },
  {
   "id": "zatecky-gus-svetly",
@@ -14637,7 +14637,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский светлый лагер (výčepní). Производитель: Carlsberg Kazakhstan."
+  "description": "Czech-style Pale Lager: живая карбонизация, плотное солодовое тело. Крепость 4.6%. Подавайте при 4-8°C."
  },
  {
   "id": "zvikova",
@@ -14727,7 +14727,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский светлый лагер (výčepní). Производитель: Brewery Restaurant (Астана)."
+  "description": "Czech-style Lager (brewpub): живая карбонизация, плотное солодовое тело. Крепость 3.55%. Подавайте при 4-8°C."
  },
  {
   "id": "alma-ata-yachmennoe",
@@ -14818,7 +14818,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Pale Lager: живая карбонизация. Крепость 4.4%. Подавайте при 3-7°C."
  },
  {
   "id": "barskoe",
@@ -14910,7 +14910,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "belyi-medved",
@@ -15489,7 +15489,7 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийское белое (витбир). Производитель: Волковская пивоварня (RU)."
+  "description": "Witbier: живая карбонизация, яркий хмелевой аромат. Крепость 5.9%. Подавайте при 3-7°C."
  },
  {
   "id": "bolshaya-kruzhka-krepkoe",
@@ -15577,7 +15577,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Strong Pale Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 7.0%. Подавайте при 6-10°C."
  },
  {
   "id": "bolshaya-kruzhka-myagkoe",
@@ -15667,7 +15667,7 @@
    }
   ],
   "status": "auto",
-  "description": "Лёгкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Light Lager: живая карбонизация. Крепость 4.0%. Подавайте при 2-6°C."
  },
  {
   "id": "bolshoy-kit",
@@ -15756,7 +15756,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "bochkovoe",
@@ -15976,7 +15976,7 @@
    }
   ],
   "status": "auto",
-  "description": "Янтарный лагер (венский / мерцен). Производитель: Арасан (Рудный)."
+  "description": "Vienna Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 5.1%. Подавайте при 6-10°C."
  },
  {
   "id": "vozdukh-almaty",
@@ -16067,7 +16067,7 @@
    }
   ],
   "status": "auto",
-  "description": "Ирландский сухой стаут. Производитель: Ulydala Brewery (Астана)."
+  "description": "Stout: ноты жжёного солода и кофе, плотное солодовое тело, яркий хмелевой аромат. Крепость 4.4%. Подавайте при 9-13°C."
  },
  {
   "id": "volkovskaya-ipa",
@@ -16170,7 +16170,7 @@
    }
   ],
   "status": "auto",
-  "description": "Американский IPA. Производитель: Волковская пивоварня (RU)."
+  "description": "American IPA: яркий хмелевой аромат, выраженная хмелевая горечь, живая карбонизация. Крепость 5.5%. Подавайте при 6-10°C."
  },
  {
   "id": "gus-kovarnyy",
@@ -16261,7 +16261,7 @@
    }
   ],
   "status": "auto",
-  "description": "Американский пейл-эль. Производитель: Baza Brewery (Алматы)."
+  "description": "Session IPA: яркий хмелевой аромат, живая карбонизация, плотное солодовое тело. Крепость 4.2%. Подавайте при 6-10°C."
  },
  {
   "id": "derbes-extra-strong",
@@ -16349,7 +16349,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Strong Pale Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 9.0%. Подавайте при 6-10°C."
  },
  {
   "id": "derbes-krepkoe",
@@ -16437,7 +16437,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Strong Pale Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 7.0%. Подавайте при 6-10°C."
  },
  {
   "id": "derbes-myagkoe",
@@ -16526,7 +16526,7 @@
    }
   ],
   "status": "auto",
-  "description": "Лёгкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Light Lager: живая карбонизация. Крепость 4.3%. Подавайте при 2-6°C."
  },
  {
   "id": "dostar",
@@ -16624,7 +16624,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "dobryy-bobr",
@@ -16714,7 +16714,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Pale Lager: живая карбонизация. Крепость 4.4%. Подавайте при 3-7°C."
  },
  {
   "id": "dobryy-bobr-krepkoe",
@@ -16802,7 +16802,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Strong Pale Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 7.0%. Подавайте при 6-10°C."
  },
  {
   "id": "zhigulevskoe",
@@ -17059,7 +17059,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Pale Lager (Zhigulevskoe): живая карбонизация. Крепость 4.5%. Подавайте при 3-7°C."
  },
  {
   "id": "zhiguli-1968",
@@ -17149,7 +17149,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "zhiguli-barnoe",
@@ -17243,7 +17243,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Pale Lager (Zhigulevskoe): живая карбонизация. Крепость 4.9%. Подавайте при 3-7°C."
  },
  {
   "id": "irbis-myagkiy-khmel",
@@ -17335,7 +17335,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Pale Lager: живая карбонизация. Крепость 4.2%. Подавайте при 3-7°C."
  },
  {
   "id": "ittin-balasy",
@@ -17428,7 +17428,7 @@
    }
   ],
   "status": "auto",
-  "description": "Гозе (кисло-солёное пшеничное). Производитель: Ulydala Brewery (Астана)."
+  "description": "Tomato Gose: живая карбонизация, яркий хмелевой аромат. Крепость 4.5%. Подавайте при 3-7°C."
  },
  {
   "id": "karagandinskoe",
@@ -18032,7 +18032,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Pale Lager (draft-style): живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "legenda-777",
@@ -18362,7 +18362,7 @@
    }
   ],
   "status": "auto",
-  "description": "Гозе (кисло-солёное пшеничное). Производитель: Baza Brewery (Алматы)."
+  "description": "Gose (с кумысом): живая карбонизация, яркий хмелевой аромат. Крепость 4.5%. Подавайте при 3-7°C."
  },
  {
   "id": "nashe-shakhterskoe",
@@ -18557,7 +18557,7 @@
    }
   ],
   "status": "auto",
-  "description": "Светлый эль (блонд). Производитель: Ulydala Brewery (Астана)."
+  "description": "Blonde Ale: живая карбонизация. Крепость 4.65%. Подавайте при 4-8°C."
  },
  {
   "id": "port-artur",
@@ -18659,7 +18659,7 @@
    }
   ],
   "status": "auto",
-  "description": "Портер. Производитель: Волковская пивоварня (RU)."
+  "description": "Porter: плотное солодовое тело, ноты жжёного солода и кофе, яркий хмелевой аромат. Крепость 6.5%. Подавайте при 9-13°C."
  },
  {
   "id": "severnoe-siyanie",
@@ -19040,7 +19040,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "traktirnoe-retro",
@@ -19132,7 +19132,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "tyan-shan-svetloe",
@@ -19472,7 +19472,7 @@
    }
   ],
   "status": "auto",
-  "description": "Тёмный лагер (международный). Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Dark Lager: живая карбонизация. Крепость 5.1%. Подавайте при 4-8°C."
  },
  {
   "id": "shymkentskoe-dark",
@@ -19563,7 +19563,7 @@
    }
   ],
   "status": "auto",
-  "description": "Тёмный лагер (международный). Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Dark Lager: живая карбонизация. Крепость 5.1%. Подавайте при 4-8°C."
  },
  {
   "id": "shymkentskoe-darkhan",
@@ -19652,7 +19652,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "shymkentskoe-zhigulevskoe-1976",
@@ -19752,7 +19752,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Pale Lager (Zhigulevskoe): живая карбонизация. Крепость 4.0%. Подавайте при 3-7°C."
  },
  {
   "id": "shymkentskoe-klassicheskoe-pilsner",
@@ -19865,7 +19865,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Pilsner (International): живая карбонизация. Крепость 4.5%. Подавайте при 3-7°C."
  },
  {
   "id": "shymkentskoe-krepkoe",
@@ -19952,7 +19952,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Strong Pale Lager: плотное солодовое тело, живая карбонизация, яркий хмелевой аромат. Крепость 7.0%. Подавайте при 6-10°C."
  },
  {
   "id": "shymkentskoe-myagkoe-svezhee",
@@ -20051,7 +20051,7 @@
    }
   ],
   "status": "auto",
-  "description": "Лёгкий лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Light Lager: живая карбонизация. Крепость 4.0%. Подавайте при 2-6°C."
  },
  {
   "id": "shymkentskoe-svetloe",
@@ -20151,7 +20151,7 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Шымкентпиво (Шымкентский пивзавод)."
+  "description": "Pale Lager: живая карбонизация. Крепость 5.25%. Подавайте при 3-7°C."
  },
  {
   "id": "kara-saur",
@@ -20240,7 +20240,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кислый эль. Производитель: Ulydala Brewery (Астана)."
+  "description": "Sour Ale: живая карбонизация, яркий хмелевой аромат. Крепость 4.0%. Подавайте при 3-7°C."
  },
  {
   "id": "bavaria-0-0",
@@ -20449,7 +20449,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "clausthaler-original",
@@ -20559,7 +20559,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Radeberger Gruppe. Ноты по источнику: сусло, благородный хмель."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "efes-0-0",
@@ -21007,7 +21007,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Damm (ES)."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "guinness-0-0",
@@ -21100,7 +21100,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный стаут. Производитель: Diageo (IE)."
+  "description": "Безалкогольное пиво: насыщенный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "heineken-0-0",
@@ -21206,7 +21206,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Heineken. Ноты по источнику: солод, хмелевой экстракт, лёгкая сладость."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "jever-fun",
@@ -21311,7 +21311,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Friesisches Brauhaus zu Jever. Ожидаемый профиль (оценка по стилю): сухой, резкий хмель, sugar free.",
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
   "image": null
  },
  {
@@ -21443,7 +21443,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пшеничное. Производитель: Paulaner (DE). Ожидаемый профиль (оценка по стилю): банан, гвоздика, пшеница."
+  "description": "Безалкогольное пиво: звонкая газированность, яркая сладость, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "peroni-nastro-azzurro-0-0",
@@ -21550,7 +21550,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Asahi/Peroni. Ожидаемый профиль (оценка по стилю): кукурузная сладость, лёгкий хмель."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "staropramen-non-alcoholic",
@@ -21657,7 +21657,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Molson Coors (Staropramen). Ожидаемый профиль (оценка по стилю): жатецкий хмель, солод."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "velkopopovicky-kozel-0-0",
@@ -21863,7 +21863,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пшеничное. Производитель: н/д (РФ, по Kaspi). Ожидаемый профиль (оценка по стилю): пшеница, банан."
+  "description": "Безалкогольное пиво: звонкая газированность, яркая сладость, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "zatecky-gus-0-svetly",
@@ -21951,7 +21951,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "zatecky-gus-0-wheat",
@@ -22042,7 +22042,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пшеничное. Производитель: Carlsberg Kazakhstan."
+  "description": "Безалкогольное пиво: звонкая газированность, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "baltika-0",
@@ -22157,7 +22157,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Балтика (RU). Ожидаемый профиль (оценка по стилю): светлый солод, сладковатые ноты."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "baltika-0-granat",
@@ -22263,7 +22263,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво с фруктовым вкусом. Производитель: Балтика. Ожидаемый профиль (оценка по стилю): гранат."
+  "description": "Безалкогольное пиво: звонкая газированность, яркая сладость, насыщенный аромат. Подавайте при 2-6°C."
  },
  {
   "id": "baltika-0-greypfrut",
@@ -22380,7 +22380,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво с фруктовым вкусом. Производитель: Балтика (RU). Ожидаемый профиль (оценка по стилю): грейпфрут."
+  "description": "Безалкогольное пиво: звонкая газированность, яркая сладость, насыщенный аромат. Подавайте при 2-6°C."
  },
  {
   "id": "zhiguli-barnoe-bezalkogolnoe",
@@ -22469,7 +22469,7 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Первый Пивзавод (Алматинская обл.)."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "kruzhka-svezhego-0-0",
@@ -22674,7 +22674,7 @@
    }
   ],
   "status": "auto",
-  "description": "Радлер / пивной микс. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): чёрная черешня."
+  "description": "Радлер: звонкая газированность, яркая сладость, освежающая кислинка. Подавайте при 2-6°C."
  },
  {
   "id": "seth-and-rileys-garage-hard-lemon",
@@ -22790,7 +22790,7 @@
    }
   ],
   "status": "auto",
-  "description": "Радлер / пивной микс. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): лимон, лимонадная сладость."
+  "description": "Радлер: звонкая газированность, яркая сладость, освежающая кислинка. Подавайте при 2-6°C."
  },
  {
   "id": "seth-and-rileys-garage-hard-raspberry",
@@ -22893,7 +22893,7 @@
    }
   ],
   "status": "auto",
-  "description": "Радлер / пивной микс. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): малина."
+  "description": "Радлер: звонкая газированность, яркая сладость, освежающая кислинка. Подавайте при 2-6°C."
  },
  {
   "id": "seth-and-rileys-garage-hardcore-mango",
@@ -22996,7 +22996,7 @@
    }
   ],
   "status": "auto",
-  "description": "Радлер / пивной микс. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): манго."
+  "description": "Радлер: звонкая газированность, яркая сладость, освежающая кислинка. Подавайте при 2-6°C."
  },
  {
   "id": "seth-and-rileys-garage-hardcore-pineapple",
@@ -23099,7 +23099,7 @@
    }
   ],
   "status": "auto",
-  "description": "Радлер / пивной микс. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): ананас."
+  "description": "Радлер: звонкая газированность, яркая сладость, освежающая кислинка. Подавайте при 2-6°C."
  },
  {
   "id": "kruzhka-svezhego-cranberry-hit",
@@ -23294,7 +23294,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий сидр. Производитель: н/д (продаётся на Kaspi). Ожидаемый профиль (оценка по стилю): яблоко."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "boozy-apple",
@@ -23388,7 +23388,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полусухой сидр. Производитель: н/д (продаётся на Kaspi). Ожидаемый профиль (оценка по стилю): яблоко, спиртуозность."
+  "description": "Сидр: игристая лёгкость, свежая кислинка, яблочная сладость. Подавайте при 4-8°C."
  },
  {
   "id": "chesters-apple-semi-dry",
@@ -23502,7 +23502,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полусухой сидр. Производитель: Chester's (МПК). Ноты по источнику: осеннее яблоко, лёгкая кислинка."
+  "description": "Сидр: игристая лёгкость, свежая кислинка. Подавайте при 4-8°C."
  },
  {
   "id": "chesters-apple-sweet",
@@ -23629,7 +23629,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий сидр. Производитель: Chester's (МПК). Ожидаемый профиль (оценка по стилю): печёное яблоко, мёд."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "chesters-berries-sweet",
@@ -23733,7 +23733,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Chester's (МПК). Ожидаемый профиль (оценка по стилю): смородина, малина."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "chesters-cherry-semi-sweet",
@@ -23840,7 +23840,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Chester's (МПК). Ожидаемый профиль (оценка по стилю): вишня, миндальная косточка."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "chesters-pear-sweet",
@@ -23953,7 +23953,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий сидр. Производитель: Chester's (МПК). Ожидаемый профиль (оценка по стилю): спелая груша."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "issyk-wild-kazakh-cider",
@@ -24052,7 +24052,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сухой сидр. Производитель: ISSYK (Есик, Алматинская обл.). Ожидаемый профиль (оценка по стилю): дикие яблоки Заилийского Алатау, кислинка, минеральность."
+  "description": "Сидр: свежая кислинка, игристая лёгкость. Подавайте при 5-9°C."
  },
  {
   "id": "kopparberg-mixed-fruit",
@@ -24155,7 +24155,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Kopparberg Bryggeri. Ожидаемый профиль (оценка по стилю): ягодный микс."
+  "description": "Сидр: яблочная сладость, игристая лёгкость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "kopparberg-naked-apple",
@@ -24268,7 +24268,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий сидр. Производитель: Kopparberg Bryggeri. Ожидаемый профиль (оценка по стилю): зелёное яблоко, сладкий сок."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "kopparberg-passionfruit",
@@ -24373,7 +24373,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Kopparberg Bryggeri. Ожидаемый профиль (оценка по стилю): маракуйя."
+  "description": "Сидр: яблочная сладость, игристая лёгкость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "kopparberg-strawberry-and-lime",
@@ -24478,7 +24478,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Kopparberg Bryggeri. Ожидаемый профиль (оценка по стилю): клубника, лайм, десертный."
+  "description": "Сидр: яблочная сладость, игристая лёгкость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "kopparberg-wildberries",
@@ -24581,7 +24581,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Kopparberg Bryggeri. Ожидаемый профиль (оценка по стилю): лесные ягоды."
+  "description": "Сидр: яблочная сладость, игристая лёгкость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "loic-raison-cidre-brut",
@@ -24690,7 +24690,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сухой сидр. Производитель: Loic Raison (Bretagne). Ожидаемый профиль (оценка по стилю): дикие яблоки, сидровые танины, сено, фермент."
+  "description": "Сидр: свежая кислинка, игристая лёгкость. Подавайте при 5-9°C."
  },
  {
   "id": "loic-raison-cidre-doux",
@@ -24796,7 +24796,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий сидр. Производитель: Loic Raison (Bretagne). Ожидаемый профиль (оценка по стилю): яблочный сок, мёд, цветы."
+  "description": "Сидр: яблочная сладость, игристая лёгкость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "somersby-apple",
@@ -24915,7 +24915,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий сидр. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): яблоко, карамель, конфетно-фруктовая."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "somersby-blackberry",
@@ -25022,7 +25022,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): ежевика, ягодный сироп."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "somersby-mango-and-lime",
@@ -25131,7 +25131,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): манго, лайм."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "somersby-passion-fruit-and-orange",
@@ -25241,7 +25241,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): маракуйя, апельсин, тропики."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "somersby-pear",
@@ -25337,7 +25337,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий сидр. Производитель: Carlsberg. Ожидаемый профиль (оценка по стилю): груша дюшес."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "somersby-strawberry-and-kiwi",
@@ -25447,7 +25447,7 @@
    }
   ],
   "status": "auto",
-  "description": "Фруктовый (ароматизированный) сидр. Производитель: Carlsberg Kazakhstan. Ожидаемый профиль (оценка по стилю): клубника, киви, зелёная свежесть."
+  "description": "Сидр: игристая лёгкость, яблочная сладость, свежая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "strongbow-gold-apple",
@@ -25541,7 +25541,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полусухой сидр. Производитель: Heineken (H.P. Bulmer). Ожидаемый профиль (оценка по стилю): яблоко, суховатый финиш."
+  "description": "Сидр: игристая лёгкость, свежая кислинка. Подавайте при 4-8°C."
  },
  {
   "id": "turgen-wines-naturalnyy-sidr",
@@ -25643,7 +25643,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сухой сидр. Производитель: Turgen Wines (Тургень). Ожидаемый профиль (оценка по стилю): местные яблоки."
+  "description": "Сидр: свежая кислинка, игристая лёгкость. Подавайте при 5-9°C."
  },
  {
   "id": "arba-wine-rkatsiteli",
@@ -25743,7 +25743,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Arba Wine. Ожидаемый профиль (оценка по стилю): груша, айва, мёд, минеральность."
+  "description": "белое сухое (Ркацители): свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "arba-wine-saperavi",
@@ -25865,7 +25865,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Arba Wine. Ожидаемый профиль (оценка по стилю): слива, ежевика, дуб."
+  "description": "красное сухое (Саперави): уверенные танины, насыщенное тело, выразительный аромат. Подавайте при 15-19°C."
  },
  {
   "id": "arba-wine-kuldzhinskiy",
@@ -25964,7 +25964,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Arba Wine. Ожидаемый профиль (оценка по стилю): автохтонный сорт Кульджинский."
+  "description": "белое/розовое сухое, автохтонный сорт: свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "bacchus-bayan-sulu",
@@ -26064,7 +26064,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое полусладкое. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): мускат, мёд."
+  "description": "белое полусладкое (Мускат): свежая кислотность, выразительный аромат, мягкая сладость. Подавайте при 6-10°C."
  },
  {
   "id": "bacchus-classic-red",
@@ -26152,7 +26152,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное полусухое. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): красные ягоды."
+  "description": "красное полусухое (Саперави/Пино/Каберне): выразительный аромат, свежая кислотность, насыщенное тело. Подавайте при 12-16°C."
  },
  {
   "id": "bacchus-classic-white",
@@ -26244,7 +26244,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое полусухое. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): яблоко, цветы."
+  "description": "белое полусухое (Рислинг/Ркацители): свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "bacchus-fidele-cabernet",
@@ -26336,7 +26336,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): чёрная смородина, паприка."
+  "description": "красное сухое (Каберне): уверенные танины, выразительный аромат, свежая кислотность. Подавайте при 15-19°C."
  },
  {
   "id": "bacchus-fidele-muscat",
@@ -26428,7 +26428,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): мускатный виноград, цветы."
+  "description": "белое сухое (Мускат): свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "bacchus-fidele-rkatsiteli",
@@ -26519,7 +26519,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): груша, цитрус."
+  "description": "белое сухое: свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "bacchus-fidele-saperavi",
@@ -26623,7 +26623,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное сухое, среднее тело. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): тёмные ягоды, специи."
+  "description": "красное сухое: свежая кислотность, выразительный аромат, уверенные танины. Подавайте при 14-18°C."
  },
  {
   "id": "bacchus-zhar-zhar",
@@ -26715,7 +26715,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное сухое, среднее тело. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): вишня, слива."
+  "description": "красное сухое (Саперави/Пино): выразительный аромат, свежая кислотность, уверенные танины. Подавайте при 14-18°C."
  },
  {
   "id": "casillero-del-diablo-cabernet-sauvignon-reserva",
@@ -26844,7 +26844,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Concha y Toro. Ожидаемый профиль (оценка по стилю): чёрная смородина, дуб, ваниль, мягкие танины."
+  "description": "красное сухое (Каберне Совиньон): уверенные танины, насыщенное тело, выразительный аромат. Подавайте при 15-19°C."
  },
  {
   "id": "casillero-del-diablo-sauvignon-blanc",
@@ -26939,7 +26939,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Concha y Toro. Ожидаемый профиль (оценка по стилю): крыжовник, лайм, трава."
+  "description": "белое сухое: свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "frescobaldi-castiglioni-chianti-docg",
@@ -27048,7 +27048,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное сухое, среднее тело. Производитель: Frescobaldi. Ожидаемый профиль (оценка по стилю): вишня, фиалка, кожа."
+  "description": "красное сухое Chianti DOCG: свежая кислотность, выразительный аромат, уверенные танины. Подавайте при 14-18°C."
  },
  {
   "id": "kartuli-marani-tvishi",
@@ -27145,7 +27145,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое полусладкое. Производитель: Kartuli Marani. Ожидаемый профиль (оценка по стилю): айва, дыня, цветы."
+  "description": "белое природно-полусладкое (Цоликаури): свежая кислотность, выразительный аромат, мягкая сладость. Подавайте при 6-10°C."
  },
  {
   "id": "marani-alazani-valley-white",
@@ -27250,7 +27250,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое полусладкое. Производитель: Marani (Telavi Wine Cellar). Ожидаемый профиль (оценка по стилю): персик, груша."
+  "description": "белое полусладкое: свежая кислотность, выразительный аромат, мягкая сладость. Подавайте при 6-10°C."
  },
  {
   "id": "teliani-valley-alazanskaya-dolina-beloe",
@@ -27355,7 +27355,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое полусладкое. Производитель: Teliani Valley. Ожидаемый профиль (оценка по стилю): белые фрукты, мёд."
+  "description": "белое полусладкое: свежая кислотность, выразительный аромат, мягкая сладость. Подавайте при 6-10°C."
  },
  {
   "id": "turgen-silver-aligote",
@@ -27446,7 +27446,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Turgen Wines. Ожидаемый профиль (оценка по стилю): зелёное яблоко, лимон, высокая кислотность."
+  "description": "белое сухое (Алиготе): свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "turgen-silver-cabernet",
@@ -27538,7 +27538,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Turgen Wines. Ожидаемый профиль (оценка по стилю): смородина, кедр."
+  "description": "красное сухое (Каберне): уверенные танины, выразительный аромат, свежая кислотность. Подавайте при 15-19°C."
  },
  {
   "id": "turgen-silver-rkatsiteli",
@@ -27629,7 +27629,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Turgen Wines. Ожидаемый профиль (оценка по стилю): груша, айва."
+  "description": "белое сухое: свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "turgen-silver-saperavi",
@@ -27732,7 +27732,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное сухое, среднее тело. Производитель: Turgen Wines. Ожидаемый профиль (оценка по стилю): чёрные ягоды, французский дуб 225 л."
+  "description": "красное сухое: свежая кислотность, выразительный аромат, уверенные танины. Подавайте при 14-18°C."
  },
  {
   "id": "turgen-turgenskoe-zolotoe",
@@ -27825,7 +27825,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое полусладкое. Производитель: Turgen Wines. Ожидаемый профиль (оценка по стилю): мускат, мёд."
+  "description": "белое полусладкое/десертное (линейка): свежая кислотность, выразительный аромат, мягкая сладость. Подавайте при 6-10°C."
  },
  {
   "id": "argentinskiy-malbec",
@@ -27934,7 +27934,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Trapiche / Catena. Ожидаемый профиль (оценка по стилю): слива, фиалка, шоколад."
+  "description": "красное сухое (Мальбек): уверенные танины, насыщенное тело, выразительный аромат. Подавайте при 15-19°C."
  },
  {
   "id": "doliny-gruzii-kindzmarauli",
@@ -28041,7 +28041,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное полусладкое. Производитель: Долины Грузии. Ноты по источнику: ягодное варенье, малина, вишня, лепестки розы."
+  "description": "красное природно-полусладкое (Саперави): мягкая сладость, выразительный аромат, свежая кислотность. Подавайте при 12-16°C."
  },
  {
   "id": "moldavskoe-vino",
@@ -28135,7 +28135,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное сухое, среднее тело. Производитель: Purcari / Cricova. Ожидаемый профиль (оценка по стилю): красные ягоды/белые фрукты."
+  "description": "красное/белое сухое и полусладкое: выразительный аромат, свежая кислотность, уверенные танины. Подавайте при 14-18°C."
  },
  {
   "id": "mukuzani",
@@ -28240,7 +28240,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): чернослив, дуб, табак."
+  "description": "красное сухое выдержанное (Саперави, дуб): уверенные танины, насыщенное тело, выразительный аромат. Подавайте при 15-19°C."
  },
  {
   "id": "rkatsiteli-sukhoe",
@@ -28353,7 +28353,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): груша, айва, мёд, лёгкая горчинка."
+  "description": "белое сухое: свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "saperavi-sukhoe",
@@ -28473,7 +28473,7 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): ежевика, слива, лакрица, дуб."
+  "description": "красное сухое (Саперави): уверенные танины, насыщенное тело, выразительный аромат. Подавайте при 15-19°C."
  },
  {
   "id": "frantsuzskoe-vino-po-bokalam",
@@ -28588,7 +28588,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное сухое, среднее тело. Производитель: разные. Ожидаемый профиль (оценка по стилю): смородина, кедр / лимон, кремень."
+  "description": "красное сухое / белое сухое: свежая кислотность, выразительный аромат, уверенные танины. Подавайте при 14-18°C."
  },
  {
   "id": "khvanchkara",
@@ -28691,7 +28691,7 @@
    }
   ],
   "status": "auto",
-  "description": "Красное полусладкое. Производитель: Teliani Valley / Kartuli Marani и др. Ожидаемый профиль (оценка по стилю): малина, гранат, специи."
+  "description": "красное природно-полусладкое (Александроули/Муджуретули): мягкая сладость, выразительный аромат, свежая кислотность. Подавайте при 12-16°C."
  },
  {
   "id": "tsinandali",
@@ -28796,7 +28796,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): груша, айва, цитрус, цветы."
+  "description": "белое сухое (Ркацители+Мцване): свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
  },
  {
   "id": "canti-prosecco-doc-extra-dry",
@@ -28902,7 +28902,7 @@
    }
   ],
   "status": "auto",
-  "description": "Игристое extra dry. Производитель: Canti (Fratelli Martini). Ожидаемый профиль (оценка по стилю): персик, яблоко."
+  "description": "Prosecco DOC extra dry: свежая кислотность, выразительный аромат. Подавайте при 6-8°C."
  },
  {
   "id": "cinzano-prosecco-doc",
@@ -29008,7 +29008,7 @@
    }
   ],
   "status": "auto",
-  "description": "Игристое dry. Производитель: Cinzano (Campari). Ожидаемый профиль (оценка по стилю): груша, яблоко, цветы."
+  "description": "Prosecco DOC dry: свежая кислотность, выразительный аромат. Подавайте при 6-8°C."
  },
  {
   "id": "prosecco-martini-doc",
@@ -29112,7 +29112,7 @@
    }
   ],
   "status": "auto",
-  "description": "Игристое extra dry. Производитель: Martini & Rossi. Ноты по источнику: зелёное яблоко, белые цветы, цитрус."
+  "description": "Prosecco DOC extra dry: свежая кислотность, выразительный аромат. Подавайте при 6-8°C."
  },
  {
   "id": "bacchus-vermut-maresco-bianco",
@@ -29203,7 +29203,7 @@
    }
   ],
   "status": "auto",
-  "description": "Вермут сладкий (bianco / rosso). Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): полынь, ваниль, травы."
+  "description": "вермут белый: мягкая сладость, выразительный аромат, насыщенное тело. Подавайте при 4-8°C."
  },
  {
   "id": "bacchus-kagor",
@@ -29292,7 +29292,7 @@
    }
   ],
   "status": "auto",
-  "description": "Портвейн / креплёное десертное. Производитель: Bacchus. Ожидаемый профиль (оценка по стилю): чернослив, шоколад, варенье."
+  "description": "десертное креплёное (Саперави): мягкая сладость, насыщенное тело, выразительный аромат. Подавайте при 14-18°C."
  },
  {
   "id": "martini-bianco",
@@ -29393,7 +29393,7 @@
    }
   ],
   "status": "auto",
-  "description": "Вермут сладкий (bianco / rosso). Производитель: Martini & Rossi. Ожидаемый профиль (оценка по стилю): ваниль, полынь, травы."
+  "description": "вермут белый сладкий: мягкая сладость, выразительный аромат, насыщенное тело. Подавайте при 4-8°C."
  },
  {
   "id": "martini-extra-dry",
@@ -29495,7 +29495,7 @@
    }
   ],
   "status": "auto",
-  "description": "Вермут сухой. Производитель: Martini & Rossi. Ожидаемый профиль (оценка по стилю): травы, цитрус, сухой.",
+  "description": "вермут сухой: выразительный аромат, свежая кислотность. Подавайте при 4-8°C.",
   "image": "img/beers/martini-extra-dry.webp",
   "image_credit": {
    "author": "Ashley Pomeroy",
@@ -29604,7 +29604,7 @@
    }
   ],
   "status": "auto",
-  "description": "Вермут сладкий (bianco / rosso). Производитель: Martini & Rossi. Ожидаемый профиль (оценка по стилю): карамель, травы, горечь."
+  "description": "вермут красный сладкий: мягкая сладость, выразительный аромат, насыщенное тело. Подавайте при 4-8°C."
  },
  {
   "id": "aperol-spritz",
@@ -29726,7 +29726,7 @@
    }
   ],
   "status": "auto",
-  "description": "Апероль спритц. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): апельсин, ревень, горьковатый."
+  "description": "Коктейль Aperol Spritz: ароматный букет, сочная сладость, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "b-52",
@@ -29830,7 +29830,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белый русский. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): кофе, сливки, апельсин."
+  "description": "Коктейль B-52: сочная сладость, ощутимая крепость, ароматный букет. Подавайте охлаждённым."
  },
  {
   "id": "bellini",
@@ -29932,7 +29932,7 @@
    }
   ],
   "status": "auto",
-  "description": "Коктейль на игристом (беллини, мимоза, хуго). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): персик, просекко."
+  "description": "Коктейль Bellini: сочная сладость, цитрусовая кислинка, ароматный букет. Подавайте охлаждённым."
  },
  {
   "id": "bloody-mary",
@@ -30032,7 +30032,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кровавая Мэри. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): томат, сельдерей, вустер, перец."
+  "description": "Коктейль Bloody Mary: ароматный букет, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "blue-lagoon",
@@ -30133,7 +30133,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий лонг (секс на пляже, текила санрайз). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): апельсин, лимонад."
+  "description": "Коктейль Blue Lagoon: сочная сладость, ароматный букет, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "caipirinha",
@@ -30230,7 +30230,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): лайм, тростник."
+  "description": "Коктейль Caipirinha: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "cosmopolitan",
@@ -30329,7 +30329,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): клюква, лайм, апельсин."
+  "description": "Коктейль Cosmopolitan: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "cuba-libre",
@@ -30425,7 +30425,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хайбол с колой / имбирным пивом. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): кола, лайм, ром."
+  "description": "Коктейль Cuba Libre: сочная сладость, ароматный букет. Подавайте охлаждённым."
  },
  {
   "id": "daiquiri",
@@ -30522,7 +30522,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): лайм, тростник."
+  "description": "Коктейль Daiquiri: цитрусовая кислинка, ароматный букет, ощутимая крепость. Подавайте охлаждённым."
  },
  {
   "id": "dark-n-stormy",
@@ -30619,7 +30619,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хайбол с колой / имбирным пивом. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): имбирь, патока."
+  "description": "Коктейль Dark 'n' Stormy: сочная сладость, ароматный букет, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "dry-martini",
@@ -30720,7 +30720,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сухой мартини. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): можжевельник, травы, олива."
+  "description": "Коктейль Dry Martini: ощутимая крепость, ароматный букет. Подавайте охлаждённым."
  },
  {
   "id": "espresso-martini",
@@ -30818,7 +30818,7 @@
    }
   ],
   "status": "auto",
-  "description": "Эспрессо мартини. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): кофе, шоколад, ваниль."
+  "description": "Коктейль Espresso Martini: ароматный букет, сочная сладость, лёгкая горчинка. Подавайте охлаждённым."
  },
  {
   "id": "gin-and-tonic",
@@ -30929,7 +30929,7 @@
    }
   ],
   "status": "auto",
-  "description": "Джин-тоник. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): можжевельник, хинин, цитрус."
+  "description": "Коктейль Gin & Tonic: ароматный букет, цитрусовая кислинка, лёгкая горчинка. Подавайте охлаждённым."
  },
  {
   "id": "hugo-spritz",
@@ -31029,7 +31029,7 @@
    }
   ],
   "status": "auto",
-  "description": "Коктейль на игристом (беллини, мимоза, хуго). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): бузина, мята, лайм."
+  "description": "Коктейль Hugo Spritz: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "kurt-sour-kokteyl-s-kurt-likerom",
@@ -31121,7 +31121,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: Barbolsyn bar, Алматы. Ожидаемый профиль (оценка по стилю): солёный курт, кислинка, умами."
+  "description": "Коктейль Kurt Sour / коктейль с курт-ликёром (Barbolsyn): цитрусовая кислинка, ароматный букет. Подавайте охлаждённым."
  },
  {
   "id": "long-island-iced-tea",
@@ -31220,7 +31220,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хайбол с колой / имбирным пивом. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): кола, лимон, спиртуозность."
+  "description": "Коктейль Long Island Iced Tea: сочная сладость, ароматный букет, ощутимая крепость. Подавайте охлаждённым."
  },
  {
   "id": "lychee-martini",
@@ -31322,7 +31322,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): личи, роза."
+  "description": "Коктейль Lychee Martini: ароматный букет, сочная сладость, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "mai-tai",
@@ -31422,7 +31422,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): миндаль, лайм, ром."
+  "description": "Коктейль Mai Tai: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "manhattan",
@@ -31524,7 +31524,7 @@
    }
   ],
   "status": "auto",
-  "description": "Манхэттен. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): рожь, вишня, травы."
+  "description": "Коктейль Manhattan: ароматный букет, ощутимая крепость, лёгкая горчинка. Подавайте охлаждённым."
  },
  {
   "id": "margarita",
@@ -31629,7 +31629,7 @@
    }
   ],
   "status": "auto",
-  "description": "Маргарита. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): лайм, агава, соль."
+  "description": "Коктейль Margarita: цитрусовая кислинка, ароматный букет, ощутимая крепость. Подавайте охлаждённым."
  },
  {
   "id": "mimosa",
@@ -31732,7 +31732,7 @@
    }
   ],
   "status": "auto",
-  "description": "Коктейль на игристом (беллини, мимоза, хуго). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): апельсин."
+  "description": "Коктейль Mimosa: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "mojito",
@@ -31842,7 +31842,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мохито. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): мята, лайм, тростниковый сахар."
+  "description": "Коктейль Mojito: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "moscow-mule",
@@ -31939,7 +31939,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хайбол с колой / имбирным пивом. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): имбирь, лайм.",
+  "description": "Коктейль Moscow Mule: сочная сладость, цитрусовая кислинка, ароматный букет. Подавайте охлаждённым.",
   "image": "img/beers/moscow-mule.webp",
   "image_credit": {
    "author": "hantomax",
@@ -32057,7 +32057,7 @@
    }
   ],
   "status": "auto",
-  "description": "Негрони. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): горькие травы, апельсин, можжевельник."
+  "description": "Коктейль Negroni: лёгкая горчинка, ароматный букет, ощутимая крепость. Подавайте охлаждённым."
  },
  {
   "id": "old-fashioned",
@@ -32154,7 +32154,7 @@
    }
   ],
   "status": "auto",
-  "description": "Олд фэшн. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): карамель, дуб, апельсиновая цедра, биттер."
+  "description": "Коктейль Old Fashioned: ароматный букет, ощутимая крепость. Подавайте охлаждённым."
  },
  {
   "id": "paloma",
@@ -32253,7 +32253,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кислый хайбол (коллинз, палома). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): грейпфрут, агава, соль."
+  "description": "Коктейль Paloma: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "pina-colada",
@@ -32354,7 +32354,7 @@
    }
   ],
   "status": "auto",
-  "description": "Пина колада. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): кокос, ананас, сливочный."
+  "description": "Коктейль Piña Colada: сочная сладость, ароматный букет. Подавайте охлаждённым."
  },
  {
   "id": "pornstar-martini",
@@ -32455,7 +32455,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): маракуйя, ваниль."
+  "description": "Коктейль Pornstar Martini: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "sangria",
@@ -32554,7 +32554,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сангрия. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): красное вино, апельсин, корица."
+  "description": "Коктейль Sangria: сочная сладость, ароматный букет, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "sex-on-the-beach",
@@ -32657,7 +32657,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий лонг (секс на пляже, текила санрайз). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): персик, апельсин, клюква."
+  "description": "Коктейль Sex on the Beach: сочная сладость, ароматный букет, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "tequila-sunrise",
@@ -32758,7 +32758,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий лонг (секс на пляже, текила санрайз). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): апельсин, гренадин."
+  "description": "Коктейль Tequila Sunrise: сочная сладость, ароматный букет, цитрусовая кислинка. Подавайте охлаждённым."
  },
  {
   "id": "tom-collins",
@@ -32856,7 +32856,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кислый хайбол (коллинз, палома). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): лимон, можжевельник.",
+  "description": "Коктейль Tom Collins: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым.",
   "image": "img/beers/tom-collins.webp",
   "image_credit": {
    "author": "cyclonebill",
@@ -32965,7 +32965,7 @@
    }
   ],
   "status": "auto",
-  "description": "Пина колада. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): ананас, кокос, сливки."
+  "description": "Коктейль Virgin Colada: сочная сладость, ароматный букет. Подавайте охлаждённым."
  },
  {
   "id": "virgin-mojito",
@@ -33076,7 +33076,7 @@
    }
   ],
   "status": "auto",
-  "description": "Мохито. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): мята, лайм."
+  "description": "Коктейль Virgin Mojito: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
  },
  {
   "id": "whiskey-sour",
@@ -33186,7 +33186,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): лимон, ваниль, дуб.",
+  "description": "Коктейль Whiskey Sour: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым.",
   "image": "img/beers/whiskey-sour.webp",
   "image_credit": {
    "author": "Topher",
@@ -33290,7 +33290,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белый русский. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): кофе, сливки."
+  "description": "Коктейль White Russian: сочная сладость, ароматный букет, ощутимая крепость. Подавайте охлаждённым."
  },
  {
   "id": "bacardi-carta-blanca",
@@ -33391,7 +33391,7 @@
    }
   ],
   "status": "auto",
-  "description": "Белый ром. Производитель: Bacardí. Ожидаемый профиль (оценка по стилю): ваниль, тростник, нейтральный."
+  "description": "white rum: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "blantons-original",
@@ -33494,7 +33494,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Sazerac (Buffalo Trace). Ожидаемый профиль (оценка по стилю): карамель, цитрус, дуб."
+  "description": "single barrel bourbon: насыщенный аромат, маслянистое тело. Крепость 46.5%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "bruichladdich-the-classic-laddie",
@@ -33599,7 +33599,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Bruichladdich (Rémy Cointreau). Ожидаемый профиль (оценка по стилю): ячмень, цветы, морской бриз."
+  "description": "unpeated single malt: насыщенный аромат, маслянистое тело. Крепость 50.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "captain-morgan-spiced-gold",
@@ -33703,7 +33703,7 @@
    }
   ],
   "status": "auto",
-  "description": "Выдержанный / пряный ром. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): ваниль, корица, карамель."
+  "description": "spiced rum: насыщенный аромат, маслянистое тело. Крепость 35.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "chivas-regal-12-y-o",
@@ -33813,7 +33813,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Pernod Ricard. Ожидаемый профиль (оценка по стилю): мёд, яблоко, ваниль, мягкий."
+  "description": "blended Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "chateau-du-breuil-fine-pays-dauge",
@@ -33919,7 +33919,7 @@
    }
   ],
   "status": "auto",
-  "description": "Коньяк / бренди. Производитель: Château du Breuil. Ожидаемый профиль (оценка по стилю): яблоко, дуб."
+  "description": "calvados: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "ciroc",
@@ -34019,7 +34019,7 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): виноград, цитрус, гладкая."
+  "description": "grape vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "dalmore-12-y-o",
@@ -34125,7 +34125,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Whyte & Mackay. Ожидаемый профиль (оценка по стилю): апельсин, шоколад, херес."
+  "description": "single malt Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "don-julio-anejo",
@@ -34226,7 +34226,7 @@
    }
   ],
   "status": "auto",
-  "description": "Текила аньехо / репосадо. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): карамель, дуб, агава."
+  "description": "tequila añejo: насыщенный аромат, маслянистое тело. Крепость 38.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "don-julio-blanco",
@@ -34339,7 +34339,7 @@
    }
   ],
   "status": "auto",
-  "description": "Текила бланко. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): агава, цитрус, перец.",
+  "description": "tequila blanco 100% agave: насыщенный аромат. Крепость 38.0%. Пейте неспешно, комнатной температуры или со льдом.",
   "image": "img/beers/don-julio-blanco.webp",
   "image_credit": {
    "author": "Indrajit Das",
@@ -34449,7 +34449,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: William Grant & Sons. Ожидаемый профиль (оценка по стилю): груша, дуб, свежесть."
+  "description": "single malt Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "glenmorangie-original-10-y-o",
@@ -34553,7 +34553,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Glenmorangie (LVMH). Ожидаемый профиль (оценка по стилю): цитрус, ваниль, персик, мягкий."
+  "description": "single malt Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "gordons-london-dry",
@@ -34654,7 +34654,7 @@
    }
   ],
   "status": "auto",
-  "description": "Джин. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): можжевельник, кориандр."
+  "description": "London dry gin: насыщенный аромат. Крепость 37.5%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "grappa-moscato-francoli",
@@ -34756,7 +34756,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чача / граппа / самогон. Производитель: Francoli. Ожидаемый профиль (оценка по стилю): мускат, цветы, виноградные выжимки."
+  "description": "grappa: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "hendricks",
@@ -34870,7 +34870,7 @@
    }
   ],
   "status": "auto",
-  "description": "Джин. Производитель: William Grant & Sons. Ожидаемый профиль (оценка по стилю): огурец, роза, можжевельник."
+  "description": "gin (огурец/роза): насыщенный аромат. Крепость 41.4%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "hennessy-vs",
@@ -34974,7 +34974,7 @@
    }
   ],
   "status": "auto",
-  "description": "Коньяк / бренди. Производитель: LVMH. Ожидаемый профиль (оценка по стилю): дуб, ваниль, сухофрукты."
+  "description": "cognac VS: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "jack-daniels-old-no-7",
@@ -35078,7 +35078,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Brown-Forman. Ожидаемый профиль (оценка по стилю): банан, карамель, дуб, уголь."
+  "description": "Tennessee whiskey: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "jack-daniels-single-barrel",
@@ -35180,7 +35180,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Brown-Forman. Ожидаемый профиль (оценка по стилю): карамель, дуб, специи."
+  "description": "Tennessee whiskey: насыщенный аромат, маслянистое тело. Крепость 45.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "jameson",
@@ -35281,7 +35281,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Pernod Ricard (Irish Distillers). Ожидаемый профиль (оценка по стилю): ваниль, груша, гладкий."
+  "description": "blended Irish whiskey: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "johnnie-walker-black-label-12-y-o",
@@ -35393,7 +35393,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): дым, сухофрукты, ваниль."
+  "description": "blended Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "johnnie-walker-red-label",
@@ -35496,7 +35496,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): дым, специи, резковатый."
+  "description": "blended Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "kilbeggan",
@@ -35598,7 +35598,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Beam Suntory. Ожидаемый профиль (оценка по стилю): солод, мёд, мягкий."
+  "description": "blended Irish whiskey: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "kilchoman-machir-bay",
@@ -35702,7 +35702,7 @@
    }
   ],
   "status": "auto",
-  "description": "Торфяной виски. Производитель: Kilchoman. Ожидаемый профиль (оценка по стилю): торф, дым, морская соль, цитрус."
+  "description": "peated single malt: насыщенный аромат, маслянистое тело. Крепость 46.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "kura",
@@ -35802,7 +35802,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Helios Distillery. Ожидаемый профиль (оценка по стилю): мёд, лёгкий дуб."
+  "description": "Japanese blended whisky: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "martell-vs",
@@ -35904,7 +35904,7 @@
    }
   ],
   "status": "auto",
-  "description": "Коньяк / бренди. Производитель: Pernod Ricard. Ожидаемый профиль (оценка по стилю): фрукты, дуб, ваниль."
+  "description": "cognac VS: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "monkey-47",
@@ -36010,7 +36010,7 @@
    }
   ],
   "status": "auto",
-  "description": "Джин. Производитель: Pernod Ricard. Ожидаемый профиль (оценка по стилю): брусника, травы, цитрус, можжевельник."
+  "description": "gin (47 botanicals): маслянистое тело, насыщенный аромат. Крепость 47.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "olmeca-blanco-gold",
@@ -36111,7 +36111,7 @@
    }
   ],
   "status": "auto",
-  "description": "Текила бланко. Производитель: Pernod Ricard. Ожидаемый профиль (оценка по стилю): агава, спирт."
+  "description": "tequila mixto: насыщенный аромат. Крепость 38.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "ron-zacapa-23-reserva",
@@ -36224,7 +36224,7 @@
    }
   ],
   "status": "auto",
-  "description": "Выдержанный / пряный ром. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): карамель, сухофрукты, дуб, шоколад."
+  "description": "aged rum (solera): насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "snow-queen",
@@ -36313,7 +36313,7 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: Geom (Snow Queen Vodka). Ожидаемый профиль (оценка по стилю): нейтральная, чистая, слегка сладковатая."
+  "description": "premium vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "sobolinaya-organic",
@@ -36409,7 +36409,7 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: н/д. Ожидаемый профиль (оценка по стилю): нейтральная."
+  "description": "vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "tanqueray-no-ten",
@@ -36513,7 +36513,7 @@
    }
   ],
   "status": "auto",
-  "description": "Джин. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): грейпфрут, лайм, ромашка, можжевельник."
+  "description": "gin (citrus): насыщенный аромат, маслянистое тело. Крепость 47.3%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "templeton-rye-barrel-strength",
@@ -36617,7 +36617,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски бочковой крепости. Производитель: Templeton. Ожидаемый профиль (оценка по стилю): рожь, перец, мята, дуб."
+  "description": "rye whiskey: насыщенный аромат, маслянистое тело. Крепость 55.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "the-balvenie-12-y-o-doublewood",
@@ -36721,7 +36721,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: William Grant & Sons. Ожидаемый профиль (оценка по стилю): мёд, ваниль, херес."
+  "description": "single malt Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "the-glenlivet-12-y-o",
@@ -36825,7 +36825,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Pernod Ricard. Ожидаемый профиль (оценка по стилю): яблоко, мёд, цветы."
+  "description": "single malt Scotch: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "the-macallan-12-y-o",
@@ -36930,7 +36930,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Edrington. Ожидаемый профиль (оценка по стилю): сухофрукты, херес, специи.",
+  "description": "single malt Scotch (sherry cask): насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
   "image": "img/beers/the-macallan-12-y-o.webp",
   "image_credit": {
    "author": "Arkadiy P.",
@@ -37038,7 +37038,7 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Boann Distillery. Ожидаемый профиль (оценка по стилю): ваниль, дуб, сухофрукты."
+  "description": "blended Irish whiskey: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "xaoma-klassicheskaya",
@@ -37158,7 +37158,7 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: Хаома. Ноты по источнику: нейтральная, мягкая."
+  "description": "vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "yeni-raki",
@@ -37269,7 +37269,7 @@
    }
   ],
   "status": "auto",
-  "description": "Анисовая водка (ракы). Производитель: Mey Diageo. Ожидаемый профиль (оценка по стилю): анис, виноград."
+  "description": "rakı (анисовый виноградный дистиллят): насыщенный аромат, маслянистое тело. Крепость 45.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "vozdukh-legkaya",
@@ -37357,7 +37357,7 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: н/д (Kaspi). Ожидаемый профиль (оценка по стилю): нейтральная."
+  "description": "vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "kazakhstanskiy-konyak-brendi",
@@ -37457,7 +37457,7 @@
    }
   ],
   "status": "auto",
-  "description": "Коньяк / бренди. Производитель: Bacchus / Turgen Wines. Ожидаемый профиль (оценка по стилю): сухофрукты, дуб, карамель."
+  "description": "brandy (коньяк КЗ): насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "stepnaya-rosa",
@@ -37542,7 +37542,7 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: н/д. Ожидаемый профиль (оценка по стилю): нейтральная."
+  "description": "vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "khlebnyy-fruktovyy-samogon",
@@ -37647,7 +37647,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чача / граппа / самогон. Производитель: н/д (в карте: «Hlibniy Samogon», «Fruit Samogon»). Ожидаемый профиль (оценка по стилю): зерно / фрукты, деревенский стиль."
+  "description": "craft moonshine: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "chacha-kartuli-marani",
@@ -37751,7 +37751,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чача / граппа / самогон. Производитель: Kartuli Marani. Ожидаемый профиль (оценка по стилю): виноградные выжимки, спиртуозный, цветочный."
+  "description": "chacha (виноградный самогон): насыщенный аромат, маслянистое тело. Крепость 45.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "amaro-del-capo",
@@ -37856,7 +37856,7 @@
    }
   ],
   "status": "auto",
-  "description": "Амаро / горький травяной ликёр. Производитель: Caffo. Ожидаемый профиль (оценка по стилю): апельсин, травы, лакрица."
+  "description": "amaro: насыщенный аромат, маслянистое тело. Крепость 35.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "baileys-original-irish-cream",
@@ -37959,7 +37959,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сливочный ликёр. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): сливки, какао, виски."
+  "description": "cream liqueur: сладковатые ноты, маслянистое тело. Крепость 17.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "becherovka",
@@ -38066,7 +38066,7 @@
    }
   ],
   "status": "auto",
-  "description": "Травяной ликёр. Производитель: Jan Becher (Pernod Ricard). Ожидаемый профиль (оценка по стилю): корица, гвоздика, травы."
+  "description": "herbal bitter liqueur: насыщенный аромат, травяная горчинка. Крепость 38.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "cointreau",
@@ -38167,7 +38167,7 @@
    }
   ],
   "status": "auto",
-  "description": "Цитрусовый ликёр (лимончелло, трипл сек). Производитель: Rémy Cointreau. Ожидаемый профиль (оценка по стилю): апельсиновая цедра."
+  "description": "triple sec / orange liqueur: насыщенный аромат, сладковатые ноты. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "cynar",
@@ -38273,7 +38273,7 @@
    }
   ],
   "status": "auto",
-  "description": "Амаро / горький травяной ликёр. Производитель: Campari Group. Ожидаемый профиль (оценка по стилю): артишок, карамель, травы."
+  "description": "artichoke amaro: насыщенный аромат, травяная горчинка. Крепость 16.5%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "drambuie",
@@ -38382,7 +38382,7 @@
    }
   ],
   "status": "auto",
-  "description": "Травяной ликёр. Производитель: William Grant & Sons. Ожидаемый профиль (оценка по стилю): мёд, вереск, виски."
+  "description": "whisky-honey liqueur: насыщенный аромат, сладковатые ноты. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "fernet-branca",
@@ -38486,7 +38486,7 @@
    }
   ],
   "status": "auto",
-  "description": "Амаро / горький травяной ликёр. Производитель: Fratelli Branca. Ожидаемый профиль (оценка по стилю): мята, шафран, горькие травы."
+  "description": "amaro (bitter): насыщенный аромат, травяная горчинка. Крепость 39.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "grand-marnier-cordon-rouge",
@@ -38588,7 +38588,7 @@
    }
   ],
   "status": "auto",
-  "description": "Цитрусовый ликёр (лимончелло, трипл сек). Производитель: Campari Group. Ожидаемый профиль (оценка по стилю): апельсин, коньяк, дуб."
+  "description": "cognac-orange liqueur: насыщенный аромат, сладковатые ноты. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "jagermeister",
@@ -38694,7 +38694,7 @@
    }
   ],
   "status": "auto",
-  "description": "Травяной ликёр. Производитель: Mast-Jägermeister. Ожидаемый профиль (оценка по стилю): 56 трав, лакрица, апельсин."
+  "description": "herbal liqueur: насыщенный аромат, маслянистое тело. Крепость 35.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "limoncello-dellisola",
@@ -38795,7 +38795,7 @@
    }
   ],
   "status": "auto",
-  "description": "Цитрусовый ликёр (лимончелло, трипл сек). Производитель: н/д. Ожидаемый профиль (оценка по стилю): лимонная цедра, сахар."
+  "description": "lemon liqueur: сладковатые ноты, насыщенный аромат. Крепость 30.0%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "martini-riserva-bitter",
@@ -38895,7 +38895,7 @@
    }
   ],
   "status": "auto",
-  "description": "Биттер-аперитив. Производитель: Martini & Rossi. Ожидаемый профиль (оценка по стилю): горькие травы, апельсин."
+  "description": "биттер-аперитив: травяная горчинка, насыщенный аромат. Крепость 28.5%. Пейте неспешно, комнатной температуры или со льдом."
  },
  {
   "id": "sigma-kvass",
@@ -38983,7 +38983,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Квас: звонкая газированность, освежающая кислинка, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "boza",
@@ -39078,7 +39078,7 @@
    }
   ],
   "status": "auto",
-  "description": "Боза (злаковый ферментированный). Производитель: Боз бие. Ожидаемый профиль (оценка по стилю): пшено/пшеница, кисло-сладкий, густой."
+  "description": "Квас: яркая сладость, освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C."
  },
  {
   "id": "vyatskiy-kvas",
@@ -39172,7 +39172,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: Вятич. Ожидаемый профиль (оценка по стилю): ржаной хлеб, выраженная кислинка."
+  "description": "Квас: освежающая кислинка, яркая сладость, звонкая газированность. Подавайте при 3-7°C."
  },
  {
   "id": "domashniy-kvas",
@@ -39287,7 +39287,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: локальные производители KZ (9 поставщиков по ProPartner). Ожидаемый профиль (оценка по стилю): хлеб, живое брожение."
+  "description": "Квас: освежающая кислинка, яркая сладость, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "kvas-zheltaya-bochka",
@@ -39381,7 +39381,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: н/д. Ожидаемый профиль (оценка по стилю): хлеб."
+  "description": "Квас: яркая сладость, звонкая газированность, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "kvas-nikola",
@@ -39475,7 +39475,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: Дека. Ожидаемый профиль (оценка по стилю): хлеб."
+  "description": "Квас: яркая сладость, звонкая газированность, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "kvas-ochakovo-semeynyy-sekret",
@@ -39570,7 +39570,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: Очаково. Ожидаемый профиль (оценка по стилю): хлебная корка, лёгкая карамель."
+  "description": "Квас: яркая сладость, звонкая газированность, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "kvas-ochakovskiy",
@@ -39685,7 +39685,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: Очаково. Ожидаемый профиль (оценка по стилю): ржаной хлеб, дрожжи."
+  "description": "Квас: яркая сладость, звонкая газированность, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "lidskiy-kvas-belyy",
@@ -39777,7 +39777,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кислый (окрошечный) квас. Производитель: Лидское пиво. Ожидаемый профиль (оценка по стилю): кислый, окрошечный."
+  "description": "Квас: освежающая кислинка, звонкая газированность, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "lidskiy-kvas-temnyy",
@@ -39873,7 +39873,7 @@
    }
   ],
   "status": "auto",
-  "description": "Хлебный квас. Производитель: Лидское пиво. Ожидаемый профиль (оценка по стилю): тёмный солод, хлеб."
+  "description": "Квас: яркая сладость, звонкая газированность, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "shoro",
@@ -39969,7 +39969,7 @@
    }
   ],
   "status": "auto",
-  "description": "Максым / шоро (злаковый, солоноватый). Производитель: Шоро (импорт из Кыргызстана; Дастархан24). Ожидаемый профиль (оценка по стилю): талкан, кислинка, солоноватость."
+  "description": "Квас: освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C."
  },
  {
   "id": "gracio",
@@ -40070,7 +40070,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сок. Производитель: Gracio (Казахстан). Ожидаемый профиль (оценка по стилю): яблоко/апельсин/вишня."
+  "description": "Лимонад: яркая сладость, освежающая кислинка, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "domashniy-limonad-apelsin-marakuyya",
@@ -40171,7 +40171,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сладкий лимонад / газировка. Производитель: рестораны Алматы. Ожидаемый профиль (оценка по стилю): апельсин, маракуйя."
+  "description": "Лимонад: яркая сладость, освежающая кислинка, звонкая газированность. Подавайте при 2-6°C."
  },
  {
   "id": "svezhevyzhatyy-sok",
@@ -40272,7 +40272,7 @@
    }
   ],
   "status": "auto",
-  "description": "Сок. Производитель: рестораны Алматы. Ожидаемый профиль (оценка по стилю): фрукт/овощ."
+  "description": "Лимонад: яркая сладость, освежающая кислинка, насыщенный аромат. Подавайте при 3-7°C."
  },
  {
   "id": "burn-monster",
@@ -40778,7 +40778,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кола. Производитель: PepsiCo (розлив KZ). Ожидаемый профиль (оценка по стилю): карамель / цитрус / апельсин."
+  "description": "Газировка: яркая сладость, звонкая газированность, освежающая кислинка. Подавайте при 2-6°C."
  },
  {
   "id": "thomas-henry-tonic",
@@ -40882,7 +40882,7 @@
    }
   ],
   "status": "auto",
-  "description": "Тоник. Производитель: Thomas Henry. Ожидаемый профиль (оценка по стилю): хинин, цитрус."
+  "description": "Газировка: звонкая газированность, яркая сладость, освежающая кислинка. Подавайте при 2-6°C."
  },
  {
   "id": "ayran-foodmaster",
@@ -41007,7 +41007,7 @@
    }
   ],
   "status": "auto",
-  "description": "Айран. Производитель: FoodMaster (Lactalis). Ожидаемый профиль (оценка по стилю): кислый, солоноватый, освежающий."
+  "description": "Кисломолочный напиток: освежающая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "ayran-domashniy",
@@ -41115,7 +41115,7 @@
    }
   ],
   "status": "auto",
-  "description": "Айран. Производитель: рестораны казахской кухни (Auyl, Qaimaq, Sandyq, TARY). Ожидаемый профиль (оценка по стилю): кислый, соль, укроп/мята."
+  "description": "Кисломолочный напиток: освежающая кислинка. Подавайте при 3-7°C."
  },
  {
   "id": "katyk-snezhok",
@@ -41213,7 +41213,7 @@
    }
   ],
   "status": "auto",
-  "description": "Питьевой кисломолочный (катык, снежок). Производитель: FoodMaster. Ожидаемый профиль (оценка по стилю): кисло-сладкий, молочный."
+  "description": "Кисломолочный напиток: освежающая кислинка, яркая сладость. Подавайте при 3-7°C."
  },
  {
   "id": "kumys",
@@ -41339,7 +41339,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кумыс. Производитель: фермерские хозяйства/бренды: Боз бие, Мясо с фермы и др. Ожидаемый профиль (оценка по стилю): кисломолочный, дрожжевой, слегка шипучий, лёгкая алкогольность ~1–2.5%."
+  "description": "Кисломолочный напиток: освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C."
  },
  {
   "id": "molochnyy-kokteyl",
@@ -41453,7 +41453,7 @@
    }
   ],
   "status": "auto",
-  "description": "Молочный коктейль. Производитель: рестораны, Альберто Бар. Ожидаемый профиль (оценка по стилю): мороженое, сироп."
+  "description": "Кисломолочный напиток: яркая сладость, насыщенный аромат. Подавайте при 2-6°C."
  },
  {
   "id": "saumal",
@@ -41541,7 +41541,7 @@
    }
   ],
   "status": "auto",
-  "description": "Саумал (свежее кобылье молоко). Производитель: Боз бие и др. Ожидаемый профиль (оценка по стилю): сладковатое, лёгкое молоко."
+  "description": "Кисломолочный напиток: яркая сладость. Подавайте при 4-8°C."
  },
  {
   "id": "tan",
@@ -41653,7 +41653,7 @@
    }
   ],
   "status": "auto",
-  "description": "Тан (газированный кисломолочный). Производитель: Рудненский тан / Adal. Ожидаемый профиль (оценка по стилю): кислый, солёный, газированный."
+  "description": "Кисломолочный напиток: освежающая кислинка, звонкая газированность. Подавайте при 3-7°C."
  },
  {
   "id": "shubat",
@@ -41773,7 +41773,7 @@
    }
   ],
   "status": "auto",
-  "description": "Шубат. Производитель: фермерские бренды; Мясо с фермы (Алматы); завод в Акшукуре (Мангистау). Ожидаемый профиль (оценка по стилю): густой, жирный, кисломолочный, солоноватый."
+  "description": "Кисломолочный напиток: освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C."
  },
  {
   "id": "travyanoy-chay",
@@ -41888,7 +41888,7 @@
    }
   ],
   "status": "auto",
-  "description": "Травяной / фруктовый чай. Производитель: рестораны Алматы; TARY (чабрец, душица, зверобой, иван-чай). Ожидаемый профиль (оценка по стилю): облепиха — кислая."
+  "description": "Холодный чай: насыщенный аромат, освежающая кислинка. Подавайте при 60-80°C."
  },
  {
   "id": "chay-zelenyy",
@@ -41990,7 +41990,7 @@
    }
   ],
   "status": "auto",
-  "description": "Зелёный чай. Производитель: рестораны Алматы. Ожидаемый профиль (оценка по стилю): трава, жасмин, сливочный улун."
+  "description": "Холодный чай: насыщенный аромат. Подавайте при 60-80°C."
  },
  {
   "id": "chay-s-molokom-po-kazakhski",
@@ -42093,7 +42093,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чай с молоком по-казахски. Производитель: рестораны казахской кухни. Ожидаемый профиль (оценка по стилю): молоко, танины."
+  "description": "Холодный чай: насыщенный аромат. Подавайте при 60-80°C."
  },
  {
   "id": "chay-chernyy",
@@ -42197,7 +42197,7 @@
    }
   ],
   "status": "auto",
-  "description": "Крепкий чёрный чай. Производитель: рестораны Алматы. Ожидаемый профиль (оценка по стилю): танины, бергамот (Earl Grey)."
+  "description": "Холодный чай: насыщенный аромат. Подавайте при 60-80°C."
  },
  {
   "id": "goryachiy-shokolad",
@@ -42296,7 +42296,7 @@
    }
   ],
   "status": "auto",
-  "description": "Горячий шоколад. Производитель: рестораны Алматы. Ожидаемый профиль (оценка по стилю): какао, молоко."
+  "description": "Кофе: яркая сладость, насыщенный аромат. Подавайте при 55-65°C."
  },
  {
   "id": "kapuchino-latte-mokachino",
@@ -42397,7 +42397,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кофе с молоком (капучино, латте). Производитель: рестораны Алматы. Ожидаемый профиль (оценка по стилю): молоко, кофе, шоколад (мокачино)."
+  "description": "Кофе: насыщенный аромат. Подавайте при 60-70°C."
  },
  {
   "id": "kofe-s-kurtom-latte-s-talkanom-kapuchino-s-balkaymakom",
@@ -42502,7 +42502,7 @@
    }
   ],
   "status": "auto",
-  "description": "Кофе с молоком (капучино, латте). Производитель: TARY (Sandyq Group), Petit, Tereze Ala. Ожидаемый профиль (оценка по стилю): солёный курт, талкан (толокно), балкаймак (сливочный мёд)."
+  "description": "Кофе: насыщенный аромат. Подавайте при 60-70°C."
  },
  {
   "id": "espresso-amerikano",
@@ -42601,7 +42601,7 @@
    }
   ],
   "status": "auto",
-  "description": "Чёрный кофе (эспрессо, американо). Производитель: рестораны Алматы. Ожидаемый профиль (оценка по стилю): жареный кофе, горечь, кислинка."
+  "description": "Кофе: насыщенный аромат, освежающая кислинка. Подавайте при 60-70°C."
  },
  {
   "id": "asu",
@@ -42696,7 +42696,7 @@
    }
   ],
   "status": "auto",
-  "description": "Питьевая вода. Производитель: A'SU (Казахстан). Ожидаемый профиль (оценка по стилю): нейтральная."
+  "description": "Вода: чистый освежающий вкус. Подавайте при 5-11°C."
  },
  {
   "id": "bonaqua",
@@ -42895,7 +42895,7 @@
    }
   ],
   "status": "auto",
-  "description": "Минеральная вода (солоноватая, газированная). Производитель: IDS Borjomi. Ожидаемый профиль (оценка по стилю): минеральная, солоноватая, сода."
+  "description": "Вода: звонкая газированность. Подавайте при 3-9°C."
  },
  {
   "id": "maniva",
@@ -42990,6 +42990,6 @@
    }
   ],
   "status": "auto",
-  "description": "Питьевая вода. Производитель: Maniva. Ожидаемый профиль (оценка по стилю): нейтральная."
+  "description": "Вода: чистый освежающий вкус. Подавайте при 5-11°C."
  }
 ]
