@@ -1,41 +1,45 @@
-# Деплой Flavor Tree
+# Деплой Flavor Tree — всё на Vercel
 
-Бекенд (Django) → Railway. Фронтенд (Angular) → Vercel. Ветка: `deploy`.
+Два отдельных проекта Vercel из одного репозитория, ветка `deploy`:
+- бекенд (Django) — папка `backend`
+- фронтенд (Angular) — папка `frontend`
 
-## 1. Бекенд на Railway
-1. https://railway.app → New Project → **Deploy from GitHub repo** → `Adelllya/Efes-ccl-Flavor`, ветка `deploy`.
-2. В сервисе → **Settings → Root Directory** = `backend`.
-3. **+ New → Database → PostgreSQL** (в том же проекте). Он сам добавит переменную `DATABASE_URL`.
-4. Сервис бекенда → **Variables**, добавить:
+## 1. Бекенд (проект Vercel #1)
+1. Vercel → Add New → Project → импортировать репозиторий `Adelllya/Efes-ccl-Flavor`,
+   ветка `deploy`. Если репо не видно — подключить GitHub-аккаунт `Adelllya`.
+2. **Root Directory** = `backend`. Framework Preset = Other.
+3. **Storage** → Create Database → Postgres → Connect к проекту.
+   Vercel сам добавит переменные `POSTGRES_URL` и т.д. — бекенд их читает автоматически.
+4. **Environment Variables** добавить:
    - `DJANGO_DEBUG` = `False`
    - `DJANGO_SECRET_KEY` = длинная случайная строка (50+ символов)
-   - `DJANGO_ALLOWED_HOSTS` = домен Railway, напр. `flavor-production-xxxx.up.railway.app`
-   - `DJANGO_CSRF_TRUSTED_ORIGINS` = `https://<домен-railway>,https://<домен-vercel>`
-   - `DJANGO_CORS_ALLOWED_ORIGINS` = `https://<домен-vercel>`
-   - (опц.) `ANTHROPIC_API_KEY`, `FT_AI_MODEL` для ИИ-сомелье
-   - `DATABASE_URL` уже проброшен из плагина Postgres.
-5. Deploy. Старт-команда сама делает `migrate` + `collectstatic` + `gunicorn` (см. `backend/Procfile`).
-6. **Домен**: Settings → Networking → Generate Domain. Это адрес бекенда.
-7. **Суперпользователь и данные** — в Railway → сервис → вкладка с shell/командой (или Railway CLI `railway run`):
-   - `python manage.py createsuperuser`
-   - `python manage.py seed_roles`
-   - `python manage.py seed`
+   - `DJANGO_ALLOWED_HOSTS` = `.vercel.app`
+   - `DJANGO_CSRF_TRUSTED_ORIGINS` = `https://<домен-бекенда>.vercel.app,https://<домен-фронта>.vercel.app`
+   - `DJANGO_CORS_ALLOWED_ORIGINS` = `https://<домен-фронта>.vercel.app`
+   - (опц.) `ANTHROPIC_API_KEY`, `FT_AI_MODEL`
+5. Deploy → получите домен бекенда, напр. `flavor-backend.vercel.app`.
+6. **Миграции и данные** (serverless сам не запускает команды):
+   скопируйте строку подключения из Vercel (Storage → база → `POSTGRES_URL`)
+   и выполните локально из папки `backend`:
+   ```
+   DATABASE_URL="<строка>" .venv/bin/python manage.py migrate
+   DATABASE_URL="<строка>" .venv/bin/python manage.py seed_roles
+   DATABASE_URL="<строка>" .venv/bin/python manage.py seed
+   DATABASE_URL="<строка>" .venv/bin/python manage.py createsuperuser
+   ```
 
 ## 2. Прописать адрес бекенда во фронтенд
 В `frontend/src/environments/environment.prod.ts` заменить `REPLACE_WITH_RAILWAY_DOMAIN`
-на домен Railway (без слэша на конце), закоммитить и запушить в `deploy`.
+на домен бекенда (без слэша), напр. `flavor-backend.vercel.app`. Закоммитить и запушить в `deploy`.
 
-## 3. Фронтенд на Vercel
-1. https://vercel.com → Add New → Project → тот же GitHub repo, ветка `deploy`.
-2. **Root Directory** = `frontend`. Framework: Angular (или Other).
-3. Build Command и Output уже заданы в `frontend/vercel.json`
-   (`npm run build`, `dist/frontend/browser`).
-4. Deploy → получите домен Vercel.
-5. Добавьте этот домен в переменные Railway `DJANGO_CSRF_TRUSTED_ORIGINS` и
-   `DJANGO_CORS_ALLOWED_ORIGINS`, передеплойте бекенд.
+## 3. Фронтенд (проект Vercel #2)
+1. Vercel → Add New → Project → тот же репозиторий, ветка `deploy`.
+2. **Root Directory** = `frontend`.
+3. Сборка и папка вывода уже заданы в `frontend/vercel.json`.
+4. Deploy → домен фронта. Добавьте его в переменные бекенда
+   (`DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_CORS_ALLOWED_ORIGINS`) и передеплойте бекенд.
 
 ## Заметки
-- Медиа (`backend/media`) закоммичены — картинки пива будут видны сразу.
-  Загруженные через админку файлы на бесплатном Railway не переживут передеплой,
-  пока не подключить Volume на `/app/media`.
-- Локальная разработка не изменилась: `environment.ts` смотрит на `127.0.0.1:8000`.
+- Django на Vercel работает как serverless. Картинки пива из репозитория показываются,
+  но новые загрузки через админку не сохраняются (нужен внешний storage типа S3).
+- Локальная разработка не меняется: `environment.ts` смотрит на `127.0.0.1:8000`.

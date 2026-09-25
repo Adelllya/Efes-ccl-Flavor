@@ -93,7 +93,12 @@ WSGI_APPLICATION = 'flavor_tree.wsgi.application'
 # Database - PostgreSQL.
 # На проде (Railway) подключаемся по DATABASE_URL, который выдаёт плагин Postgres.
 # Локально — по отдельным переменным DB_* или их значениям по умолчанию.
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# DATABASE_URL — общий стандарт; Vercel Postgres кладёт строку в POSTGRES_URL.
+DATABASE_URL = (
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('POSTGRES_URL_NON_POOLING')
+    or os.environ.get('POSTGRES_URL')
+)
 if DATABASE_URL:
     import dj_database_url
     DATABASES = {
@@ -131,7 +136,7 @@ STORAGES = {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
     },
 }
 
