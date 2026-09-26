@@ -1656,3 +1656,140 @@
 @media (max-width: 768px) {
   .wa-main > .wa-loadbar { margin-bottom: 12px; }
 }
+
+/* Вкладка "Заказы": приём заказов, звук и экран без сна */
+
+.wa-orders-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 12px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.wa-orders-tools .wa-check { min-height: 32px; }
+.wa-orders-tools .wa-hint,
+.wa-orders-tools .wa-error { margin: 0; }
+
+.wa-orders-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Вкладка "Пилот" */
+
+.wa-stat.wa-kpi { cursor: default; }
+.wa-stat.wa-kpi:hover { border-color: var(--line); }
+.wa-stat.wa-kpi.wa-stat-accent:hover { border-color: var(--beer-light); }
+
+.wa-pilot-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+
+.wa-pilot-venue { flex: 1 1 220px; max-width: 320px; }
+.wa-pilot-pills { padding: 0; }
+
+.wa-pilot-dates {
+  display: flex;
+  gap: 10px;
+}
+
+.wa-pilot-dates .wa-field { width: 150px; }
+.wa-pilot-note { margin-bottom: 10px; }
+
+.wa-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wa-funnel-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr) 56px 52px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+}
+
+.wa-funnel-label { font-weight: 600; color: var(--foam-dim); }
+
+.wa-funnel-track {
+  height: 10px;
+  border-radius: 0 4px 4px 0;
+  background: var(--line-subtle);
+  overflow: hidden;
+}
+
+.wa-funnel-bar {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+  background: var(--beer-light);
+}
+
+.wa-funnel-count {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-align: right;
+  color: var(--foam);
+}
+
+.wa-funnel-conv {
+  font-size: 0.76rem;
+  text-align: right;
+  color: var(--muted);
+}
+
+.wa-data-wrap { overflow-x: auto; }
+.wa-data-scroll { max-height: 420px; overflow-y: auto; }
+
+.wa-data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.wa-data th,
+.wa-data td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--line-subtle);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.wa-data th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-1);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.wa-data .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.wa-data-empty td { color: var(--muted); }
+
+.wa-pilot-quote:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  .wa-funnel-row { grid-template-columns: minmax(0, 1fr) 48px 44px; }
+  .wa-funnel-track { grid-column: 1 / -1; grid-row: 2; }
+  .wa-pilot-dates { width: 100%; }
+  .wa-pilot-dates .wa-field { flex: 1; width: auto; }
+}
