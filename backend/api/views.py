@@ -7,7 +7,7 @@ from rest_framework.exceptions import APIException, PermissionDenied, Validation
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.db import DatabaseError, connection
+from django.db import connection
 from django.db.models import Count, Q, Prefetch, ProtectedError
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_page
@@ -553,7 +553,7 @@ def health_check(request):
         with connection.cursor() as cursor:
             cursor.execute('SELECT 1')
             cursor.fetchone()
-    except DatabaseError:
+    except Exception:  # любая поломка базы или драйвера: монитору нужен 503, а не 500
         logger.exception('Health check: база не отвечает')
         response = Response({'ok': False, 'db': False}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     else:

@@ -63,9 +63,11 @@ class ThrottleTests(TestCase):
         client = client_for()
         with with_rates(register='1/hour'):
             first = client.post('/api/auth/register/', {
-                'username': 'new1', 'email': 'new1@example.kz', 'password': 'another-secret-456'}, format='json')
+                'username': 'new1', 'email': 'new1@example.kz', 'password': 'another-secret-456',
+                'consent': True}, format='json')
             second = client.post('/api/auth/register/', {
-                'username': 'new2', 'email': 'new2@example.kz', 'password': 'another-secret-456'}, format='json')
+                'username': 'new2', 'email': 'new2@example.kz', 'password': 'another-secret-456',
+                'consent': True}, format='json')
         self.assertEqual(first.status_code, 201, first.content)
         self.assertEqual(second.status_code, 429)
 
