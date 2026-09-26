@@ -349,8 +349,10 @@ export class ApiService {
     return this.http.get<Venue>(`${this.baseUrl}/venues/${slug}/`);
   }
 
-  getVenueMenu(slug: string): Observable<VenueMenu> {
-    return this.http.get<VenueMenu>(`${this.baseUrl}/venues/${slug}/menu/`);
+  /** under21: гость ответил, что ему нет 21. Сервер отдаёт те же блюда, а в карте и подборе только безалкогольное. */
+  getVenueMenu(slug: string, under21 = false): Observable<VenueMenu> {
+    const params = under21 ? new HttpParams().set('age', 'under21') : undefined;
+    return this.http.get<VenueMenu>(`${this.baseUrl}/venues/${slug}/menu/`, { params });
   }
 
   createVenue(v: Partial<Venue> & { owner?: number | null }): Observable<Venue> {

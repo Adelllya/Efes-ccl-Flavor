@@ -12,9 +12,9 @@ import { AuthComponent } from './pages/auth/auth.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { SommelierChatComponent } from './ui/sommelier-chat.component';
 import { AgeGateComponent } from './ui/age-gate.component';
-import { ageConfirmed } from './ui/age-storage';
 import { SiteFooterComponent } from './ui/site-footer.component';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
+import { AgeService } from './services/age.service';
 import { AuthService } from './services/auth.service';
 import { SelectionService } from './services/selection.service';
 import { TrackService } from './services/track.service';
@@ -408,10 +408,11 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
     }
 
     <!-- Вопрос «Вам исполнился 21 год?» при первом входе. Политику конфиденциальности им не закрываем.
+         В разделе «Меню» ответ «Нет» закрывает окно и показывает меню без алкоголя.
          Отдельный чанк: тем, кто уже ответил, код окна не грузится -->
     @if (showAgeGate()) {
       @defer (on immediate) {
-        <app-age-gate (confirmed)="ageOk.set(true)" (privacy)="goTo('privacy')" />
+        <app-age-gate [venueMenu]="menuTab()" (privacy)="goTo('privacy')" />
       }
     }
   `,
@@ -583,6 +584,7 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
 })
 export class AppComponent implements OnInit, OnDestroy {
   readonly auth = inject(AuthService);
+  private readonly age = inject(AgeService);
   private readonly selection = inject(SelectionService);
   private readonly track = inject(TrackService);
   private readonly zone = inject(NgZone);
@@ -599,9 +601,14 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Нижняя панель разделов (видна только на телефоне). В меню заведения снизу своя полоса корзины. */
   readonly showTabBar = computed(() => !this.venueMenuOpen());
 
-  /** Гость подтвердил, что ему есть 21 (ft_age_ok в localStorage). */
-  readonly ageOk = signal(ageConfirmed());
-  readonly showAgeGate = computed(() => !this.ageOk() && this.activeTab() !== 'privacy');
+  /**
+   * Окно 21+ до ответа «Да» (ft_age_ok в localStorage). Кто ответил «Нет», в разделе «Меню»
+   * (список заведений и меню заведения) видит блюда и безалкогольное без окна, а на остальных
+   * страницах окно остаётся с безалкогольными напитками.
+   */
+  readonly menuTab = computed(() => this.activeTab() === 'menu');
+  readonly showAgeGate = computed(() => !this.age.adult() && this.activeTab() !== 'privacy'
+    && !(this.menuTab() && this.age.under21()));
 
   constructor() {
     // Адрес читаем до первого запуска эффекта, иначе он перепишет его на главную

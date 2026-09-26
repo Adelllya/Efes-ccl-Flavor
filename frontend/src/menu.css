@@ -613,7 +613,21 @@ p.vm-score { margin: 0; align-items: baseline; gap: 6px; }
 .vm-field .input { padding: var(--space-sm) var(--space-md); font-size: 0.95rem; }
 .vm-field textarea.input { resize: vertical; min-height: 60px; }
 .vm-form-error { margin: 0; padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); background: var(--error-bg); color: var(--error); font-size: 0.86rem; }
-.vm-sheet-foot { display: flex; flex-direction: column; gap: var(--space-md); padding-top: var(--space-sm); }
+/* Итог и «Отправить заказ» прилипают к низу листа: с длинной корзиной кнопка не уезжает за экран.
+   Отрицательные поля растягивают фон до краёв листа и забирают нижний отступ .vm-sheet-body */
+.vm-sheet-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin: 0 calc(-1 * var(--space-lg)) calc(-1 * (var(--space-lg) + env(safe-area-inset-bottom)));
+  padding: var(--space-md) var(--space-lg) calc(var(--space-lg) + env(safe-area-inset-bottom));
+  background: var(--bg-0);
+  border-top: 1px solid var(--line-subtle);
+  box-shadow: 0 -12px 24px -18px rgba(28, 25, 23, 0.35);
+}
 .vm-total { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); }
 .vm-total-sum { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 800; color: var(--beer-deep); }
 
@@ -697,6 +711,9 @@ p.vm-score { margin: 0; align-items: baseline; gap: 6px; }
   border-radius: var(--radius-lg);
 }
 .vm-note-close { flex-shrink: 0; }
+/* Меню для гостя младше 21: алкоголь скрыт */
+.vm-note-age { background: var(--beer-glow); line-height: 1.45; }
+.vm-note-link { flex-shrink: 0; margin-top: 0; min-height: 32px; white-space: nowrap; }
 
 /* Экран заказа */
 .vm-order-card { display: flex; flex-direction: column; gap: var(--space-lg); padding: var(--space-2xl) var(--space-xl); }

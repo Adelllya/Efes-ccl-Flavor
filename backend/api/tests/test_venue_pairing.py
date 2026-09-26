@@ -157,17 +157,23 @@ class ThreeSortBarTests(TestCase):
         self.assertTrue(manty['recommendations'])
         self.assertEqual(manty['pairing_info']['status'], 'weak')
 
-        # Порог «нейтрально» выше любого балла: движок ничего не предлагает, пары команды в баре нет.
+        # Порог «нейтрально» выше любого балла: выше порога ничего нет, но гость не остаётся без выбора,
+        # отдаём до трёх ближайших по баллу напитков карты, подбор честно помечен как слабый.
         def strict_all(ds, band_id, default):
             return 101
 
         with mock.patch.object(venue_pairing, 'band_min', strict_all):
             data = entries(self.menu())
-        self.assertEqual(data['Манты']['recommendations'], [])
-        self.assertIsNone(data['Манты']['pairing'])
-        self.assertEqual(data['Манты']['pairing_info']['status'], 'none')
-        # Пара команды из карты остаётся, только если движок её не отверг.
-        self.assertEqual(data['Бешбармак']['recommendations'], [])
+        manty = data['Манты']
+        self.assertTrue(manty['recommendations'])
+        self.assertLessEqual(len(manty['recommendations']), 3)
+        self.assertEqual(manty['pairing_info']['status'], 'weak')
+        self.assertEqual(manty['pairing']['source'], 'ENGINE')
+        names = {r['brand_name'] for r in manty['recommendations']}
+        self.assertFalse(names & {'Бочковое', 'Белый Медведь'})
+        # Пару команды движок отверг, но как «ближайшую» её всё же можно предложить, и тоже со слабым статусом.
+        self.assertEqual(data['Бешбармак']['pairing_info']['status'], 'weak')
+        self.assertTrue(data['Бешбармак']['recommendations'])
 
     def test_check_command_lists_every_dish(self):
         out = StringIO()

@@ -443,8 +443,10 @@ class VenueViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='menu')
     def menu(self, request, slug=None):
+        """?age=under21 - гость ответил, что ему нет 21: блюда те же, напитки только безалкогольные."""
         venue = self.get_object()
-        return Response(build_venue_menu(venue, request))
+        minor = (request.query_params.get('age') or '').strip().lower() == 'under21'
+        return Response(build_venue_menu(venue, request, minor=minor))
 
 
 class VenueScopedViewSet(viewsets.ModelViewSet):
