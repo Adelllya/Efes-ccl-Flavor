@@ -54,6 +54,17 @@
   "Efes Pilsener": {
    "image": "brands/efes_ingredients_hd_sm.png",
    "image_hd": "brands/hd/efes_ingredients_hd.png"
+  },
+  "Легенда 777": {
+   "image": "brands/legenda_777_hd_sm.png",
+   "image_hd": "brands/hd/legenda_777_hd.png"
+  },
+  "Северное Сияние": {
+   "image": "brands/severnoe_siyanie_hd_sm.png",
+   "image_hd": "brands/hd/severnoe_siyanie_hd.png"
+  },
+  "Старый мельник (из бочонка)": {
+   "image": "brands/Melnik.png"
   }
  },
  "dishes": {

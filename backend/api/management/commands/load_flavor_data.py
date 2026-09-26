@@ -8,6 +8,7 @@ import csv
 from pathlib import Path
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from api import public_content
 from api.models import FlavorNote, Brand, FlavorProfile, ServingRecommendation, Course, TeamMember
 
 
@@ -30,7 +31,7 @@ NOTES_DEFINITIONS = [
     {"name": "Карамель", "technical_term": "Caramel / Maltol", "category": "HEART", "icon": "🍯", "description": "Сладкие ноты жженого сахара, тоффи и карамельного солода"},
     {"name": "Рисовые ноты", "technical_term": "Rice / Dry Cereal", "category": "HEART", "icon": "🍚", "description": "Легкий сухой рисовый профиль, придающий воздушность и нейтральную чистоту"},
     {"name": "Сладость", "technical_term": "Sweetness", "category": "HEART", "icon": "🍬", "description": "Мягкая натуральная сладость несброженных сахаров"},
-    {"name": "Сусло (Worty)", "technical_term": "Worty", "category": "HEART", "icon": "🌾", "description": "Свежий аромат варочного цеха и теплого пивного сусла"},
+    {"name": "Сусло", "technical_term": "Worty", "category": "HEART", "icon": "🌾", "description": "Свежий аромат варочного цеха и теплого пивного сусла"},
     {"name": "Мягкий баланс солода", "technical_term": "Smooth Malt Balance", "category": "HEART", "icon": "🥖", "description": "Идеально сбалансированное, бархатистое солодовое сердце"},
     {"name": "Обжаренный солод", "technical_term": "Roasty / 2-Acetylpyridine", "category": "HEART", "icon": "☕", "description": "Кофейно-шоколадный характер темного прожаренного солода"},
     {"name": "Шоколад", "technical_term": "Chocolate / Pyrazines", "category": "HEART", "icon": "🍫", "description": "Ноты горького темного какао и шоколада"},
@@ -45,7 +46,7 @@ NOTES_DEFINITIONS = [
     {"name": "Динамичная горечь", "technical_term": "Crisp Dynamic Bitterness", "category": "BASE", "icon": "🎯", "description": "Яркая, бодрящая горчинка с быстрым развитием"},
     {"name": "Тонкая сладость финиша", "technical_term": "Sweet Finish", "category": "BASE", "icon": "🍯", "description": "Едва уловимая карамельно-солодовая сладость в финале"},
     {"name": "Классическая горечь", "technical_term": "Classic Bitterness", "category": "BASE", "icon": "🍺", "description": "Традиционная лагерная горчинка, выверенная годами"},
-    {"name": "Тело и плотность (Body)", "technical_term": "Mouthfeel / Body", "category": "BASE", "icon": "🧱", "description": "Ощущение весомости, плотности и густоты напитка во рту"},
+    {"name": "Тело и плотность", "technical_term": "Mouthfeel / Body", "category": "BASE", "icon": "🧱", "description": "Ощущение весомости, плотности и густоты напитка во рту"},
     {"name": "Янтарная сладость", "technical_term": "Amber Sweetness", "category": "BASE", "icon": "🍂", "description": "Мягкое послевкусие венского и янтарного солода"},
     {"name": "Мягкий финиш", "technical_term": "Smooth Finish", "category": "BASE", "icon": "🕊️", "description": "Округлый, бархатистый и шелковистый сход вкуса"},
 ]
@@ -112,7 +113,7 @@ PYRAMID_DRAFT = {
         ("TOP", "Хмелевой аромат", 5, "Жатецкий хмель"),
         ("TOP", "Цветочные ноты", 3, "Цветочный букет"),
         ("HEART", "Солод", 6, "Золотистый плотный солод"),
-        ("HEART", "Сусло (Worty)", 4, "Сладковатое сусло"),
+        ("HEART", "Сусло", 4, "Сладковатое сусло"),
         ("BASE", "Тонкая сладость финиша", 4, "Тонкая сладость послевкусия"),
     ],
     "Жигулевское": [
@@ -124,7 +125,7 @@ PYRAMID_DRAFT = {
         ("TOP", "Спиртовая теплота", 6, "Согревающее алкогольное дыхание (7.3%)"),
         ("HEART", "Солодовая плотность", 6, "Густое солодовое тело"),
         ("BASE", "Хмелевая горчинка", 6, "Мощная выраженная горечь"),
-        ("BASE", "Тело и плотность (Body)", 7, "Массивное плотное тело"),
+        ("BASE", "Тело и плотность", 7, "Массивное плотное тело"),
     ],
     "Северное Сияние": [
         ("TOP", "Свежесть", 6, "Кристальная северная свежесть"),
@@ -166,6 +167,8 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         self.stdout.write("1. Создание/обновление вкусовых нот...")
+        # Старые названия с английской подписью переименовываем, чтобы не плодить дубли нот.
+        public_content.rename_notes()
         note_map = {}
         for idx, nd in enumerate(NOTES_DEFINITIONS):
             note, _ = FlavorNote.objects.update_or_create(
@@ -200,6 +203,9 @@ class Command(BaseCommand):
                 style = row.get("style", "Lager").strip()
                 abv_raw = row.get("abv", "").strip()
                 abv = float(abv_raw) if abv_raw else None
+                if abv is None:
+                    # В CSV крепости нет: берём из каталога движка (drinks.json, по названию сорта).
+                    abv = public_content.engine_brand_facts().get(name, {}).get("abv")
                 packaging_type = row.get("packaging_type", "BOTTLE").strip()
                 is_horeca = row.get("is_horeca_only", "False").strip().lower() in ("true", "1", "yes")
                 description = row.get("description", "").strip()
@@ -247,11 +253,13 @@ class Command(BaseCommand):
                                 layer=layer,
                                 intensity=intensity,
                                 sommelier_note=sommelier_note,
-                                sommelier_name="Главный Сомелье Efes",
+                                sommelier_name=public_content.DRAFT_AUTHOR,
                             )
                             profiles_count += 1
 
         self.stdout.write(f"   ✓ Загружено {brands_count} брендов")
+        filled = public_content.backfill_brands()
+        self.stdout.write(f"   ✓ Фото из media_map проставлено у {filled['images']} брендов")
         self.stdout.write(f"   ✓ Создано {profiles_count} вкусовых связей пирамиды")
 
         self.stdout.write("3. Загрузка 50 блюд для Food Pairing из dishes_50.csv...")

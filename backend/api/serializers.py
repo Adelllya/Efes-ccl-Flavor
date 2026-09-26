@@ -18,6 +18,7 @@ from .models import (
 )
 from .permissions import has_role, user_role, ROLE_LABELS, ROLE_MODERATOR, ROLE_USER
 from .pilot import clean_rank, clean_session
+from .public_content import abv_is_estimate
 
 
 def media_url(request, file_field):
@@ -96,14 +97,18 @@ class BrandListSerializer(serializers.ModelSerializer):
     packaging_type_display = serializers.CharField(source='get_packaging_type_display', read_only=True)
     image = serializers.SerializerMethodField()
     image_hd = serializers.SerializerMethodField()
+    abv_estimated = serializers.SerializerMethodField()
 
     def get_image_hd(self, obj):
         return absolute_media(self, obj.image_hd)
 
+    def get_abv_estimated(self, obj):
+        return abv_is_estimate(obj)
+
     class Meta:
         model = Brand
         fields = [
-            'id', 'name', 'brand_owner', 'style', 'abv',
+            'id', 'name', 'brand_owner', 'style', 'abv', 'abv_estimated',
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
             'is_horeca_only', 'description', 'image', 'image_hd', 'accent_color', 'tagline',
             'is_active', 'note_count', 'profile', 'serving_recommendation',
@@ -153,14 +158,18 @@ class BrandDetailSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     image_hd = serializers.SerializerMethodField()
     pyramid = serializers.SerializerMethodField()
+    abv_estimated = serializers.SerializerMethodField()
 
     def get_image_hd(self, obj):
         return absolute_media(self, obj.image_hd)
 
+    def get_abv_estimated(self, obj):
+        return abv_is_estimate(obj)
+
     class Meta:
         model = Brand
         fields = [
-            'id', 'name', 'brand_owner', 'style', 'abv',
+            'id', 'name', 'brand_owner', 'style', 'abv', 'abv_estimated',
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
             'is_horeca_only', 'description', 'image', 'image_hd', 'accent_color', 'tagline',
             'is_active', 'serving_recommendation', 'pyramid',

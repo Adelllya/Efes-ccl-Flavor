@@ -4,12 +4,16 @@ import {
   NgZone,
   OnDestroy,
   AfterViewInit,
+  OnInit,
+  computed,
   inject,
   output,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
+import { ApiService } from '../../../services/api.service';
+import { countOf } from '../../venue-menu/plural';
 
 type DiscoveryMode = 'dish' | 'brand';
 
@@ -61,13 +65,12 @@ interface HeroPill {
       </h1>
 
       <p class="hero-lede">
-        FlavorTree - платформа сенсорного образования для пива. Мы раскладываем вкус
-        каждого бренда на три слоя, как аромат в парфюмерии, и подбираем идеальное
-        сочетание с едой.
+        Flavor Tree - платформа сенсорного образования для пива. Мы раскладываем вкус
+        каждого сорта на три слоя, как аромат в парфюмерии, и подбираем сочетания с едой.
       </p>
 
       <ul class="hero-pills" aria-label="Что есть на платформе">
-        @for (pill of pills; track pill.id) {
+        @for (pill of pills(); track pill.id) {
           <li class="hero-pill">
             <span class="hero-pill-icon" aria-hidden="true">
               @switch (pill.icon) {
@@ -611,9 +614,10 @@ interface HeroPill {
     }
   `],
 })
-export class HeroComponent implements AfterViewInit, OnDestroy {
+export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private host = inject(ElementRef<HTMLElement>);
   private zone = inject(NgZone);
+  private api = inject(ApiService);
 
   /** Пользователь выбрал направление подбора. */
   choose = output<DiscoveryMode>();
@@ -625,12 +629,20 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   sideVisible = signal<boolean[]>([false, false, false]);
   sideTransform = signal<string[]>(['', '', '', '', '', '']);
 
-  pills: HeroPill[] = [
-    { id: 'brands', label: '17 брендов Efes KZ', icon: 'beer' },
-    { id: 'pyramid', label: 'Вкусовая пирамида', icon: 'pyramid' },
-    { id: 'ai', label: 'AI-Сомелье', icon: 'sparkle' },
-    { id: 'school', label: 'Школа вкуса', icon: 'book' },
-  ];
+  /** Число сортов из /api/landing/ (как в каталоге). null, пока сервер не ответил: тогда без числа. */
+  brandsCount = signal<number | null>(null);
+  /** ИИ-сомелье включён на сервере (есть ключ). Без ключа чат отвечает правилами, это не ИИ. */
+  aiEnabled = signal(false);
+
+  pills = computed<HeroPill[]>(() => {
+    const n = this.brandsCount();
+    return [
+      { id: 'brands', label: n ? `${countOf(n, 'сорт', 'сорта', 'сортов')} Efes KZ` : 'Сорта Efes KZ', icon: 'beer' },
+      { id: 'pyramid', label: 'Вкусовая пирамида', icon: 'pyramid' },
+      { id: 'ai', label: this.aiEnabled() ? 'ИИ-сомелье' : 'Сомелье-бот', icon: 'sparkle' },
+      { id: 'school', label: 'Школа вкуса', icon: 'book' },
+    ];
+  });
 
   cardBubblesLeft = this.makeBubbles(16);
   cardBubblesRight = this.makeBubbles(16);
@@ -641,6 +653,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   private static readonly SIDE_THRESHOLDS = [60, 200, 360];
+
+  ngOnInit(): void {
+    this.api.getLandingStats().subscribe(stats => this.brandsCount.set(stats?.brands || null));
+    this.api.getAiStatus().subscribe({ next: s => this.aiEnabled.set(!!s?.enabled), error: () => {} });
+  }
 
   ngAfterViewInit(): void {
     if (!this.reducedMotion) {

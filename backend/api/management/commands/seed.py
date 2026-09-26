@@ -1,9 +1,10 @@
 """
 Django management command: python manage.py seed
 Загружает все демо-данные (идемпотентно - сначала удаляет, потом вставляет).
-Данные по стандарту FlavorActiV «Beer Flavour Language».
+Пирамиды и описания сортов это черновик команды Flavor Tree, без дегустации.
 """
 from django.core.management.base import BaseCommand, CommandError
+from api import public_content
 from api.models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Order, Venue,
@@ -61,7 +62,7 @@ FLAVOR_NOTE_SEEDS = [
 ]
 
 BRAND_SEEDS = [
-    {'name': 'Efes Pilsener', 'brand_owner': 'Efes Kazakhstan', 'style': 'Pilsner', 'abv': 4.5, 'density': '11.8% плато', 'fermentation_type': 'Нижнее', 'description': 'Классический пилснер с чешским характером - чистый солод, хмелевая свежесть и яркий финиш.', 'image': 'https://placehold.co/600x800/f59e0b/fff?text=Efes+Pilsener'},
+    {'name': 'Efes Pilsener', 'brand_owner': 'Efes Kazakhstan', 'style': 'Pilsner', 'abv': 5.0, 'density': '', 'fermentation_type': 'Нижнее', 'description': 'Флагманский пилснер Anadolu Efes: чистый солод, хмелевая свежесть и яркий финиш.', 'image': ''},
     {'name': 'Efes Lager', 'brand_owner': 'Efes Kazakhstan', 'style': 'Lager', 'abv': 4.8, 'density': '12.0% плато', 'fermentation_type': 'Нижнее', 'description': 'Сбалансированный лагер - солодовая база, лёгкая карамель, хмелевая горчинка.', 'image': 'https://placehold.co/600x800/eab308/fff?text=Efes+Lager'},
     {'name': 'Tarkum', 'brand_owner': 'Efes Kazakhstan', 'style': 'Lager', 'abv': 5.0, 'density': '12.5% плато', 'fermentation_type': 'Нижнее', 'description': 'Традиционный казахстанский лагер - плотное тело, солод, хлеб и лёгкая горечь.', 'image': 'https://placehold.co/600x800/d97706/fff?text=Tarkum'},
     {'name': 'Efes Wheat', 'brand_owner': 'Efes Kazakhstan', 'style': 'Wheat', 'abv': 5.2, 'density': '12.2% плато', 'fermentation_type': 'Верхнее', 'description': 'Пшеничное пиво - банан, гвоздика, дрожжевая плотность, мягкое послевкусие.', 'image': 'https://placehold.co/600x800/fbbf24/fff?text=Efes+Wheat'},
@@ -88,19 +89,9 @@ SERVING_REC_SEEDS = [
     {'brand_index': 5, 'serving_temp_min': 10, 'serving_temp_max': 13, 'glass_type': 'Тапира / Пинта'},
 ]
 
-COURSE_SEEDS = [
-    {'level': 1, 'title': 'Новичок', 'description': 'Базовое знакомство с пивом: стили, крепость, плотность, первые ощущения от вкуса', 'color': '#f59e0b'},
-    {'level': 2, 'title': 'Исследователь', 'description': 'Глубже в пирамиду: распознавание TOP/HEART/BASE нот, хмель vs солод', 'color': '#84cc16'},
-    {'level': 3, 'title': 'Знаток', 'description': 'Food pairing, сезонность, температура подачи, анализ полного профиля', 'color': '#0ea5e9'},
-    {'level': 4, 'title': 'Сомелье', 'description': 'Профессиональный уровень: дегустация вслепую, описание по лексикону FlavorActiV, подбор пива для гостей', 'color': '#8b5cf6'},
-]
-
-TEAM_MEMBER_SEEDS = [
-    {'name': 'Айгерим Нурланова', 'role': 'Основатель / Сомелье', 'bio': 'Пивной сомелье, сертифицированный по WSET. 8 лет в индустрии HoReCa, автор методологии Flavor Tree.', 'avatar': 'https://placehold.co/200x200/f59e0b/fff?text=А'},
-    {'name': 'Дамир Сапаров', 'role': 'Технолог / Brewmaster', 'bio': 'Инженер-технолог пивоварения. Разрабатывает рецептуры и контролирует качество пива для программы Flavor Tree.', 'avatar': 'https://placehold.co/200x200/84cc16/fff?text=Д'},
-    {'name': 'Елена Коваль', 'role': 'Food Pairing Specialist', 'bio': 'Шеф-повар, специалист по подобию еды и пива. Автор курса «Пивной pairing для ресторанов».', 'avatar': 'https://placehold.co/200x200/0ea5e9/fff?text=Е'},
-    {'name': 'Тимур Ахметов', 'role': 'Разработка / Product', 'bio': 'Fullstack-разработчик. Строит платформу Flavor Tree - от API до мобильного приложения.', 'avatar': 'https://placehold.co/200x200/8b5cf6/fff?text=Т'},
-]
+# Курсы и команда общие с update_public_content: только то, что правда.
+COURSE_SEEDS = public_content.COURSES
+TEAM_MEMBER_SEEDS = public_content.TEAM
 
 
 class Command(BaseCommand):
@@ -158,7 +149,7 @@ class Command(BaseCommand):
                         flavor_note=notes[note_idx],
                         layer=layer,
                         intensity=intensity,
-                        sommelier_name='Айгерим Нурланова',
+                        sommelier_name=public_content.DRAFT_AUTHOR,
                     )
                     profile_count += 1
 

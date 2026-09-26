@@ -9,7 +9,7 @@ from .slugs import unique_slug
 
 
 class FlavorNote(models.Model):
-    """Вкусовая нота - базовый элемент вкусовой пирамиды (по стандарту FlavorActiV)."""
+    """Вкусовая нота - базовый элемент вкусовой пирамиды."""
 
     CATEGORY_CHOICES = [
         ('TOP', 'Верхние ноты'),

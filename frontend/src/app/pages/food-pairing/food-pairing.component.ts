@@ -5,6 +5,7 @@ import { ApiService } from '../../services/api.service';
 import { FoodPairing, Dish, CuisineType, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { countOf } from '../venue-menu/plural';
 import { PairingV2Component } from '../drinks-v2/pairing-v2.component';
+import { V2ApiService } from '../drinks-v2/v2-api.service';
 
 /** Короткое пояснение к типу сочетания на бейдже карточки. */
 const PAIRING_HINT: Record<PairingType, string> = {
@@ -30,7 +31,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
   template: `
     <div class="mb-3xl">
       <h1 class="section-header">Что подать к блюду</h1>
-      <p class="text-muted">Сочетания блюд и сортов, которые проверил сомелье</p>
+      <p class="text-muted">Подбор команды Flavor Tree: сорта и блюда сведены по вкусовым пирамидам. Это черновик, на дегустации пары ещё не проверяли.</p>
     </div>
 
     <!-- Режимы: Сочетания или Каталог блюд + Поиск -->
@@ -58,7 +59,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
           (click)="viewMode.set('drinks')"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></svg>
-          Подбор из 412 напитков
+          {{ drinksTotal() ? 'Подбор из ' + countOf(drinksTotal()!, 'напитка', 'напитков', 'напитков') : 'Подбор из всех напитков' }}
         </button>
       </div>
 
@@ -129,7 +130,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
               </div>
 
               <p class="text-dim text-sm" style="line-height: 1.45;">
-                <strong style="color: var(--foam);">Вердикт сомелье:</strong> {{ pair.explanation }}
+                <strong style="color: var(--foam);">Почему подходит:</strong> {{ pair.explanation }}
               </p>
             </div>
           } @empty {
@@ -192,7 +193,10 @@ const CUISINES: { id: CuisineType; label: string }[] = [
 })
 export class FoodPairingComponent implements OnInit {
   private api = inject(ApiService);
+  private v2 = inject(V2ApiService);
   pairings = signal<FoodPairing[]>([]);
+  /** Сколько напитков в движке подбора: из /api/v2/meta/, а не текстом. */
+  drinksTotal = signal<number | null>(null);
   dishes = signal<Dish[]>([]);
   /** Пока false - скелет; "не найдено" показываем только после загрузки. */
   pairingsLoaded = signal(false);
@@ -237,6 +241,7 @@ export class FoodPairingComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.v2.meta().subscribe({ next: m => this.drinksTotal.set(m.drinks || null), error: () => {} });
     this.api.getPairings().subscribe({
       next: data => { this.pairings.set(data); this.pairingsLoaded.set(true); },
       error: () => this.pairingsLoaded.set(true),

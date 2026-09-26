@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.contrib.auth.models import Group, User
 from django.core.management.base import BaseCommand
 
+from api import public_content
 from api.demo_accounts import apply_password, env_name, initial_password
 from api.models import Brand, ChangeRequest, Dish, MenuDrink, MenuItem, ServingRecommendation, Venue
 from api.permissions import GROUP_ROLES, ROLE_MODERATOR, ROLE_RESTAURANT, ROLE_SOMMELIER
@@ -22,19 +23,21 @@ DEMO_USERS = [
     # username, пароль, роль, is_staff, имя
     ('moderator', 'moderator12345', ROLE_MODERATOR, True, 'Модератор'),
     ('sommelier', 'sommelier12345', ROLE_SOMMELIER, False, 'Сомелье'),
-    ('restaurant', 'restaurant12345', ROLE_RESTAURANT, False, 'Efes Beer Garden'),
+    ('restaurant', 'restaurant12345', ROLE_RESTAURANT, False, public_content.DEMO_VENUE_NAME),
     ('guest', 'guest12345', None, False, 'Гость'),
 ]
 
+# Демо без выдуманных адреса и телефона: в меню гостя пустые поля не показываются.
+# Slug прежний, на него ссылаются тесты и старые QR.
 DEMO_VENUE = {
-    'slug': 'efes-beer-garden',
-    'name': 'Efes Beer Garden',
+    'slug': public_content.DEMO_VENUE_SLUG,
+    'name': public_content.DEMO_VENUE_NAME,
     'venue_type': 'RESTAURANT',
     'city': 'Алматы',
-    'address': 'пр. Достык 100',
-    'phone': '+7 727 000 00 00',
+    'address': '',
+    'phone': '',
     'working_hours': '12:00-02:00',
-    'description': 'Демо-заведение Flavor Tree: к каждому блюду подобран сорт из каталога.',
+    'description': public_content.DEMO_VENUE_DESCRIPTION,
     'is_published': True,
     'tables_count': 24,
 }
