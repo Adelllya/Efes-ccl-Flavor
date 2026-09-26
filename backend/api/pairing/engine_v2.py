@@ -793,6 +793,10 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         if explain:
             T = p["texts"]
             text = tpl(T[key], W) + (T["fruit"] if fruit_pts >= p["text_fruit_min"] else "")
+            # PAIR-8 #5: шаблон hot_contrast начинается с «Горячий», а у горячего шоколада
+            # имя уже с «Горячий» — схлопываем дубль (напиток «Горячий Горячий шоколад»).
+            if key == "hot_contrast":
+                text = re.sub(r"\bГорячий\s+Горячий\b", "Горячий", text)
         add("R4", clamp(pts, p["min"], p["max"]), "contrast" if contrast else ("complement" if pts >= 0 else "penalty"),
             key, p["evidence"], text)
         if (dessert and x["sweet"] >= V["V2"]["dish_sweet"] and bv["sweet"] <= V["V2"]["drink_sweet"] and not contrast
