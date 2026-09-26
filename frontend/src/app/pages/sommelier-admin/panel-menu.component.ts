@@ -8,6 +8,7 @@ import { Brand, Dish, MenuDrink, MenuItem, Venue, VenueType } from '../../models
 import { FtSelectComponent, SelectOption } from '../../ui/ft-select.component';
 import { PanelIconComponent } from './panel-icons';
 import { PanelPhotoComponent } from './panel-photo.component';
+import { PanelQrPrintComponent } from './panel-qr-print.component';
 import { VENUE_TYPE_CHOICES, confirmTwice, countOf, flash, initialOf, isErrorText } from './panel-shared';
 
 interface VenueForm {
@@ -86,7 +87,7 @@ function nextOrder(list: { sort_order: number }[]): number {
 @Component({
   selector: 'panel-menu',
   standalone: true,
-  imports: [FormsModule, PanelIconComponent, FtSelectComponent, PanelPhotoComponent],
+  imports: [FormsModule, PanelIconComponent, FtSelectComponent, PanelPhotoComponent, PanelQrPrintComponent],
   template: `
     <div class="wa-page" [class.has-selection]="hasSelection()">
       <aside class="wa-list">
@@ -177,7 +178,12 @@ function nextOrder(list: { sort_order: number }[]): number {
                     <panel-icon name="external" /> Открыть меню гостя
                   </button>
                 </div>
-                <p class="wa-muted wa-guest-hint">Для QR на столе добавьте к ссылке номер стола: {{ guestUrl(v) }}?table=7</p>
+                <div class="wa-actions">
+                  <button type="button" class="btn-outline" (click)="qrVenue.set(v)">
+                    <panel-icon name="qr" /> QR для столов
+                  </button>
+                  <span class="wa-muted">Таблички для печати: у каждого стола свой QR, гость сразу попадает в меню со своим столом.</span>
+                </div>
               </div>
             }
 
@@ -418,6 +424,10 @@ function nextOrder(list: { sort_order: number }[]): number {
         }
       </section>
     </div>
+
+    @if (qrVenue(); as qv) {
+      <panel-qr-print [venue]="qv" (closed)="qrVenue.set(null)" />
+    }
   `
 })
 export class PanelMenuComponent implements OnInit {
@@ -454,6 +464,8 @@ export class PanelMenuComponent implements OnInit {
   venue = computed(() => this.venues().find(v => v.slug === this.selectedSlug()) ?? null);
 
   creating = signal(false);
+  /** Заведение, для которого открыта печать QR на столы. */
+  qrVenue = signal<Venue | null>(null);
   form: VenueForm = emptyVenue();
   venueSaving = signal(false);
   venueMsg = signal<string | null>(null);

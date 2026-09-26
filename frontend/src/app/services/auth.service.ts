@@ -21,8 +21,8 @@ export interface RegisterData {
 export const PANEL_ACCESS: Record<UserRole, readonly PanelTab[]> = {
   user: [],
   sommelier: ['overview', 'brands', 'pairings', 'engine'],
-  restaurant_admin: ['overview', 'dishes', 'menu', 'orders'],
-  moderator: ['overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'engine', 'users', 'settings', 'requests']
+  restaurant_admin: ['overview', 'dishes', 'menu', 'orders', 'pilot'],
+  moderator: ['overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'pilot', 'engine', 'users', 'settings', 'requests']
 };
 
 /** Старые вкладки pyramid и serving стали частями вкладки brands. */
@@ -87,7 +87,9 @@ export const FIELD_LABELS: Record<string, string> = {
   qty: 'Количество',
   note: 'Примечание',
   status: 'Статус',
-  is_available: 'В наличии'
+  is_available: 'В наличии',
+  accepts_orders: 'Приём заказов',
+  rating: 'Оценка'
 };
 
 /** Длиннее этого сервер по-человечески не пишет: скорее всего, это трассировка или HTML. */

@@ -14,6 +14,8 @@ import { PanelOrdersComponent } from './panel-orders.component';
 import { PanelUsersComponent } from './panel-users.component';
 import { PanelSettingsComponent } from './panel-settings.component';
 import { PanelEngineComponent } from './panel-engine.component';
+import { PanelPilotComponent } from './panel-pilot.component';
+import { OrderAlertService } from './order-alert.service';
 import { environment } from '../../../environments/environment';
 
 interface PanelTabDef {
@@ -76,7 +78,7 @@ const ORDERS_POLL_MS = 20000;
     PanelIconComponent,
     PanelBrandsComponent, PanelRequestsComponent, PanelPairingsComponent, PanelNotesComponent,
     PanelDishesComponent, PanelMenuComponent, PanelOrdersComponent, PanelUsersComponent, PanelSettingsComponent,
-    PanelEngineComponent
+    PanelEngineComponent, PanelPilotComponent
   ],
   template: `
     <div class="wa-shell">
@@ -210,6 +212,10 @@ const ORDERS_POLL_MS = 20000;
             <panel-orders [venue]="ordersVenue()" (venueChanged)="onOrdersVenue($event)" (changed)="refreshOrderCount()" />
           }
 
+          @case ('pilot') {
+            <panel-pilot />
+          }
+
           @case ('engine') {
             <panel-engine />
           }
@@ -228,6 +234,8 @@ const ORDERS_POLL_MS = 20000;
 export class SommelierAdminComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   readonly auth = inject(AuthService);
+  /** Сигнал о новых заказах, пока панель открыта на любой вкладке. */
+  private alerts = inject(OrderAlertService);
   /** Django admin: локально на :8000, на проде /admin/ того же домена. */
   readonly adminUrl = environment.adminUrl;
 
@@ -255,6 +263,7 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     },
     { id: 'menu', label: 'Меню', icon: 'menu', description: 'Карточка заведения, позиции меню с ценами и карта напитков' },
     { id: 'orders', label: 'Заказы', icon: 'orders', description: 'Заказы гостей: стол, позиции, статус', count: () => this.newOrdersCount() || null },
+    { id: 'pilot', label: 'Пилот', icon: 'chart', description: 'Цифры пилота: гости, подбор, заказы, оценки пар, выгрузка CSV и QR на столы' },
     { id: 'engine', label: 'Движок', icon: 'settings', description: 'Подкрутка весов подбора напитков к блюдам' },
     { id: 'users', label: 'Пользователи', icon: 'users', description: 'Роли и заведения пользователей' },
     { id: 'settings', label: 'Настройки', icon: 'settings', description: 'Витрина: сколько сортов показывать, вступительный текст' }
@@ -309,6 +318,8 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
   ordersVenue = signal<string | null>(null);
   newOrdersCount = signal(0);
   private ordersTimer: ReturnType<typeof setInterval> | null = null;
+  /** Прошлое число новых заказов: рост значит, что пришёл заказ. null - ещё не считали. */
+  private lastNewCount: number | null = null;
 
   readonly statCards = computed<StatCard[]>(() => {
     const visible = this.visibleTabs();
@@ -355,11 +366,13 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     this.pickDefaultTab();
     this.loadData();
     this.startOrdersPolling();
+    if (this.auth.can('orders')) this.alerts.attach();
   }
 
   ngOnDestroy() {
     if (this.ordersTimer !== null) clearInterval(this.ordersTimer);
     this.ordersTimer = null;
+    this.alerts.detach();
   }
 
   setTab(id: PanelTab) {
@@ -481,6 +494,7 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     // Модератору бейдж считается по всем заведениям, выбор в списке на него не влияет
     if (this.auth.role() === 'moderator') return;
     this.newOrdersCount.set(0);
+    this.lastNewCount = null;
     this.refreshOrderCount();
   }
 
@@ -493,7 +507,11 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     if (!all && !slug) return;
     this.api.getNewOrderCount(slug ?? undefined).subscribe({
       next: n => {
-        if (all || this.ordersVenue() === slug) this.newOrdersCount.set(n);
+        if (!all && this.ordersVenue() !== slug) return;
+        this.newOrdersCount.set(n);
+        // На вкладке заказов звонит сама вкладка (она видит, какие заказы новые); здесь - на остальных вкладках
+        if (this.lastNewCount !== null && n > this.lastNewCount && this.activeTab() !== 'orders') this.alerts.ring(n);
+        this.lastNewCount = n;
       },
       error: () => {}
     });

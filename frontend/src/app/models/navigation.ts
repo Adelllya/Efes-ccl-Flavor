@@ -28,6 +28,7 @@ export type PanelTab =
   | 'dishes'
   | 'menu'
   | 'orders'
+  | 'pilot'
   | 'users'
   | 'settings'
   | 'engine'
@@ -36,5 +37,5 @@ export type PanelTab =
 
 /** Порядок вкладок в панели. */
 export const PANEL_TABS: readonly PanelTab[] = [
-  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'engine', 'users', 'settings'
+  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'pilot', 'engine', 'users', 'settings'
 ];

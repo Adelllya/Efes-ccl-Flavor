@@ -7,6 +7,7 @@ import {
 } from '../../models/flavor-tree.models';
 import { FtSelectComponent, SelectOption } from '../../ui/ft-select.component';
 import { PanelIconComponent } from './panel-icons';
+import { OrderAlertService } from './order-alert.service';
 import {
   ORDER_NEXT_LABELS, ORDER_STATUS_CHIP, confirmTwice, countOf, flash, formatAgo, formatMoney, formatWhen, isErrorText
 } from './panel-shared';
@@ -52,6 +53,34 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
                        searchPlaceholder="Название заведения" emptyText="Заведений пока нет"
                        [disabled]="venuesLoading()"
                        [ngModel]="slug() || ''" (ngModelChange)="pickVenue($event)" />
+          </div>
+        }
+        @if (slug()) {
+          <!-- Для смены в баре: приём заказов, звук и экран без сна -->
+          <div class="wa-orders-tools">
+            <label class="wa-check">
+              <input type="checkbox" [checked]="acceptsOrders()" [disabled]="acceptsSaving() || !venueInfo()"
+                     (change)="setAcceptsOrders($any($event.target).checked)" />
+              Принимать заказы через приложение
+            </label>
+            @if (venueInfo() && !acceptsOrders()) {
+              <p class="wa-hint">Гости видят меню, но отправить заказ не могут: им предлагают показать список официанту.</p>
+            }
+            <div class="wa-orders-toggles">
+              <button type="button" class="btn-outline panel-btn-sm" [class.active]="alerts.soundOn()" [attr.aria-pressed]="alerts.soundOn()"
+                      (click)="alerts.toggleSound()" title="Короткий сигнал, когда приходит новый заказ">
+                <panel-icon [name]="alerts.soundOn() ? 'bell' : 'bellOff'" /> {{ alerts.soundOn() ? 'Звук включён' : 'Звук выключен' }}
+              </button>
+              <button type="button" class="btn-outline panel-btn-sm" [class.active]="alerts.wakeWanted()" [attr.aria-pressed]="alerts.wakeWanted()"
+                      [disabled]="!alerts.wakeSupported" (click)="alerts.toggleWake()"
+                      [title]="alerts.wakeSupported ? 'Экран планшета или телефона не погаснет, пока открыта панель' : 'Этот браузер не умеет держать экран включённым'">
+                <panel-icon name="sun" /> {{ alerts.wakeActive() ? 'Экран не гаснет' : 'Не гасить экран' }}
+              </button>
+            </div>
+            @if (alerts.soundOn() && !alerts.audioReady()) {
+              <p class="wa-hint">Коснитесь экрана один раз: без этого браузер не разрешит звук.</p>
+            }
+            @if (alerts.wakeError()) { <p class="wa-hint wa-error">{{ alerts.wakeError() }}</p> }
           </div>
         }
         <label class="wa-search">
@@ -135,6 +164,9 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
                     <span class="wa-order-title">
                       {{ it.title }}
                       @if (it.kind === 'DRINK') { <span class="wa-chip">напиток</span> }
+                      @if (it.source === 'PAIRING') { <span class="wa-chip wa-chip-pending">из подбора</span> }
+                      @if (it.source === 'AI') { <span class="wa-chip wa-chip-pending">от ИИ-сомелье</span> }
+                      @if (pairedTitle(o, it); as dish) { <small>к блюду {{ dish }}</small> }
                       @if (it.note) { <small>{{ it.note }}</small> }
                     </span>
                     <span class="wa-order-price">{{ money(lineTotal(it)) }}</span>
@@ -149,6 +181,7 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
                 <div><dt>Гость</dt><dd>{{ o.guest_name || 'имя не указано' }}</dd></div>
                 <div><dt>Стол</dt><dd>{{ tableText(o) }}</dd></div>
                 <div><dt>Обновлён</dt><dd>{{ when(o.updated_at || o.created_at) }}</dd></div>
+                @if (o.age_confirmed) { <div><dt>Возраст</dt><dd>гость отметил 21+</dd></div> }
               </dl>
 
               @if (o.comment) {
@@ -188,8 +221,11 @@ export class PanelOrdersComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private destroyRef = inject(DestroyRef);
+  readonly alerts = inject(OrderAlertService);
   /** Номер последнего запроса списка: ответ более старого запроса не применяем. */
   private loadSeq = 0;
+  /** Заказы, которые панель уже видела: сигнал звучит только на новые. null - первая загрузка заведения. */
+  private seenIds: Set<string> | null = null;
 
   /** Slug заведения, за которым следит панель: владелец получает своё, модератор последнее выбранное. */
   venue = input<string | null>(null);
@@ -233,6 +269,11 @@ export class PanelOrdersComponent implements OnInit {
   actionError = signal<string | null>(null);
   msg = signal<string | null>(null);
   pendingCancel = signal<string | null>(null);
+
+  /** Карточка выбранного заведения: из неё флаг accepts_orders. */
+  venueInfo = signal<Venue | null>(null);
+  acceptsSaving = signal(false);
+  acceptsOrders = computed(() => this.venueInfo()?.accepts_orders !== false);
 
   venueOptions = computed<SelectOption[]>(() =>
     this.venues().map(v => ({ value: v.slug, label: v.name, hint: [v.city, v.is_published ? '' : 'скрыто'].filter(Boolean).join(', ') }))
@@ -341,7 +382,66 @@ export class PanelOrdersComponent implements OnInit {
     this.loadError.set(null);
     this.selectedId.set(null);
     this.actionError.set(null);
+    this.seenIds = null;
+    this.alerts.stopBlink();
+    this.loadVenueInfo(slug);
     this.load(false);
+  }
+
+  private loadVenueInfo(slug: string) {
+    this.venueInfo.set(null);
+    this.api.getVenue(slug).subscribe({
+      next: v => {
+        if (this.slug() === slug) this.venueInfo.set(v);
+      },
+      error: () => {
+        // Без карточки переключатель просто неактивен; список заказов работает и так
+      }
+    });
+  }
+
+  /** Выключатель заказов через приложение: гости с выключенным видят «покажите список официанту». */
+  setAcceptsOrders(on: boolean) {
+    const slug = this.slug();
+    const v = this.venueInfo();
+    if (!slug || !v || this.acceptsSaving()) return;
+    this.acceptsSaving.set(true);
+    // Сразу показываем новое положение, при ошибке вернём старое
+    this.venueInfo.set({ ...v, accepts_orders: on });
+    this.api.updateVenue(slug, { accepts_orders: on }).subscribe({
+      next: saved => {
+        this.acceptsSaving.set(false);
+        if (this.slug() !== slug) return;
+        this.venueInfo.set(saved);
+        flash(this.msg, saved.accepts_orders === false ? 'Заказы через приложение выключены' : 'Заказы через приложение включены');
+      },
+      error: err => {
+        this.acceptsSaving.set(false);
+        if (this.slug() !== slug) return;
+        this.venueInfo.set(v);
+        flash(this.msg, 'Ошибка: ' + AuthService.errorText(err));
+      }
+    });
+  }
+
+  /** Блюдо, к которому гость взял напиток из подбора: название из этого же заказа. */
+  pairedTitle(o: Order, it: OrderItem): string | null {
+    if (!it.paired_menu_item) return null;
+    return o.items.find(x => x.kind === 'DISH' && x.menu_item === it.paired_menu_item)?.title ?? null;
+  }
+
+  /** Новые заказы, которых панель ещё не видела: звук и мигание вкладки. Первая загрузка молчит. */
+  private notifyNew(list: Order[]) {
+    const fresh = this.seenIds ? list.filter(o => o.status === 'NEW' && !this.seenIds!.has(o.id)) : [];
+    this.seenIds = new Set([...(this.seenIds ?? []), ...list.map(o => o.id)]);
+    const newCount = list.filter(o => o.status === 'NEW').length;
+    if (fresh.length) {
+      this.alerts.ring(newCount);
+      // Бейдж в рейле пусть догонит список сразу, а не через свой таймер
+      this.changed.emit();
+    } else if (!newCount) {
+      this.alerts.stopBlink();
+    }
   }
 
   /** silent: фоновое обновление по таймеру, без индикатора и поверх уже показанного списка. */
@@ -354,6 +454,7 @@ export class PanelOrdersComponent implements OnInit {
     this.api.getOrders(slug).subscribe({
       next: list => {
         if (seq !== this.loadSeq || this.slug() !== slug) return;
+        this.notifyNew(list);
         this.orders.set(list);
         this.loaded.set(true);
         this.loading.set(false);
