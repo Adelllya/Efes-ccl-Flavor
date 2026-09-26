@@ -146,7 +146,8 @@
   "R14": {
     "texts": {
       "bitter": "Bitter on bitter: the dish's bitterness and the {cat_gen}'s add up",
-      "sweet": "A sweet drink with a sweetish main course — sugar on sugar"
+      "sweet": "A sweet drink with a sweetish main course — sugar on sugar",
+      "savory_sweet": "A frankly sweet drink with a savoury main tastes cloying: sugar with no salt or heat to balance it"
     }
   },
   "R15": {

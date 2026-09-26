@@ -50,7 +50,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-ENGINE_VERSION = "2.2.1"
+ENGINE_VERSION = "2.3.0"
 
 DRINK_AXES: Tuple[str, ...] = ("sweet", "acid", "bitter", "tannin", "carbonation", "alcohol", "body", "dairy",
                                "salt", "umami", "aroma_intensity", "roast", "smoke", "serve_temp")
@@ -486,7 +486,11 @@ def _intensity(b: Dict[str, Any], d: Dict[str, Any], v: Dict[str, float], P: Dic
     wb, fb = _W_B(v, b["abv"], P), _F_B(v, b["abv"], P)
     wd, fd = _W_D(d, P), _F_D(d, P)
     boost = (p["light_boost"] * max(v["acid"], p["light_boost_carb"] * v["carbonation"], v["salt"], v["tannin"])
+             + p.get("light_boost_cold", 0.0) * cold(v["serve_temp"], P)
              if wb < wd else 0.0)
+    if p.get("boost_cap") and boost > 0:
+        # «Лёгкий, но режущий» не делает напиток тяжелее блюда: буст только до веса блюда.
+        boost = min(boost, max(wd - wb, 0.0))
     wb_eff = wb + boost
     dW = wb_eff - wd
     dF = fb - fd
@@ -660,7 +664,9 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
     it = _intensity(b, d, bv, P)
     wb, fb, wd, fd, dW, dF, fit = it["W_B"], it["F_B"], it["W_D"], it["F_D"], it["dW"], it["dF"], it["fit"]
     strong = it["strong_dish"]
-    k_loud = p["k_loud_strong"] if strong else p["k_loud"]
+    # Десерт, как и «сильное» блюдо, выдерживает громкий напиток: сахар и жир буферят интенсивность
+    # (портвейн, сотерн, имперский стаут к десерту — канон), поэтому штраф за громкость мягче.
+    k_loud = p["k_loud_strong"] if (strong or (dessert and p.get("dessert_loud_as_strong"))) else p["k_loud"]
     pts = p["base"] - (k_loud * dF if dF > 0 else p["k_quiet"] * (-dF)) - (p["k_weight"] * abs(dW))
     text = ""
     if explain:
@@ -704,7 +710,9 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         t_carb = p["carbonation"] * bv["carbonation"] * (1 - p["carbonation_cream_discount"] * x["cream"])
         t_acid = p["acid"] * bv["acid"]
         t_roast = p["roast"] * bv["roast"]
-        t_alc = p["alcohol"] * alc
+        # Жжение крепкого спирта режет жир отдельно; порог alcohol_burn_from отсекает вино (burn ≈ 0.3 при 12 %).
+        b_from = p.get("alcohol_burn_from", 0.0)
+        t_alc = p["alcohol"] * alc + p.get("alcohol_burn", 0.0) * clamp((burn(abv, P) - b_from) / (1 - b_from))
         cp = t_tan + t_bit + t_carb + t_acid + t_roast + t_alc
         key, _ = _argmax([("tannin", t_tan), ("bitter", t_bit), ("carbonation", t_carb), ("acid", t_acid),
                           ("roast", t_roast), ("alcohol", t_alc)])
@@ -756,8 +764,15 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         if gap <= p["tolerance"]:
             pts = p["base"] + p["k_match"] * bv["sweet"] * x["sweet"] if gap <= 0 else p["base"] * (1 - gap / p["tolerance"])
         else:
-            pts = -p["k_gap"] * (gap - p["tolerance"])
+            # У пива и сидра сладость десерта частично «смывают» пузырьки и эфиры (Oliver, BA);
+            # правило вина «сладкое к сладкому» для них смягчено множителем gap_mult по категории.
+            pts = -p["k_gap"] * (gap - p["tolerance"]) * float((p.get("gap_mult") or {}).get(b["category"], 1.0))
         base_pts = pts
+        # Дижестив к десерту: крепкий выдержанный спирт (коньяк, кальвадос, виски) идёт к пирогу и шоколаду
+        # теплом и дубово-ванильными нотами, а не сладостью; разрыв по сладости не опускает его ниже пола.
+        dig = p.get("digestif")
+        if dessert and dig and abv >= dig["min_abv"] and b["category"] in dig["categories"]:
+            pts = max(pts, dig["floor"])
         contrast = (dessert and b["category"] in p["contrast_categories"] and bv["bitter"] >= p["contrast_bitter"]
                     and abs(dF) < p["contrast_dF"])
         # горячий чай/кофе к десерту: контраст терпкости и сладости, а не правило вина «sweets need sweets»
@@ -809,9 +824,13 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
     p = P["R5"]
     if x["sour"] >= p["min_sour"]:
         eff_sour = x["sour"] + (p["vinegar_bonus"] if d["vinegar"] else 0)
-        eff_acid = max(bv["acid"], p["carb_as_acid"] * bv["carbonation"])
+        eff_acid = max(bv["acid"], p["carb_as_acid"] * bv["carbonation"], p.get("dairy_as_acid", 0.0) * bv["dairy"])
         gap = eff_sour - eff_acid
         pts = -p["k_gap"] * gap * (p["vinegar_mult"] if d["vinegar"] else 1) if gap > 0 else p["k_match"] * min(bv["acid"], x["sour"])
+        if gap > 0:
+            # «Плоский» — про вино без кислотности. Крепкий спирт к кислой закуске (водка и солёный огурец,
+            # текила и севиче) режет жжением и холодом, а не кислотой: штраф уменьшается по burn.
+            pts *= 1 - p.get("burn_relief", 0.0) * burn(abv, P)
         t_tan = 0.0
         t_sweet = 0.0
         if bv["tannin"] >= p["tannin_threshold"]:
@@ -843,6 +862,8 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         clean = p["k_clean"] * x["salt"] * max(bv["acid"], bv["carbonation"])
         shield = 1 - p["shield"] * max(x["fat"], x["protein"])
         alco = -p["k_alco"] * x["salt"] * pos(alc - p["alco_threshold"]) / p["alco_span"] * shield
+        # Ледяная подача (водка из морозилки) притупляет жжение спирта на соли.
+        alco *= 1 - p.get("alco_cold_relief", 0.0) * cold(bv["serve_temp"], P)
         tann = -p["k_tann"] * x["salt"] * pos(bv["tannin"] - p["tann_threshold"]) / p["tann_span"]
         snack = (p["snack_points"] if (x["salt"] >= p["snack_salt"] and x["weight"] <= p["snack_weight"]
                                         and bv["carbonation"] >= p["snack_carb"] and bv["bitter"] >= p["snack_bitter"]) else 0)
@@ -883,6 +904,8 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
     if bv["tannin"] >= p["min_tannin"]:
         pf = max(x["protein"], x["fat"])
         plus = p["k_plus"] * bv["tannin"] * pf * (1 if x["protein"] >= p["protein_gate"] else p["low_protein_mult"])
+        # Капсаицин и танин усиливают друг друга: к острому блюду белок танины уже не смягчает.
+        plus *= 1 - p.get("heat_discount", 0.0) * x["heat"]
         fish = -p["k_fish"] * bv["tannin"] * x["fish_oil"]
         green = -p["k_green"] * bv["tannin"] * x["green_iron"]
         dry = -p["k_dry"] * bv["tannin"] * (1 - pf) if bv["tannin"] >= p["dry_threshold"] else 0
@@ -977,8 +1000,17 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
             and x["sweet"] > p["sweet_threshold"] and not dessert):
         pen_sweet = -p["sweet_penalty"] * tol
         pen -= p["sweet_penalty"] * tol
+    sv = p.get("savory_sweet")
+    pen_savory = 0.0
+    if sv and not dessert and bv["sweet"] >= sv["min_drink_sweet"] and x["sweet"] <= sv["max_dish_sweet"] \
+            and x["heat"] <= sv["max_heat"] and x["salt"] <= sv["max_salt"]:
+        # Сладкое вино или лимонад к обычному горячему блюду приторны; соль, острота и десерт снимают правило.
+        pen_savory = -sv["k"] * (bv["sweet"] - sv["min_drink_sweet"] + sv["base"]) * tol
+        pen += pen_savory
     if pen < p["emit_below"]:
         key = "bitter" if pen_bit <= pen_sweet else "sweet"
+        if pen_savory < min(pen_bit, pen_sweet):
+            key = "savory_sweet"
         text = tpl(p["texts"][key], W) if explain else ""
         add("R14", clamp(pen, p["min"], p["max"]), "penalty", key, p["evidence"], text)
 
