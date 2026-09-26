@@ -203,3 +203,8 @@ REST_FRAMEWORK = {
 # ИИ-сомелье. Ключ ANTHROPIC_API_KEY берётся из окружения или backend/.env и в настройках не хранится;
 # без ключа работает локальный подбор. Модель можно заменить через FT_AI_MODEL.
 FT_AI_MODEL = os.environ.get('FT_AI_MODEL', 'claude-opus-5')
+
+# Адрес сайта (фронтенда), на который ведут QR-коды столов: FT_PUBLIC_SITE_URL/menu/<slug>?table=N&src=qr.
+# На проде задать обязательно, например https://<домен-фронта>.vercel.app. Пусто: берётся сайт,
+# с которого открыли картинку QR (Origin или Referer), а в DEBUG - http://localhost:4200.
+FT_PUBLIC_SITE_URL = os.environ.get('FT_PUBLIC_SITE_URL', '').strip().rstrip('/')
