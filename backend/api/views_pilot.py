@@ -34,7 +34,9 @@ from rest_framework.views import APIView
 from . import pilot_report
 from .models import MenuDrink, MenuItem, Order, PairingFeedback, PilotEvent, Venue
 from .permissions import ROLE_MODERATOR, has_role
-from .pilot import CLIENT_KINDS, build_event, clean_ref, clean_session, count_qr_scans, record_event
+from .pilot import (
+    CLIENT_KINDS, build_event, clean_cid, clean_ref, clean_session, count_qr_scans, known_cids, record_event,
+)
 from .serializers import parse_uuid
 from .views_orders import find_venue
 
@@ -115,6 +117,8 @@ def events(request):
     {session, venue: slug, events: [{kind, table, menu_item, menu_drink, dish_ref, drink_ref, rank, source, meta}]}.
     Неизвестные типы и кривые поля молча пропускаем: аналитика не должна мешать гостю.
     ORDER и FEEDBACK пишет сервер сам, из браузера они не принимаются.
+    Браузер повторяет пачку, пока не получит ответ, поэтому событие с уже записанным meta.cid
+    этой сессии (и повтор cid внутри пачки) пропускаем: ответ всё равно 204.
     """
     data = request.data if isinstance(request.data, dict) else {}
     raw_events = data.get('events')
@@ -125,6 +129,7 @@ def events(request):
     venue = _venue_by_slug(data.get('venue'))
     session = clean_session(data.get('session'))
     raw_events = [e for e in raw_events if isinstance(e, dict)]
+    seen = known_cids(session, [clean_cid(e.get('meta')) for e in raw_events])
 
     # Позиции меню и напитки ищем одним запросом и только в карте этого заведения.
     items, drinks = {}, {}
@@ -141,6 +146,11 @@ def events(request):
         kind = str(raw.get('kind') or '').strip().upper()
         if kind not in CLIENT_KINDS:
             continue
+        cid = clean_cid(raw.get('meta'))
+        if cid:
+            if cid in seen:
+                continue
+            seen.add(cid)
         menu_item = items.get(parse_uuid(raw.get('menu_item')))
         menu_drink = drinks.get(parse_uuid(raw.get('menu_drink')))
         # Позицию не нашли в карте: id всё равно сохраняем ссылкой, чтобы не потерять.

@@ -11,7 +11,7 @@ from django.db.models import Max
 from django.db.models.functions import Coalesce
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from . import venue_pairing
+from . import ai_safety, venue_pairing
 from .engine_catalog import drink_facts, engine_drink
 from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
@@ -715,13 +715,29 @@ def recommendation_payload(option, drink_data):
     }
 
 
-def build_venue_menu(venue, request):
+def allowed_for_minor(drink_data):
+    """
+    Напиток карты можно показать гостю младше 21: то же правило, что у чата сомелье при флаге minor
+    (ai_safety.drink_allowed): чай, кофе, лимонад, вода, газировка, айран без алкоголя. Пиво 0.0,
+    квас и энергетики не показываем: команда не предлагает их подросткам нигде на сайте.
+    """
+    return ai_safety.drink_allowed('minor', {
+        'name': drink_data.get('brand_name') or '',
+        'category': drink_data.get('category'),
+        'abv': drink_data.get('abv'),
+        'is_alcoholic': drink_data.get('is_alcoholic'),
+    })
+
+
+def build_venue_menu(venue, request, minor=False):
     """
     Ответ GET /api/venues/<slug>/menu/: карточка заведения, разделы с позициями и карта напитков.
     К каждой позиции прикладываем до трёх напитков из карты этого бара, которые можно заказать
     (подбор в api/venue_pairing.py): recommendations - весь список, pairing - первый вариант,
     alternatives - остальные, pairing_info - как нашли блюдо в движке и насколько сильна пара.
     Если карта напитков пустая, pairing - пара команды как совет (menu_drink = null).
+    minor (?age=under21): гость ответил, что ему нет 21. Блюда те же, а в карте и в подборе
+    только безалкогольное, что можно предложить подростку (allowed_for_minor); age_filter в ответе.
     """
     items = list(
         venue.menu_items.select_related('dish')
@@ -732,6 +748,10 @@ def build_venue_menu(venue, request):
                   .order_by('sort_order', Coalesce('brand__name', 'name')))
     context = {'request': request}
     drinks_data = MenuDrinkSerializer(drinks, many=True, context=context).data
+    if minor:
+        allowed = {row['id'] for row in drinks_data if allowed_for_minor(row)}
+        drinks = [d for d in drinks if str(d.pk) in allowed]
+        drinks_data = [row for row in drinks_data if row['id'] in allowed]
     data_by_id = {row['id']: row for row in drinks_data}
 
     dish_ids = set(item.dish_id for item in items)
@@ -741,7 +761,11 @@ def build_venue_menu(venue, request):
         .select_related('brand')
         .order_by('dish_id', '-compatibility_score', 'brand__name')
     )
+    # Гостю младше 21 и совет команды только из разрешённого: пары команды - это сорта пива.
+    minor_brands = {d.brand_id for d in drinks if d.brand_id} if minor else None
     for pairing in pairings:
+        if minor_brands is not None and pairing.brand_id not in minor_brands:
+            continue
         by_dish.setdefault(pairing.dish_id, []).append(pairing)
 
     picks = venue_pairing.recommend_menu(items, drinks, by_dish)
@@ -790,12 +814,15 @@ def build_venue_menu(venue, request):
         sections.items(),
         key=lambda pair: (min(e['sort_order'] for e in pair[1]), pair[0]),
     )
-    return {
+    data = {
         'venue': VenueSerializer(venue, context=context).data,
         'tables_count': venue.tables_count,
         'sections': [{'name': name, 'items': entries} for name, entries in ordered],
         'drinks': drinks_data,
     }
+    if minor:
+        data['age_filter'] = 'under21'
+    return data
 
 
 # Заказы гостей

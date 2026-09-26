@@ -14,6 +14,8 @@
 3. остальные пары команды из карты, если мест ещё хватает, кроме отвергнутых движком.
 Напитки с баллом ниже «нейтрально» движок не предлагает, энергетики к еде не советуем. Если лучший
 вариант слабее «хорошей пары», подбор помечается как слабый, и гость видит честную подпись.
+Если выше порога нет ничего, гость не остаётся без выбора: отдаём до трёх ближайших по баллу
+напитков карты (кроме тех, что движок велит избегать) с тем же статусом «слабый».
 """
 import logging
 import re
@@ -49,6 +51,8 @@ MATCH_TO_PAIRING_TYPE = {
 }
 # Бэнд движка -> оценка 1..5, как у пар команды.
 BAND_RATING = {'ideal': 5, 'excellent': 4, 'good': 3, 'neutral': 2}
+# Бэнд вето-потолка: такой напиток не предлагаем даже как «ближе всего».
+BAND_AVOID = 'avoid'
 
 # Слова-категории: по одному такому слову блюдо движка не угадываем («Салат из огурцов» не капрезе).
 GENERIC_WORDS = frozenset({
@@ -297,12 +301,13 @@ _rank_lock = threading.Lock()
 _RANK_CACHE_SIZE = 512
 
 
-def _engine_rank(ds, dish_id, pool_ids, exclude, slots, min_score):
+def _engine_rank(ds, dish_id, pool_ids, exclude, slots, min_score, skip_band=None):
     """
     Баллы движка для всех напитков пула и лучшие из них без exclude: (выбранные с объяснением, {id: балл}).
-    Кандидаты ниже min_score отсекаются до разнообразия, чтобы оно не вытеснило сильный сорт слабым.
+    Кандидаты ниже min_score (и с бэндом skip_band) отсекаются до разнообразия, чтобы оно
+    не вытеснило сильный сорт слабым.
     """
-    key = (id(ds), dish_id, pool_ids, exclude, slots, min_score)
+    key = (id(ds), dish_id, pool_ids, exclude, slots, min_score, skip_band)
     with _rank_lock:
         hit = _rank_cache.get(key)
         if hit is not None and hit[0] is ds:
@@ -313,7 +318,8 @@ def _engine_rank(ds, dish_id, pool_ids, exclude, slots, min_score):
     full = E.recommend(dish, pool, {}, 0, ds.params, ds.classic_index, explain=False)['items']
     scores = {r['drink_id']: r['score'] for r in full}
     strong = [ds.drink_by_id[r['drink_id']] for r in full
-              if r['score'] >= min_score and r['drink_id'] not in exclude]
+              if r['score'] >= min_score and r['drink_id'] not in exclude
+              and (skip_band is None or r.get('band') != skip_band)]
     picked = []
     if strong and slots > 0:
         picked = E.recommend(dish, strong, {}, slots, ds.params, ds.classic_index, explain=True)['items']
@@ -456,6 +462,16 @@ def recommend_menu(items, drinks, team_by_dish, ds=None, top_n=TOP_N) -> Dict[An
                 continue
             take(Option(md, SOURCE_TEAM, team=pairing, engine_drink_id=engine_id))
 
+        # Выше порога ничего нет: вместо тупика ближайшие по баллу напитки карты, подбор слабый.
+        closest = False
+        if not chosen and pick.engine_dish and pool_ids:
+            picked, _ = _engine_rank(ds, pick.engine_dish, pool_ids, (), top_n, float('-inf'), BAND_AVOID)
+            for result in picked:
+                md = by_engine[result['drink_id']]
+                team_pair = next((p for p in team_in_bar if p.brand_id == md.brand_id), None)
+                take(Option(md, SOURCE_ENGINE, team=team_pair, engine=result, engine_drink_id=result['drink_id']))
+            closest = bool(chosen)
+
         # Балл движка и для пар команды, если напиток есть в движке: фронт может показать оба мнения.
         if pick.engine_dish:
             for option in chosen:
@@ -472,6 +488,8 @@ def recommend_menu(items, drinks, team_by_dish, ds=None, top_n=TOP_N) -> Dict[An
         pick.options = chosen
         if not chosen:
             pick.status = STATUS_NONE
+        elif closest:
+            pick.status = STATUS_WEAK
         else:
             first = chosen[0]
             strong = (first.source == SOURCE_TEAM and first.team.compatibility_score >= TEAM_LEAD_MIN) or \

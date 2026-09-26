@@ -1,57 +1,11 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Output, ViewChild, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, inject, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
-import { API_BASE } from '../services/api.service';
+import { AgeService } from '../services/age.service';
 import { SelectionService } from '../services/selection.service';
+import { TrackService } from '../services/track.service';
 import { V2ApiService } from '../pages/drinks-v2/v2-api.service';
 import { V2Drink } from '../pages/drinks-v2/v2.models';
 import { V2GlassComponent } from '../pages/drinks-v2/v2-ui';
-import { AGE_OK_KEY } from './age-storage';
-
-/** Анонимный id сессии гостя для статистики пилота. Ключ общий для всего фронтенда. */
-const SESSION_KEY = 'ft_sid';
-
-function newUuid(): string {
-  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
-  // randomUUID есть только на https и localhost, а телефон в локальной сети открывает сайт по http
-  const b = crypto.getRandomValues(new Uint8Array(16));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
-}
-
-function sessionId(): string {
-  try {
-    let sid = localStorage.getItem(SESSION_KEY);
-    if (!sid) {
-      sid = newUuid();
-      localStorage.setItem(SESSION_KEY, sid);
-    }
-    return sid;
-  } catch {
-    return '';
-  }
-}
-
-/**
- * Событие AGE_OK для статистики пилота (POST /api/events/). Ошибки молча глотаем.
- * sendBeacon всегда шлёт cookie: на API с другого домена JSON-запрос с credentials
- * CORS не пропустит, поэтому туда уходит fetch с keepalive и без cookie.
- */
-function sendAgeOk(venue: string | null, table: number | null): void {
-  const event: Record<string, unknown> = { kind: 'AGE_OK' };
-  if (venue && table !== null) event['table'] = table;
-  const body = JSON.stringify({ session: sessionId(), ...(venue ? { venue } : {}), events: [event] });
-  const url = `${API_BASE}/events/`;
-  try {
-    const sameOrigin = new URL(url, location.href).origin === location.origin;
-    if (sameOrigin && navigator.sendBeacon?.(url, new Blob([body], { type: 'application/json' }))) return;
-    fetch(url, { method: 'POST', body, keepalive: true, credentials: 'omit', headers: { 'Content-Type': 'application/json' } })
-      .catch(() => undefined);
-  } catch {
-    // статистика не должна мешать гостю
-  }
-}
 
 /** Безалкогольное без пива 0.0: для тех, кому нет 21, пивные бренды не показываем. */
 const SOFT_ORDER = ['tea', 'coffee', 'lemonade', 'soda', 'water', 'dairy', 'kvass', 'cocktail'];
@@ -65,8 +19,9 @@ interface SoftGroup {
 
 /**
  * Вопрос о возрасте при первом входе. В Казахстане алкоголь продают с 21 года.
- * «Да» запоминается в localStorage, «Нет» ведёт на экран с безалкогольными напитками.
- * Страницу /privacy AppComponent не закрывает этим окном.
+ * «Да» запоминается в localStorage (AgeService). «Нет» в меню заведения закрывает окно:
+ * гость видит блюда и безалкогольные напитки бара без алкоголя. На остальных страницах «Нет»
+ * ведёт на экран с безалкогольными напитками. Страницу /privacy AppComponent не закрывает этим окном.
  */
 @Component({
   selector: 'app-age-gate',
@@ -79,7 +34,11 @@ interface SoftGroup {
         @if (step() === 'ask') {
           <div class="ag-badge" aria-hidden="true">21+</div>
           <h2 id="ag-title" class="ag-title">Вам исполнился 21 год?</h2>
-          <p class="ag-text">На сайте есть информация об алкогольных напитках, она предназначена только для гостей старше 21 года.</p>
+          @if (venueMenu) {
+            <p class="ag-text">В меню есть алкоголь, его подают только гостям старше 21 года. Если вам меньше, покажем блюда и безалкогольные напитки.</p>
+          } @else {
+            <p class="ag-text">На сайте есть информация об алкогольных напитках, она предназначена только для гостей старше 21 года.</p>
+          }
           <div class="ag-actions">
             <button type="button" class="btn-amber" (click)="yes()">Да</button>
             <button type="button" class="btn-outline" (click)="no()">Нет</button>
@@ -230,17 +189,20 @@ interface SoftGroup {
   `]
 })
 export class AgeGateComponent implements AfterViewInit {
+  private readonly age = inject(AgeService);
   private readonly selection = inject(SelectionService);
+  private readonly track = inject(TrackService);
   private readonly v2 = inject(V2ApiService);
 
-  /** Гость ответил «Да». */
-  @Output() confirmed = new EventEmitter<void>();
+  /** Окно открыто поверх меню заведения: «Нет» там закрывает его и показывает меню без алкоголя. */
+  @Input() venueMenu = false;
   /** Ссылка на /privacy: переход делает AppComponent, окно на этой странице не показывается. */
   @Output() privacy = new EventEmitter<void>();
 
   @ViewChild('dlg') private dlg?: ElementRef<HTMLDialogElement>;
 
-  readonly step = signal<'ask' | 'no'>('ask');
+  /** Гость уже ответил «Нет» в этом визите и ушёл из меню заведения: сразу безалкогольные напитки. */
+  readonly step = signal<'ask' | 'no'>(this.age.under21() ? 'no' : 'ask');
   readonly softState = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
   readonly soft = signal<SoftGroup[]>([]);
 
@@ -256,23 +218,27 @@ export class AgeGateComponent implements AfterViewInit {
     if (!this.answered && el && !el.open) el.showModal();
   }
 
+  /** «Да»: ответ в localStorage и событие AGE_OK (одно на сессию гостя, через общую очередь событий). */
   yes(): void {
-    try {
-      localStorage.setItem(AGE_OK_KEY, '1');
-    } catch {
-      // без хранилища ответ живёт до перезагрузки
-    }
-    sendAgeOk(this.selection.venueSlug(), this.selection.tableNumber());
+    this.age.confirm();
+    this.track.ageOk(this.venueMenu ? this.selection.venueSlug() : null, this.selection.tableNumber(), 'GATE');
     this.answered = true;
     this.dlg?.nativeElement.close();
-    this.confirmed.emit();
   }
 
   no(): void {
+    this.age.decline();
+    if (this.venueMenu) {
+      // Меню заведения остаётся: блюда и безалкогольные напитки, алкоголь скрыт
+      this.answered = true;
+      this.dlg?.nativeElement.close();
+      return;
+    }
     this.step.set('no');
   }
 
   back(): void {
+    this.age.reset();
     this.step.set('ask');
   }
 

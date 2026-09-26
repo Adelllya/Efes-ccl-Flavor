@@ -1,9 +1,11 @@
 import {
-  Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, Output, computed, effect, inject, signal, untracked, viewChild
+  Component, DestroyRef, ElementRef, EventEmitter, Injector, OnDestroy, Output, afterNextRender, computed, effect, inject,
+  signal, untracked, viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AgeService } from '../../services/age.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SelectionService } from '../../services/selection.service';
@@ -17,6 +19,7 @@ import { countOf, plural } from './plural';
 import {
   CART_CHANGED_EVENT, CartLine, MAX_QTY, cartKey, orderKey, readCart, readJson, withSource, writeJson
 } from './cart-storage';
+import { allowedForMinor, drinkIsAlcoholic } from './drink-rules';
 
 const VENUE_LABEL: Record<VenueType, string> = {
   BAR: 'Бар', RESTAURANT: 'Ресторан', PUB: 'Паб', CAFE: 'Кафе', OTHER: 'Заведение',
@@ -113,6 +116,47 @@ interface RatedOrder {
 
 const RATED_KEY = 'ft_rated';
 const RATED_KEEP = 30;
+
+/**
+ * Где гость был в меню заведения: экран, прокрутка, открытые панели подбора, раздел и панели,
+ * открытие которых уже записано. Лежит в sessionStorage, чтобы «Назад» со страницы напитка
+ * и перезагрузка возвращали туда же, а не на экран заказа в начале или в конце страницы.
+ */
+interface MenuView {
+  step: 'menu' | 'order';
+  y: number;
+  open: string[];
+  section: string;
+  sent: string[];
+}
+
+const viewKey = (slug: string) => `ft_menu_view_${slug}`;
+
+function readView(slug: string): MenuView | null {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(viewKey(slug)) || 'null') as Partial<MenuView> | null;
+    if (!v || (v.step !== 'menu' && v.step !== 'order')) return null;
+    const ids = (x: unknown) => Array.isArray(x) ? x.filter((i): i is string => typeof i === 'string').slice(0, 200) : [];
+    return {
+      step: v.step,
+      y: Number.isFinite(v.y) ? Math.max(0, Number(v.y)) : 0,
+      open: ids(v.open),
+      section: typeof v.section === 'string' ? v.section : '',
+      sent: ids(v.sent),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeView(slug: string, view: MenuView | null): void {
+  try {
+    if (view) sessionStorage.setItem(viewKey(slug), JSON.stringify(view));
+    else sessionStorage.removeItem(viewKey(slug));
+  } catch {
+    // без хранилища вернёмся в начало меню
+  }
+}
 
 /**
  * Публичное электронное меню и заказ со стола.
@@ -314,6 +358,14 @@ const RATED_KEEP = 30;
             </div>
           }
 
+          <!-- Гость ответил, что ему нет 21: алкоголь скрыт, блюда и безалкогольное можно заказать -->
+          @if (under21()) {
+            <div class="vm-note vm-note-age" role="status">
+              <span>Вы ответили, что вам нет 21 года, поэтому алкоголь в меню скрыт. Блюда и безалкогольные напитки можно заказать.</span>
+              <button type="button" class="vm-link vm-note-link" (click)="answerAgeAgain()">Мне есть 21</button>
+            </div>
+          }
+
           <section class="glass-panel vm-hero" [class.vm-hero-cover]="!!m.venue.cover" [style.--vm-cover]="m.venue.cover ? 'url(' + m.venue.cover + ')' : null">
             <div class="vm-logo vm-hero-logo" aria-hidden="true">
               @if (m.venue.logo) {
@@ -350,7 +402,7 @@ const RATED_KEEP = 30;
           </section>
 
           @if (sections().length || drinks().length) {
-            <nav class="vm-pills" aria-label="Разделы меню">
+            <nav class="vm-pills" aria-label="Разделы меню" #pills>
               <button type="button" class="vm-pill" [class.active]="activeSection() === ''" (click)="selectSection('')">
                 Все <span class="vm-pill-n">{{ totalItems() + drinks().length }}</span>
               </button>
@@ -518,6 +570,8 @@ const RATED_KEEP = 30;
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                               </button>
                             </div>
+                          } @else if (under21()) {
+                            <p class="vm-rec-none text-sm text-muted">Безалкогольных напитков в карте бара пока нет. Спросите официанта, что можно взять.</p>
                           } @else {
                             <p class="vm-rec-none text-sm text-muted">Заведение пока не добавило напитки в меню.</p>
                           }
@@ -531,7 +585,7 @@ const RATED_KEEP = 30;
 
             @if (showDrinks()) {
               <section class="vm-section" id="vm-bar-drinks">
-                <h2 class="vm-section-title">Напитки бара</h2>
+                <h2 class="vm-section-title">{{ under21() ? 'Безалкогольные напитки' : 'Напитки бара' }}</h2>
                 <div class="vm-drinks">
                   @for (d of drinks(); track d.id) {
                     <article class="glass-card vm-drink" [class.vm-item-off]="!d.is_available">
@@ -765,9 +819,11 @@ const RATED_KEEP = 30;
 })
 export class VenueMenuComponent implements OnDestroy {
   private api = inject(ApiService);
+  private age = inject(AgeService);
   private selection = inject(SelectionService);
   private track = inject(TrackService);
   private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
   /** После ngOnDestroy опрос заказа не перезапускаем. */
   private destroyed = false;
 
@@ -777,6 +833,8 @@ export class VenueMenuComponent implements OnDestroy {
   readonly slug = this.selection.venueSlug;
   /** null - стол не выбран, 0 - с собой. Хранится в SelectionService. */
   readonly tableNumber = this.selection.tableNumber;
+  /** Гость ответил, что ему нет 21: блюда и безалкогольное, алкоголь скрыт и в заказ не попадает. */
+  readonly under21 = this.age.under21;
 
   venues = signal<Venue[]>([]);
   /** Пока false - скелет; пустое состояние показываем только после загрузки. */
@@ -840,10 +898,20 @@ export class VenueMenuComponent implements OnDestroy {
   private stored: StoredOrder | null = null;
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private autoTableTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Стол не выбран: предложим выбрать, когда гость ответит на вопрос о возрасте (окна не встают друг на друга). */
+  private tablePromptPending = false;
+  /** Для какого ответа о возрасте загружена карта: после «Нет» берём её заново, только безалкогольное. */
+  private menuUnder21 = false;
+  /** Метка входа (QR, ссылка со стола) для события MENU_OPEN. */
+  private entrySrc = '';
+  /** Прокрутка, которую вернём, когда меню отрисуется (назад со страницы напитка, перезагрузка). */
+  private pendingScroll: number | null = null;
 
   /** Листы снизу: native dialog, showModal кладёт их в top layer поверх всего. */
   private readonly tableDlg = viewChild<ElementRef<HTMLDialogElement>>('tableDlg');
   private readonly cartDlg = viewChild<ElementRef<HTMLDialogElement>>('cartDlg');
+  /** Полоса разделов: активный раздел держим в видимой её части. */
+  private readonly pillsNav = viewChild<ElementRef<HTMLElement>>('pills');
 
   constructor() {
     // Заведение можно сменить, не покидая страницу: по ссылке или из панели.
@@ -864,23 +932,36 @@ export class VenueMenuComponent implements OnDestroy {
 
     // ИИ-сомелье кладёт позиции в ту же запись корзины и шлёт это событие
     window.addEventListener(CART_CHANGED_EVENT, this.onCartChanged);
+    // Уход со страницы или перезагрузка: запоминаем, где гость был в меню
+    window.addEventListener('pagehide', this.onPageHide);
 
-    // Панель подбора открыли раньше, чем движок посчитал напиток: записываем открытие, когда он готов
+    // Панель подбора открыли раньше, чем запасной подбор посчитал напиток: записываем открытие, когда он готов
     effect(() => {
       const pending = this.pairOpensPending();
       if (!pending.length) return;
       const rows = new Map(this.sections().flatMap(s => s.items).map(i => [i.id, i]));
-      const engineDone = this.engineLoaded();
       const left = pending.filter(id => {
         const row = rows.get(id);
-        if (row?.rec) {
-          this.trackPairOpen(row);
-          return false;
-        }
-        return !!row && !engineDone;
+        if (!row) return false;
+        if (row.recState === 'loading') return true;
+        this.trackPairOpen(row);
+        return false;
       });
       if (left.length !== pending.length) this.pairOpensPending.set(left);
     }, { allowSignalWrites: true });
+
+    // Ответ на вопрос о возрасте: после «Нет» карта без алкоголя, а MENU_OPEN и выбор стола только после ответа
+    effect(() => {
+      this.age.answer();
+      untracked(() => this.onAgeAnswer());
+    }, { allowSignalWrites: true });
+
+    // Активный раздел всегда виден в полосе разделов: «Все напитки бара» выбирает последний, он мог быть за краем
+    effect(() => {
+      this.activeSection();
+      const nav = this.pillsNav()?.nativeElement;
+      if (nav) untracked(() => afterNextRender(() => this.revealActivePill(nav), { injector: this.injector }));
+    });
   }
 
   /** Корзину заведения поменяли снаружи: перечитываем запись и сверяем с меню, чтобы обновилась нижняя полоса. */
@@ -917,14 +998,36 @@ export class VenueMenuComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.saveView();
     this.destroyed = true;
     this.stopPolling();
     if (this.autoTableTimer) clearTimeout(this.autoTableTimer);
     window.removeEventListener(CART_CHANGED_EVENT, this.onCartChanged);
+    window.removeEventListener('pagehide', this.onPageHide);
     document.body.style.overflow = '';
   }
 
-  readonly drinks = computed<MenuDrink[]>(() => this.menu()?.drinks ?? []);
+  private readonly onPageHide = () => this.saveView();
+
+  /** Где гость в меню заведения: экран, прокрутка, открытые панели. Читает loadMenu при возврате. */
+  private saveView(): void {
+    const slug = this.slug();
+    if (!slug || !this.menuLoaded() || this.menuError()) return;
+    writeView(slug, {
+      step: this.step(),
+      // Меню ещё не вернуло прокрутку (гость ушёл сразу): сохраняем ту, что ждала своей очереди
+      y: this.pendingScroll ?? Math.round(window.scrollY),
+      open: Object.keys(this.expanded()).filter(id => this.expanded()[id]),
+      section: this.activeSection(),
+      sent: [...this.pairOpensSent],
+    });
+  }
+
+  /** Карта бара; гостю младше 21 только безалкогольное, что можно предложить подростку. */
+  readonly drinks = computed<MenuDrink[]>(() => {
+    const all = this.menu()?.drinks ?? [];
+    return this.under21() ? all.filter(allowedForMinor) : all;
+  });
   private readonly drinkById = computed(() => new Map(this.drinks().map(d => [d.id, d])));
   private readonly drinkByBrand = computed(() => new Map(
     this.drinks().filter(d => d.brand).map(d => [d.brand as string, d])
@@ -940,7 +1043,7 @@ export class VenueMenuComponent implements OnDestroy {
     const pairings = this.pairings();
     const dishes = m.sections.flatMap(s => s.items.map(i => i.dish));
     const brandById = new Map(brands.map(b => [b.id, b]));
-    const bar: BarDrinks = { byId: this.drinkById(), byBrand: this.drinkByBrand(), any: m.drinks.length > 0 };
+    const bar: BarDrinks = { byId: this.drinkById(), byBrand: this.drinkByBrand(), any: this.drinks().length > 0 };
     return m.sections.map(s => ({
       name: s.name,
       items: s.items.map(i => ({ ...i, ...this.recsFor(i, brands, dishes, pairings, brandById, bar) })),
@@ -978,15 +1081,13 @@ export class VenueMenuComponent implements OnDestroy {
   readonly cartCount = computed(() => this.cart().reduce((n, l) => n + l.qty, 0));
   readonly cartTotal = computed(() => this.cart().reduce((s, l) => s + this.lineSum(l), 0));
 
-  /** Есть ли в корзине алкоголь. Признак is_alcoholic считает сервер; без него алкоголем считаем всё, кроме abv до 0,5%. */
+  /** Есть ли в корзине алкоголь (drinkIsAlcoholic); напиток, которого нет в карте, считаем алкоголем. */
   readonly cartHasAlcohol = computed(() => {
     const byId = this.drinkById();
     return this.cart().some(l => {
       if (l.kind !== 'DRINK') return false;
       const d = byId.get(l.id);
-      if (!d) return true;
-      if (typeof d.is_alcoholic === 'boolean') return d.is_alcoholic;
-      return d.abv === null || d.abv === undefined || d.abv > 0.5;
+      return !d || drinkIsAlcoholic(d);
     });
   });
   /** Алкоголь с собой через приложение не оформляем: только за столом, где официант видит гостя. */
@@ -994,17 +1095,22 @@ export class VenueMenuComponent implements OnDestroy {
   /** Заведение выключило заказ через приложение: вместо кнопки отправки просим показать список официанту. */
   readonly ordersClosed = computed(() => this.menu()?.venue.accepts_orders === false || this.closedByServer());
 
-  /** Какую пару из заказа просить оценить: напиток из подбора к своему блюду, иначе первое блюдо и первый напиток. */
+  /**
+   * Какую пару из заказа просить оценить: только блюдо и напиток, которые оба есть в этом заказе.
+   * Сначала напиток из подбора вместе со своим блюдом, иначе первое блюдо и первый напиток заказа.
+   * Напиток подобран к блюду, которого в заказе нет, а других блюд нет: не спрашиваем ничего.
+   */
   readonly ratePair = computed<RatePair | null>(() => {
     const o = this.order();
     if (!o || o.status === 'CANCELLED') return null;
     const dishes = o.items.filter(i => i.kind === 'DISH' && i.menu_item);
     const drinks = o.items.filter(i => i.kind === 'DRINK' && i.menu_drink);
-    const paired = drinks.find(i => i.paired_menu_item && i.source && i.source !== 'MENU');
-    if (paired?.paired_menu_item && paired.menu_drink) {
-      const dishName = dishes.find(i => i.menu_item === paired.paired_menu_item)?.title
-        ?? this.menu()?.sections.flatMap(s => s.items).find(i => i.id === paired.paired_menu_item)?.dish.name;
-      if (dishName) return { dish: dishName, drink: paired.title, dishRef: paired.paired_menu_item, drinkRef: paired.menu_drink };
+    for (const drink of drinks) {
+      if (!drink.paired_menu_item || !drink.source || drink.source === 'MENU') continue;
+      const dish = dishes.find(i => i.menu_item === drink.paired_menu_item);
+      if (dish?.menu_item && drink.menu_drink) {
+        return { dish: dish.title, drink: drink.title, dishRef: dish.menu_item, drinkRef: drink.menu_drink };
+      }
     }
     const dish = dishes[0];
     const drink = drinks[0];
@@ -1012,11 +1118,16 @@ export class VenueMenuComponent implements OnDestroy {
     return { dish: dish.title, drink: drink.title, dishRef: dish.menu_item, drinkRef: drink.menu_drink };
   });
 
+  /** «Принят» только после ответа заведения; новый заказ ещё ждёт подтверждения. */
   readonly orderTitle = computed(() => {
     const o = this.order();
     if (!o) return '';
-    const tail = o.status === 'CANCELLED' ? 'отменён' : o.status === 'DONE' ? 'закрыт' : 'принят';
-    return `Заказ №${o.number} ${tail}`;
+    switch (o.status) {
+      case 'NEW': return `Заказ №${o.number} отправлен, ждём подтверждения`;
+      case 'CANCELLED': return `Заказ №${o.number} отменён`;
+      case 'DONE': return `Заказ №${o.number} закрыт`;
+      default: return `Заказ №${o.number} принят`;
+    }
   });
   readonly orderHint = computed(() => {
     const o = this.order();
@@ -1046,7 +1157,10 @@ export class VenueMenuComponent implements OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  /** Гость сам ушёл к списку заведений: в следующий раз меню откроется с начала. */
   backToList(): void {
+    const slug = this.slug();
+    if (slug) writeView(slug, null);
     this.selection.openVenue(null);
   }
 
@@ -1071,22 +1185,36 @@ export class VenueMenuComponent implements OnDestroy {
     if (this.needsLocalEngine()) this.ensureEngineData();
     if (!opening || this.pairOpensSent.has(id)) return;
     const row = this.sections().flatMap(s => s.items).find(i => i.id === id);
-    if (row?.rec) this.trackPairOpen(row);
-    else if (row) this.pairOpensPending.update(list => list.includes(id) ? list : [...list, id]);
+    if (!row) return;
+    // Запасной подбор ещё считается: открытие запишем, когда он будет готов
+    if (row.recState === 'loading') this.pairOpensPending.update(list => list.includes(id) ? list : [...list, id]);
+    else this.trackPairOpen(row);
   }
 
-  /** PAIR_OPEN: блюдо, лучший напиток к нему и чей это выбор. Одно событие на позицию за визит. */
+  /**
+   * PAIR_OPEN: блюдо, лучший напиток к нему и чей это выбор. Панель, где заказать нечего, тоже пишем:
+   * in_bar false и state (none, weak), иначе такие открытия пропали бы из воронки. Одно событие на позицию за визит.
+   */
   private trackPairOpen(row: MenuRow): void {
-    const r = row.rec;
-    if (!r || this.pairOpensSent.has(row.id)) return;
+    if (this.pairOpensSent.has(row.id)) return;
     this.pairOpensSent.add(row.id);
+    const r = row.rec;
+    const age = this.under21() ? { age: 'under21' } : {};
+    if (!r) {
+      this.track.track('PAIR_OPEN', this.slug(), {
+        table: this.tableNumber(),
+        menu_item: row.id,
+        meta: { in_bar: false, state: row.recState, ...age },
+      });
+      return;
+    }
     this.track.track('PAIR_OPEN', this.slug(), {
       table: this.tableNumber(),
       menu_item: row.id,
       ...(r.drink ? { menu_drink: r.drink.id } : { drink_ref: r.brandId ?? r.key }),
       rank: 1,
       source: r.curated ? 'CURATED' : 'ENGINE',
-      meta: { in_bar: !!r.drink, score: r.rating, alts: row.alts.length },
+      meta: { in_bar: !!r.drink, state: row.recState, score: r.rating, alts: row.alts.length, ...age },
     });
   }
 
@@ -1094,6 +1222,20 @@ export class VenueMenuComponent implements OnDestroy {
   showBarDrinks(): void {
     this.selectSection(DRINKS_SECTION);
     setTimeout(() => document.getElementById('vm-bar-drinks')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  /** Прокручивает полосу разделов (только её, не страницу), чтобы активный раздел был виден целиком. */
+  private revealActivePill(nav: HTMLElement): void {
+    const pill = nav.querySelector<HTMLElement>('.vm-pill.active');
+    if (!pill) return;
+    const pad = 12;
+    const navBox = nav.getBoundingClientRect();
+    const box = pill.getBoundingClientRect();
+    let left = nav.scrollLeft;
+    if (box.left < navBox.left + pad) left += box.left - navBox.left - pad;
+    else if (box.right > navBox.right - pad) left += box.right - navBox.right + pad;
+    else return;
+    nav.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
   }
 
   /** «Czech Lager · 4% · 80 из 100» у варианта в списке «Ещё из карты бара». */
@@ -1145,7 +1287,8 @@ export class VenueMenuComponent implements OnDestroy {
    * тогда строка получает метку PAIRING, а в отчёт уходит PAIR_ADD.
    */
   addDrink(d: MenuDrink, item?: MenuEntry, rec?: MenuRec, rank?: number): void {
-    if (!d.is_available) return;
+    // Гостю младше 21 алкоголь в заказ не кладём, даже если кнопка как-то оказалась на экране
+    if (!d.is_available || (this.under21() && !allowedForMinor(d))) return;
     const from: Pick<CartLine, 'source' | 'pairedWith' | 'rank'> = item ? { source: 'PAIRING', pairedWith: item.id, rank } : {};
     this.inc('DRINK', d.id, { title: d.brand_name, sub: d.volume || '', price: d.price, ...from });
     if (!item) return;
@@ -1155,6 +1298,7 @@ export class VenueMenuComponent implements OnDestroy {
       menu_drink: d.id,
       rank,
       source: rec?.curated ? 'CURATED' : 'ENGINE',
+      meta: this.under21() ? { age: 'under21' } : undefined,
     });
   }
 
@@ -1208,11 +1352,17 @@ export class VenueMenuComponent implements OnDestroy {
     this.tableHint.set(false);
   }
 
+  /** «Мне есть 21» над меню без алкоголя: окно 21+ спрашивает снова. */
+  answerAgeAgain(): void {
+    this.age.reset();
+  }
+
+  /** Галочка 21+ в корзине: нужна при каждом заказе с алкоголем, а AGE_OK пишем один раз на сессию гостя. */
   setAgeOk(on: boolean): void {
     this.ageOk.set(on);
     if (!on) return;
     this.ageHint.set(false);
-    this.track.track('AGE_OK', this.slug(), { table: this.tableNumber(), source: 'CART' });
+    this.track.ageOk(this.slug(), this.tableNumber(), 'CART');
   }
 
   send(): void {
@@ -1285,9 +1435,11 @@ export class VenueMenuComponent implements OnDestroy {
 
   /** Сервер отверг позиции: пока гость выбирал, меню изменилось. Обновляем меню и корзину. */
   private refreshCartAfterReject(slug: string): void {
-    this.api.getVenueMenu(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const under21 = this.under21();
+    this.api.getVenueMenu(slug, under21).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: m => {
         if (this.slug() !== slug) return;
+        this.menuUnder21 = under21;
         this.menu.set(m);
         this.reconcileCart(m);
         this.sendError.set('Часть позиций уже недоступна, мы обновили корзину. Проверьте заказ и отправьте снова.');
@@ -1330,7 +1482,7 @@ export class VenueMenuComponent implements OnDestroy {
     const m = this.menu();
     if (!o || !m) return;
     const entries = new Map(m.sections.flatMap(s => s.items).map(i => [i.id, i]));
-    const drinks = new Map(m.drinks.map(d => [d.id, d]));
+    const drinks = this.drinkById();
     const lines: CartLine[] = [];
     for (const i of o.items) {
       const qty = Math.min(MAX_QTY, Math.max(1, i.qty));
@@ -1524,46 +1676,114 @@ export class VenueMenuComponent implements OnDestroy {
     }
     const entry = this.track.takeEntry(slug);
     const src = (entry?.src ?? '').toUpperCase();
+    this.entrySrc = src;
     if (entry && (src === 'QR' || entry.table !== null)) {
       this.track.track('SCAN', slug, { table: entry.table, source: src || 'TABLE_LINK', meta: entry.src ? { src: entry.src } : undefined });
+    }
+
+    // Вход по QR или ссылке со столом - новый визит, меню с начала. Назад со страницы напитка
+    // и перезагрузка возвращают экран, прокрутку и открытые панели подбора
+    const view = entry ? null : readView(slug);
+    if (entry) writeView(slug, null);
+    if (view) {
+      this.expanded.set(Object.fromEntries(view.open.map(id => [id, true])));
+      this.activeSection.set(view.section);
+      view.sent.forEach(id => this.pairOpensSent.add(id));
+      this.pendingScroll = view.y;
     }
 
     this.cart.set(readCart(slug));
     this.stored = readJson<StoredOrder>(orderKey(slug));
     if (this.stored?.id) {
-      this.step.set('order');
+      // После «Вернуться к меню» гость остаётся в меню, заказ открывается с полосы наверху
+      this.step.set(view?.step === 'menu' ? 'menu' : 'order');
       this.orderLoaded.set(false);
       this.refreshOrder();
     } else {
       this.stored = null;
     }
+    this.fetchMenu(slug, true);
+  }
 
-    this.api.getVenueMenu(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+  /**
+   * Меню заведения с сервера. Гостю младше 21 (ответ «Нет») - с ?age=under21: блюда те же, напитки
+   * только безалкогольные. first - первая загрузка заведения; повтор после ответа о возрасте
+   * при ошибке оставляет прежнее меню на экране (алкоголь в нём и так скрыт фильтром карты).
+   */
+  private fetchMenu(slug: string, first: boolean): void {
+    const under21 = this.under21();
+    this.api.getVenueMenu(slug, under21).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: m => {
-        // Пока грузилось, гость мог открыть другое заведение
+        // Пока грузилось, гость мог открыть другое заведение или ответить на вопрос о возрасте иначе
         if (this.selection.venueSlug() !== slug) return;
+        if (this.under21() !== under21) {
+          this.fetchMenu(slug, first);
+          return;
+        }
+        this.menuUnder21 = under21;
         this.menu.set(m);
         this.menuLoaded.set(true);
         this.reconcileCart(m);
-        this.track.track('MENU_OPEN', slug, { table: this.tableNumber(), source: src || undefined });
         // Стол из QR или из хранилища может быть больше, чем столов у заведения: сбрасываем, ниже откроется выбор
         const table = this.tableNumber();
         if (table !== null && table > this.tablesCount()) this.selection.setTable(slug, null);
         if (m.sections.some(s => s.items.some(i => !i.recommendations && !i.pairing))) this.ensureEngineData();
-        // Стол ещё не выбран: предлагаем выбрать, когда меню уже на экране
-        if (this.tableNumber() === null && this.step() === 'menu') {
-          this.autoTableTimer = setTimeout(() => {
-            if (this.selection.venueSlug() === slug && this.tableNumber() === null && this.step() === 'menu') this.tableOpen.set(true);
-          }, 350);
-        }
+        // Стол ещё не выбран: предложим выбрать, когда меню на экране и гость ответил на вопрос о возрасте
+        if (first && this.tableNumber() === null && this.step() === 'menu') this.tablePromptPending = true;
+        this.restoreScroll();
+        this.afterMenuShown(slug);
       },
       error: (err: unknown) => {
-        if (this.selection.venueSlug() !== slug) return;
+        if (this.selection.venueSlug() !== slug || (!first && this.menu())) return;
         const notFound = err instanceof HttpErrorResponse && err.status === 404;
         this.menuError.set(notFound ? 'Такого заведения нет или его меню скрыто.' : AuthService.errorText(err));
         this.menuLoaded.set(true);
       },
     });
+  }
+
+  /** Гость ответил на вопрос о возрасте (или ответ поменялся): карта под новый ответ, затем MENU_OPEN и стол. */
+  private onAgeAnswer(): void {
+    const slug = this.slug();
+    const m = this.menu();
+    if (!slug || !m || !this.menuLoaded() || this.menuError()) return;
+    if (this.menuUnder21 !== this.under21()) {
+      // Алкоголь уходит из корзины сразу, не дожидаясь новой карты
+      if (this.under21()) this.reconcileCart(m);
+      this.fetchMenu(slug, false);
+      return;
+    }
+    this.afterMenuShown(slug);
+  }
+
+  /**
+   * Меню на экране, и гость уже ответил на вопрос о возрасте: пока окно 21+ открыто, гость меню не видел.
+   * MENU_OPEN пишем один раз за визит (у гостя младше 21 с meta.age), потом предлагаем выбрать стол.
+   */
+  private afterMenuShown(slug: string): void {
+    if (!this.age.answered()) return;
+    this.track.trackOnce(`MENU_OPEN:${slug}`, 'session', 'MENU_OPEN', slug, {
+      table: this.tableNumber(),
+      source: this.entrySrc || undefined,
+      meta: this.under21() ? { age: 'under21' } : undefined,
+    });
+    if (!this.tablePromptPending) return;
+    this.tablePromptPending = false;
+    if (this.autoTableTimer) clearTimeout(this.autoTableTimer);
+    this.autoTableTimer = setTimeout(() => {
+      this.autoTableTimer = null;
+      if (this.selection.venueSlug() === slug && this.tableNumber() === null && this.step() === 'menu' && this.age.answered()) {
+        this.tableOpen.set(true);
+      }
+    }, 350);
+  }
+
+  /** Прокрутка из сохранённого вида, когда меню уже отрисовано (фото блюд с фиксированной высотой, раскладка не прыгает). */
+  private restoreScroll(): void {
+    const y = this.pendingScroll;
+    if (y === null) return;
+    this.pendingScroll = null;
+    afterNextRender(() => window.scrollTo({ top: y, behavior: 'instant' }), { injector: this.injector });
   }
 
   /** Сброс всего, что относится к одному заведению. */
@@ -1573,6 +1793,9 @@ export class VenueMenuComponent implements OnDestroy {
       clearTimeout(this.autoTableTimer);
       this.autoTableTimer = null;
     }
+    this.tablePromptPending = false;
+    this.pendingScroll = null;
+    this.entrySrc = '';
     this.activeSection.set('');
     this.expanded.set({});
     this.step.set('menu');
@@ -1604,10 +1827,13 @@ export class VenueMenuComponent implements OnDestroy {
     if (slug) writeJson(cartKey(slug), lines.length ? lines : null);
   }
 
-  /** Корзина из хранилища против свежего меню: цены обновляем, пропавшее и недоступное убираем. */
+  /**
+   * Корзина из хранилища против свежего меню: цены обновляем, пропавшее и недоступное убираем.
+   * Гостю младше 21 алкоголь из корзины тоже уходит (и тот, что положил чат).
+   */
   private reconcileCart(m: VenueMenu): void {
     const entries = new Map(m.sections.flatMap(s => s.items).map(i => [i.id, i]));
-    const drinks = new Map(m.drinks.map(d => [d.id, d]));
+    const drinks = new Map(m.drinks.filter(d => !this.under21() || allowedForMinor(d)).map(d => [d.id, d]));
     const lines: CartLine[] = [];
     for (const l of this.cart()) {
       const qty = Math.min(MAX_QTY, Math.max(1, Math.trunc(Number(l.qty) || 0)));
@@ -1673,11 +1899,14 @@ export class VenueMenuComponent implements OnDestroy {
     const fromServer = (p: MenuPairing, i: number) => this.fromPairing(p, i + 1, brandById, bar, basedOn);
     const orderable = (r: MenuRec) => !!r.drink?.is_available;
 
+    // Пара команды без карты напитков - совет про сорт пива: гостю младше 21 его не показываем.
+    const adviceAllowed = !this.under21();
+
     // Бэкенд уже выбрал до трёх напитков из карты бара, которые можно заказать.
     if (entry.recommendations) {
       if (!bar.any) {
         // Карты напитков нет: пара команды остаётся советом без кнопки заказа.
-        const advice = entry.pairing ? fromServer(entry.pairing, 0) : null;
+        const advice = entry.pairing && adviceAllowed ? fromServer(entry.pairing, 0) : null;
         return { rec: advice, alts: [], recState: advice ? 'ok' : 'none' };
       }
       const [rec = null, ...alts] = entry.recommendations.map(fromServer).filter(orderable);
@@ -1689,7 +1918,8 @@ export class VenueMenuComponent implements OnDestroy {
       .filter((p): p is MenuPairing => !!p)
       .map(fromServer);
     if (!bar.any) {
-      return { rec: server[0] ?? null, alts: [], recState: server.length ? 'ok' : 'none' };
+      const advice = adviceAllowed ? server[0] ?? null : null;
+      return { rec: advice, alts: [], recState: advice ? 'ok' : 'none' };
     }
     let list = server.filter(orderable);
     if (!list.length) {

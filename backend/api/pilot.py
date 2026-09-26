@@ -28,6 +28,8 @@ SOURCE_MAX = 16
 META_MAX_CHARS = 2000
 RANK_MAX = 999
 _SESSION_RE = re.compile(r'^[A-Za-z0-9_-]{1,%d}$' % SESSION_MAX)
+# id события от браузера (meta.cid): по нему сервер узнаёт повтор той же пачки.
+_CID_RE = re.compile(r'^[A-Za-z0-9_-]{6,40}$')
 _EVENT_FIELDS = frozenset({
     'table_number', 'menu_item', 'menu_item_id', 'menu_drink', 'menu_drink_id',
     'dish_ref', 'drink_ref', 'rank', 'source', 'meta',
@@ -58,8 +60,17 @@ def clean_rank(value):
     return rank if 0 <= rank <= RANK_MAX else None
 
 
+def clean_cid(meta):
+    """id события из meta.cid или пустая строка, если его нет или он кривой."""
+    cid = meta.get('cid') if isinstance(meta, dict) else None
+    return cid if isinstance(cid, str) and _CID_RE.match(cid) else ''
+
+
 def clean_meta(value):
-    """Только объект и не больше пары килобайт: meta для подробностей, а не для чужих данных."""
+    """
+    Только объект и не больше пары килобайт: meta для подробностей, а не для чужих данных.
+    id события (cid) переживает обрезку: без него повтор пачки записался бы второй раз.
+    """
     if not isinstance(value, dict):
         return {}
     try:
@@ -67,7 +78,8 @@ def clean_meta(value):
     except (TypeError, ValueError):
         return {}
     if len(text) > META_MAX_CHARS:
-        return {'truncated': True}
+        cid = clean_cid(value)
+        return {'truncated': True, 'cid': cid} if cid else {'truncated': True}
     return json.loads(text)
 
 
@@ -88,6 +100,19 @@ def build_event(kind, *, venue=None, session='', **fields):
     if 'meta' in fields:
         fields['meta'] = clean_meta(fields['meta'])
     return PilotEvent(kind=kind, venue=venue, session=clean_session(session), **fields)
+
+
+def known_cids(session, cids):
+    """
+    Какие из cid этой сессии уже записаны. Браузер повторяет пачку, если не дождался ответа,
+    и шлёт маяк при уходе со страницы, поэтому одно и то же событие может прийти дважды.
+    Поиск по ключу JSON (meta__cid) работает и в SQLite, и в PostgreSQL; сессия сужает выборку по индексу.
+    """
+    cids = [cid for cid in set(cids) if cid]
+    if not cids:
+        return set()
+    rows = PilotEvent.objects.filter(session=session, meta__cid__in=cids).values_list('meta', flat=True)
+    return {row['cid'] for row in rows if isinstance(row, dict) and row.get('cid') in cids}
 
 
 def count_qr_scans(events):
