@@ -22,14 +22,15 @@ DEFAULT_DAILY_LIMIT = 300
 KEY_TTL = 2 * 24 * 3600
 COUNTERS = ('requests', 'input_tokens', 'output_tokens', 'cache_read_tokens', 'cache_write_tokens', 'cost_microusd')
 
-# Цены за 1 млн токенов в долларах: вход и выход (кэш: чтение 0,1 входа, запись 1,25 входа).
+# Цены за 1 млн токенов в долларах: вход, выход и чтение из кэша (у Opus 5.5 это 0,05 входа, у остальных 0,1).
+# Запись в кэш на 5 минут стоит 1,25 входа.
 PRICES = {
-    'claude-sonnet-5': (2.0, 10.0),
-    'claude-opus-5-5': (4.0, 20.0),
-    'claude-opus-5': (5.0, 25.0),
-    'claude-opus-4-8': (5.0, 25.0),
-    'claude-sonnet-4-6': (3.0, 15.0),
-    'claude-haiku-4-5': (1.0, 5.0),
+    'claude-sonnet-5': (2.0, 10.0, 0.2),
+    'claude-opus-5-5': (4.0, 20.0, 0.2),
+    'claude-opus-5': (5.0, 25.0, 0.5),
+    'claude-opus-4-8': (5.0, 25.0, 0.5),
+    'claude-sonnet-4-6': (3.0, 15.0, 0.3),
+    'claude-haiku-4-5': (1.0, 5.0, 0.1),
 }
 
 
@@ -94,11 +95,11 @@ def price_for(model):
 
 def cost_usd(model, usage):
     """Стоимость одного ответа в долларах по токенам из usage."""
-    price_in, price_out = price_for(model)
+    price_in, price_out, price_cache_read = price_for(model)
     usage = usage or {}
     return (
         usage.get('input_tokens', 0) * price_in
-        + usage.get('cache_read_tokens', 0) * price_in * 0.1
+        + usage.get('cache_read_tokens', 0) * price_cache_read
         + usage.get('cache_write_tokens', 0) * price_in * 1.25
         + usage.get('output_tokens', 0) * price_out
     ) / 1_000_000

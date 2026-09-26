@@ -49,7 +49,7 @@ class AiPrefsSerializer(serializers.Serializer):
 
 
 class AiRequestSerializer(serializers.Serializer):
-    """Тело POST /api/ai/sommelier/: заведение, стол, история, корзина и пожелания."""
+    """Тело POST /api/ai/sommelier/: заведение, стол, история, корзина, пожелания и запомненные флаги."""
     venue = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None)
     # id браузера гостя (localStorage ft_sid) для статистики пилота; кривое значение просто не пишется
     session = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=64, default='')
@@ -57,6 +57,10 @@ class AiRequestSerializer(serializers.Serializer):
     messages = AiMessageSerializer(many=True)
     cart = AiCartItemSerializer(many=True, required=False, default=list)
     prefs = AiPrefsSerializer(required=False, default=dict)
+    # Флаги безопасности, которые чат запомнил из прошлых ответов (safety_flags). Они только запрещают,
+    # поэтому клиенту можно верить; незнакомые значения ai_safety.assess просто пропускает.
+    safety_flags = serializers.ListField(
+        child=serializers.CharField(max_length=24), required=False, default=list, max_length=12)
 
     def validate_messages(self, value):
         if not value:
@@ -123,7 +127,8 @@ class SommelierView(APIView):
         venue = resolve_venue(request, data['venue']) if data.get('venue') else None
         ctx = ai_sommelier.build_context(venue=venue)
         cart = [dict(item, id=str(item['id'])) for item in data['cart']]
-        result = ai_sommelier.answer(ctx, data['messages'], cart=cart, prefs=data['prefs'], table=data['table'])
+        result = ai_sommelier.answer(ctx, data['messages'], cart=cart, prefs=data['prefs'], table=data['table'],
+                                     safety_flags=data['safety_flags'])
         meta = result.pop('_meta', {})
         record_ask(venue, data, result, meta)
         return Response(result)
@@ -138,5 +143,5 @@ def record_ask(venue, data, result, meta):
         table_number=table if table and 0 < table <= 32767 else None,
         dish_ref=meta.get('dish') or '', drink_ref=first_drink, source=result['mode'],
         meta={key: meta[key] for key in ('mode', 'lang', 'safety', 'intent', 'ms', 'tokens', 'model', 'limit',
-                                         'suggestions', 'q') if meta.get(key) not in (None, '', [])},
+                                         'rejected', 'suggestions', 'q') if meta.get(key) not in (None, '', [])},
     )

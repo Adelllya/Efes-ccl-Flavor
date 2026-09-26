@@ -64,11 +64,14 @@ MAX_TOKENS = 2000  # мысли модели тоже считаются в ли
 REQUEST_TIMEOUT = _env_seconds('FT_AI_TIMEOUT', 8)
 MAX_RETRIES = 0
 CONTEXT_MAX_CHARS = 12000
-CATALOG_CONTEXT_MAX_CHARS = 30000
+# Весь каталог движка (114 блюд и около 400 напитков) занимает около 35 тысяч знаков: помещается целиком
+CATALOG_CONTEXT_MAX_CHARS = 40000
 MAX_SUGGESTIONS = 6
 REPLY_MAX_CHARS = 4000
 DATA_MAX_CHARS = 160
 LOCAL_NOTE = 'ИИ сейчас недоступен, отвечает вкусовой движок Flavor Tree'
+# Модель ответила, но ответ не прошёл проверку (отказ, пустой ответ, алкоголь гостю, которому нельзя)
+ENGINE_NOTE = 'Этот ответ подобрал вкусовой движок Flavor Tree'
 LIMIT_NOTE = 'Лимит ответов ИИ на сегодня исчерпан, отвечает вкусовой движок Flavor Tree'
 
 SYSTEM_PROMPT = """Ты сомелье Flavor Tree: помогаешь гостю бара или ресторана выбрать блюдо и напиток к нему.
@@ -116,17 +119,23 @@ OUTPUT_SCHEMA = {
 # Настройки
 
 def ai_enabled():
-    """Ключ есть в окружении (или подхвачен из backend/.env) и SDK установлен."""
-    return bool(os.environ.get('ANTHROPIC_API_KEY', '').strip()) and _sdk() is not None
+    """Ключ есть в окружении (или в backend/.env), SDK установлен и Claude не выключен (FT_AI_DAILY_LIMIT=0)."""
+    return (bool(os.environ.get('ANTHROPIC_API_KEY', '').strip()) and ai_usage.daily_limit() > 0
+            and _sdk() is not None)
 
 
 def ai_model():
     return os.environ.get('FT_AI_MODEL', '').strip() or getattr(settings, 'FT_AI_MODEL', '') or DEFAULT_MODEL
 
 
+# Параметр effort принимают Opus 4.5 и новее, Sonnet 4.6 и новее, Sonnet 5, Fable и Mythos. Haiku 4.5,
+# Sonnet 4.5 и старые модели отвечают на него ошибкой 400, поэтому неизвестной модели его не передаём.
+EFFORT_MODEL_RE = re.compile(r'^claude-(?:(?:opus|sonnet)-(?:[5-9]|\d{2})\b|opus-4-[5-9]\b|sonnet-4-[6-9]\b'
+                             r'|fable|mythos)')
+
+
 def supports_effort(model):
-    """Параметр effort есть у Sonnet 5 и Opus; Haiku 4.5 и старые модели отвечают на него ошибкой 400."""
-    return not str(model or '').startswith(('claude-haiku', 'claude-3'))
+    return bool(EFFORT_MODEL_RE.match(str(model or '')))
 
 
 # Данные в промпте
@@ -192,10 +201,11 @@ def menu_drink_entry(md, ds):
         'id': str(md.id),
         'brand_id': str(md.brand_id) if md.brand_id else None,
         'v2': v2,
-        'name': facts['name'],
+        'name': AE.clean_name(facts['name']),
         'style': style,
         'abv': abv,
         'category': category,
+        'family': ((raw or {}).get('style') or {}).get('family') or '',
         'efes_relation': relation,
         'efes': relation in AE.EFES_OWN,
         'is_alcoholic': is_alcoholic(abv, category),
@@ -410,6 +420,7 @@ def guest_state_text(ctx, cart, prefs, table, safety=None):
             'pregnancy': 'гостья беременна или кормит грудью',
             'medication': 'гость принимает лекарства', 'gluten': 'гость не переносит глютен',
             'emotional': 'гостю грустно или тяжело', 'drunk': 'гость уже много выпил', 'unwell': 'гостю нехорошо',
+            'child': 'гость выбирает напиток ребёнку',
         }
         parts.append('Правила безопасности сработали ({}): алкоголь не предлагай совсем, только безалкогольное '
                      'и еду.'.format(', '.join(labels[k] for k in safety.kinds)))
@@ -561,17 +572,49 @@ def parse_model_reply(text, ctx, ds=None):
     return {'reply': reply, 'suggestions': suggestions}
 
 
+# Общие слова об алкоголе в тексте модели. Рядом со словами из NA_MARK («без пива», «пиво 0.0»,
+# «вместо вина») это не совет выпить.
+GENERIC_ALCOHOL_RE = re.compile(
+    r'\b(?:пив[оауе]|пивом|вин[оау]|вином|вине|сидр\w*|коньяк\w*|водк\w*|виски|ликер\w*|шампанск\w*|игрист\w*'
+    r'|коктейл\w*|шарап\w*|beers?|wines?|ciders?|vodka|whisk\w*|cocktails?)\b')
+NA_MARK_RE = re.compile(
+    r'^(?:без|вместо|не|нет|ни|никакого|никакое|никаких|0|00|безалкогольн\w*|алкогольсіз\w*|орнына|емес'
+    r'|non|free|no|not|instead|zero)$')
+
+
+def mentions_alcohol(reply, ctx):
+    """
+    Советует ли текст модели алкоголь: полное название алкогольного напитка из списка, его редкое
+    слово («Kozel» для «Velkopopovický Kozel»), которого нет в безалкогольных, или общее слово
+    («светлое пиво») без пометки «без», «0.0», «вместо» рядом.
+    """
+    words = AE.tokens(reply)
+    text = ' '.join(words)
+    word_set = set(words)
+    na_words = {w for d in ctx['drinks'] if not ai_safety.drink_is_alcoholic(d) for w in AE.norm(d['name']).split()}
+    for drink in ctx['drinks']:
+        if not ai_safety.drink_is_alcoholic(drink):
+            continue
+        name = AE.norm(drink['name'])
+        if len(name) >= 4 and re.search(r'\b' + re.escape(name) + r'\b', text):
+            return True
+        if (set(drink.get('rare_words') or ()) - na_words) & word_set:
+            return True
+    for match in GENERIC_ALCOHOL_RE.finditer(text):
+        near = text[:match.start()].split()[-2:] + text[match.end():].split()[:2]
+        if not any(NA_MARK_RE.match(word) for word in near):
+            return True
+    return False
+
+
 def enforce_no_alcohol(parsed, ctx):
     """
-    Гостю нельзя алкоголь: убираем алкогольные карточки. Если модель всё же назвала в тексте
-    алкогольный напиток из списка, ответ не показываем (вернётся локальный безопасный ответ).
+    Гостю нельзя алкоголь: убираем алкогольные карточки. Если модель всё же советует в тексте
+    алкоголь, ответ не показываем (вернётся локальный безопасный ответ).
     """
     parsed['suggestions'] = [s for s in parsed['suggestions'] if not s.get('is_alcoholic')]
-    reply = AE.norm(parsed['reply'])
-    for drink in ctx['drinks']:
-        name = AE.norm(drink['name'])
-        if len(name) >= 4 and ai_safety.drink_is_alcoholic(drink) and re.search(r'\b' + re.escape(name) + r'\b', reply):
-            return None
+    if mentions_alcohol(parsed['reply'], ctx):
+        return None
     return parsed
 
 
@@ -584,14 +627,15 @@ def mask_personal(text, limit=200):
     return ' '.join(text.split())[:limit]
 
 
-def answer(ctx, messages, cart=None, prefs=None, table=None):
+def answer(ctx, messages, cart=None, prefs=None, table=None, safety_flags=()):
     """
     Ответ сомелье: правила безопасности, затем Claude (если есть ключ и не исчерпан лимит),
-    иначе или при ошибке API вкусовой движок. Поле _meta для статистики пилота, гостю не отдаётся.
+    иначе или при ошибке API вкусовой движок. safety_flags: флаги, которые чат запомнил раньше
+    (поле safety_flags прошлых ответов). Поле _meta для статистики пилота, гостю не отдаётся.
     """
     started = time.monotonic()
     prefs = dict(prefs or {})
-    safety = ai_safety.assess(messages)
+    safety = ai_safety.assess(messages, safety_flags)
     lang = detect_lang(messages[-1]['content'] if messages else '')
     ds = AE.dataset(lang)
     plan = make_plan(messages, ctx, cart, prefs, ds)
@@ -626,11 +670,14 @@ def answer(ctx, messages, cart=None, prefs=None, table=None):
                     meta['intent'] = 'claude'
                     return finish(parsed, 'claude', '', lang, safety, meta, started)
                 log.warning('ИИ-сомелье: ответ модели пустой или небезопасный, отвечает вкусовой движок')
+                note = ENGINE_NOTE
+                meta['rejected'] = True
             except sdk.APIError as exc:
                 log.warning('ИИ-сомелье: ошибка API (%s), отвечает вкусовой движок', exc.__class__.__name__)
+                note = LOCAL_NOTE
             except Exception:  # noqa: BLE001 - гость должен получить ответ в любом случае
                 log.exception('ИИ-сомелье: сбой при обращении к модели, отвечает вкусовой движок')
-            note = LOCAL_NOTE
+                note = LOCAL_NOTE
 
     local = local_sommelier(messages, ctx, cart, prefs, safety, plan, ds)
     meta['intent'] = local.get('intent')
@@ -656,6 +703,8 @@ def finish(result, mode, note, lang, safety, meta, started):
         'mode': mode,
         'note': note,
         'safety': safety.kind if safety is not None else '',
+        # Флаги, которые чат должен прислать обратно (safety_flags): возраст, руль и т.п. держатся весь разговор
+        'safety_flags': safety.sticky if safety is not None else [],
         'disclaimer': t('disclaimer', lang) if has_alcohol else '',
         'lang': lang,
         '_meta': meta,

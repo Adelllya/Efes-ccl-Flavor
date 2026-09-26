@@ -150,9 +150,14 @@ TEXTS = {
         'en': 'Note: «{dish}» is not available today.',
     },
     'filter_relaxed': {
-        'ru': 'Точно под ваше пожелание в карте ничего нет, поэтому предлагаю ближайшее.',
+        'ru': 'Точно под ваше пожелание ничего нет, поэтому предлагаю ближайшее.',
         'kk': 'Дәл сіздің қалауыңызға сай сусын жоқ, сондықтан ең жақынын ұсынамын.',
-        'en': "Nothing on the list matches that exactly, so here is the closest option.",
+        'en': "Nothing matches that exactly, so here is the closest option.",
+    },
+    'category_missing': {
+        'ru': 'Напитков из категории «{category}» здесь сейчас нет.',
+        'kk': 'Қазір «{category}» санатындағы сусын жоқ.',
+        'en': 'There is no {category} here right now.',
     },
     'budget_none': {
         'ru': 'В пределах {budget} подходящего напитка в карте нет.',
@@ -165,6 +170,13 @@ TEXTS = {
         'kk': 'Баға мекемеге байланысты, жалпы каталогта баға жоқ. Үстелдегі QR-код арқылы бар мәзірін ашыңыз.',
         'en': 'Prices depend on the venue and the general catalogue has none. Open your bar menu via the QR code '
               'on the table and I will stay within {budget}.',
+    },
+    'cheaper_catalog': {
+        'ru': 'Цены зависят от заведения, в общем каталоге их нет. Откройте меню своего бара по QR-коду на столе, '
+              'и я подберу подешевле.',
+        'kk': 'Баға мекемеге байланысты, жалпы каталогта баға жоқ. Үстелдегі QR-код арқылы бар мәзірін ашыңыз.',
+        'en': 'Prices depend on the venue and the general catalogue has none. Open your bar menu via the QR code '
+              'on the table and I will find something cheaper.',
     },
     'cheaper_lead': {
         'ru': 'Подешевле: {drinks}.',
@@ -199,9 +211,9 @@ TEXTS = {
         'en': 'Dark and full-bodied: {drinks}.',
     },
     'list_strong': {
-        'ru': 'Из более крепкого: {drinks}.',
-        'kk': 'Күштірек сусындардан: {drinks}.',
-        'en': 'Stronger options: {drinks}.',
+        'ru': 'Из более крепкого: {drinks}. Такое пиво лучше пить не спеша и с едой.',
+        'kk': 'Күштірек сусындардан: {drinks}. Оны асықпай, тамақпен бірге ішкен дұрыс.',
+        'en': 'Stronger options: {drinks}. Best sipped slowly and with food.',
     },
     'list_sweet': {
         'ru': 'С мягкой сладостью: {drinks}.',
@@ -228,6 +240,16 @@ TEXTS = {
         'kk': 'Бұл қалауға сай сусын қазір жоқ.',
         'en': 'Nothing on the list matches that right now.',
     },
+    'no_energy': {
+        'ru': 'Энергетики я не советую ни к еде, ни отдельно.',
+        'kk': 'Энергетиктерді тамаққа да, бөлек те ұсынбаймын.',
+        'en': "I don't recommend energy drinks, with food or on their own.",
+    },
+    'family_missing': {
+        'ru': '{family} здесь сейчас нет, поэтому предлагаю ближайшее.',
+        'kk': 'Қазір {family} жоқ, сондықтан ең жақынын ұсынамын.',
+        'en': 'There is no {family} here right now, so here is the closest option.',
+    },
     'no_na_in_bar': {
         'ru': 'Безалкогольных напитков в карте этого бара сейчас нет, попросите у официанта воду или чай.',
         'kk': 'Бұл бардың картасында қазір алкогольсіз сусын жоқ, даяшыдан су немесе шай сұраңыз.',
@@ -236,24 +258,29 @@ TEXTS = {
 
     # Блюда
     'dishes_dessert': {
-        'ru': 'Из десертов советую {combos}.',
+        'ru': 'Из десертов советую: {combos}.',
         'kk': 'Десерттерден {combos} ұсынамын.',
         'en': 'For dessert I suggest {combos}.',
     },
     'dishes_meat': {
-        'ru': 'Из мясного и гриля советую {combos}.',
+        'ru': 'Из мясного и гриля советую: {combos}.',
         'kk': 'Ет пен грильден {combos} ұсынамын.',
         'en': 'From meat and grill I suggest {combos}.',
     },
     'dishes_spicy': {
-        'ru': 'Из острого советую {combos}.',
+        'ru': 'Из острого советую: {combos}.',
         'kk': 'Ащы тағамдардан {combos} ұсынамын.',
         'en': 'For something spicy I suggest {combos}.',
     },
     'dishes_advise': {
-        'ru': 'Если выбирать из меню, возьмите {combos}.',
+        'ru': 'Из меню советую: {combos}.',
         'kk': 'Мәзірден {combos} алуға кеңес беремін.',
         'en': 'From the menu I would take {combos}.',
+    },
+    'dishes_advise_catalog': {
+        'ru': 'Для начала советую: {combos}.',
+        'kk': 'Бастау үшін {combos} ұсынамын.',
+        'en': 'To start, I would suggest {combos}.',
     },
     'dishes_none': {
         'ru': 'Таких блюд в меню сейчас нет. Скажите, чего хочется, и я подберу из того, что есть.',
@@ -283,7 +310,7 @@ TEXTS = {
     'or': {'ru': ' или ', 'kk': ' немесе ', 'en': ' or '},
     'and': {'ru': ' и ', 'kk': ' және ', 'en': ' and '},
     'celebrate': {
-        'ru': 'Поздравляю! Для праздничного стола советую {combos}. Сколько вас за столом? Подберу на компанию.',
+        'ru': 'Поздравляю! Для праздничного стола советую: {combos}. Сколько вас за столом? Подберу на компанию.',
         'kk': 'Құттықтаймын! Мерекелік дастарханға {combos} ұсынамын.',
         'en': 'Congratulations! For a celebration I suggest {combos}. How many of you are at the table?',
     },
@@ -323,6 +350,11 @@ TEXTS = {
         'ru': 'Из безалкогольного подойдут: {drinks}.',
         'kk': 'Алкогольсіз нұсқалар: {drinks}.',
         'en': 'Alcohol-free options: {drinks}.',
+    },
+    'safety_option_one': {
+        'ru': 'Из безалкогольного подойдёт {drinks}.',
+        'kk': 'Алкогольсіз нұсқа: {drinks}.',
+        'en': 'An alcohol-free option: {drinks}.',
     },
     'safety_pair': {
         'ru': 'К блюду «{dish}» из этого подойдёт {drink}: {reason}.',
@@ -381,19 +413,19 @@ SAFETY_TEXTS = {
                "Remembering the medication, I'm only suggesting alcohol-free drinks."),
     },
     'gluten': {
-        'ru': ('В пиве, безалкогольном пиве и квасе есть глютен, поэтому их не советую. '
-               'Состав блюд обязательно уточните у официанта.',
-               'Помню про глютен, поэтому пиво и квас не предлагаю.'),
-        'kk': ('Сыра, алкогольсіз сыра мен квас құрамында глютен бар, сондықтан оларды ұсынбаймын. '
-               'Тағам құрамын даяшыдан міндетті түрде сұраңыз.',
-               'Глютенді ескеріп, сыра мен квас ұсынбаймын.'),
-        'en': ('Beer, alcohol-free beer and kvass contain gluten, so I will not suggest them. '
-               'Please check the dishes with the waiter.',
-               "Remembering the gluten, I'm not suggesting beer or kvass."),
+        'ru': ('В пиве, безалкогольном пиве и квасе есть глютен. Чтобы не рисковать, предлагаю только напитки '
+               'без алкоголя и без злаков. Состав блюд обязательно уточните у официанта.',
+               'Помню про глютен, поэтому предлагаю только напитки без алкоголя и без злаков.'),
+        'kk': ('Сыра, алкогольсіз сыра мен квас құрамында глютен бар. Қауіп төндірмеу үшін тек алкогольсіз '
+               'әрі дәнсіз сусын ұсынамын. Тағам құрамын даяшыдан міндетті түрде сұраңыз.',
+               'Глютенді ескеріп, тек алкогольсіз әрі дәнсіз сусын ұсынамын.'),
+        'en': ('Beer, alcohol-free beer and kvass contain gluten. To be safe, I am only suggesting drinks with no '
+               'alcohol and no grain. Please check the dishes with the waiter.',
+               "Remembering the gluten, I'm only suggesting drinks with no alcohol and no grain."),
     },
     'emotional': {
         'ru': ('Сочувствую, такие дни бывают. Алкоголь плохой помощник, когда на душе тяжело, '
-               'поэтому предложу что-то вкусное и тёплое без алкоголя.',
+               'поэтому предложу что-то вкусное без алкоголя.',
                'Сегодня предлагаю только без алкоголя, так будет бережнее.'),
         'kk': ('Түсінемін, ондай күндер болады. Көңіл-күй түскенде алкоголь көмектеспейді, '
                'сондықтан дәмді тағам мен алкогольсіз сусын ұсынамын.',
@@ -401,6 +433,14 @@ SAFETY_TEXTS = {
         'en': ("I'm sorry, days like this happen. Alcohol is a poor helper when you feel down, "
                'so let me suggest something tasty and alcohol-free.',
                "Today I'm only suggesting alcohol-free drinks."),
+    },
+    'child': {
+        'ru': ('Для ребёнка подберу напиток без алкоголя и без энергетиков.',
+               'Для ребёнка подбираю только напитки без алкоголя.'),
+        'kk': ('Балаға алкогольсіз әрі энергетиксіз сусын таңдап беремін.',
+               'Балаға тек алкогольсіз сусын ұсынамын.'),
+        'en': ("For a child I'll pick a drink with no alcohol and no energy drinks.",
+               "For a child I'm only suggesting alcohol-free drinks."),
     },
     'drunk': {
         'ru': ('Кажется, на сегодня алкоголя уже достаточно, больше не предлагаю. '
@@ -448,6 +488,15 @@ CATEGORY_LABELS = {
 }
 
 
+# Виды крепкого, которые гость называет словом («водку к шашлыку»): в русском в родительном падеже.
+FAMILY_LABELS = {
+    'ru': {'VODKA': 'водки', 'WHISKY': 'виски', 'BRANDY': 'коньяка', 'AGAVE': 'текилы', 'GIN': 'джина',
+           'RUM': 'рома'},
+    'kk': {'VODKA': 'арақ', 'WHISKY': 'виски', 'BRANDY': 'коньяк', 'AGAVE': 'текила', 'GIN': 'джин', 'RUM': 'ром'},
+    'en': {'VODKA': 'vodka', 'WHISKY': 'whisky', 'BRANDY': 'brandy', 'AGAVE': 'tequila', 'GIN': 'gin', 'RUM': 'rum'},
+}
+
+
 def t(key, lang, **slots):
     """Фраза на языке гостя; нет перевода - русская."""
     variants = TEXTS[key]
@@ -464,6 +513,11 @@ def safety_text(kind, lang, fresh=True):
 def category_label(category, lang):
     labels = CATEGORY_LABELS.get(lang) or CATEGORY_LABELS['ru']
     return labels.get(category, category or '')
+
+
+def family_label(family, lang):
+    labels = FAMILY_LABELS.get(lang) or FAMILY_LABELS['ru']
+    return labels.get(family, family.lower())
 
 
 def join_list(items, lang, word='and'):
