@@ -202,7 +202,9 @@ REST_FRAMEWORK = {
 
 # ИИ-сомелье. Ключ ANTHROPIC_API_KEY берётся из окружения или backend/.env и в настройках не хранится;
 # без ключа работает локальный подбор. Модель можно заменить через FT_AI_MODEL.
-FT_AI_MODEL = os.environ.get('FT_AI_MODEL', 'claude-opus-5')
+FT_AI_MODEL = os.environ.get('FT_AI_MODEL', 'claude-sonnet-5')
+# Сколько ответов Claude можно за сутки (по Алматы) на весь сервис; дальше отвечает вкусовой движок. 0 выключает Claude.
+FT_AI_DAILY_LIMIT = int(os.environ.get('FT_AI_DAILY_LIMIT', '300') or 300)
 
 # Адрес сайта (фронтенда), на который ведут QR-коды столов: FT_PUBLIC_SITE_URL/menu/<slug>?table=N&src=qr.
 # На проде задать обязательно, например https://<домен-фронта>.vercel.app. Пусто: берётся сайт,
