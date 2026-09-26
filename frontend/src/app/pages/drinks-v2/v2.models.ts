@@ -73,6 +73,8 @@ export interface V2Pair {
   drink_name: string;
   dish_name: string;
   category: string;
+  /** Архетип стиля: по нему, например, отличаем энергетики (energy_drink). */
+  archetype?: string;
   efes_relation: string;
   efes_partner: boolean;
   score: number;
@@ -99,6 +101,8 @@ export interface V2PairingResult {
   best_partner: V2Pair | null;
   categories: V2CategoryBest[];
   n_candidates: number;
+  /** id напитков, убранных безалкогольным режимом (non_alcoholic=1). */
+  excluded_non_alcoholic?: string[];
   policy: { partner_tie_window: number; note: string };
 }
 
