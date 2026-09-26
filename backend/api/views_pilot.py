@@ -6,6 +6,7 @@ POST /api/feedback/                        - гость без входа: оц�
 GET  /api/pilot/report/?venue=&from=&to=   - владелец заведения или модератор: цифры пилота
 GET  /api/pilot/export.csv?venue=&kind=    - то же построчно в CSV: events, orders или feedback
 GET  /api/venues/<slug>/qr.svg?table=N     - QR-код стола со ссылкой на меню
+GET  /api/venues/<slug>/qr-link/?table=N   - какая ссылка будет в этом QR (проверка перед печатью)
 
 События и оценку принимаем и как application/json, и как text/plain с JSON внутри:
 navigator.sendBeacon отправляет строку именно так и без предварительного CORS-запроса.
@@ -21,7 +22,7 @@ from rest_framework import serializers, status
 from rest_framework.decorators import (
     api_view, authentication_classes, parser_classes, permission_classes, throttle_classes,
 )
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import APIException, NotFound, PermissionDenied, ValidationError
 from rest_framework.negotiation import BaseContentNegotiation
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -185,6 +186,8 @@ def feedback(request):
     """
     {session, venue: slug, order: id, dish_ref, drink_ref, rating: 1..5, comment} -> 201.
     Заказ привязываем, только если он из того же заведения; без venue заведение берём из заказа.
+    Повтор от той же сессии к тому же заказу и паре обновляет прошлую оценку (200): гость ставит звезду
+    одним касанием, а комментарий или другую звезду дописывает следом, без второй записи в отчёте.
     """
     serializer = FeedbackSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -198,10 +201,21 @@ def feedback(request):
         elif order.venue_id != venue.pk:
             order = None
     session = clean_session(data.get('session')) or (order.session if order is not None else '')
+    dish_ref, drink_ref = clean_ref(data.get('dish_ref')), clean_ref(data.get('drink_ref'))
+    comment = (data.get('comment') or '').strip()[:COMMENT_MAX]
+    if session and order is not None:
+        item = (PairingFeedback.objects
+                .filter(session=session, order=order, dish_ref=dish_ref, drink_ref=drink_ref)
+                .order_by('-created_at', '-id').first())
+        if item is not None:
+            item.rating = data['rating']
+            if comment:
+                item.comment = comment
+            item.save(update_fields=['rating', 'comment'])
+            return Response({'id': item.pk, 'rating': item.rating}, status=status.HTTP_200_OK)
     item = PairingFeedback.objects.create(
-        venue=venue, order=order, session=session,
-        dish_ref=clean_ref(data.get('dish_ref')), drink_ref=clean_ref(data.get('drink_ref')),
-        rating=data['rating'], comment=(data.get('comment') or '').strip()[:COMMENT_MAX],
+        venue=venue, order=order, session=session, dish_ref=dish_ref, drink_ref=drink_ref,
+        rating=data['rating'], comment=comment,
     )
     meta = {'feedback': item.pk, 'rating': item.rating}
     if order is not None:
@@ -314,25 +328,39 @@ def menu_url(site, slug, table=None):
     return '{}/menu/{}?{}'.format(site.rstrip('/'), slug, urlencode(query))
 
 
+class SiteUrlMissing(APIException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = 'Не задан адрес сайта для QR: укажите FT_PUBLIC_SITE_URL'
+    default_code = 'site_url_missing'
+
+
+def qr_target(request, slug):
+    """
+    Заведение, стол и адрес сайта для QR. Скрытое заведение видят только владелец и модератор,
+    стол вне 1..tables_count - 400, без адреса сайта - 503.
+    """
+    venue = Venue.objects.filter(slug=slug).first()
+    if venue is None or not (venue.is_published or _can_manage(request.user, venue)):
+        raise NotFound('Заведение не найдено')
+    raw_table = (request.query_params.get('table') or '').strip()
+    table = None
+    if raw_table:
+        table = _table(raw_table, venue)
+        if not table:
+            raise ValidationError({'table': ['Стол от 1 до {}'.format(venue.tables_count)]})
+    site = public_site_url(request)
+    if not site:
+        raise SiteUrlMissing()
+    return venue, table, site
+
+
 class VenueQrView(APIView):
     """SVG с QR-кодом. ?table=N - номер стола, ?download=1 - отдать файлом."""
     permission_classes = [AllowAny]
     content_negotiation_class = IgnoreAcceptNegotiation
 
     def get(self, request, slug):
-        venue = Venue.objects.filter(slug=slug).first()
-        if venue is None or not (venue.is_published or _can_manage(request.user, venue)):
-            raise NotFound('Заведение не найдено')
-        raw_table = (request.query_params.get('table') or '').strip()
-        table = None
-        if raw_table:
-            table = _table(raw_table, venue)
-            if not table:
-                raise ValidationError({'table': ['Стол от 1 до {}'.format(venue.tables_count)]})
-        site = public_site_url(request)
-        if not site:
-            return Response({'detail': 'Не задан адрес сайта для QR: укажите FT_PUBLIC_SITE_URL'},
-                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        venue, table, site = qr_target(request, slug)
         title = '{}, стол {}'.format(venue.name, table) if table else venue.name
         buffer = io.BytesIO()
         # Уровень коррекции M: код читается и с чуть помятой или поцарапанной таблички.
@@ -344,3 +372,20 @@ class VenueQrView(APIView):
             name = 'qr-{}-{}.svg'.format(venue.slug, 'table-{}'.format(table) if table else 'menu')
             response['Content-Disposition'] = 'attachment; filename="{}"'.format(name)
         return response
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def venue_qr_link(request, slug):
+    """
+    GET /api/venues/<slug>/qr-link/?table=N: ссылка, которую зашьёт qr.svg при тех же заголовках запроса.
+    Панель показывает её перед печатью, чтобы на столы не попал адрес локального компьютера.
+    """
+    venue, table, site = qr_target(request, slug)
+    host = urlsplit(site).hostname or ''
+    return Response({
+        'url': menu_url(site, venue.slug, table),
+        'site': site,
+        'configured': bool((getattr(settings, 'FT_PUBLIC_SITE_URL', '') or '').strip()),
+        'local': host in LOCAL_HOSTS or host.endswith('.local') or host.startswith(('192.168.', '10.')),
+    })

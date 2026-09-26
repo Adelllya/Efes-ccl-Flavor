@@ -148,6 +148,28 @@ class FeedbackTests(PilotBase):
         self.assertEqual(event.meta, {'feedback': item.pk, 'rating': 5, 'order': str(order.id)})
         self.assertEqual(resp.json(), {'id': item.pk, 'rating': 5})
 
+    def test_repeat_updates_same_feedback(self):
+        # Звезда одним касанием, потом другая звезда и комментарий: в отчёте одна оценка, последняя.
+        order = self.make_order()
+        body = {'venue': 'efes-beer-garden', 'session': SID_A, 'order': str(order.id),
+                'dish_ref': str(self.besh.id), 'drink_ref': str(self.kozel.id), 'rating': 5}
+        first = client_for().post(self.url, body, format='json')
+        self.assertEqual(first.status_code, 201, first.content)
+        again = client_for().post(self.url, dict(body, rating=4, comment='Хорошо, но горчит'), format='json')
+        self.assertEqual(again.status_code, 200, again.content)
+        self.assertEqual(again.json(), {'id': first.json()['id'], 'rating': 4})
+        # Без комментария повтор прошлый комментарий не стирает.
+        client_for().post(self.url, dict(body, rating=4), format='json')
+        item = PairingFeedback.objects.get()
+        self.assertEqual((item.rating, item.comment), (4, 'Хорошо, но горчит'))
+        self.assertEqual(PilotEvent.objects.filter(kind='FEEDBACK').count(), 1)
+        # Другая пара, другая сессия или оценка без заказа - отдельные записи.
+        client_for().post(self.url, dict(body, drink_ref='efes-pilsener'), format='json')
+        client_for().post(self.url, dict(body, session='22222222-2222-4222-8222-222222222222'), format='json')
+        client_for().post(self.url, {'venue': 'efes-beer-garden', 'session': SID_A, 'rating': 3}, format='json')
+        client_for().post(self.url, {'venue': 'efes-beer-garden', 'session': SID_A, 'rating': 3}, format='json')
+        self.assertEqual(PairingFeedback.objects.count(), 5)
+
     def test_foreign_order_not_linked_and_long_comment_cut(self):
         foreign = self.make_order(venue=self.other_venue)
         resp = client_for().post(self.url, {
@@ -452,6 +474,33 @@ class QrTests(PilotBase):
         self.assertEqual(client_for(self.other).get('/api/venues/efes-beer-garden/qr.svg').status_code, 404)
         self.assertEqual(client_for(self.rest).get('/api/venues/efes-beer-garden/qr.svg').status_code, 200)
         self.assertEqual(client_for(self.mod).get('/api/venues/efes-beer-garden/qr.svg').status_code, 200)
+
+    def test_qr_link_shows_encoded_url(self):
+        resp = client_for().get('/api/venues/efes-beer-garden/qr-link/?table=3')
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.assertEqual(resp.json(), {
+            'url': 'https://pilot.example.kz/menu/efes-beer-garden?table=3&src=qr',
+            'site': 'https://pilot.example.kz', 'configured': True, 'local': False,
+        })
+        self.assertEqual(client_for().get('/api/venues/efes-beer-garden/qr-link/?table=11').status_code, 400)
+        self.venue.is_published = False
+        self.venue.save()
+        self.assertEqual(client_for().get('/api/venues/efes-beer-garden/qr-link/').status_code, 404)
+        self.assertEqual(client_for(self.rest).get('/api/venues/efes-beer-garden/qr-link/').status_code, 200)
+
+    @override_settings(FT_PUBLIC_SITE_URL='', CORS_ALLOWED_ORIGINS=['http://localhost:4200'])
+    def test_qr_link_flags_local_site(self):
+        # Панель открыта на ноутбуке: ссылка ведёт на localhost, и панель предупредит об этом перед печатью.
+        resp = client_for(self.rest).get('/api/venues/efes-beer-garden/qr-link/?table=1',
+                                         HTTP_ORIGIN='http://localhost:4200')
+        self.assertEqual(resp.json(), {
+            'url': 'http://localhost:4200/menu/efes-beer-garden?table=1&src=qr',
+            'site': 'http://localhost:4200', 'configured': False, 'local': True,
+        })
+        with self.assertLogs('django.request', level='ERROR'):
+            resp = client_for(self.rest).get('/api/venues/efes-beer-garden/qr-link/')
+        self.assertEqual(resp.status_code, 503)
+        self.assertIn('FT_PUBLIC_SITE_URL', resp.json()['detail'])
 
 
 class HealthTests(TestCase):

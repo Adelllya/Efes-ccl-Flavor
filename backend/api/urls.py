@@ -26,6 +26,7 @@ urlpatterns = [
     path('pilot/report/', views_pilot.report, name='pilot-report'),
     path('pilot/export.csv', views_pilot.ExportCsvView.as_view(), name='pilot-export'),
     path('venues/<slug:slug>/qr.svg', views_pilot.VenueQrView.as_view(), name='venue-qr'),
+    path('venues/<slug:slug>/qr-link/', views_pilot.venue_qr_link, name='venue-qr-link'),
 
     # Router-generated CRUD + custom actions (pyramid, brands)
     path('', include(router.urls)),
