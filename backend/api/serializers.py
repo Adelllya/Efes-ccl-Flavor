@@ -14,7 +14,7 @@ from .models import (
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
     FoodIcon, SiteSettings, MenuItem, MenuDrink, Order, OrderItem, ChangeRequest,
 )
-from .permissions import user_role, ROLE_LABELS, ROLE_USER
+from .permissions import has_role, user_role, ROLE_LABELS, ROLE_MODERATOR, ROLE_USER
 
 
 def media_url(request, file_field):
@@ -510,6 +510,17 @@ class VenueSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('У этого пользователя уже есть заведение')
         return owner
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Логин владельца видят только он сам и модератор: гостям он не нужен, а злоумышленнику
+        # подсказывает, какой аккаунт подбирать.
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if not (user is not None and user.is_authenticated
+                and (instance.owner_id == user.id or has_role(user, ROLE_MODERATOR))):
+            data.pop('owner', None)
+        return data
+
 
 class MenuItemSerializer(serializers.ModelSerializer):
     dish_name = serializers.CharField(source='dish.name', read_only=True)
@@ -683,7 +694,7 @@ class OrderCreateSerializer(serializers.Serializer):
     venue = serializers.CharField()
     table_number = serializers.IntegerField()
     guest_name = serializers.CharField(max_length=80, required=False, allow_blank=True, default='')
-    comment = serializers.CharField(required=False, allow_blank=True, default='')
+    comment = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
     items = OrderItemInputSerializer(many=True)
 
     def validate_venue(self, value):

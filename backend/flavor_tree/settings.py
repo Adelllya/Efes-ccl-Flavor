@@ -3,7 +3,10 @@ Django settings for flavor_tree project.
 """
 
 import os
+import sys
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,14 +36,44 @@ def load_dotenv(path):
 
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-flavor-tree-dev-key-change-in-production'
-)
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
+def env_flag(name, default=False):
+    value = os.environ.get(name, '').strip().lower()
+    if not value:
+        return default
+    return value in ('true', '1', 'yes', 'on')
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+
+def env_list(name):
+    return [item.strip() for item in os.environ.get(name, '').split(',') if item.strip()]
+
+
+# Vercel сам ставит переменную VERCEL=1 во всех своих функциях.
+ON_VERCEL = bool(os.environ.get('VERCEL'))
+
+# Без явного DJANGO_DEBUG отладка включена только на своей машине, когда Django запущен
+# через manage.py (runserver, test, команды). На Vercel и под gunicorn она выключена.
+DEBUG = env_flag('DJANGO_DEBUG', default=not ON_VERCEL and Path(sys.argv[0]).name == 'manage.py')
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '').strip()
+if not SECRET_KEY or SECRET_KEY.startswith('django-insecure'):
+    if not DEBUG:
+        raise ImproperlyConfigured(
+            'Задайте DJANGO_SECRET_KEY: длинная случайная строка, например из '
+            'python -c "import secrets; print(secrets.token_urlsafe(50))"')
+    SECRET_KEY = SECRET_KEY or 'django-insecure-flavor-tree-dev-key-change-in-production'
+
+# Домены через запятую в DJANGO_ALLOWED_HOSTS. На Vercel к ним добавляются адреса,
+# которые Vercel сообщает сам: основной домен проекта, адрес ветки и конкретного деплоя.
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS')
+if ON_VERCEL:
+    ALLOWED_HOSTS += [host for host in (
+        os.environ.get('VERCEL_PROJECT_PRODUCTION_URL', ''),
+        os.environ.get('VERCEL_BRANCH_URL', ''),
+        os.environ.get('VERCEL_URL', ''),
+    ) if host]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*'] if DEBUG else ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -56,6 +89,8 @@ INSTALLED_APPS = [
     'django_filters',
     # Local
     'api',
+    # Загруженные фото в базе: на Vercel нет постоянного диска (см. STORAGES ниже)
+    'media_db',
 ]
 
 MIDDLEWARE = [
@@ -102,7 +137,8 @@ DATABASE_URL = (
 if DATABASE_URL:
     import dj_database_url
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
+        # conn_health_checks: соединение, которое база закрыла за время простоя, заменяется новым, а не даёт 500
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True, ssl_require=False)
     }
 else:
     DATABASES = {
@@ -147,6 +183,13 @@ WHITENOISE_USE_FINDERS = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# На Vercel диск функции только для чтения: новые фото (логотип, блюда, сорта) пишутся в базу
+# (приложение media_db), а фото из репозитория по-прежнему читаются из media/.
+# Локально файлы лежат на диске, как раньше. Переключить вручную: FT_MEDIA_IN_DB=1 или 0.
+FT_MEDIA_IN_DB = env_flag('FT_MEDIA_IN_DB', default=ON_VERCEL)
+if FT_MEDIA_IN_DB:
+    STORAGES['default'] = {'BACKEND': 'media_db.storage.DatabaseStorage'}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS. Локальные адреса dev-сервера плюс дополнительные origin из окружения
@@ -175,10 +218,39 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
+# Счётчики лимитов запросов (вход, регистрация, заказы, ИИ) живут в кэше. На Vercel у каждого
+# инстанса функции своя память, поэтому там кэш общий, в таблице базы ft_cache.
+# Таблицу создаёт холодный старт (index.py) или manage.py createcachetable.
+if ON_VERCEL or env_flag('FT_DB_CACHE'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'ft_cache',
+            'OPTIONS': {'MAX_ENTRIES': 5000},
+        }
+    }
+
+# Лимиты: ИИ ограничен всегда, вход, регистрация, смена пароля и заказы гостей только на сервере
+# (на своей машине и в manage.py test их нет, даже с DJANGO_DEBUG=False). Значения: переменные FT_RATE_*.
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+THROTTLE_RATES = {
+    'ai': '30/min',
+    'ai_user': '60/min',
+}
+if not DEBUG and not TESTING:
+    THROTTLE_RATES.update({
+        'login': os.environ.get('FT_RATE_LOGIN', '10/min'),
+        'register': os.environ.get('FT_RATE_REGISTER', '10/hour'),
+        'password': os.environ.get('FT_RATE_PASSWORD', '10/hour'),
+        # Гости бара часто сидят в одном Wi-Fi, то есть за одним IP: лимит с запасом.
+        'orders': os.environ.get('FT_RATE_ORDERS', '60/hour'),
+    })
+
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        # Токен DRF с ограниченным сроком жизни (FT_TOKEN_TTL_DAYS, по умолчанию 30 дней)
+        'api.authentication.ExpiringTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     # Чтение открыто всем, доступ на запись задаётся в каждой view отдельно.
@@ -192,13 +264,19 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
-    # Лимиты запросов к ИИ-сомелье. Глобальное ограничение не включаем:
-    # классы throttle указаны только в самой view.
-    'DEFAULT_THROTTLE_RATES': {
-        'ai': '30/min',
-        'ai_user': '60/min',
-    },
+    # Глобальное ограничение не включаем: классы throttle указаны в самих view.
+    'DEFAULT_THROTTLE_RATES': THROTTLE_RATES,
 }
+if not DEBUG:
+    # На сервере API отвечает только JSON: HTML-страницы DRF там не нужны.
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = ['rest_framework.renderers.JSONRenderer']
+if ON_VERCEL:
+    # Перед функцией один прокси Vercel: IP гостя последний в X-Forwarded-For.
+    # Без этого лимиты обходятся подделкой заголовка.
+    REST_FRAMEWORK['NUM_PROXIES'] = int(os.environ.get('DJANGO_NUM_PROXIES', '1'))
+
+# Срок жизни токена входа в днях. 0 - бессрочно.
+FT_TOKEN_TTL_DAYS = int(os.environ.get('FT_TOKEN_TTL_DAYS', '30'))
 
 # ИИ-сомелье. Ключ ANTHROPIC_API_KEY берётся из окружения или backend/.env и в настройках не хранится;
 # без ключа работает локальный подбор. Модель можно заменить через FT_AI_MODEL.

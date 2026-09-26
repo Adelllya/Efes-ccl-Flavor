@@ -98,8 +98,15 @@ class ProfileTests(TestCase):
         resp = self.client_auth.get('/api/auth/me/')
         self.assertEqual(resp.data['venue'], {'id': str(venue.id), 'slug': 'efes-beer-garden', 'name': 'Efes Beer Garden'})
 
-    def test_logout_deletes_token(self):
+    def test_logout_keeps_other_devices(self):
+        # Обычный выход: фронт забывает токен, планшет бара под тем же аккаунтом остаётся в системе.
         resp = self.client_auth.post('/api/auth/logout/')
+        self.assertEqual(resp.status_code, 204)
+        self.assertTrue(Token.objects.filter(user=self.user).exists())
+        self.assertEqual(self.client_auth.get('/api/auth/me/').status_code, 200)
+
+    def test_logout_everywhere_deletes_token(self):
+        resp = self.client_auth.post('/api/auth/logout/', {'everywhere': True}, format='json')
         self.assertEqual(resp.status_code, 204)
         self.assertFalse(Token.objects.filter(user=self.user).exists())
         self.assertEqual(self.client_auth.get('/api/auth/me/').status_code, 401)

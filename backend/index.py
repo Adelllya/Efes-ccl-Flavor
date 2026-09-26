@@ -1,8 +1,11 @@
 """Точка входа для Vercel (@vercel/python). Отдаёт WSGI-приложение Django.
 
 На Vercel нельзя запустить manage.py руками, поэтому при холодном старте
-бекенд сам готовит базу: применяет новые миграции, а если база пустая,
-заливает роли и данные. Пароль от базы при этом не покидает Vercel.
+бекенд сам готовит базу: применяет новые миграции, создаёт таблицу кэша для лимитов,
+а если база пустая, заливает роли и данные. Пароль от базы при этом не покидает Vercel.
+
+Данные в непустой базе этот файл никогда не стирает.
+Демо-учётки получают пароли только из FT_PASSWORD_<ИМЯ>, без переменной вход по паролю закрыт.
 """
 import logging
 import os
@@ -15,6 +18,11 @@ django.setup()
 
 log = logging.getLogger('flavor_tree.bootstrap')
 
+# Порядок для пустой базы: seed заводит ноты и курсы (и временные демо-сорта),
+# load_flavor_data заменяет демо-сорта на 17 настоящих и заливает блюда с парами,
+# seed_roles последним, потому что демо-заведению нужны готовые блюда и сорта.
+SEED_COMMANDS = ('seed', 'load_flavor_data', 'seed_roles')
+
 
 def _bootstrap_db():
     from django.core.management import call_command
@@ -23,52 +31,70 @@ def _bootstrap_db():
 
     executor = MigrationExecutor(connection)
     if executor.migration_plan(executor.loader.graph.leaf_nodes()):
-        call_command('migrate', interactive=False, verbosity=0)
+        _step('migrate', call_command, 'migrate', interactive=False, verbosity=0)
+    # Таблица общего кэша (лимиты запросов). Если она уже есть, это один запрос к списку таблиц.
+    _step('createcachetable', call_command, 'createcachetable', verbosity=0)
 
-    if _load_snapshot():
-        return
+    loaded = _step('snapshot', _load_snapshot)
 
     from api.models import Brand
-    if not Brand.objects.exists():
-        # Порядок из BACKEND_DOCUMENTATION.md: seed чистит ноты, поэтому идёт первым,
-        # load_flavor_data заменяет демо-сорта на 17 настоящих и заливает пары с блюдами.
-        for cmd in ('seed_roles', 'seed', 'load_flavor_data'):
-            try:
-                call_command(cmd, verbosity=0)
-            except Exception:
-                log.exception('Bootstrap command %s failed', cmd)
-    _apply_media_map()
+    if not loaded and not Brand.objects.exists():
+        for cmd in SEED_COMMANDS:
+            _step(cmd, call_command, cmd, verbosity=0)
+
+    from api.demo_accounts import secure_public_passwords
+    _step('demo passwords', secure_public_passwords)
+    _step('media map', _apply_media_map)
 
 
-def _load_snapshot():
-    """Переносит на сервер копию локальной базы из data/snapshot.json.
+def _step(name, func, *args, **kwargs):
+    """Один шаг подготовки: ошибка пишется в лог и не мешает остальным шагам."""
+    try:
+        return func(*args, **kwargs)
+    except Exception:
+        log.exception('Bootstrap step %s failed', name)
+        return None
 
-    Снимок делается локально командой dumpdata и в git не хранится (в нём хэши паролей).
-    Каждый новый снимок заливается один раз: его хэш запоминается в таблице ft_bootstrap.
-    Возвращает True, если снимок есть в деплое.
+
+def _database_is_empty():
+    """В базе нет ни пользователей, ни каталога, ни заведений, ни заказов."""
+    from django.contrib.auth.models import User
+
+    from api.models import Brand, Dish, FlavorNote, Order, Venue
+
+    return not any(model.objects.exists() for model in (User, Brand, Dish, FlavorNote, Venue, Order))
+
+
+def _load_snapshot(path=None):
+    """Переносит на сервер копию локальной базы из data/snapshot.json, но только в пустую базу.
+
+    Снимок делается локально командой dumpdata и в git не хранится (в нём хэши паролей),
+    в деплой не попадает (backend/.vercelignore). Загрузка идёт, только если в окружении
+    FT_LOAD_SNAPSHOT=1, файл есть в деплое и база пустая. В непустую базу снимок
+    не заливается никогда: так деплой не может стереть заказы и данные пилота.
+    Возвращает True, если снимок загружен.
     """
-    import hashlib
     from pathlib import Path
 
     from django.core.management import call_command
     from django.db import connection, transaction
 
-    path = Path(__file__).parent / 'data' / 'snapshot.json'
-    if not path.exists():
+    path = Path(path or Path(__file__).parent / 'data' / 'snapshot.json')
+    if os.environ.get('FT_LOAD_SNAPSHOT') != '1' or not path.exists():
         return False
-    digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    with connection.cursor() as cur:
-        cur.execute('CREATE TABLE IF NOT EXISTS ft_bootstrap (snapshot text PRIMARY KEY)')
-        cur.execute('SELECT 1 FROM ft_bootstrap WHERE snapshot = %s', [digest])
-        if cur.fetchone():
-            return True
+    if not _database_is_empty():
+        log.warning('Snapshot skipped: database is not empty, nothing is overwritten')
+        return False
     with transaction.atomic():
+        if connection.vendor == 'postgresql':
+            # Два инстанса, стартующих одновременно, не зальют снимок дважды.
+            with connection.cursor() as cur:
+                cur.execute('SELECT pg_advisory_xact_lock(%s)', [0x46545342])
+        if not _database_is_empty():
+            return False
         call_command('flush', interactive=False, verbosity=0)
         call_command('loaddata', str(path), verbosity=0)
-        with connection.cursor() as cur:
-            cur.execute('DELETE FROM ft_bootstrap')
-            cur.execute('INSERT INTO ft_bootstrap (snapshot) VALUES (%s)', [digest])
-    log.warning('Loaded database snapshot %s', digest[:12])
+    log.warning('Loaded database snapshot into an empty database')
     return True
 
 

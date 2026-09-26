@@ -30,7 +30,8 @@ class VenueMenuTests(TestCase):
         self.assertEqual(data['venue']['slug'], 'efes-beer-garden')
         self.assertEqual(data['venue']['items_count'], 3)
         self.assertEqual(data['venue']['phone'], '+7 727 000 00 00')
-        self.assertEqual(data['venue']['owner'], {'id': self.owner.id, 'username': 'rest'})
+        # Логин владельца гостю не показываем.
+        self.assertNotIn('owner', data['venue'])
         # Разделы упорядочены по минимальному sort_order, затем по имени.
         self.assertEqual([s['name'] for s in data['sections']], ['Горячее', 'Закуски'])
 
@@ -79,8 +80,10 @@ class VenueMenuTests(TestCase):
         self.assertIsInstance(data, list)
         venue = data[0]
         for key in ('id', 'slug', 'name', 'city', 'address', 'venue_type', 'venue_type_display', 'logo',
-                    'cover', 'description', 'phone', 'working_hours', 'is_published', 'items_count', 'owner'):
+                    'cover', 'description', 'phone', 'working_hours', 'is_published', 'items_count'):
             self.assertIn(key, venue)
+        # Логин владельца видят только он сам и модератор.
+        self.assertNotIn('owner', venue)
         self.assertEqual(venue['venue_type_display'], 'Ресторан')
         self.assertEqual(venue['city'], 'Алматы')
 

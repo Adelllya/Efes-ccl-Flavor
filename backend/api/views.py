@@ -532,17 +532,43 @@ def landing_data(request):
     })
 
 
-@api_view(['GET'])
+@api_view(['GET', 'HEAD'])
 def health_check(request):
-    """GET /api/health/ - health check."""
-    return Response({'ok': True})
+    """
+    GET /api/health/ - сервер жив и база отвечает: {ok, db}; без базы 503.
+    Дёшево: один SELECT 1. Его же дёргает cron Vercel (backend/vercel.json) и внешний мониторинг.
+    """
+    from django.db import connection
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+            cursor.fetchone()
+        db_ok = True
+    except Exception:
+        db_ok = False
+    response = Response({'ok': db_ok, 'db': db_ok},
+                        status=status.HTTP_200_OK if db_ok else status.HTTP_503_SERVICE_UNAVAILABLE)
+    response['Cache-Control'] = 'no-store'
+    return response
 
 
 @api_view(['POST'])
 @permission_classes([IsModerator])
 def seed_data(request):
-    """POST /api/seed/ - загрузка демо-данных и 17 сортов (идемпотентно). Только модератор."""
+    """
+    POST /api/seed/ - загрузка демо-данных и 17 сортов (идемпотентно). Только модератор.
+    На сервере выключено: команда стирает пары блюд и сортов и правки сомелье.
+    Включить на время: FT_ALLOW_SEED=1.
+    """
+    import os
+
+    from django.conf import settings
     from django.core.management import call_command
+    if not settings.DEBUG and os.environ.get('FT_ALLOW_SEED') != '1':
+        return Response(
+            {'ok': False, 'detail': 'На сервере перезагрузка каталога выключена: она стирает пары и правки сомелье'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
     try:
         call_command('load_flavor_data')
         return Response({'ok': True, 'message': '17 brands and flavor pyramid data loaded successfully'})

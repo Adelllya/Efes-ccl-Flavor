@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from .models import Order, Venue
 from .permissions import ROLE_MODERATOR, has_role, IsOwnerOfVenueOrModerator
 from .serializers import OrderCreateSerializer, OrderSerializer, parse_uuid
+from .throttles import OrderCreateThrottle
 
 
 def find_venue(value):
@@ -44,6 +45,12 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
         if self.action == 'partial_update':
             return [IsAuthenticated(), IsOwnerOfVenueOrModerator()]
         return [IsAuthenticated()]
+
+    def get_throttles(self):
+        # Лимит только на новые заказы: панель заведения опрашивает список часто.
+        if self.action == 'create':
+            return [OrderCreateThrottle()]
+        return super().get_throttles()
 
     def _venue_from_query(self, request):
         """Заведение из ?venue=. Чужое заведение для владельца - 403."""

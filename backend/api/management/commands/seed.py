@@ -3,10 +3,10 @@ Django management command: python manage.py seed
 Загружает все демо-данные (идемпотентно - сначала удаляет, потом вставляет).
 Данные по стандарту FlavorActiV «Beer Flavour Language».
 """
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from api.models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
-    Course, TeamMember,
+    Course, TeamMember, Order, Venue,
 )
 
 
@@ -106,7 +106,16 @@ TEAM_MEMBER_SEEDS = [
 class Command(BaseCommand):
     help = 'Загрузить демо-данные Flavor Tree (идемпотентно)'
 
+    def add_arguments(self, parser):
+        parser.add_argument('--force', action='store_true',
+                            help='Запустить даже в базе, где уже есть заведения или заказы')
+
     def handle(self, *args, **options):
+        # Команда стирает все сорта, а с ними каскадом пары, карты напитков заведений и запросы сомелье.
+        if not options.get('force') and (Venue.objects.exists() or Order.objects.exists()):
+            raise CommandError(
+                'В базе уже есть заведения или заказы: seed сотрёт сорта, пары и карты напитков. '
+                'На рабочей базе его не запускают (см. DEPLOY.md). Если это точно нужно, добавьте --force')
         self.stdout.write('Очистка старых данных...')
         TeamMember.objects.all().delete()
         Course.objects.all().delete()
