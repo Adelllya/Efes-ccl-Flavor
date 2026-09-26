@@ -235,18 +235,53 @@ export interface Venue {
 }
 
 /** Лучшее сочетание для блюда в меню: пара с самым высоким баллом. */
+/** Откуда вариант напитка к блюду: пара команды Flavor Tree или подбор движка v2. */
+export type PairingSource = 'TEAM' | 'ENGINE';
+
 export interface MenuPairing {
-  brand: string;
+  /** Сорт каталога; null у напитка из базы подбора без сорта. */
+  brand: string | null;
   brand_name: string;
   brand_image: string | null;
   brand_style: string;
   abv: number | null;
+  /** Оценка 1-5: у пары команды своя, у движка по его бэнду. */
   compatibility_score: number;
-  pairing_type: PairingType;
+  /** null, если движок не назвал тип пары. */
+  pairing_type: PairingType | null;
   pairing_type_display?: string;
   explanation: string;
-  /** Позиция карты бара, если этот сорт там есть; null - сорта в карте нет. */
+  /** Позиция карты бара; null только у совета без карты напитков. */
   menu_drink?: MenuDrinkRef | null;
+  rank?: number;
+  source?: PairingSource;
+  curated?: boolean;
+  engine_drink_id?: string;
+  category?: string | null;
+  is_alcoholic?: boolean;
+  /** Оценка команды, если к этому сорту и блюду есть её пара. */
+  team_rating?: number | null;
+  /** Балл движка 0-100 и его подпись, если напиток есть в базе подбора. */
+  score?: number | null;
+  band?: string | null;
+  band_label?: string | null;
+  /** Короткие причины от движка, без ссылок на источники. */
+  reasons?: string[];
+}
+
+/**
+ * Как подобран напиток к позиции: ok - есть сильный вариант, weak - сильной пары в карте нет,
+ * none - в карте нет подходящего напитка, no_drinks - у заведения пустая карта напитков.
+ */
+export type PairingStatus = 'ok' | 'weak' | 'none' | 'no_drinks';
+
+export interface MenuPairingInfo {
+  status: PairingStatus;
+  engine_dish: string | null;
+  engine_dish_name: string;
+  /** exact и partial - по названию, similar - по похожему блюду based_on. */
+  dish_match: 'exact' | 'partial' | 'similar' | null;
+  based_on: string;
 }
 
 export interface MenuItem {
@@ -268,12 +303,19 @@ export interface MenuItem {
 export interface MenuDrink {
   id: string;
   venue: string;
-  brand: string;
+  /** Сорт каталога; null, если в карте напиток из базы подбора (engine_drink_id). */
+  brand: string | null;
+  /** Название: сорт каталога, иначе напиток базы подбора. */
   brand_name: string;
   brand_style: string;
-  /** Абсолютный URL: image, а если его нет - image_hd. */
+  /** Сорт каталога: абсолютный URL; напиток базы подбора: путь на сайте (/img/beers/...) или null. */
   brand_image: string | null;
   abv: number | null;
+  /** id напитка из базы подбора v2 (412 напитков); пусто у сорта каталога без привязки. */
+  engine_drink_id?: string;
+  name?: string;
+  category?: string | null;
+  is_alcoholic?: boolean;
   price: string;
   /** Например "0,5 л". */
   volume: string;
@@ -292,9 +334,13 @@ export interface MenuDrinkRef {
 /** Позиция публичного меню: блюдо целиком плюс рекомендация. */
 export interface MenuEntry extends Omit<MenuItem, 'dish' | 'venue'> {
   dish: Dish;
+  /** Первый вариант; без карты напитков - пара команды как совет. */
   pairing: MenuPairing | null;
-  /** До двух других сочетаний для блюда, сорта которых есть в карте бара. */
+  /** Остальные варианты из карты бара. */
   alternatives?: MenuPairing[];
+  /** До трёх напитков из карты бара в наличии, лучшие первыми. Нет у старого бэкенда. */
+  recommendations?: MenuPairing[];
+  pairing_info?: MenuPairingInfo;
 }
 
 export interface VenueMenu {

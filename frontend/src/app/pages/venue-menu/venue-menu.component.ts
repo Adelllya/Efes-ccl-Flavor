@@ -34,30 +34,53 @@ const POLL_MS = 15000;
 /** Псевдораздел в полосе разделов: только карта напитков. */
 const DRINKS_SECTION = '__drinks__';
 
-/** Напиток к позиции: выбор сомелье с сервера или подбор движка. */
+/** Напиток к позиции: пара команды Flavor Tree или подбор движка, всегда из карты бара. */
 interface MenuRec {
-  brandId: string;
+  /** Позиция карты бара, иначе сорт: ключ для списка. */
+  key: string;
+  /** Сорт каталога для страницы «О напитке»; null у напитка из базы подбора. */
+  brandId: string | null;
   name: string;
   style: string;
   abv: number | null;
   image: string | null;
+  /** Оценка 1-5 для полосок. */
   rating: number;
-  type: PairingType;
+  /** Балл движка 0-100; null, если движок этот напиток не считал. */
+  score: number | null;
+  bandLabel: string;
+  type: PairingType | null;
   explanation: string;
-  bySommelier: boolean;
+  curated: boolean;
   basedOn?: string;
-  /** Позиция карты бара с этим сортом; null - сорта в карте нет. */
+  /** Место в подборе, 1 - лучший. */
+  rank: number;
+  /** Позиция карты бара; null только в совете, когда карты напитков нет. */
   drink: MenuDrink | null;
 }
+
+/**
+ * ok - есть что заказать; weak - сильной пары в карте нет, показываем ближайшие;
+ * none - предложить нечего; loading - ждём справочник сортов для запасного подбора.
+ */
+type RecState = 'ok' | 'weak' | 'none' | 'loading';
 
 interface MenuRow extends MenuEntry {
   rec: MenuRec | null;
   alts: MenuRec[];
+  recState: RecState;
 }
 
 interface MenuSection {
   name: string;
   items: MenuRow[];
+}
+
+/** Карта бара для подбора: по id позиции, по сорту каталога и есть ли в ней хоть что-то. */
+interface BarDrinks {
+  byId: Map<string, MenuDrink>;
+  byBrand: Map<string, MenuDrink>;
+  any: boolean;
 }
 
 interface StoredOrder {
@@ -349,6 +372,9 @@ interface TimelineStep {
                       @if (isOpen(it.id)) {
                         <div class="vm-rec-panel">
                           @if (it.rec; as r) {
+                            @if (it.recState === 'weak') {
+                              <p class="vm-rec-note text-sm">Сильной пары к этому блюду в карте бара нет. Ближе всего по вкусу:</p>
+                            }
                             <div class="vm-rec">
                               <div class="vm-rec-thumb" aria-hidden="true">
                                 @if (r.image) {
@@ -359,21 +385,28 @@ interface TimelineStep {
                               </div>
                               <div class="vm-rec-body">
                                 <div class="vm-rec-top">
-                                  <span class="vm-rec-kind" [class.vm-rec-engine]="!r.bySommelier">{{ r.bySommelier ? 'Выбор сомелье' : 'Подбор движка' }}</span>
-                                  <span class="badge">{{ label(r.type) }}</span>
+                                  <span class="vm-rec-kind" [class.vm-rec-engine]="!r.curated">{{ r.curated ? 'Подбор команды Flavor Tree' : 'Подбор движка' }}</span>
+                                  @if (r.type) { <span class="badge">{{ label(r.type) }}</span> }
                                 </div>
                                 <p class="vm-rec-name">
                                   {{ r.name }}
                                   <span class="text-muted">{{ r.style }}@if (r.abv) { · {{ r.abv }}% }</span>
                                 </p>
-                                <div class="vm-score" role="img" [attr.aria-label]="'Совместимость ' + r.rating + ' из 5'">
-                                  @for (p of pips; track p) {
-                                    <span class="vm-pip" [class.on]="p <= r.rating"></span>
-                                  }
-                                  <span class="vm-score-num">{{ r.rating }}/5</span>
-                                </div>
+                                @if (r.curated || r.score === null) {
+                                  <div class="vm-score" role="img" [attr.aria-label]="'Совместимость ' + r.rating + ' из 5'">
+                                    @for (p of pips; track p) {
+                                      <span class="vm-pip" [class.on]="p <= r.rating"></span>
+                                    }
+                                    <span class="vm-score-num">{{ r.rating }}/5</span>
+                                  </div>
+                                } @else {
+                                  <p class="vm-score" [attr.aria-label]="'Балл движка ' + r.score + ' из 100'">
+                                    <span class="vm-score-big">{{ r.score }}</span>
+                                    <span class="text-xs text-muted">из 100@if (r.bandLabel) { · {{ r.bandLabel }} }</span>
+                                  </p>
+                                }
                                 @if (r.explanation) { <p class="vm-rec-text text-sm text-dim">{{ r.explanation }}</p> }
-                                @if (!r.bySommelier && r.basedOn && r.basedOn !== it.dish.name) {
+                                @if (r.basedOn && r.basedOn !== it.dish.name) {
                                   <p class="text-xs text-muted">По похожему блюду «{{ r.basedOn }}»</p>
                                 }
                                 @if (r.drink; as d) {
@@ -383,18 +416,20 @@ interface TimelineStep {
                                     <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d }" />
                                   </div>
                                 } @else {
-                                  <p class="vm-rec-missing text-sm">Этого сорта нет в карте бара.</p>
+                                  <p class="vm-rec-missing text-sm">Заведение пока не добавило напитки в меню. Спросите официанта, что есть похожего.</p>
                                 }
-                                <button type="button" class="vm-link" (click)="openDrink(r.brandId)">
-                                  О напитке
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                                </button>
+                                @if (r.brandId) {
+                                  <button type="button" class="vm-link" (click)="openDrink(r.brandId)">
+                                    О напитке
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                  </button>
+                                }
                               </div>
                             </div>
                             @if (it.alts.length) {
-                              <p class="vm-alts-title">{{ r.drink ? 'Ещё из карты бара' : 'Есть в карте бара' }}</p>
+                              <p class="vm-alts-title">Ещё из карты бара</p>
                               <ul class="vm-alts">
-                                @for (a of it.alts; track a.brandId) {
+                                @for (a of it.alts; track a.key) {
                                   <li class="vm-alt">
                                     <div class="vm-alt-thumb" aria-hidden="true">
                                       @if (a.image) {
@@ -404,8 +439,12 @@ interface TimelineStep {
                                       }
                                     </div>
                                     <div class="vm-alt-body">
-                                      <button type="button" class="vm-alt-name" (click)="openDrink(a.brandId)" title="О напитке">{{ a.name }}</button>
-                                      <span class="text-xs text-muted">{{ a.style }}@if (a.abv) { · {{ a.abv }}% } · {{ label(a.type) }} · {{ a.rating }}/5</span>
+                                      @if (a.brandId) {
+                                        <button type="button" class="vm-alt-name" (click)="openDrink(a.brandId)" title="О напитке">{{ a.name }}</button>
+                                      } @else {
+                                        <span class="vm-alt-name vm-name-plain">{{ a.name }}</span>
+                                      }
+                                      <span class="text-xs text-muted">{{ altMeta(a) }}</span>
                                       @if (a.drink; as d) {
                                         <div class="vm-rec-buy">
                                           <span class="vm-price">{{ price(d.price) }}</span>
@@ -418,10 +457,18 @@ interface TimelineStep {
                                 }
                               </ul>
                             }
-                          } @else if (engineLoaded()) {
-                            <p class="vm-rec-none text-sm text-muted">Напиток к этому блюду ещё не подобран. Загляните в карту напитков ниже.</p>
-                          } @else {
+                          } @else if (it.recState === 'loading') {
                             <p class="vm-rec-none text-sm text-muted">Подбираем напиток...</p>
+                          } @else if (drinks().length) {
+                            <div class="vm-rec-none">
+                              <p class="text-sm text-muted">Сильной пары к этому блюду в карте бара нет. Выберите напиток по вкусу из карты.</p>
+                              <button type="button" class="vm-link" (click)="showBarDrinks()">
+                                Все напитки бара
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                              </button>
+                            </div>
+                          } @else {
+                            <p class="vm-rec-none text-sm text-muted">Заведение пока не добавило напитки в меню.</p>
                           }
                         </div>
                       }
@@ -432,7 +479,7 @@ interface TimelineStep {
             }
 
             @if (showDrinks()) {
-              <section class="vm-section">
+              <section class="vm-section" id="vm-bar-drinks">
                 <h2 class="vm-section-title">Напитки бара</h2>
                 <div class="vm-drinks">
                   @for (d of drinks(); track d.id) {
@@ -445,7 +492,11 @@ interface TimelineStep {
                         }
                       </div>
                       <div class="vm-drink-body">
-                        <button type="button" class="vm-drink-name" (click)="openDrink(d.brand)" title="О напитке">{{ d.brand_name }}</button>
+                        @if (d.brand) {
+                          <button type="button" class="vm-drink-name" (click)="openDrink(d.brand)" title="О напитке">{{ d.brand_name }}</button>
+                        } @else {
+                          <span class="vm-drink-name vm-name-plain">{{ d.brand_name }}</span>
+                        }
                         <p class="text-xs text-muted vm-drink-meta">{{ d.brand_style }}@if (d.abv) { · {{ d.abv }}% }@if (d.volume) { · {{ d.volume }} }</p>
                         <div class="vm-drink-foot">
                           <span class="vm-price">{{ price(d.price) }}</span>
@@ -773,7 +824,13 @@ export class VenueMenuComponent implements OnDestroy {
   }
 
   readonly drinks = computed<MenuDrink[]>(() => this.menu()?.drinks ?? []);
-  private readonly drinkByBrand = computed(() => new Map(this.drinks().map(d => [d.brand, d])));
+  private readonly drinkById = computed(() => new Map(this.drinks().map(d => [d.id, d])));
+  private readonly drinkByBrand = computed(() => new Map(
+    this.drinks().filter(d => d.brand).map(d => [d.brand as string, d])
+  ));
+  /** Старый бэкенд без recommendations: тогда подбираем сами по сортам из карты бара. */
+  private readonly needsLocalEngine = computed(() =>
+    !!this.menu()?.sections.some(s => s.items.some(i => !i.recommendations)));
 
   readonly sections = computed<MenuSection[]>(() => {
     const m = this.menu();
@@ -782,10 +839,10 @@ export class VenueMenuComponent implements OnDestroy {
     const pairings = this.pairings();
     const dishes = m.sections.flatMap(s => s.items.map(i => i.dish));
     const brandById = new Map(brands.map(b => [b.id, b]));
-    const drinkByBrand = this.drinkByBrand();
+    const bar: BarDrinks = { byId: this.drinkById(), byBrand: this.drinkByBrand(), any: m.drinks.length > 0 };
     return m.sections.map(s => ({
       name: s.name,
-      items: s.items.map(i => ({ ...i, ...this.recsFor(i, brands, dishes, pairings, brandById, drinkByBrand) })),
+      items: s.items.map(i => ({ ...i, ...this.recsFor(i, brands, dishes, pairings, brandById, bar) })),
     }));
   });
 
@@ -875,7 +932,19 @@ export class VenueMenuComponent implements OnDestroy {
 
   toggleRec(id: string): void {
     this.expanded.update(e => ({ ...e, [id]: !e[id] }));
-    this.ensureEngineData();
+    if (this.needsLocalEngine()) this.ensureEngineData();
+  }
+
+  /** «Все напитки бара» из панели подбора: только карта напитков, прокрутка к ней. */
+  showBarDrinks(): void {
+    this.selectSection(DRINKS_SECTION);
+    setTimeout(() => document.getElementById('vm-bar-drinks')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  /** «Czech Lager · 4% · 80 из 100» у варианта в списке «Ещё из карты бара». */
+  altMeta(a: MenuRec): string {
+    const score = a.curated || a.score === null ? `${a.rating}/5` : `${a.score} из 100`;
+    return [a.style, a.abv ? `${a.abv}%` : '', a.type ? this.label(a.type) : '', score].filter(Boolean).join(' · ');
   }
 
   isOpen(id: string): boolean {
@@ -1162,8 +1231,8 @@ export class VenueMenuComponent implements OnDestroy {
     return 'tel:' + phone.replace(/[^\d+]/g, '');
   }
 
-  label(type: PairingType): string {
-    return PAIRING_LABELS[type] ?? type;
+  label(type: PairingType | null): string {
+    return type ? PAIRING_LABELS[type] ?? type : '';
   }
 
   // Загрузка
@@ -1221,7 +1290,7 @@ export class VenueMenuComponent implements OnDestroy {
         // Стол из QR или из хранилища может быть больше, чем столов у заведения: сбрасываем, ниже откроется выбор
         const table = this.tableNumber();
         if (table !== null && table > this.tablesCount()) this.selection.setTable(slug, null);
-        if (m.sections.some(s => s.items.some(i => !i.pairing))) this.ensureEngineData();
+        if (m.sections.some(s => s.items.some(i => !i.recommendations && !i.pairing))) this.ensureEngineData();
         // Стол ещё не выбран: предлагаем выбрать, когда меню уже на экране
         if (this.tableNumber() === null && this.step() === 'menu') {
           this.autoTableTimer = setTimeout(() => {
@@ -1329,64 +1398,96 @@ export class VenueMenuComponent implements OnDestroy {
     dishes: Dish[],
     pairings: FoodPairing[],
     brandById: Map<string, Brand>,
-    drinkByBrand: Map<string, MenuDrink>,
-  ): { rec: MenuRec | null; alts: MenuRec[] } {
-    const p = entry.pairing;
-    if (p) {
-      const rec = this.fromPairing(p, brandById, drinkByBrand);
-      const alts = (entry.alternatives ?? [])
-        .filter(a => a.brand !== p.brand)
-        .slice(0, 2)
-        .map(a => this.fromPairing(a, brandById, drinkByBrand));
-      return { rec, alts };
-    }
-    if (!brands.length) return { rec: null, alts: [] };
+    bar: BarDrinks,
+  ): { rec: MenuRec | null; alts: MenuRec[]; recState: RecState } {
+    const info = entry.pairing_info;
+    const basedOn = info?.dish_match === 'similar' ? info.based_on : undefined;
+    const fromServer = (p: MenuPairing, i: number) => this.fromPairing(p, i + 1, brandById, bar, basedOn);
+    const orderable = (r: MenuRec) => !!r.drink?.is_available;
 
-    const d = entry.dish;
-    const profile: DishProfile = {
-      category: null,
-      cooking: d.cooking_method === 'OTHER' ? null : d.cooking_method,
-      taste: d.dominant_taste,
-      weight: d.weight,
-      fat: d.fat_level,
-      freeText: d.name,
-    };
-    const [first, ...rest] = recommend(profile, brands, dishes, pairings, 4);
-    if (!first) return { rec: null, alts: [] };
-    // Альтернативы движка показываем только из того, что есть в карте бара
-    const alts = rest.map(r => this.fromEngine(r, drinkByBrand)).filter(r => r.drink).slice(0, 2);
-    return { rec: this.fromEngine(first, drinkByBrand), alts };
+    // Бэкенд уже выбрал до трёх напитков из карты бара, которые можно заказать.
+    if (entry.recommendations) {
+      if (!bar.any) {
+        // Карты напитков нет: пара команды остаётся советом без кнопки заказа.
+        const advice = entry.pairing ? fromServer(entry.pairing, 0) : null;
+        return { rec: advice, alts: [], recState: advice ? 'ok' : 'none' };
+      }
+      const [rec = null, ...alts] = entry.recommendations.map(fromServer).filter(orderable);
+      return { rec, alts, recState: !rec ? 'none' : info?.status === 'weak' ? 'weak' : 'ok' };
+    }
+
+    // Старый бэкенд: пары команды из карты бара, иначе запасной подбор только по сортам этого бара.
+    const server = [entry.pairing, ...(entry.alternatives ?? [])]
+      .filter((p): p is MenuPairing => !!p)
+      .map(fromServer);
+    if (!bar.any) {
+      return { rec: server[0] ?? null, alts: [], recState: server.length ? 'ok' : 'none' };
+    }
+    let list = server.filter(orderable);
+    if (!list.length) {
+      if (!brands.length) return { rec: null, alts: [], recState: this.engineLoaded() ? 'none' : 'loading' };
+      const d = entry.dish;
+      const profile: DishProfile = {
+        category: null,
+        cooking: d.cooking_method === 'OTHER' ? null : d.cooking_method,
+        taste: d.dominant_taste,
+        weight: d.weight,
+        fat: d.fat_level,
+        freeText: d.name,
+      };
+      const inBar = brands.filter(b => bar.byBrand.get(b.id)?.is_available);
+      list = recommend(profile, inBar, dishes, pairings, 3).map((r, i) => this.fromEngine(r, i + 1, bar));
+    }
+    const [rec = null, ...alts] = list.slice(0, 3);
+    return { rec, alts, recState: rec ? 'ok' : 'none' };
   }
 
-  private fromPairing(p: MenuPairing, brandById: Map<string, Brand>, drinkByBrand: Map<string, MenuDrink>): MenuRec {
-    const brand = brandById.get(p.brand);
+  private fromPairing(
+    p: MenuPairing, rank: number, brandById: Map<string, Brand>, bar: BarDrinks, basedOn?: string,
+  ): MenuRec {
+    const brand = p.brand ? brandById.get(p.brand) : undefined;
+    const drink = (p.menu_drink ? bar.byId.get(p.menu_drink.id) : undefined)
+      ?? (p.brand ? bar.byBrand.get(p.brand) : undefined)
+      ?? null;
+    // У старого бэкенда в ответе были только пары команды.
+    const curated = p.curated ?? true;
     return {
+      key: drink?.id ?? p.brand ?? p.brand_name,
       brandId: p.brand,
       name: p.brand_name,
       style: p.brand_style,
       abv: p.abv,
       image: p.brand_image || (brand ? smallImage(brand) : null),
       rating: p.compatibility_score,
+      score: p.score ?? null,
+      bandLabel: p.band_label ?? '',
       type: p.pairing_type,
       explanation: p.explanation,
-      bySommelier: true,
-      drink: drinkByBrand.get(p.brand) ?? null,
+      curated,
+      basedOn: curated ? undefined : basedOn,
+      rank: p.rank ?? rank,
+      drink,
     };
   }
 
-  private fromEngine(r: Recommendation, drinkByBrand: Map<string, MenuDrink>): MenuRec {
+  private fromEngine(r: Recommendation, rank: number, bar: BarDrinks): MenuRec {
+    const drink = bar.byBrand.get(r.brand.id) ?? null;
     return {
+      key: drink?.id ?? r.brand.id,
       brandId: r.brand.id,
       name: r.brand.name,
       style: r.brand.style,
       abv: r.brand.abv ?? null,
       image: smallImage(r.brand),
       rating: r.rating,
+      score: null,
+      bandLabel: '',
       type: r.type,
       explanation: r.explanation,
-      bySommelier: false,
+      curated: false,
       basedOn: r.basedOn,
-      drink: drinkByBrand.get(r.brand.id) ?? null,
+      rank,
+      drink,
     };
   }
 
