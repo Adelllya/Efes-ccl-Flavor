@@ -1,7 +1,9 @@
 import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from .slugs import unique_slug
 
@@ -314,6 +316,9 @@ class Venue(models.Model):
     tables_count = models.PositiveIntegerField(
         'Количество столов', default=20,
         help_text='Гость выбирает стол от 1 до этого числа при заказе.')
+    accepts_orders = models.BooleanField(
+        'Принимает заказы через приложение', default=True,
+        help_text='Если выключено, меню и подбор работают, а заказ гость показывает официанту.')
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='venues', verbose_name='Владелец')
@@ -372,13 +377,22 @@ class MenuItem(models.Model):
 
 
 class MenuDrink(models.Model):
-    """Напиток в карте бара: сорт из каталога с ценой в конкретном заведении."""
+    """
+    Напиток в карте бара с ценой в конкретном заведении: сорт из каталога (brand)
+    или любой из 412 напитков движка подбора v2 (engine_drink_id). Для напитка движка
+    без сорта название хранится в name.
+    """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='menu_drinks',
                               verbose_name='Заведение')
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='menu_drinks',
-                              verbose_name='Сорт')
+                              null=True, blank=True, verbose_name='Сорт')
+    engine_drink_id = models.CharField(
+        'Напиток движка подбора', max_length=64, blank=True, default='', db_index=True,
+        help_text='id из data/engine/drinks.json, например efes-0-0. Можно не заполнять, если выбран сорт.')
+    name = models.CharField('Название', max_length=120, blank=True, default='',
+                            help_text='Показывается, когда сорт не выбран.')
     price = models.DecimalField('Цена, тг', max_digits=10, decimal_places=2)
     volume = models.CharField('Объём', max_length=40, blank=True, default='',
                               help_text='Например «0,5 л» или «0,33 л».')
@@ -390,10 +404,24 @@ class MenuDrink(models.Model):
         verbose_name = 'Напиток в карте'
         verbose_name_plural = 'Напитки в карте'
         unique_together = ('venue', 'brand')
-        ordering = ['sort_order', 'brand__name']
+        ordering = ['sort_order', 'brand__name', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['venue', 'engine_drink_id'], condition=~models.Q(engine_drink_id=''),
+                name='menudrink_venue_engine_drink_unique'),
+            models.CheckConstraint(
+                check=models.Q(brand__isnull=False) | ~models.Q(engine_drink_id=''),
+                name='menudrink_brand_or_engine_drink'),
+        ]
+
+    @property
+    def display_name(self):
+        if self.brand_id:
+            return self.brand.name
+        return self.name or self.engine_drink_id
 
     def __str__(self):
-        return f'{self.venue.name}: {self.brand.name} - {self.price}'
+        return f'{self.venue.name}: {self.display_name} - {self.price}'
 
 
 class Order(models.Model):
@@ -423,7 +451,8 @@ class Order(models.Model):
     FINAL_STATUSES = (STATUS_DONE, STATUS_CANCELLED)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='orders',
+    # PROTECT: заказы пилота нужны для отчёта, удаление заведения не должно стирать их каскадом.
+    venue = models.ForeignKey(Venue, on_delete=models.PROTECT, related_name='orders',
                               verbose_name='Заведение')
     number = models.PositiveIntegerField('Номер', help_text='Сквозной номер внутри заведения, с 1.')
     table_number = models.IntegerField('Стол', help_text='0 - без стола (с собой).')
@@ -432,6 +461,9 @@ class Order(models.Model):
     status = models.CharField('Статус', max_length=10, choices=STATUS_CHOICES, default=STATUS_NEW)
     total = models.DecimalField('Сумма, тг', max_digits=10, decimal_places=2, default=0)
     guest_token = models.CharField('Токен гостя', max_length=64, unique=True, editable=False)
+    session = models.CharField('Сессия гостя', max_length=36, blank=True, default='',
+                               help_text='Анонимный id браузера (ft_sid), связывает заказ с событиями пилота.')
+    age_confirmed = models.BooleanField('Гость подтвердил возраст', default=False)
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)
 
@@ -461,6 +493,16 @@ class OrderItem(models.Model):
         (KIND_DRINK, 'Напиток'),
     ]
 
+    # Откуда позиция попала в корзину: из меню, из панели «Подобрать напиток» или из чата ИИ-сомелье.
+    SOURCE_MENU = 'MENU'
+    SOURCE_PAIRING = 'PAIRING'
+    SOURCE_AI = 'AI'
+    SOURCE_CHOICES = [
+        (SOURCE_MENU, 'Меню'),
+        (SOURCE_PAIRING, 'Подбор'),
+        (SOURCE_AI, 'ИИ-сомелье'),
+    ]
+
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items',
                               verbose_name='Заказ')
     kind = models.CharField('Тип', max_length=5, choices=KIND_CHOICES)
@@ -472,6 +514,12 @@ class OrderItem(models.Model):
     price = models.DecimalField('Цена, тг', max_digits=10, decimal_places=2)
     qty = models.PositiveIntegerField('Количество', default=1)
     note = models.CharField('Пожелание', max_length=200, blank=True, default='')
+    source = models.CharField('Откуда добавлено', max_length=16, choices=SOURCE_CHOICES, default=SOURCE_MENU)
+    paired_menu_item = models.ForeignKey(
+        MenuItem, on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+        verbose_name='Подобрано к блюду')
+    rec_rank = models.SmallIntegerField('Место в подборе', null=True, blank=True,
+                                        help_text='1 - лучший вариант, 2 и дальше - альтернативы.')
 
     class Meta:
         verbose_name = 'Строка заказа'
@@ -688,3 +736,89 @@ class EnginePairingWeights(models.Model):
     @classmethod
     def load(cls):
         return cls.objects.first() or cls()
+
+
+class PilotEvent(models.Model):
+    """
+    Событие пилота: скан QR, открытие меню и подбора, добавление напитка, заказ, оценка.
+    Гость анонимен: session - случайный id браузера (ft_sid), имени и телефона здесь нет.
+    Из этих строк считается отчёт пилота (api/pilot_report.py).
+    """
+
+    KIND_SCAN = 'SCAN'
+    KIND_MENU_OPEN = 'MENU_OPEN'
+    KIND_PAIR_OPEN = 'PAIR_OPEN'
+    KIND_PAIR_ADD = 'PAIR_ADD'
+    KIND_ORDER = 'ORDER'
+    KIND_FEEDBACK = 'FEEDBACK'
+    KIND_AGE_OK = 'AGE_OK'
+    KIND_AI_ASK = 'AI_ASK'
+    KIND_AI_ADD = 'AI_ADD'
+    KIND_CATALOG_OPEN = 'CATALOG_OPEN'
+    KIND_PAIRING_V2 = 'PAIRING_V2'
+    KIND_CHOICES = [
+        (KIND_SCAN, 'Скан QR'),
+        (KIND_MENU_OPEN, 'Открыл меню'),
+        (KIND_PAIR_OPEN, 'Открыл подбор'),
+        (KIND_PAIR_ADD, 'Добавил напиток из подбора'),
+        (KIND_ORDER, 'Заказ'),
+        (KIND_FEEDBACK, 'Оценка пары'),
+        (KIND_AGE_OK, 'Подтвердил возраст'),
+        (KIND_AI_ASK, 'Вопрос ИИ-сомелье'),
+        (KIND_AI_ADD, 'Добавил из чата ИИ'),
+        (KIND_CATALOG_OPEN, 'Открыл каталог'),
+        (KIND_PAIRING_V2, 'Подбор на сайте'),
+    ]
+
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='pilot_events', verbose_name='Заведение')
+    session = models.CharField('Сессия гостя', max_length=36, blank=True, default='', db_index=True)
+    kind = models.CharField('Событие', max_length=24, choices=KIND_CHOICES)
+    table_number = models.PositiveSmallIntegerField('Стол', null=True, blank=True)
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='+', verbose_name='Блюдо меню')
+    menu_drink = models.ForeignKey(MenuDrink, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='+', verbose_name='Напиток в карте')
+    dish_ref = models.CharField('Блюдо (ссылка)', max_length=64, blank=True, default='',
+                                help_text='id позиции меню, блюда движка или название, если позиции меню нет.')
+    drink_ref = models.CharField('Напиток (ссылка)', max_length=64, blank=True, default='',
+                                 help_text='id напитка в карте, напитка движка или название.')
+    rank = models.SmallIntegerField('Место в подборе', null=True, blank=True)
+    source = models.CharField('Источник', max_length=16, blank=True, default='')
+    meta = models.JSONField('Подробности', default=dict, blank=True)
+    created_at = models.DateTimeField('Когда', auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'Событие пилота'
+        verbose_name_plural = 'События пилота'
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['venue', 'kind', 'created_at'], name='pilotevent_venue_kind_time')]
+
+    def __str__(self):
+        if not self.created_at:
+            return self.get_kind_display()
+        return f'{self.get_kind_display()} ({timezone.localtime(self.created_at):%d.%m %H:%M})'
+
+
+class PairingFeedback(models.Model):
+    """Оценка пары гостем после заказа: 1-5 звёзд и необязательный комментарий."""
+
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='pairing_feedback', verbose_name='Заведение')
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='pairing_feedback', verbose_name='Заказ')
+    session = models.CharField('Сессия гостя', max_length=36, blank=True, default='')
+    dish_ref = models.CharField('Блюдо (ссылка)', max_length=64, blank=True, default='')
+    drink_ref = models.CharField('Напиток (ссылка)', max_length=64, blank=True, default='')
+    rating = models.PositiveSmallIntegerField(
+        'Оценка', validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.CharField('Комментарий', max_length=500, blank=True, default='')
+    created_at = models.DateTimeField('Когда', auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'Оценка пары'
+        verbose_name_plural = 'Оценки пар'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.rating}/5: {self.dish_ref} + {self.drink_ref}'

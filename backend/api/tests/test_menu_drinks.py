@@ -182,3 +182,77 @@ class VenueMenuDrinksTests(TestCase):
         self.assertEqual(resp.data['tables_count'], 30)
         self.assertEqual(client.patch('/api/venues/efes-beer-garden/', {'tables_count': 0}, format='json').status_code, 400)
         self.assertEqual(client_for().get('/api/venues/').json()[0]['tables_count'], 30)
+
+
+class EngineMenuDrinkTests(TestCase):
+    """В карту бара можно поставить любой напиток базы подбора v2, не только сорт каталога."""
+
+    def setUp(self):
+        self.rest = make_user('rest', role='restaurant_admin')
+        self.venue = make_venue(owner=self.rest)
+        self.lager = make_brand('Efes Pilsener')
+        self.url = '/api/menu-drinks/'
+        self.client_rest = client_for(self.rest)
+
+    def post(self, **body):
+        body = dict({'venue': str(self.venue.id), 'price': '900'}, **body)
+        return self.client_rest.post(self.url, body, format='json')
+
+    def test_engine_drink_create_and_fields(self):
+        resp = self.post(engine_drink_id='efes-0-0', volume='0,45 л')
+        self.assertEqual(resp.status_code, 201, resp.content)
+        drink = resp.data
+        self.assertIsNone(drink['brand'])
+        self.assertEqual(drink['engine_drink_id'], 'efes-0-0')
+        self.assertEqual(drink['name'], 'Efes 0.0 (классическое)')
+        self.assertEqual(drink['brand_name'], 'Efes 0.0 (классическое)')
+        self.assertEqual(drink['category'], 'na_beer')
+        self.assertEqual(drink['abv'], 0.0)
+        self.assertFalse(drink['is_alcoholic'])
+
+        # Картинка напитка движка лежит на сайте фронтенда.
+        kozel = self.post(engine_drink_id='kozel', name='Kozel разливной').data
+        self.assertEqual(kozel['brand_name'], 'Kozel разливной')
+        self.assertEqual(kozel['brand_image'], '/img/beers/kozel.webp')
+        self.assertEqual(kozel['abv'], 4.0)
+        self.assertTrue(kozel['is_alcoholic'])
+        self.assertTrue(kozel['brand_style'])
+
+        # Сорт каталога работает как раньше и тоже знает, что он алкогольный.
+        brand_drink = self.post(brand=str(self.lager.id)).data
+        self.assertEqual(brand_drink['brand_name'], 'Efes Pilsener')
+        self.assertEqual(brand_drink['category'], 'beer')
+        self.assertTrue(brand_drink['is_alcoholic'])
+        self.assertEqual(brand_drink['engine_drink_id'], '')
+
+        # В публичном меню напитки движка стоят рядом с сортами каталога.
+        menu = client_for().get('/api/venues/efes-beer-garden/menu/').json()
+        self.assertEqual(sorted(d['brand_name'] for d in menu['drinks']),
+                         ['Efes 0.0 (классическое)', 'Efes Pilsener', 'Kozel разливной'])
+
+    def test_engine_drink_validation(self):
+        resp = self.post()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.data['brand'], ['Выберите сорт из каталога или напиток из базы подбора'])
+        resp = self.post(engine_drink_id='no-such-drink')
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('engine_drink_id', resp.data)
+        self.assertEqual(self.post(engine_drink_id='efes-0-0').status_code, 201)
+        resp = self.post(engine_drink_id='efes-0-0')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.data['engine_drink_id'], ['Этот напиток уже есть в карте заведения'])
+        self.assertEqual(self.post(brand=str(self.lager.id)).status_code, 201)
+        resp = self.post(brand=str(self.lager.id))
+        self.assertEqual(resp.data['brand'], ['Этот сорт уже есть в карте заведения'])
+        self.assertEqual(MenuDrink.objects.count(), 2)
+
+    def test_engine_drink_update_refreshes_name(self):
+        drink = self.post(engine_drink_id='efes-0-0').data
+        url = f'{self.url}{drink["id"]}/'
+        resp = self.client_rest.patch(url, {'price': '950'}, format='json')
+        self.assertEqual(resp.data['name'], 'Efes 0.0 (классическое)')
+        resp = self.client_rest.patch(url, {'engine_drink_id': 'kruzhka-svezhego-0-0'}, format='json')
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.assertEqual(resp.data['name'], 'Кружка Свежего 0.0')
+        # Без сорта и без напитка движка позиция не остаётся.
+        self.assertEqual(self.client_rest.patch(url, {'engine_drink_id': ''}, format='json').status_code, 400)
