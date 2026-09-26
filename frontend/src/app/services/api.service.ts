@@ -561,8 +561,8 @@ export class ApiService {
 
   private getMockTeam(): TeamMember[] {
     return [
-      { id: 't1', name: 'Аджибаева Аделия', role: 'Сооснователь', bio: 'Разработчик Flavor Tree: сайт, сервер и данные.' },
-      { id: 't2', name: 'Абуталифулы Ералы', role: 'Сооснователь', bio: 'Разработчик Flavor Tree: сайт, сервер и данные.' }
+      { id: 't1', name: 'Аджибаева Аделия', role: 'Сооснователь', bio: '' },
+      { id: 't2', name: 'Абуталифулы Ералы', role: 'Сооснователь', bio: '' }
     ];
   }
 }

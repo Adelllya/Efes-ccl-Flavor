@@ -17,15 +17,17 @@ from functools import lru_cache
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from .models import Brand, Course, FlavorNote, FlavorProfile, FoodPairing, TeamMember, Venue
 from .pairing.dataset import DATA_DIR
 
 log = logging.getLogger(__name__)
 
+# В README у сооснователей только имя и роль. Биографию пишут они сами, в админке.
 TEAM = [
-    {'name': 'Аджибаева Аделия', 'role': 'Сооснователь', 'bio': 'Разработчик Flavor Tree: сайт, сервер и данные.'},
-    {'name': 'Абуталифулы Ералы', 'role': 'Сооснователь', 'bio': 'Разработчик Flavor Tree: сайт, сервер и данные.'},
+    {'name': 'Аджибаева Аделия', 'role': 'Сооснователь', 'bio': ''},
+    {'name': 'Абуталифулы Ералы', 'role': 'Сооснователь', 'bio': ''},
 ]
 
 # Люди из старого seed, которых нет в команде. update_public_content удаляет только их.
@@ -42,6 +44,14 @@ COURSES = [
     {'level': 4, 'title': 'Подбор для гостей', 'color': '#8b5cf6',
      'description': 'Дегустация вслепую, описание вкуса по колесу вкусов пива и подбор напитка к блюдам из меню заведения.'},
 ]
+
+# Курсы старого seed: уровень -> (название, описание). update_public_content заменяет только их.
+OLD_COURSES = {
+    1: ('Новичок', 'Базовое знакомство с пивом: стили, крепость, плотность, первые ощущения от вкуса'),
+    2: ('Исследователь', 'Глубже в пирамиду: распознавание TOP/HEART/BASE нот, хмель vs солод'),
+    3: ('Знаток', 'Food pairing, сезонность, температура подачи, анализ полного профиля'),
+    4: ('Сомелье', 'Профессиональный уровень: дегустация вслепую, описание по лексикону FlavorActiV, подбор пива для гостей'),
+}
 
 # Пирамиды 17 сортов пока черновик команды, сомелье их не проверял.
 DRAFT_AUTHOR = 'Команда Flavor Tree'
@@ -67,6 +77,8 @@ DEMO_VENUE_NAME = 'Демо-бар Flavor Tree'
 DEMO_VENUE_DESCRIPTION = 'Демонстрационное заведение Flavor Tree: меню и цены условные, это пример, а не настоящий бар.'
 # Заглушки старого seed_roles: выдуманные адрес и телефон. Настоящие данные заведения не трогаем.
 DEMO_PLACEHOLDERS = {'name': 'Efes Beer Garden', 'address': 'пр. Достык 100', 'phone': '+7 727 000 00 00'}
+# Демо-аккаунт заведения из seed_roles: его имя видно в панели.
+DEMO_RESTAURANT_USERNAME = 'restaurant'
 
 MEDIA_MAP_PATH = Path(settings.BASE_DIR) / 'data' / 'media_map.json'
 
@@ -93,7 +105,7 @@ def engine_brand_facts():
         flags = d.get('flags') or {}
         facts[d['name']] = {
             'abv': float(abv) if isinstance(abv, (int, float)) else None,
-            # Производитель крепость не публикует, в каталоге она принята по стилю.
+            # Точной крепости в наших источниках нет, в каталоге она принята по стилю.
             'abv_estimated': d.get('abv_source') == 'estimate' or bool(flags.get('abv_unknown')),
         }
     return facts
@@ -164,19 +176,28 @@ def fix_pairing_texts():
 
 
 def sync_team():
+    """Удаляет выдуманных людей и добавляет сооснователей, которых ещё нет.
+    Роль, биографию и фото, заданные потом в админке, не трогает."""
     removed, _ = TeamMember.objects.filter(name__in=INVENTED_TEAM).delete()
     for member in TEAM:
-        TeamMember.objects.update_or_create(
-            name=member['name'], defaults={'role': member['role'], 'bio': member['bio'], 'avatar': ''})
+        TeamMember.objects.get_or_create(name=member['name'], defaults={'role': member['role'], 'bio': member['bio']})
     return removed
 
 
 def sync_courses():
+    """Создаёт недостающие курсы. Готовый курс заменяет, только если в нём ещё текст старого seed
+    или обещание по FlavorActiV. Курс, который поправили в админке, остаётся как есть."""
+    changed = 0
     for course in COURSES:
-        Course.objects.update_or_create(
-            level=course['level'],
-            defaults={'title': course['title'], 'description': course['description'], 'color': course['color']})
-    return len(COURSES)
+        fields = {'title': course['title'], 'description': course['description'], 'color': course['color']}
+        obj, created = Course.objects.get_or_create(level=course['level'], defaults=fields)
+        if created:
+            changed += 1
+        elif (obj.title, obj.description) == OLD_COURSES.get(obj.level) \
+                or 'FlavorActiV' in obj.title + obj.description:
+            Course.objects.filter(pk=obj.pk).update(**fields)
+            changed += 1
+    return changed
 
 
 def relabel_profiles():
@@ -186,9 +207,12 @@ def relabel_profiles():
 
 def fix_demo_venue():
     """Демо-заведение называется демо, без выдуманных адреса и телефона. Настоящие значения не трогает."""
+    # Имя демо-аккаунта меняем, только пока там старое выдуманное название.
+    user_fixed = User.objects.filter(username=DEMO_RESTAURANT_USERNAME, first_name=DEMO_PLACEHOLDERS['name']) \
+        .update(first_name=DEMO_VENUE_NAME)
     venue = Venue.objects.filter(slug=DEMO_VENUE_SLUG).first()
     if venue is None:
-        return False
+        return bool(user_fixed)
     changes = {}
     if venue.name == DEMO_PLACEHOLDERS['name']:
         changes['name'] = DEMO_VENUE_NAME
@@ -198,4 +222,4 @@ def fix_demo_venue():
             changes[field] = ''
     if changes:
         Venue.objects.filter(pk=venue.pk).update(**changes)
-    return bool(changes)
+    return bool(changes) or bool(user_fixed)

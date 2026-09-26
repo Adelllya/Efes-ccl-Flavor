@@ -1,7 +1,7 @@
 """
 Django management command: python manage.py seed
 Загружает все демо-данные (идемпотентно - сначала удаляет, потом вставляет).
-Данные по стандарту FlavorActiV «Beer Flavour Language».
+Пирамиды и описания сортов это черновик команды Flavor Tree, без дегустации.
 """
 from django.core.management.base import BaseCommand
 from api import public_content

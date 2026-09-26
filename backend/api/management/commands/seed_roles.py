@@ -17,7 +17,7 @@ DEMO_USERS = [
     # username, пароль, роль, is_staff, имя
     ('moderator', 'moderator12345', ROLE_MODERATOR, True, 'Модератор'),
     ('sommelier', 'sommelier12345', ROLE_SOMMELIER, False, 'Сомелье'),
-    ('restaurant', 'restaurant12345', ROLE_RESTAURANT, False, 'Efes Beer Garden'),
+    ('restaurant', 'restaurant12345', ROLE_RESTAURANT, False, public_content.DEMO_VENUE_NAME),
     ('guest', 'guest12345', None, False, 'Гость'),
 ]
 

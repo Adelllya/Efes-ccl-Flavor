@@ -1,5 +1,6 @@
 import io
 
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.management import call_command
 from django.test import TestCase
@@ -88,6 +89,36 @@ class UpdatePublicContentTests(TestCase):
         self.assertEqual((self.real.name, self.real.address, self.real.phone),
                          ('Бар на Абая', 'пр. Абая 1', '+7 700 111 22 33'))
 
+    def test_keeps_team_and_courses_edited_in_admin(self):
+        founder = TeamMember.objects.create(name='Аджибаева Аделия', role='CEO', bio='Своя биография',
+                                            avatar='https://example.com/a.png')
+        Course.objects.create(level=1, title='Новичок', description='Свой текст курса из админки')
+        old_level2 = public_content.OLD_COURSES[2]
+        Course.objects.create(level=2, title=old_level2[0], description=old_level2[1])
+        run('update_public_content')
+        run('update_public_content')
+
+        founder.refresh_from_db()
+        self.assertEqual((founder.role, founder.bio, founder.avatar), ('CEO', 'Своя биография', 'https://example.com/a.png'))
+        new = TeamMember.objects.get(name='Абуталифулы Ералы')
+        self.assertEqual((new.role, new.bio, new.avatar), ('Сооснователь', '', ''))
+
+        courses = {c.level: c for c in Course.objects.all()}
+        self.assertEqual(sorted(courses), [1, 2, 3, 4])
+        self.assertEqual(courses[1].description, 'Свой текст курса из админки')
+        self.assertEqual(courses[2].title, 'Вкусовая пирамида')
+        self.assertEqual(courses[4].title, 'Подбор для гостей')
+
+    def test_demo_account_name(self):
+        demo = User.objects.create_user('restaurant', first_name='Efes Beer Garden')
+        owner = User.objects.create_user('bar', first_name='Efes Beer Garden')
+        run('update_public_content')
+        demo.refresh_from_db()
+        owner.refresh_from_db()
+        self.assertEqual(demo.first_name, 'Демо-бар Flavor Tree')
+        # Другой аккаунт с тем же именем может быть настоящим заведением.
+        self.assertEqual(owner.first_name, 'Efes Beer Garden')
+
     def test_demo_venue_keeps_real_data_entered_later(self):
         self.demo.name = 'Пилотный бар'
         self.demo.address = 'ул. Настоящая 5'
@@ -145,3 +176,4 @@ class LoadFlavorDataTests(TestCase):
         self.assertEqual(venue.name, 'Демо-бар Flavor Tree')
         self.assertEqual((venue.address, venue.phone), ('', ''))
         self.assertIn('Демонстрационное', venue.description)
+        self.assertEqual(User.objects.get(username='restaurant').first_name, 'Демо-бар Flavor Tree')
