@@ -427,7 +427,12 @@
         "toast": "с тостовыми нотами",
         "nutty": "с ореховыми нотами"
       }
-    }
+    },
+    "skip_categories": [
+      "soda",
+      "water",
+      "lemonade"
+    ]
   },
   "R11": {
     "_doc": "Мост дыма: дым ↔ дым, дым ↔ обжарка. Хмель не участвует (ошибка v1 R9).",
@@ -495,7 +500,10 @@
     "points": 4,
     "texts": {
       "main": "Региональная пара: {cuisine} ↔ {drink}"
-    }
+    },
+    "skip_cuisines": [
+      "international"
+    ]
   },
   "R16": {
     "_doc": "Повод (context): meal — low-ABV/игристое к трапезе, крепкое «к одному укусу» (Death & Co); aperitif — лёгкое тело, горчинка, CO₂ (BA); dessert — дижестив; hot/evening/party/gourmet — как в v1 на новых осях. non_alcoholic — жёсткий фильтр (V7), баллов не даёт. Итог clamp(min, max).",
@@ -739,7 +747,8 @@
         "min": 0,
         "label": "Не рекомендуем"
       }
-    ]
+    ],
+    "min_confidence_for_ideal": 0.6
   },
   "mechanisms": {
     "_doc": "§5.2: mechanisms — правила с |pts| ≥ min_abs; reasons — топ-N положительных; warnings — вето + отрицательные ≤ −min_abs. match_type — семейство сильнейшего положительного правила (без R1, R13, R20 и контекста); penalty — при вето-потолке или если балл < penalty_below и сильнейший штраф больше сильнейшего плюса.",
@@ -765,8 +774,7 @@
     "partner_tie_window": 2,
     "efes_relations": [
       "own",
-      "distribution",
-      "cci"
+      "distribution"
     ],
     "top_n": 5,
     "reverse_top_n": 6,

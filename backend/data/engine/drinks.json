@@ -20777,7 +20777,7 @@
    "last_checked": "2026-09-18"
   },
   "flags": {
-   "non_alcoholic": false,
+   "non_alcoholic": true,
    "contains_gluten": true,
    "report_refs": [
     "other:na_beer#2"

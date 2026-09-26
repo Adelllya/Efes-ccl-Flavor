@@ -326,6 +326,7 @@ def drink_vector(drink: Dict[str, Any], params: Optional[Dict[str, Any]] = None)
         "origin": _as_list(drink.get("origin_affinity") if drink.get("origin_affinity") is not None else drink.get("origin")),
         "efes_relation": drink.get("efes_relation") or "none",
         "non_alcoholic_flag": bool(flags.get("non_alcoholic")),
+        "vector_confidence": drink.get("vector_confidence"),
         "words": words,
     }
 
@@ -590,15 +591,28 @@ def dna_vector(rated: Iterable[Dict[str, Any]], params: Optional[Dict[str, Any]]
     return {a: r2(clamp(acc[a] / wsum)) for a in axes}
 
 
-def band_for(score: int, capped: bool, params: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
+def band_for(score: int, capped: bool, params: Optional[Dict[str, Any]] = None,
+             confidence: Optional[float] = None) -> Dict[str, str]:
     B = (params or default_params())["bands"]
     if capped and score <= B["avoid_max"]:
         return dict(B["avoid"])
+    result = None
     for band in B["list"]:
         if score >= band["min"]:
-            return {"id": band["id"], "label": band["label"]}
-    last = B["list"][-1]
-    return {"id": last["id"], "label": last["label"]}
+            result = {"id": band["id"], "label": band["label"]}
+            break
+    if result is None:
+        last = B["list"][-1]
+        result = {"id": last["id"], "label": last["label"]}
+    # PAIR-9: «Идеальная пара» только при достаточной уверенности профиля напитка.
+    # У напитка на среднекатегорийном векторе (vector_confidence низкая) балл 85+ не заслужен
+    # реальными измерениями — понижаем метку до «Отличное сочетание», балл не трогаем.
+    min_conf = B.get("min_confidence_for_ideal")
+    if result["id"] == "ideal" and min_conf is not None and confidence is not None and confidence < min_conf:
+        for band in B["list"]:
+            if band["id"] == "excellent":
+                return {"id": band["id"], "label": band["label"]}
+    return result
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -902,7 +916,9 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
 
     # ── R10 maillard_harmony ────────────────────────────────────────────────
     p = P["R10"]
-    if x["maillard"] >= p["min_maillard"]:
+    # Мост Майяра не применяем к газировке/воде/лимонаду: у колы высокий maillard-профиль
+    # по нотам, но карамельно-жареного «моста» с блюдом там нет (PAIR-2).
+    if x["maillard"] >= p["min_maillard"] and b["category"] not in p.get("skip_categories", ()):
         bt = b["tags"]
         m_terms = [("caramel", bt.get("caramel", 0.0)),
                    ("roast", bv["roast"] * max(x["smoke"], d["tags"].get("char", 0.0))),
@@ -989,7 +1005,9 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         if c in b["origin"]:
             shared_cuisine = c
             break
-    if shared_cuisine is not None:
+    # «Международная кухня» — слишком общий признак (кола/газировка совпадают с чем угодно),
+    # региональный бонус за него не даём (PAIR-2).
+    if shared_cuisine is not None and shared_cuisine not in p.get("skip_cuisines", ()):
         text = ""
         if explain:
             cz = P["labels"]["cuisine"].get(shared_cuisine, P["labels"]["cuisine_default"])
@@ -1115,7 +1133,7 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
         match_type = M["fallback_type"]
         secondary = None
 
-    band = band_for(score, capped, P)
+    band = band_for(score, capped, P, confidence=b.get("vector_confidence"))
     return {
         "engine": "v2",
         "version": P.get("version", ENGINE_VERSION),
