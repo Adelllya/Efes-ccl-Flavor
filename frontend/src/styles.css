@@ -1758,7 +1758,9 @@ ft-select { display: block; position: relative; width: 100%; }
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--muted);
-  white-space: nowrap;
+  max-width: 9.5rem;
+  line-height: 1.25;
+  text-align: center;
 }
 .ai-status-on { color: var(--success); background: var(--success-bg); border-color: rgba(22, 163, 74, 0.2); }
 .ai-icon-btn { flex-shrink: 0; color: var(--muted); }
@@ -1905,6 +1907,7 @@ ft-select { display: block; position: relative; width: 100%; }
   border-top: 1px solid var(--line);
   background: var(--glass-strong);
 }
+.ai-foot-note { margin: 0; font-size: 0.68rem; line-height: 1.35; color: var(--muted); }
 .ai-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .ai-chips::-webkit-scrollbar { display: none; }
 .ai-chip {

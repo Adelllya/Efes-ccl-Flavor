@@ -1,5 +1,6 @@
 """
-ИИ-сомелье: статус и чат. Оба эндпоинта открыты без входа, чат ограничен по частоте.
+ИИ-сомелье: статус и чат. Оба эндпоинта открыты без входа, чат ограничен по частоте
+и дневным лимитом ответов Claude (ai_usage). Каждый вопрос записывается событием пилота AI_ASK.
 """
 from rest_framework import serializers
 from rest_framework.decorators import api_view, permission_classes
@@ -9,9 +10,10 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
-from . import ai_sommelier
-from .models import Venue
+from . import ai_sommelier, ai_usage
+from .models import PilotEvent, Venue
 from .permissions import ROLE_MODERATOR, has_role
+from .pilot import record_event
 from .serializers import parse_uuid
 
 MAX_TURNS = 12
@@ -47,12 +49,18 @@ class AiPrefsSerializer(serializers.Serializer):
 
 
 class AiRequestSerializer(serializers.Serializer):
-    """Тело POST /api/ai/sommelier/: заведение, стол, история, корзина и пожелания."""
+    """Тело POST /api/ai/sommelier/: заведение, стол, история, корзина, пожелания и запомненные флаги."""
     venue = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None)
+    # id браузера гостя (localStorage ft_sid) для статистики пилота; кривое значение просто не пишется
+    session = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=64, default='')
     table = serializers.IntegerField(required=False, allow_null=True, min_value=0, max_value=9999, default=None)
     messages = AiMessageSerializer(many=True)
     cart = AiCartItemSerializer(many=True, required=False, default=list)
     prefs = AiPrefsSerializer(required=False, default=dict)
+    # Флаги безопасности, которые чат запомнил из прошлых ответов (safety_flags). Они только запрещают,
+    # поэтому клиенту можно верить; незнакомые значения ai_safety.assess просто пропускает.
+    safety_flags = serializers.ListField(
+        child=serializers.CharField(max_length=24), required=False, default=list, max_length=12)
 
     def validate_messages(self, value):
         if not value:
@@ -86,13 +94,21 @@ def resolve_venue(request, raw):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def ai_status(request):
-    """GET /api/ai/status/ -> {enabled, model, mode}."""
+    """
+    GET /api/ai/status/ -> {enabled, model, mode, limit_reached}. mode: claude, когда есть ключ
+    и не исчерпан дневной лимит, иначе local (вкусовой движок). Модератор видит ещё расход за сутки.
+    """
     enabled = ai_sommelier.ai_enabled()
-    return Response({
+    limit_reached = enabled and ai_usage.limit_reached()
+    data = {
         'enabled': enabled,
         'model': ai_sommelier.ai_model(),
-        'mode': 'claude' if enabled else 'local',
-    })
+        'mode': 'claude' if enabled and not limit_reached else 'local',
+        'limit_reached': limit_reached,
+    }
+    if request.user.is_authenticated and has_role(request.user, ROLE_MODERATOR):
+        data['usage'] = ai_usage.snapshot()
+    return Response(data)
 
 
 class SommelierView(APIView):
@@ -111,5 +127,21 @@ class SommelierView(APIView):
         venue = resolve_venue(request, data['venue']) if data.get('venue') else None
         ctx = ai_sommelier.build_context(venue=venue)
         cart = [dict(item, id=str(item['id'])) for item in data['cart']]
-        result = ai_sommelier.answer(ctx, data['messages'], cart=cart, prefs=data['prefs'], table=data['table'])
+        result = ai_sommelier.answer(ctx, data['messages'], cart=cart, prefs=data['prefs'], table=data['table'],
+                                     safety_flags=data['safety_flags'])
+        meta = result.pop('_meta', {})
+        record_ask(venue, data, result, meta)
         return Response(result)
+
+
+def record_ask(venue, data, result, meta):
+    """Событие AI_ASK для отчёта пилота: режим, язык, флаг безопасности, карточки, время и токены."""
+    table = data.get('table')
+    first_drink = next((s['id'] for s in result['suggestions'] if s['kind'] == ai_sommelier.KIND_DRINK), '')
+    record_event(
+        PilotEvent.KIND_AI_ASK, venue=venue, session=data.get('session') or '',
+        table_number=table if table and 0 < table <= 32767 else None,
+        dish_ref=meta.get('dish') or '', drink_ref=first_drink, source=result['mode'],
+        meta={key: meta[key] for key in ('mode', 'lang', 'safety', 'intent', 'ms', 'tokens', 'model', 'limit',
+                                         'rejected', 'suggestions', 'q') if meta.get(key) not in (None, '', [])},
+    )
