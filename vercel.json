@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "ignoreCommand": "case \"$VERCEL_PROJECT_PRODUCTION_URL $VERCEL_URL\" in *flavor-tree-backend*) exit 1;; *) exit 0;; esac",
   "builds": [
     {
       "src": "backend/index.py",

@@ -31,6 +31,37 @@ PY=~/projects/Efes-ccl-Flavor/backend/.venv/bin/python
    кроме исправления поломки.
 5. Команды `seed` и `load_flavor_data` на рабочей базе **не запускаются** (раздел 6).
 
+## Деплой из git: основной способ с 27.09
+
+Оба проекта Vercel подключены к GitHub, ветка продакшена `main`, Root Directory не задан. Каждый пуш
+в `main` собирает **корень репозитория** по корневому `vercel.json`:
+
+- `backend/index.py` собирается функцией `@vercel/python`: зависимости из `requirements.txt`, версия
+  Python из `.python-version`. Копии этих файлов в корне повторяют `backend/`, тест
+  `api.tests.test_deploy_config` следит, чтобы они не разошлись.
+- `frontend/` собирается `@vercel/static-build`: `npm install`, `npm run build`, папка `dist/frontend/browser`.
+  Node зафиксирован в `frontend/package.json` (`engines.node`), Angular 18 на более новом Node не проверялся.
+- Маршруты: `/api`, `/admin`, `/static`, `/media` уходят в Django; файлы с расширением и хэшированные
+  бандлы отдаются из сборки Angular; остальные адреса получают `index.html`.
+
+Один и тот же артефакт (сайт + API) уезжает в оба проекта. На `flavor-tree-frontend.vercel.app` API
+не работает: у проекта нет переменных окружения, сайт ходит на `flavor-tree-backend.vercel.app/api`,
+как и раньше.
+
+Почему так: до 27.09 у бэкенда сборка из git «успешно» выкладывала корень репозитория как статику,
+и первый же пуш в `main` заменил рабочий CLI-деплой пустышкой (NOT_FOUND на всё, включая
+`/api/health/`). Корневой `vercel.json` это закрывает.
+
+На практике:
+
+1. Пуш в `main` = прод. В `main` попадает только проверенный код: тесты бэкенда, `ng build`.
+2. Пуш в любую другую ветку даёт preview-деплой; он закрыт авторизацией Vercel, снаружи не открыть.
+3. CLI-деплой из `backend/` и `frontend/` (разделы 4 и 5) по-прежнему работает, но следующий пуш
+   в `main` его перекроет. Держать `main` и прод одним и тем же.
+4. Статус сборки виден без входа в Vercel:
+   `gh api repos/Adelllya/Efes-ccl-Flavor/commits/<sha>/status`.
+5. После выкладки: `scripts/smoke.sh`.
+
 ## 1. Переменные окружения
 
 Vercel → проект → Settings → Environment Variables. Ставить для **Production и Preview**.
@@ -89,10 +120,10 @@ compute и Max Duration не меньше 30 с, можно поставить `
 ### Настройки проектов в Vercel (проверить один раз)
 
 - Settings → Build and Deployment: у бэкенда Framework = Other, у фронта сборка из `frontend/vercel.json`.
-- Если у проекта задан Root Directory (`backend` или `frontend`), `vercel --prod` запускают **из корня
-  репозитория**, иначе CLI ищет `backend/backend`. Корневой `.vercelignore` на этот случай уже есть.
-- Git-сборки фронта падали на старте (аудит 26.09), поэтому фронт выкладывается через CLI.
-  После каждого деплоя смотреть во вкладке Deployments, что Production указывает на новый деплой.
+- Root Directory у обоих проектов не задан (проверено 27.09 по тому, что сборка из git выкладывала
+  корень репозитория). Поэтому сборка из git идёт по корневому `vercel.json` (раздел «Деплой из git»),
+  а `vercel --prod` из CLI запускают из папок `backend/` и `frontend/`, где лежат свои `vercel.json`.
+- После каждого деплоя смотреть во вкладке Deployments, что Production указывает на новый деплой.
 - Settings → Functions: регион не менять, пока база Neon в США.
 
 ## 2. Проверенная чистая копия
