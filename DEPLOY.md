@@ -1,45 +1,310 @@
-# Деплой Flavor Tree — всё на Vercel
+# Деплой Flavor Tree на Vercel
 
-Два отдельных проекта Vercel из одного репозитория, ветка `deploy`:
-- бекенд (Django) — папка `backend`
-- фронтенд (Angular) — папка `frontend`
+Два проекта Vercel в аккаунте adelllya:
 
-## 1. Бекенд (проект Vercel #1)
-1. Vercel → Add New → Project → импортировать репозиторий `Adelllya/Efes-ccl-Flavor`,
-   ветка `deploy`. Если репо не видно — подключить GitHub-аккаунт `Adelllya`.
-2. **Root Directory** = `backend`. Framework Preset = Other.
-3. **Storage** → Create Database → Postgres → Connect к проекту.
-   Vercel сам добавит переменные `POSTGRES_URL` и т.д. — бекенд их читает автоматически.
-4. **Environment Variables** добавить:
-   - `DJANGO_DEBUG` = `False`
-   - `DJANGO_SECRET_KEY` = длинная случайная строка (50+ символов)
-   - `DJANGO_ALLOWED_HOSTS` = `.vercel.app`
-   - `DJANGO_CSRF_TRUSTED_ORIGINS` = `https://<домен-бекенда>.vercel.app,https://<домен-фронта>.vercel.app`
-   - `DJANGO_CORS_ALLOWED_ORIGINS` = `https://<домен-фронта>.vercel.app`
-   - (опц.) `ANTHROPIC_API_KEY`, `FT_AI_MODEL`
-5. Deploy → получите домен бекенда, напр. `flavor-backend.vercel.app`.
-6. **Миграции и данные** (serverless сам не запускает команды):
-   скопируйте строку подключения из Vercel (Storage → база → `POSTGRES_URL`)
-   и выполните локально из папки `backend`:
+| Проект | Папка | Адрес |
+|---|---|---|
+| `flavor-tree-backend` | `backend/` (Django, функция `index.py`) | https://flavor-tree-backend.vercel.app |
+| `flavor-tree-frontend` | `frontend/` (Angular) | https://flavor-tree-frontend.vercel.app |
+
+База: Postgres (Neon), подключена к проекту бэкенда интеграцией Vercel.
+
+Главный порядок: **бэкап базы, потом бэкенд, потом фронт.** Новый фронт на старом бэкенде
+показывает пустой каталог 412 напитков, поэтому фронт никогда не выкатывается первым.
+
+В командах ниже `PY` это Python из venv основного репозитория, а `СЛАГ` это адрес заведения
+в ссылке меню (например, `efes-beer-garden` у демо-заведения):
+
+```bash
+PY=~/projects/Efes-ccl-Flavor/backend/.venv/bin/python
+```
+
+## 0. Правила на время пилота и защиты
+
+1. Прод и репозиторий общие. Деплой и пуш только после согласия с Adelllya (правило после 23.09).
+   Проекты лежат в её аккаунте Vercel, без неё CLI туда не выложит.
+2. Деплоить только из **чистой копии проверенного коммита** (раздел 2), не из рабочей папки.
+   CLI Vercel не читает `.gitignore` и заливает всё, что лежит в папке: незакоммиченные правки,
+   локальные базы, загруженные фото. `.vercelignore` страхует, но не заменяет чистую копию.
+3. Перед каждым деплоем бэкенда делается бэкап базы (раздел 3).
+4. Во время пилота бэкап каждый вечер. С 13.10 деплои заморожены до защиты 15.10,
+   кроме исправления поломки.
+5. Команды `seed` и `load_flavor_data` на рабочей базе **не запускаются** (раздел 6).
+
+## 1. Переменные окружения
+
+Vercel → проект → Settings → Environment Variables. Ставить для **Production и Preview**.
+После изменения переменных нужен новый деплой: старый деплой их не видит.
+
+### Бэкенд (`flavor-tree-backend`)
+
+| Переменная | Значение | Обязательна |
+|---|---|---|
+| `DJANGO_SECRET_KEY` | случайная строка от 50 символов, см. команду ниже | да, без неё сервер не стартует |
+| `DATABASE_URL` или `POSTGRES_URL` | ставит интеграция Neon, проверить, что есть в Production | да |
+| `DJANGO_CORS_ALLOWED_ORIGINS` | `https://flavor-tree-frontend.vercel.app` | да |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://flavor-tree-backend.vercel.app,https://flavor-tree-frontend.vercel.app` | да, для админки |
+| `DJANGO_ALLOWED_HOSTS` | `.vercel.app` | нет: адреса проекта Vercel добавляются сами |
+| `FT_PASSWORD_MODERATOR` | пароль модератора | да, иначе вход модератора закрыт |
+| `FT_PASSWORD_RESTAURANT` | пароль демо-заведения | если нужен вход restaurant |
+| `FT_PASSWORD_SOMMELIER`, `FT_PASSWORD_GUEST` | пароли остальных демо-учёток | нет: без них вход закрыт |
+| `FT_PUBLIC_SITE_URL` | `https://flavor-tree-frontend.vercel.app` | да, адрес сайта в QR столов |
+| `ANTHROPIC_API_KEY` | ключ Anthropic; в консоли Anthropic сразу поставить месячный лимит расходов | нет: без ключа чат отвечает локальным подбором |
+| `FT_AI_MODEL` | по умолчанию `claude-opus-5` | нет |
+| `FT_AI_TIMEOUT` | секунды на ответ модели, по умолчанию 8 | нет, см. ниже |
+
+`DJANGO_DEBUG` не задавать: на Vercel отладка выключена по умолчанию. Имя переменной CORS именно
+`DJANGO_CORS_ALLOWED_ORIGINS` (в старом локальном `.env` встречалось `CORS_ALLOWED_ORIGINS`, оно не читается).
+
+Ключ для `DJANGO_SECRET_KEY`:
+
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(50))"
+```
+
+Дополнительные переменные (обычно не нужны):
+
+| Переменная | По умолчанию | Что делает |
+|---|---|---|
+| `FT_RATE_LOGIN` | `10/min` | попытки входа с одного IP |
+| `FT_RATE_REGISTER` | `10/hour` | регистрации с одного IP |
+| `FT_RATE_PASSWORD` | `10/hour` | смены пароля одним пользователем |
+| `FT_RATE_ORDERS` | `60/hour` | новые заказы с одного IP; гости бара часто сидят в одном Wi-Fi |
+| `FT_TOKEN_TTL_DAYS` | `30` | срок жизни токена входа, 0 значит бессрочно |
+| `FT_MEDIA_IN_DB` | `1` на Vercel | загруженные фото хранятся в базе (приложение `media_db`) |
+| `DJANGO_NUM_PROXIES` | `1` на Vercel | сколько прокси перед Django, для лимитов по IP |
+| `FT_LOAD_SNAPSHOT` | нет | `1` разрешает залить `data/snapshot.json`, только в пустую базу |
+| `FT_ALLOW_SEED` | нет | `1` временно включает `POST /api/seed/` (стирает пары, не нужно) |
+
+`FT_AI_TIMEOUT`: на тарифе Hobby без Fluid compute функция живёт 10 с, поэтому по умолчанию модели
+дано 8 с без повторов, дальше отвечает локальный подбор. Если в Settings → Functions включён Fluid
+compute и Max Duration не меньше 30 с, можно поставить `FT_AI_TIMEOUT=25`: ответы Claude будут реже
+заменяться локальным подбором.
+
+### Фронт (`flavor-tree-frontend`)
+
+Переменных нет. Адрес API зашит в `frontend/src/environments/environment.prod.ts`
+(`https://flavor-tree-backend.vercel.app/api`). Файл `environment.ts` (локальный адрес) не коммитить.
+
+### Настройки проектов в Vercel (проверить один раз)
+
+- Settings → Build and Deployment: у бэкенда Framework = Other, у фронта сборка из `frontend/vercel.json`.
+- Если у проекта задан Root Directory (`backend` или `frontend`), `vercel --prod` запускают **из корня
+  репозитория**, иначе CLI ищет `backend/backend`. Корневой `.vercelignore` на этот случай уже есть.
+- Git-сборки фронта падали на старте (аудит 26.09), поэтому фронт выкладывается через CLI.
+  После каждого деплоя смотреть во вкладке Deployments, что Production указывает на новый деплой.
+- Settings → Functions: регион не менять, пока база Neon в США.
+
+## 2. Проверенная чистая копия
+
+Всё дальше делается из отдельной папки с нужным коммитом, а не из рабочей:
+
+```bash
+cd ~/projects/Efes-ccl-Flavor
+git fetch
+git worktree add ../ft-release merge-vercel-v2     # или точный хэш проверенного коммита
+cd ../ft-release
+git log -1 --oneline                                # записать, какой коммит выкладываем
+
+# тесты бэкенда (нужен venv основного репозитория)
+cd backend
+DATABASE_URL=sqlite:////tmp/ft-release-test.sqlite3 $PY manage.py test api
+
+# сборка фронта
+cd ../frontend
+npm ci
+npm run build
+```
+
+Все тесты зелёные и сборка без ошибок: можно выкладывать. После деплоя копию можно убрать:
+`git worktree remove ../ft-release`.
+
+## 3. Бэкап прод-базы
+
+Бэкап делается **до каждого деплоя бэкенда** и **каждый вечер пилота**. Строка подключения
+есть в Vercel (Settings → Environment Variables → `DATABASE_URL`) или в консоли Neon.
+Выгрузки хранить вне репозитория: в них хэши паролей.
+
+Способ 1, самый быстрый: в консоли Neon → Branches → Create branch от основной ветки.
+Это полная копия базы на текущий момент, из неё можно восстановиться за минуту.
+
+Способ 2, файл JSON. Выгружать кодом **того коммита, который сейчас на проде**: новый код может
+ждать таблиц, которых в прод-базе ещё нет, и dumpdata упадёт. Для первого деплоя этой версии это
+старый коммит (посмотреть в Vercel → Deployments → текущий Production), дальше это копия `ft-release`
+последнего выложенного коммита. Поэтому хэш каждого выложенного коммита стоит записывать.
+
+```bash
+export PROD_DATABASE_URL='строка подключения из Neon'
+mkdir -p ~/flavor-backups
+git -C ~/projects/Efes-ccl-Flavor worktree add ../ft-prod-code ХЭШ_КОММИТА_НА_ПРОДЕ   # один раз
+cd ~/projects/ft-prod-code/backend
+DATABASE_URL="$PROD_DATABASE_URL" $PY manage.py dumpdata \
+  --natural-foreign --natural-primary \
+  -e contenttypes -e auth.permission -e admin.logentry -e sessions \
+  --indent 1 -o ~/flavor-backups/prod-$(date +%Y%m%d-%H%M).json
+```
+
+Файл должен весить больше нуля, внутри должны быть `api.order`. Отчёт пилота
+(`python manage.py pilot_report --venue СЛАГ --csv ~/flavor-backups/pilot-$(date +%Y%m%d)`)
+выгружать туда же.
+
+Восстановление в пустую базу (новая ветка Neon):
+
+```bash
+DATABASE_URL="$NEW_DATABASE_URL" $PY manage.py migrate
+DATABASE_URL="$NEW_DATABASE_URL" $PY manage.py loaddata ~/flavor-backups/prod-ДАТА.json
+```
+
+## 4. Деплой бэкенда
+
+```bash
+cd ~/projects/ft-release/backend
+vercel login              # один раз, аккаунт adelllya
+vercel link               # один раз: выбрать проект flavor-tree-backend
+vercel --prod
+```
+
+Что происходит при первом запросе к новому деплою (холодный старт, `backend/index.py`):
+
+1. применяются новые миграции (в том числе `media_db` и данные пилота);
+2. создаётся таблица `ft_cache` для лимитов запросов (общая для всех инстансов функции);
+3. если база **пустая**, заливаются данные в порядке `seed` → `load_flavor_data` → `seed_roles`;
+   в непустой базе ничего не удаляется и не перезаписывается;
+4. у демо-учёток с публичным паролем из репозитория (`moderator12345` и т.п.) пароль меняется
+   на `FT_PASSWORD_<ИМЯ>` или вход закрывается, выданные им токены отзываются;
+5. пути к фото из `data/media_map.json` проставляются там, где их нет.
+
+Сразу после деплоя разбудить функцию и проверить:
+
+```bash
+curl -s https://flavor-tree-backend.vercel.app/api/health/     # {"ok": true, "db": true}
+cd ~/projects/ft-release && scripts/smoke.sh
+```
+
+Скрипт `scripts/smoke.sh` проверяет health и базу, движок v2, каталог, меню заведения, статус ИИ,
+статику админки, что логин владельца скрыт и что публичный пароль модератора не работает.
+В конце пишет «Всё в порядке» или число проблем. Фронт в нём проверяется только на то, что страница
+открывается; если фронт ещё не выложен, эти две строки можно игнорировать.
+
+Руками проверить вход: модератор с паролем из `FT_PASSWORD_MODERATOR` входит, фото логотипа
+заведения загружается в панели (фото до 4 МБ: больше Vercel не принимает).
+
+## 5. Деплой фронта
+
+```bash
+cd ~/projects/ft-release/frontend
+vercel link               # один раз: проект flavor-tree-frontend
+vercel --prod
+```
+
+Проверить с телефона:
+
+- `/catalog`: вкладка «Все напитки» не пустая;
+- `/pairings`: подбор к блюду работает;
+- `/menu/СЛАГ?table=3`: показан «Стол 3», заказ оформляется;
+- страница входа без блока «Тестовые аккаунты» (в production-сборке паролей демо-учёток нет);
+- в консоли браузера нет ошибок.
+
+И ещё раз `scripts/smoke.sh`, теперь целиком.
+
+## 6. Данные и учётки: первый запуск по порядку
+
+### Пустая база (новый проект, новая ветка Neon)
+
+Ничего руками запускать не нужно: холодный старт сам зальёт каталог, демо-заведение и учётки.
+Если всё же вручную с машины, то только в таком порядке (переменные `FT_PASSWORD_*` задать
+в той же сессии терминала, иначе вход демо-учёток будет закрыт):
+
+```bash
+export DATABASE_URL="$NEW_DATABASE_URL" FT_PASSWORD_MODERATOR='...' FT_PASSWORD_RESTAURANT='...'
+$PY manage.py migrate
+$PY manage.py seed               # ноты и курсы; временные демо-сорта
+$PY manage.py load_flavor_data   # заменяет демо-сорта на 17 настоящих, блюда и 51 пару
+$PY manage.py seed_roles         # роли, демо-учётки, демо-заведение с меню
+$PY manage.py createsuperuser    # суперпользователь для /admin/ с длинным паролем
+```
+
+Таблицу кэша `ft_cache` создаст первый холодный старт на Vercel.
+
+`seed_roles` раньше `seed` и `load_flavor_data` запускать нельзя: у демо-заведения окажется пустое
+меню. `seed` без `load_flavor_data` оставит выдуманные сорта Efes.
+
+### Рабочая база (текущий прод)
+
+- `seed` не запускать: он удаляет все сорта, а с ними пары, карты напитков заведений и запросы сомелье.
+  На базе с заведениями или заказами он теперь отказывается работать без `--force`.
+- `load_flavor_data` не запускать: удаляет сорта не из списка 17 и все пары с блюдами.
+- `POST /api/seed/` на сервере выключен.
+- `data/snapshot.json` в рабочую базу не загружается никогда (только при `FT_LOAD_SNAPSHOT=1` и
+  в пустую базу) и в деплой не попадает (`backend/.vercelignore`). Перенести локальную базу в новую
+  пустую базу проще командой `loaddata` с машины, как при восстановлении из бэкапа.
+
+### Пароли и доступы
+
+1. Публичные демо-пароли на сервере закрываются сами при холодном старте. Чтобы задать свои,
+   поставить `FT_PASSWORD_MODERATOR` (и другие нужные) и передеплоить: закрытой учётке пароль
+   поставится из переменной.
+2. Сменить пароли вручную и выкинуть все устройства этих учёток:
+
+   ```bash
+   DATABASE_URL="$PROD_DATABASE_URL" $PY manage.py rotate_demo_passwords          # все демо-учётки
+   DATABASE_URL="$PROD_DATABASE_URL" $PY manage.py rotate_demo_passwords --users guest sommelier --close
    ```
-   DATABASE_URL="<строка>" .venv/bin/python manage.py migrate
-   DATABASE_URL="<строка>" .venv/bin/python manage.py seed_roles
-   DATABASE_URL="<строка>" .venv/bin/python manage.py seed
-   DATABASE_URL="<строка>" .venv/bin/python manage.py createsuperuser
-   ```
 
-## 2. Прописать адрес бекенда во фронтенд
-В `frontend/src/environments/environment.prod.ts` заменить `REPLACE_WITH_RAILWAY_DOMAIN`
-на домен бекенда (без слэша), напр. `flavor-backend.vercel.app`. Закоммитить и запушить в `deploy`.
+   Без `FT_PASSWORD_*` пароль генерируется и печатается один раз. `manage.py changepassword`
+   токены **не** отзывает, поэтому для демо-учёток используйте `rotate_demo_passwords`
+   или смену пароля в Профиле (она тоже отзывает токены).
+3. Под модератором открыть панель → Пользователи и проверить, что лишних модераторов нет.
+4. Для реального заведения пилота завести отдельный аккаунт с сильным паролем, не `restaurant`.
+   Кнопка «Выйти» на телефоне менеджера больше не выкидывает планшет бара; «Выйти на всех
+   устройствах» в Профиле выкидывает все устройства.
+5. Админка Django `/admin/` пускает только сотрудников (is_staff). Для неё нужен суперпользователь
+   с длинным паролем (`createsuperuser` с прод-`DATABASE_URL`).
+6. Токен входа живёт 30 дней, потом приложение попросит войти снова.
 
-## 3. Фронтенд (проект Vercel #2)
-1. Vercel → Add New → Project → тот же репозиторий, ветка `deploy`.
-2. **Root Directory** = `frontend`.
-3. Сборка и папка вывода уже заданы в `frontend/vercel.json`.
-4. Deploy → домен фронта. Добавьте его в переменные бекенда
-   (`DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_CORS_ALLOWED_ORIGINS`) и передеплойте бекенд.
+### QR-коды столов
 
-## Заметки
-- Django на Vercel работает как serverless. Картинки пива из репозитория показываются,
-  но новые загрузки через админку не сохраняются (нужен внешний storage типа S3).
-- Локальная разработка не меняется: `environment.ts` смотрит на `127.0.0.1:8000`.
+QR печатать только когда домен окончательный: смена домена означает перепечатку всех QR.
+Ссылка в QR строится от `FT_PUBLIC_SITE_URL`: `https://flavor-tree-frontend.vercel.app/menu/СЛАГ?table=N&src=qr`.
+
+## 7. Прогрев перед защитой и во время пилота
+
+Холодный старт функции занимает 3-5 с: первый гость после простоя ждёт.
+
+- В `backend/vercel.json` есть cron: каждый день в 06:00 UTC (11:00 по Алматы) Vercel открывает
+  `/api/health/`. На тарифе Hobby cron работает не чаще раза в день, поэтому он будит сайт только
+  к открытию бара и заодно проверяет базу.
+- На время пилота поставить внешний бесплатный монитор (UptimeRobot, cron-job.org) на
+  `https://flavor-tree-backend.vercel.app/api/health/` каждые 5 минут. Он держит функцию тёплой и
+  пришлёт письмо, если база упадёт (health отвечает 503). В консоли Neon проверить лимит часов
+  вычислений: частые запросы не дают базе засыпать.
+- В день защиты за 3-5 минут до выступления: `scripts/smoke.sh`, затем открыть с телефона `/`,
+  `/catalog`, `/pairings`, `/menu/СЛАГ?table=1` и задать один вопрос ИИ-сомелье.
+- Держать наготове локальный стенд и видео сценария на случай проблем с сетью.
+
+## 8. Если что-то пошло не так
+
+- Сломался деплой: Vercel → Deployments → предыдущий рабочий → Promote to Production.
+  Миграции базы при этом не откатываются, поэтому новые миграции делаем только добавляющими поля.
+- Потерялись данные: восстановление из ветки Neon или из JSON-бэкапа (раздел 3).
+- Сотрудник бара не может войти после нескольких ошибок: лимит 10 попыток в минуту с одного IP,
+  через минуту можно снова.
+- health отвечает 503: база недоступна, смотреть статус Neon и логи функции в Vercel.
+
+## Что где в коде
+
+- `backend/index.py`: холодный старт на Vercel (миграции, кэш, данные в пустую базу, демо-пароли).
+- `backend/flavor_tree/settings.py`: переменные окружения, безопасные значения по умолчанию,
+  лимиты запросов, кэш в базе на Vercel, хранилище фото.
+- `backend/media_db/`: загруженные фото в базе и их раздача по `/media/` с долгим кэшем.
+- `backend/api/throttles.py`, `backend/api/authentication.py`: лимиты и срок жизни токена.
+- `backend/api/demo_accounts.py`, команды `seed_roles` и `rotate_demo_passwords`: демо-учётки.
+- `.vercelignore` в корне, в `backend/` и `frontend/`: что не уезжает на Vercel.
+- `scripts/smoke.sh`: проверка после деплоя и перед показом.
+
+## Локальная разработка
+
+Ничего не меняется: `python manage.py runserver` сам включает DEBUG, демо-учётки из `seed_roles`
+входят со своими публичными паролями (только с локальной базой), кнопки тестовых аккаунтов на
+странице входа видны в dev-сборке. Фото хранятся в `backend/media/`, лимиты входа и заказов
+локально не действуют.
