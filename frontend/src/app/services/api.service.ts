@@ -30,6 +30,7 @@ import {
   AiRequest,
   AiReply
 } from '../models/flavor-tree.models';
+import { V2PairingResult } from '../pages/drinks-v2/v2.models';
 import { environment } from '../../environments/environment';
 
 /** Локально http://127.0.0.1:8000/api, на проде /api на том же домене (src/environments). */
@@ -244,6 +245,16 @@ export class ApiService {
 
   deletePairing(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/pairings/${id}/`);
+  }
+
+  /**
+   * Подбор движка v2 к блюду: весь отсортированный список напитков нужных
+   * категорий (top=0). Главная берёт из него пиво портфеля Efes, поэтому
+   * баллы совпадают с вкладкой «К блюду». Ошибка уходит вызывающему.
+   */
+  getEnginePairing(dishId: string, categories: string[]): Observable<V2PairingResult> {
+    const params = new HttpParams().set('categories', categories.join(',')).set('top', 0);
+    return this.http.get<V2PairingResult>(`${this.baseUrl}/v2/pairing/dish/${encodeURIComponent(dishId)}/`, { params });
   }
 
   // 5. Курсы и Команда
