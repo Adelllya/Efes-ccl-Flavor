@@ -38,6 +38,8 @@ interface ChatMessage extends AiMessage {
 interface StoredChat {
   messages: ChatMessage[];
   prefs: AiPrefs;
+  /** Флаги безопасности (возраст, руль...), которые сервер просил помнить: история уходит на сервер не вся. */
+  flags?: string[];
 }
 
 const EMPTY_PREFS: AiPrefs = { no_bitter: false, light: false, no_alcohol: false };
@@ -52,7 +54,8 @@ function readHistory(key: string): StoredChat | null {
     const raw = sessionStorage.getItem(key);
     const parsed = raw ? JSON.parse(raw) as Partial<StoredChat> : null;
     if (!parsed || !Array.isArray(parsed.messages)) return null;
-    return { messages: parsed.messages, prefs: { ...EMPTY_PREFS, ...(parsed.prefs || {}) } };
+    const flags = Array.isArray(parsed.flags) ? parsed.flags.filter(f => typeof f === 'string') : [];
+    return { messages: parsed.messages, prefs: { ...EMPTY_PREFS, ...(parsed.prefs || {}) }, flags };
   } catch {
     return null;
   }
@@ -97,10 +100,10 @@ function guestSession(): string {
   }
 }
 
-/** Строка корзины из чата: откуда позиция и к какому блюду подобран напиток (поля как в API заказа). */
+/** Строка корзины из чата: откуда позиция, к какому блюду подобран напиток и место карточки (поля CartLine). */
 interface AiCartMeta {
   source: 'AI';
-  paired_with: string | null;
+  pairedWith?: string;
   rank: number;
 }
 
@@ -309,6 +312,8 @@ export class SommelierChatComponent {
   status = signal<AiStatus | null>(null);
   messages = signal<ChatMessage[]>([]);
   prefs = signal<AiPrefs>({ ...EMPTY_PREFS });
+  /** Флаги безопасности этого чата: приходят в safety_flags и уходят обратно с каждым вопросом. */
+  private safetyFlags: string[] = [];
   input = signal('');
   busy = signal(false);
   error = signal('');
@@ -471,6 +476,7 @@ export class SommelierChatComponent {
 
   clearHistory(): void {
     this.messages.set([]);
+    this.safetyFlags = [];
     this.error.set('');
     this.added.set({});
     this.persist();
@@ -490,6 +496,7 @@ export class SommelierChatComponent {
       messages: turns,
       prefs: { no_bitter: !!p.no_bitter, light: !!p.light, no_alcohol: !!p.no_alcohol },
     };
+    if (this.safetyFlags.length) body.safety_flags = [...this.safetyFlags];
     if (slug) {
       const cart = readCart(slug);
       if (cart.length) body.cart = cart.map(l => ({ kind: l.kind, id: l.id, title: l.title, qty: l.qty }));
@@ -501,6 +508,8 @@ export class SommelierChatComponent {
         this.busy.set(false);
         // Пока ждали, гость открыл другое заведение: ответ относится к прошлой истории
         if (key !== this.currentKey) return;
+        const flags = Array.isArray(r?.safety_flags) ? r.safety_flags : [];
+        this.safetyFlags = Array.from(new Set([...this.safetyFlags, ...flags]));
         this.push({
           role: 'assistant',
           content: (r?.reply || '').trim() || 'Не нашёл, что посоветовать. Попробуйте спросить иначе.',
@@ -535,7 +544,7 @@ export class SommelierChatComponent {
   }
 
   private persist(): void {
-    writeHistory(this.currentKey, { messages: this.messages(), prefs: this.prefs() });
+    writeHistory(this.currentKey, { messages: this.messages(), prefs: this.prefs(), flags: this.safetyFlags });
   }
 
   private switchHistory(key: string): void {
@@ -545,6 +554,7 @@ export class SommelierChatComponent {
     const saved = readHistory(key);
     this.messages.set(saved?.messages ?? []);
     this.prefs.set(saved?.prefs ?? { ...EMPTY_PREFS });
+    this.safetyFlags = saved?.flags ?? [];
     this.error.set('');
     this.added.set({});
   }
@@ -564,7 +574,10 @@ export class SommelierChatComponent {
 
   /** Подпись под ответом: кто отвечал. */
   modeCaption(m: ChatMessage): string {
-    if (m.safety) return 'Ответ по правилам безопасности: без алкоголя';
+    if (m.safety) {
+      // Флаг из прошлых реплик в режиме Claude: ответ писала модель, но без алкоголя
+      return m.mode === 'claude' ? 'Ответ: ИИ Claude, без алкоголя' : 'Ответ по правилам безопасности: без алкоголя';
+    }
     return m.mode === 'claude' ? 'Ответ: ИИ Claude' : 'Ответ по вкусовому движку Flavor Tree';
   }
 
@@ -595,11 +608,11 @@ export class SommelierChatComponent {
   addToOrder(m: ChatMessage, s: AiSuggestion, index: number): void {
     const slug = this.slug();
     if (!slug || !this.isAvailable(s)) return;
-    // Метка источника уходит в заказ (source, paired_with, rank как в API заказа)
+    // Метка источника уходит в заказ: страница меню отправит source, paired_with и rank
     const line: Omit<CartLine, 'qty'> & AiCartMeta = {
       ...this.lineFor(s),
       source: 'AI',
-      paired_with: s.kind === 'DRINK' ? s.pairs_with : null,
+      pairedWith: s.kind === 'DRINK' && s.pairs_with ? s.pairs_with : undefined,
       rank: index + 1,
     };
     addToCart(slug, line);
