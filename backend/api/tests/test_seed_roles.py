@@ -27,11 +27,17 @@ class SeedRolesTests(TestCase):
         # Горячее первым.
         self.assertEqual([s['name'] for s in menu['sections']], ['Горячее', 'Гриль', 'Закуски', 'Десерты'])
         self.assertEqual(menu['tables_count'], 24)
-        # Карта напитков: только сорта, которые есть в каталоге, без дублей.
-        self.assertEqual(MenuDrink.objects.count(), 2)
-        self.assertEqual([d['brand_name'] for d in menu['drinks']], ['Бочковое', 'Velkopopovický Kozel'])
+        # Карта напитков: сорта, которые есть в каталоге, плюс напитки базы подбора (0.0, тёмный лагер,
+        # чай, эспрессо), без дублей при повторном запуске.
+        self.assertEqual(MenuDrink.objects.filter(brand__isnull=False).count(), 2)
+        self.assertEqual(
+            sorted(MenuDrink.objects.exclude(engine_drink_id='').values_list('engine_drink_id', flat=True)),
+            ['chay-chernyy', 'efes-0-0', 'espresso-amerikano', 'kruzhka-svezhego-0-0', 'velkopopovicky-kozel-cerny'])
+        self.assertEqual([d['brand_name'] for d in menu['drinks']][:2], ['Бочковое', 'Velkopopovický Kozel'])
         self.assertEqual(menu['drinks'][1]['price'], '2200.00')
         self.assertEqual(menu['drinks'][0]['volume'], '0,5 л')
+        efes_zero = next(d for d in menu['drinks'] if d['engine_drink_id'] == 'efes-0-0')
+        self.assertFalse(efes_zero['is_alcoholic'])
 
         requests = list(ChangeRequest.objects.filter(status='PENDING').order_by('kind'))
         self.assertEqual([r.kind for r in requests], ['NOTE_UPSERT', 'SERVING'])

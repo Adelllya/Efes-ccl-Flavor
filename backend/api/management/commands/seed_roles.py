@@ -16,6 +16,7 @@ from django.core.management.base import BaseCommand
 
 from api import public_content
 from api.demo_accounts import apply_password, env_name, initial_password
+from api.engine_catalog import engine_drink
 from api.models import Brand, ChangeRequest, Dish, MenuDrink, MenuItem, ServingRecommendation, Venue
 from api.permissions import GROUP_ROLES, ROLE_MODERATOR, ROLE_RESTAURANT, ROLE_SOMMELIER
 
@@ -56,6 +57,17 @@ DEMO_DRINKS = [
     (('Хмельной Лось',), 1900, 5),
 ]
 DRINK_VOLUME = '0,5 л'
+
+# Напитки из базы подбора (412 напитков), которых нет среди сортов каталога: id движка, цена, объём, порядок.
+# Без безалкогольных позиций ИИ-сомелье в баре нечего предложить водителю или гостю младше 21 года,
+# а тёмный лагер нужен десертам. Напитки, которых нет в базе подбора, пропускаются.
+DEMO_ENGINE_DRINKS = [
+    ('efes-0-0', 1000, '0,5 л', 6),
+    ('kruzhka-svezhego-0-0', 1000, '0,5 л', 7),
+    ('velkopopovicky-kozel-cerny', 2200, '0,5 л', 8),
+    ('chay-chernyy', 900, 'чайник', 9),
+    ('espresso-amerikano', 800, '30 мл', 10),
+]
 
 # Варианты названия для поиска, раздел, цена в тенге, порция, порядок внутри раздела, комментарий повара.
 # Блюда, которых нет в каталоге, пропускаются.
@@ -211,6 +223,27 @@ class Command(BaseCommand):
             else:
                 updated += 1
             self.stdout.write(f'  напиток: {brand.name} - {price} тг, {DRINK_VOLUME}')
+        for drink_id, price, volume, sort_order in DEMO_ENGINE_DRINKS:
+            raw = engine_drink(drink_id)
+            if raw is None:
+                skipped += 1
+                self.stdout.write(f'  пропущено, нет в базе подбора: {drink_id}')
+                continue
+            _, created = MenuDrink.objects.update_or_create(
+                venue=venue, engine_drink_id=drink_id,
+                defaults={
+                    'name': raw.get('name') or drink_id,
+                    'price': Decimal(price),
+                    'volume': volume,
+                    'sort_order': sort_order,
+                    'is_available': True,
+                },
+            )
+            if created:
+                added += 1
+            else:
+                updated += 1
+            self.stdout.write(f'  напиток базы подбора: {raw.get("name")} - {price} тг, {volume}')
         self.stdout.write(self.style.SUCCESS(
             f'Напитки: добавлено {added}, обновлено {updated}, пропущено {skipped}. '
             f'Всего в карте: {venue.menu_drinks.count()}'
