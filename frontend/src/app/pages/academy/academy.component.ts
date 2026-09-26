@@ -30,18 +30,19 @@ const LAYERS: { key: 'top' | 'heart' | 'base'; name: string; time: string; text:
 /** Сорт, на котором показываем пример пирамиды. Если его нет, берём первый сорт с пирамидой. */
 const EXAMPLE_BRAND = 'Efes Pilsener';
 
-/** Вопросы только по модели Flavor Tree и данным каталога сортов. */
+/** Вопросы только по модели Flavor Tree, парам из её подбора (fixtures/food_pairings.csv) и каталогу сортов. */
 const QUIZ: QuizQuestion[] = [
   {
     id: 'kazy',
-    text: 'К жирному казы подают Efes Pilsener. Какой тип сочетания здесь работает?',
+    text: 'В подборе Flavor Tree к жирному казы стоит Efes Pilsener. Какой это тип сочетания?',
     options: [
-      { id: 'complement', label: `${PAIRING_LABELS.COMPLEMENT}: сладость пива повторяет сладость блюда` },
-      { id: 'contrast', label: `${PAIRING_LABELS.CONTRAST}: хмелевая горечь и пузырьки режут жирность` },
+      { id: 'complement', label: PAIRING_LABELS.COMPLEMENT },
+      { id: 'contrast', label: PAIRING_LABELS.CONTRAST },
+      { id: 'bridge', label: PAIRING_LABELS.BRIDGE },
     ],
     correct: 'contrast',
     right: `Верно. Это «${PAIRING_LABELS.CONTRAST}»: горечь хмеля и газ освежают рот после жирной конской колбасы.`,
-    wrong: `Не совсем. К жирному мясу нужен «${PAIRING_LABELS.CONTRAST}» или «${PAIRING_LABELS.CLEANSE}»: горечь и пузырьки освежают рот.`,
+    wrong: `Не совсем. Здесь «${PAIRING_LABELS.CONTRAST}»: горечь хмеля и пузырьки освежают рот после жирной колбасы.`,
   },
   {
     id: 'top',
@@ -68,16 +69,16 @@ const QUIZ: QuizQuestion[] = [
     wrong: `Нет. «${PAIRING_LABELS.CLEANSE}» значит, что напиток освежает рот между кусочками.`,
   },
   {
-    id: 'strong',
-    text: 'Какой сорт в каталоге Flavor Tree самый крепкий?',
+    id: 'beshbarmak',
+    text: 'В подборе Flavor Tree к бешбармаку стоит Velkopopovický Kozel. Какой это тип сочетания?',
     options: [
-      { id: 'kruzhka', label: 'Кружка Свежего' },
-      { id: 'los', label: 'Хмельной Лось' },
-      { id: 'zhig', label: 'Жигулевское' },
+      { id: 'complement', label: PAIRING_LABELS.COMPLEMENT },
+      { id: 'contrast', label: PAIRING_LABELS.CONTRAST },
+      { id: 'cleanse', label: PAIRING_LABELS.CLEANSE },
     ],
-    correct: 'los',
-    right: 'Верно. У Хмельного Лося 7,3 %, это крепкий лагер.',
-    wrong: 'Нет. Самый крепкий сорт каталога Хмельной Лось, 7,3 %.',
+    correct: 'complement',
+    right: `Верно. Это «${PAIRING_LABELS.COMPLEMENT}»: плотная солодовая основа Kozel поддерживает насыщенный вкус варёного мяса.`,
+    wrong: `Нет. Здесь «${PAIRING_LABELS.COMPLEMENT}»: солодовая плотность Kozel повторяет насыщенный вкус варёного мяса, а не спорит с ним.`,
   },
   {
     id: 'rice',
@@ -129,7 +130,7 @@ const READY_SECTIONS: Record<number, { anchor: string; label: string }> = {
         <div class="glass-card p-2xl stagger-item">
           <span class="badge mb-md">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 10 3 12 0v-5"/></svg>
-            Ступень {{ c.level }}: {{ c.level_display }}
+            Ступень {{ c.level }}
           </span>
           <h3 class="mb-md" style="font-size: 1.25rem;">{{ c.title }}</h3>
           <p class="text-dim text-sm mb-lg">{{ c.description }}</p>

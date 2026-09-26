@@ -1,6 +1,6 @@
 /**
  * Крепость по-русски: «5 %», «около 4,5 %». null, если крепости нет: поле тогда прячем,
- * а не пишем «N/A». «Около» ставим, когда производитель число не публикует и в каталоге
+ * а не пишем «N/A». «Около» ставим, когда точного числа в наших источниках нет и в каталоге
  * стоит оценка по стилю (Brand.abv_estimated).
  */
 export function abvText(abv: number | null | undefined, estimated = false): string | null {
@@ -10,4 +10,4 @@ export function abvText(abv: number | null | undefined, estimated = false): stri
 }
 
 /** Подсказка к крепости-оценке. */
-export const ABV_ESTIMATE_HINT = 'Производитель крепость не публикует, указана оценка по стилю';
+export const ABV_ESTIMATE_HINT = 'Точной крепости в наших источниках нет, указана оценка по стилю';
