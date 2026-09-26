@@ -82,15 +82,30 @@ export class ApiService {
         const pages = items.length && first.count > 0 ? Math.ceil(first.count / items.length) : 0;
         // Незнакомая пагинация (не ?page=N): идём по ссылкам next, как раньше
         if (pages < 2 || !/[?&]page=\d+/.test(first.next)) {
-          return this.http.get<PaginatedResponse<T>>(first.next).pipe(
-            expand(res => res.next ? this.http.get<PaginatedResponse<T>>(res.next) : EMPTY),
-            reduce((acc: T[], res) => acc.concat(res.results || []), items)
-          );
+          return this.followNext<T>(first.next).pipe(map(more => items.concat(more)));
         }
         const rest = Array.from({ length: pages - 1 }, (_, i) =>
-          this.http.get<PaginatedResponse<T>>(url, { params: params.set('page', i + 2) }).pipe(map(res => res.results || [])));
-        return forkJoin(rest).pipe(map(chunks => items.concat(...chunks)));
+          this.http.get<PaginatedResponse<T>>(url, { params: params.set('page', i + 2) }).pipe(
+            // Список успел сократиться (например, заказы), и последней страницы уже нет: считаем её пустой
+            catchError(err => err instanceof HttpErrorResponse && err.status === 404
+              ? of<PaginatedResponse<T>>({ count: 0, next: null, results: [] })
+              : throwError(() => err))
+          ));
+        return forkJoin(rest).pipe(switchMap(chunks => {
+          const all = items.concat(...chunks.map(res => res.results || []));
+          // Список вырос, пока шли запросы: дочитываем хвост по ссылке next последней страницы
+          const tail = chunks[chunks.length - 1]?.next;
+          return tail ? this.followNext<T>(tail).pipe(map(more => all.concat(more))) : of(all);
+        }));
       })
+    );
+  }
+
+  /** Страницы по ссылкам next, одна за другой. */
+  private followNext<T>(next: string): Observable<T[]> {
+    return this.http.get<PaginatedResponse<T>>(next).pipe(
+      expand(res => res.next ? this.http.get<PaginatedResponse<T>>(res.next) : EMPTY),
+      reduce((acc: T[], res) => acc.concat(res.results || []), [] as T[])
     );
   }
 
