@@ -113,10 +113,10 @@ class AiStatusTests(AiTestsBase):
         self.assertEqual(resp.json(), {'enabled': False, 'model': 'claude-sonnet-5', 'mode': 'local',
                                        'limit_reached': False})
 
-    def test_default_model_is_sonnet(self):
+    def test_default_model_is_opus(self):
         with patch.dict(os.environ, {'FT_AI_MODEL': ''}):
             self.assertEqual(ai_sommelier.ai_model(), settings.FT_AI_MODEL)
-        self.assertEqual(ai_sommelier.DEFAULT_MODEL, 'claude-sonnet-5')
+        self.assertEqual(ai_sommelier.DEFAULT_MODEL, 'claude-opus-5')
 
     def test_status_with_key_and_model_override(self):
         with patch.dict(os.environ, {'ANTHROPIC_API_KEY': 'test-key', 'FT_AI_MODEL': 'claude-opus-5'}):

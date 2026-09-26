@@ -50,7 +50,7 @@ Vercel → проект → Settings → Environment Variables. Ставить �
 | `FT_PASSWORD_SOMMELIER`, `FT_PASSWORD_GUEST` | пароли остальных демо-учёток | нет: без них вход закрыт |
 | `FT_PUBLIC_SITE_URL` | `https://flavor-tree-frontend.vercel.app` | да, адрес сайта в QR столов |
 | `ANTHROPIC_API_KEY` | ключ Anthropic; в консоли Anthropic сразу поставить месячный лимит расходов | нет: без ключа чат отвечает локальным подбором |
-| `FT_AI_MODEL` | по умолчанию `claude-sonnet-5` | нет |
+| `FT_AI_MODEL` | по умолчанию `claude-opus-5`; `claude-sonnet-5` дешевле (2/10 долларов за 1 млн токенов против 5/25) и быстрее, решение за командой | нет |
 | `FT_AI_TIMEOUT` | секунды на ответ модели, по умолчанию 8 | нет, см. ниже |
 
 `DJANGO_DEBUG` не задавать: на Vercel отладка выключена по умолчанию. Имя переменной CORS именно
