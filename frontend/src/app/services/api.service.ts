@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, EMPTY, of, throwError } from 'rxjs';
-import { map, catchError, expand, reduce } from 'rxjs/operators';
+import { Observable, EMPTY, forkJoin, of, throwError } from 'rxjs';
+import { map, catchError, expand, reduce, switchMap } from 'rxjs/operators';
 import {
   Brand,
   Dish,
@@ -67,11 +67,29 @@ export class ApiService {
    * Блюд и пар в базе больше, чем помещается на одну страницу (по 20),
    * а подбору нужен весь список: иначе половина блюд просто не участвует
    * в рекомендациях. Ответ без пагинации (массив) тоже понимает.
+   *
+   * По первой странице видно, сколько их всего, поэтому остальные
+   * запрашиваем параллельно, а не цепочкой: на мобильном интернете и
+   * холодном старте сервера цепочка из трёх страниц заметно дольше.
    */
   fetchAll<T>(url: string, params: HttpParams = new HttpParams()): Observable<T[]> {
     return this.http.get<PaginatedResponse<T> | T[]>(url, { params }).pipe(
-      expand(res => (!Array.isArray(res) && res.next) ? this.http.get<PaginatedResponse<T>>(res.next) : EMPTY),
-      reduce((acc: T[], res) => acc.concat(Array.isArray(res) ? res : res.results || []), [])
+      switchMap(first => {
+        if (Array.isArray(first)) return of(first);
+        const items = first.results || [];
+        if (!first.next) return of(items);
+        const pages = items.length && first.count > 0 ? Math.ceil(first.count / items.length) : 0;
+        // Незнакомая пагинация (не ?page=N): идём по ссылкам next, как раньше
+        if (pages < 2 || !/[?&]page=\d+/.test(first.next)) {
+          return this.http.get<PaginatedResponse<T>>(first.next).pipe(
+            expand(res => res.next ? this.http.get<PaginatedResponse<T>>(res.next) : EMPTY),
+            reduce((acc: T[], res) => acc.concat(res.results || []), items)
+          );
+        }
+        const rest = Array.from({ length: pages - 1 }, (_, i) =>
+          this.http.get<PaginatedResponse<T>>(url, { params: params.set('page', i + 2) }).pipe(map(res => res.results || [])));
+        return forkJoin(rest).pipe(map(chunks => items.concat(...chunks)));
+      })
     );
   }
 
