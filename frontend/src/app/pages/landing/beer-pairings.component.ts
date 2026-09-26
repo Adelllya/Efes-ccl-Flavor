@@ -530,6 +530,8 @@ export class BeerPairingsComponent {
 
   @Output() openBrand = new EventEmitter<string>();
   @Output() exit = new EventEmitter<void>();
+  /** Гость сам открыл сорт или вернулся к списку: родитель ведёт историю браузера. */
+  @Output() picked = new EventEmitter<Brand | null>();
 
   readonly packs = [
     { id: '', label: 'Все' },
@@ -597,11 +599,12 @@ export class BeerPairingsComponent {
 
   select(brand: Brand): void {
     this.selected.set(brand);
+    this.picked.emit(brand);
     window.scrollTo({ top: Math.max(0, window.scrollY - 200), behavior: 'smooth' });
   }
 
   goBack(): void {
-    if (this.selected()) { this.selected.set(null); return; }
+    if (this.selected()) { this.selected.set(null); this.picked.emit(null); return; }
     this.exit.emit();
   }
 

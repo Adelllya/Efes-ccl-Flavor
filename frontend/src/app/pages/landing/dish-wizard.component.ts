@@ -1,10 +1,17 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, computed, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, computed, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Dish, FoodIcon } from '../../models/flavor-tree.models';
+import { FoodIcon } from '../../models/flavor-tree.models';
 import {
   CATEGORIES, COOKING, TASTES, WEIGHTS, FATS,
-  DishProfile, WizardOption, emptyProfile, findDish,
+  DishProfile, WizardOption, emptyProfile,
 } from './pairing-engine.data';
+import { DishChoice, IndexedDish, resolveDish, searchDishes, toPick } from './dish-search';
+
+/** Шаг мастера и ответы на момент перехода: родитель кладёт их в историю браузера. */
+export interface WizardMove {
+  step: number;
+  profile: DishProfile;
+}
 
 interface StepDef {
   key: keyof DishProfile;
@@ -22,6 +29,9 @@ const STEPS: StepDef[] = [
   { key: 'taste', title: 'Какой вкус', accent: 'главный?', sub: 'Тот, что чувствуется первым, ещё до остальных', options: TASTES, skippable: true },
   { key: 'weight', title: 'Насколько', accent: 'сытное?', sub: 'От веса блюда зависит плотность сорта - лёгкое к лёгкому, тяжёлое к тяжёлому', options: WEIGHTS, skippable: true },
 ];
+
+/** Последний шаг мастера: на него возвращает «Изменить ответы» из результата. */
+export const LAST_STEP = STEPS.length - 1;
 
 /** Какому типу картинок из админки соответствует шаг мастера. */
 const STEP_KIND: Record<string, string> = {
@@ -66,6 +76,21 @@ const STEP_KIND: Record<string, string> = {
       <header class="wiz-ask">
         <h2 class="section-header">{{ step().title }} <span class="wiz-accent">{{ step().accent }}</span></h2>
         <p class="section-subtitle">{{ step().sub }}</p>
+        @if (index() === 0 && profile().freeText) {
+          @if (missHints().length) {
+            <p class="wiz-miss">Точно «{{ profile().freeText }}» в каталоге не нашлось. Возможно, вы искали:</p>
+            <div class="wiz-maybe" aria-label="Похожие блюда из каталога">
+              @for (d of missHints(); track $index) {
+                <button type="button" class="wiz-chip" (click)="pickExact(d)">
+                  @if (d.emoji) { <span aria-hidden="true">{{ d.emoji }}</span> }{{ d.name }}
+                </button>
+              }
+            </div>
+            <p class="wiz-miss">Если нужного блюда нет, ответьте на четыре вопроса, и мы подберём пиво по вкусу блюда.</p>
+          } @else {
+            <p class="wiz-miss">«{{ profile().freeText }}» пока нет в каталоге. Ответьте на четыре вопроса, и мы подберём пиво по вкусу блюда.</p>
+          }
+        }
       </header>
 
       @if (chosen().length) {
@@ -135,18 +160,18 @@ const STEP_KIND: Record<string, string> = {
               type="text"
               name="dish"
               autocomplete="off"
-              placeholder="Например: стейк рибай, том ям, тирамису…"
+              placeholder="Например: бешбармак, плов, стейк рибай…"
               [ngModel]="query()"
               (ngModelChange)="query.set($event)"
             />
 
             @if (suggestions().length) {
               <ul class="wiz-hints" role="listbox" aria-label="Блюда из каталога">
-                @for (d of suggestions(); track d.id) {
+                @for (d of suggestions(); track $index) {
                   <li>
                     <button type="button" role="option" [attr.aria-selected]="false" (click)="pickExact(d)">
-                      <span class="font-bold">{{ d.name }}</span>
-                      <span class="text-xs text-muted">{{ d.cuisine_display || d.cuisine }} · {{ d.weight_display || d.weight }}</span>
+                      <span class="font-bold">@if (d.emoji) {<span aria-hidden="true">{{ d.emoji }} </span>}{{ d.name }}</span>
+                      @if (d.hint) { <span class="text-xs text-muted">{{ d.hint }}</span> }
                     </button>
                   </li>
                 }
@@ -237,6 +262,8 @@ const STEP_KIND: Record<string, string> = {
     .wiz-ask { margin-bottom: var(--space-2xl); animation: wizRise var(--duration-slow) var(--ease-out) both; }
     .wiz-ask .section-header { margin-bottom: var(--space-sm); }
     .wiz-ask .section-subtitle { max-width: 54ch; margin: 0 auto; text-wrap: balance; }
+    .wiz-miss { max-width: 54ch; margin: var(--space-md) auto 0; font-size: 0.85rem; color: var(--beer-deep); text-wrap: balance; }
+    .wiz-maybe { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-sm); margin-top: var(--space-sm); }
 
     .wiz-accent {
       background: linear-gradient(120deg, var(--beer-light), var(--beer-deep));
@@ -480,17 +507,23 @@ const STEP_KIND: Record<string, string> = {
     }
   `],
 })
-export class DishWizardComponent implements OnInit {
-  /** Каталог блюд - нужен для подсказок в свободном вводе. */
-  @Input() dishes: Dish[] = [];
+export class DishWizardComponent implements OnInit, OnDestroy {
+  /** Блюда для подсказок в свободном вводе: каталог движка и каталог сомелье. */
+  @Input() catalog: IndexedDish[] = [];
   /** Картинки вариантов из админки. Пусто - на кружках остаются emoji. */
   @Input() icons: FoodIcon[] = [];
   /** Ответы прошлого прохода: с ними «назад» из результата не теряет выбор. */
   @Input() restore: DishProfile | null = null;
+  /** С какого шага открыть мастер; null - с последнего, если есть ответы, иначе с первого. */
+  @Input() restoreStep: number | null = null;
 
   @Output() done = new EventEmitter<DishProfile>();
-  @Output() dishPicked = new EventEmitter<Dish>();
+  @Output() dishPicked = new EventEmitter<DishChoice>();
   @Output() exit = new EventEmitter<void>();
+  /** Шаг вперёд: родитель добавляет запись в историю, чтобы «Назад» браузера вернул сюда. */
+  @Output() advance = new EventEmitter<WizardMove>();
+  /** Шаг назад кнопкой мастера. */
+  @Output() retreat = new EventEmitter<WizardMove>();
 
   readonly steps = STEPS;
   readonly fats = FATS;
@@ -504,11 +537,10 @@ export class DishWizardComponent implements OnInit {
   step = computed(() => this.steps[this.index()]);
   isLast = computed(() => this.index() === this.steps.length - 1);
 
-  suggestions = computed(() => {
-    const q = this.query().trim().toLowerCase();
-    if (q.length < 2) return [];
-    return this.dishes.filter(d => d.name.toLowerCase().includes(q)).slice(0, 5);
-  });
+  suggestions = computed(() => searchDishes(this.catalog, this.query(), 5).map(m => m.dish));
+
+  /** Неточные совпадения для названия, которого нет в каталоге: «пица», «стэйк». */
+  missHints = computed(() => searchDishes(this.catalog, this.profile().freeText, 4).map(m => m.dish));
 
   chosen = computed(() => {
     const p = this.profile();
@@ -523,10 +555,24 @@ export class DishWizardComponent implements OnInit {
     return out;
   });
 
+  private advanceTimer: ReturnType<typeof setTimeout> | null = null;
+
   ngOnInit(): void {
-    if (!this.restore) return;
-    this.profile.set({ ...this.restore });
-    this.index.set(this.steps.length - 1);
+    if (this.restore) this.profile.set({ ...this.restore });
+    if (this.restoreStep !== null) this.index.set(this.clampStep(this.restoreStep));
+    else if (this.restore) this.index.set(this.steps.length - 1);
+  }
+
+  ngOnDestroy(): void {
+    this.cancelAdvance();
+  }
+
+  /** Родитель вернул мастер на шаг из истории браузера. */
+  show(step: number, profile: DishProfile): void {
+    this.cancelAdvance();
+    this.profile.set({ ...profile });
+    this.index.set(this.clampStep(step));
+    this.focusGrid();
   }
 
   value(key: keyof DishProfile): string | null {
@@ -545,7 +591,8 @@ export class DishWizardComponent implements OnInit {
     // На промежуточных шагах ведём дальше сами: выбор виден, ждать нечего.
     if (!this.isLast()) {
       const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      setTimeout(() => this.next(), reduce ? 0 : 260);
+      this.cancelAdvance();
+      this.advanceTimer = setTimeout(() => { this.advanceTimer = null; this.next(); }, reduce ? 0 : 260);
     }
   }
 
@@ -559,24 +606,31 @@ export class DishWizardComponent implements OnInit {
   }
 
   next(): void {
+    this.cancelAdvance();
     if (this.isLast()) { this.finish(); return; }
     this.index.update(i => i + 1);
+    this.advance.emit({ step: this.index(), profile: this.profile() });
     this.focusGrid();
   }
 
   back(): void {
+    this.cancelAdvance();
     if (this.index() === 0) { this.exit.emit(); return; }
     this.index.update(i => i - 1);
+    this.retreat.emit({ step: this.index(), profile: this.profile() });
     this.focusGrid();
   }
 
   goTo(i: number): void {
-    if (i > this.index()) return;
+    if (i >= this.index()) return;
+    this.cancelAdvance();
     this.index.set(i);
+    this.retreat.emit({ step: i, profile: this.profile() });
     this.focusGrid();
   }
 
   finish(): void {
+    this.cancelAdvance();
     this.done.emit(this.profile());
   }
 
@@ -584,17 +638,27 @@ export class DishWizardComponent implements OnInit {
     const text = this.query().trim();
     if (text.length < 2) return;
 
-    const exact = findDish(this.dishes, text);
-    if (exact) { this.pickExact(exact); return; }
+    const found = resolveDish(this.catalog, text);
+    if (found?.sure) { this.query.set(''); this.dishPicked.emit(found); return; }
 
     // Блюда нет в каталоге - запоминаем название и уточняем его вручную.
     this.profile.update(p => ({ ...p, freeText: text }));
+    // Похожее есть: остаёмся на первом шаге, где видно «Возможно, вы искали»
+    if (found) { this.query.set(''); return; }
     this.next();
   }
 
-  pickExact(dish: Dish): void {
+  pickExact(dish: IndexedDish): void {
     this.query.set('');
-    this.dishPicked.emit(dish);
+    this.dishPicked.emit({ pick: toPick(dish), also: [] });
+  }
+
+  private clampStep(step: number): number {
+    return Math.max(0, Math.min(this.steps.length - 1, Math.round(step) || 0));
+  }
+
+  private cancelAdvance(): void {
+    if (this.advanceTimer !== null) { clearTimeout(this.advanceTimer); this.advanceTimer = null; }
   }
 
   /** Стрелки внутри группы вариантов - как в обычной радиогруппе. */

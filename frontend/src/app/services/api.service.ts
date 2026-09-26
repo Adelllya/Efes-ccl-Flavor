@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, EMPTY, of, throwError } from 'rxjs';
-import { map, catchError, expand, reduce } from 'rxjs/operators';
+import { Observable, EMPTY, forkJoin, of, throwError } from 'rxjs';
+import { map, catchError, expand, reduce, switchMap } from 'rxjs/operators';
 import {
   Brand,
   Dish,
@@ -30,6 +30,7 @@ import {
   AiRequest,
   AiReply
 } from '../models/flavor-tree.models';
+import { V2PairingResult } from '../pages/drinks-v2/v2.models';
 import { environment } from '../../environments/environment';
 
 /** Локально http://127.0.0.1:8000/api, на проде /api на том же домене (src/environments). */
@@ -76,11 +77,44 @@ export class ApiService {
    * Блюд и пар в базе больше, чем помещается на одну страницу (по 20),
    * а подбору нужен весь список: иначе половина блюд просто не участвует
    * в рекомендациях. Ответ без пагинации (массив) тоже понимает.
+   *
+   * По первой странице видно, сколько их всего, поэтому остальные
+   * запрашиваем параллельно, а не цепочкой: на мобильном интернете и
+   * холодном старте сервера цепочка из трёх страниц заметно дольше.
    */
   fetchAll<T>(url: string, params: HttpParams = new HttpParams()): Observable<T[]> {
     return this.http.get<PaginatedResponse<T> | T[]>(url, { params }).pipe(
-      expand(res => (!Array.isArray(res) && res.next) ? this.http.get<PaginatedResponse<T>>(res.next) : EMPTY),
-      reduce((acc: T[], res) => acc.concat(Array.isArray(res) ? res : res.results || []), [])
+      switchMap(first => {
+        if (Array.isArray(first)) return of(first);
+        const items = first.results || [];
+        if (!first.next) return of(items);
+        const pages = items.length && first.count > 0 ? Math.ceil(first.count / items.length) : 0;
+        // Незнакомая пагинация (не ?page=N): идём по ссылкам next, как раньше
+        if (pages < 2 || !/[?&]page=\d+/.test(first.next)) {
+          return this.followNext<T>(first.next).pipe(map(more => items.concat(more)));
+        }
+        const rest = Array.from({ length: pages - 1 }, (_, i) =>
+          this.http.get<PaginatedResponse<T>>(url, { params: params.set('page', i + 2) }).pipe(
+            // Список успел сократиться (например, заказы), и последней страницы уже нет: считаем её пустой
+            catchError(err => err instanceof HttpErrorResponse && err.status === 404
+              ? of<PaginatedResponse<T>>({ count: 0, next: null, results: [] })
+              : throwError(() => err))
+          ));
+        return forkJoin(rest).pipe(switchMap(chunks => {
+          const all = items.concat(...chunks.map(res => res.results || []));
+          // Список вырос, пока шли запросы: дочитываем хвост по ссылке next последней страницы
+          const tail = chunks[chunks.length - 1]?.next;
+          return tail ? this.followNext<T>(tail).pipe(map(more => all.concat(more))) : of(all);
+        }));
+      })
+    );
+  }
+
+  /** Страницы по ссылкам next, одна за другой. */
+  private followNext<T>(next: string): Observable<T[]> {
+    return this.http.get<PaginatedResponse<T>>(next).pipe(
+      expand(res => res.next ? this.http.get<PaginatedResponse<T>>(res.next) : EMPTY),
+      reduce((acc: T[], res) => acc.concat(res.results || []), [] as T[])
     );
   }
 
@@ -235,6 +269,16 @@ export class ApiService {
 
   deletePairing(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/pairings/${id}/`);
+  }
+
+  /**
+   * Подбор движка v2 к блюду: весь отсортированный список напитков нужных
+   * категорий (top=0). Главная берёт из него пиво портфеля Efes, поэтому
+   * баллы совпадают с вкладкой «К блюду». Ошибка уходит вызывающему.
+   */
+  getEnginePairing(dishId: string, categories: string[]): Observable<V2PairingResult> {
+    const params = new HttpParams().set('categories', categories.join(',')).set('top', 0);
+    return this.http.get<V2PairingResult>(`${this.baseUrl}/v2/pairing/dish/${encodeURIComponent(dishId)}/`, { params });
   }
 
   // 5. Курсы, команда и счётчики главной
