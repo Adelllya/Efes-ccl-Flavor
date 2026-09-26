@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { pairingViewFromUrl, syncPairingView } from '../drinks-v2/v2-url';
 import { ApiService } from '../../services/api.service';
 import { FoodPairing, Dish, CuisineType, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { countOf } from '../venue-menu/plural';
@@ -197,7 +198,9 @@ export class FoodPairingComponent implements OnInit {
   /** Пока false - скелет; "не найдено" показываем только после загрузки. */
   pairingsLoaded = signal(false);
   dishesLoaded = signal(false);
-  viewMode = signal<'pairings' | 'dishes' | 'drinks'>('pairings');
+  viewMode = signal<'pairings' | 'dishes' | 'drinks'>(pairingViewFromUrl());
+  /** Вкладка живёт в адресе (?view=drinks): переживает перезагрузку и «Назад» со страницы сорта. */
+  private readonly viewInUrl = effect(() => syncPairingView(this.viewMode()));
   activeFilter = signal<string>('');
   cuisineFilter = signal<string>('');
   searchQuery = signal<string>('');

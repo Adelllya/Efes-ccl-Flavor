@@ -17,6 +17,9 @@ import { ActiveTab } from './models/navigation';
 
 export type { ActiveTab } from './models/navigation';
 
+/** Разделы, где query в адресе хранит состояние экрана: режим, фильтры, блюдо, открытый напиток (pages/drinks-v2/v2-url.ts). */
+const QUERY_TABS: ReadonlySet<ActiveTab> = new Set<ActiveTab>(['explorer', 'pairing']);
+
 /** Путь в адресной строке для раздела. Сорт и заведение попадают в него параметром. */
 function pathFor(tab: ActiveTab, brandId: string | null, venueSlug: string | null): string {
   switch (tab) {
@@ -31,6 +34,14 @@ function pathFor(tab: ActiveTab, brandId: string | null, venueSlug: string | nul
     case 'profile': return '/profile';
     default: return '/';
   }
+}
+
+/** query без одного параметра: «?view=all&drink=x» → «?view=all». */
+function withoutParam(search: string, name: string): string {
+  const params = new URLSearchParams(search);
+  params.delete(name);
+  const rest = params.toString();
+  return rest ? '?' + rest : '';
 }
 
 interface ParsedPath {
@@ -530,6 +541,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly zone = inject(NgZone);
 
   activeTab = signal<ActiveTab>('landing');
+  /** Последний query каталога и подбора: вернувшись в раздел, гость видит тот же режим и фильтры. */
+  private readonly lastQuery = new Map<ActiveTab, string>();
   mobileMenuOpen = signal(false);
   showStickyTitle = signal(false);
 
@@ -543,7 +556,13 @@ export class AppComponent implements OnInit, OnDestroy {
     // Раздел, сорт или заведение поменялись: кладём новый адрес в историю
     effect(() => {
       const path = pathFor(this.activeTab(), this.selection.brandId(), this.selection.venueSlug());
-      if (path !== location.pathname) history.pushState({}, '', path);
+      if (path !== location.pathname) {
+        // Каталог и подбор держат состояние в query: уходя, запоминаем его, а при возврате в раздел
+        // (вкладка или кнопка «назад» на странице сорта) подставляем. Открытую карточку напитка не возвращаем
+        const from = parsePath(location.pathname).tab;
+        if (QUERY_TABS.has(from)) this.lastQuery.set(from, withoutParam(location.search, 'drink'));
+        history.pushState({}, '', path + (this.lastQuery.get(this.activeTab()) ?? ''));
+      }
     });
 
     // Сессия закончилась (кнопка выхода в панели или 401): с панели и профиля уводим на вход
@@ -591,8 +610,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.activeTab.set(parsed.tab);
     // Незнакомый или неполный адрес (или адрес с query) подменяем каноническим без новой записи в истории
+    // Каталог и подбор хранят в query своё состояние: его оставляем
     const canonical = pathFor(parsed.tab, this.selection.brandId(), this.selection.venueSlug());
-    if (canonical !== pathname || location.search) history.replaceState({}, '', canonical);
+    const search = QUERY_TABS.has(parsed.tab) ? location.search : '';
+    if (canonical !== pathname || location.search !== search) history.replaceState(history.state, '', canonical + search);
   }
 
   private scrollTicking = false;

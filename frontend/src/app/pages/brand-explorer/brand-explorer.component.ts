@@ -1,6 +1,7 @@
-import { Component, EventEmitter, OnInit, Output, inject, signal, computed } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { catalogModeFromUrl, syncCatalogMode } from '../drinks-v2/v2-url';
 import { ApiService } from '../../services/api.service';
 import { Brand } from '../../models/flavor-tree.models';
 import { SelectionService } from '../../services/selection.service';
@@ -178,7 +179,9 @@ export class BrandExplorerComponent implements OnInit {
 
   readonly countOf = countOf;
   /** efes - 17 сортов с пирамидой, all - все напитки движка подбора. */
-  mode = signal<'efes' | 'all'>('efes');
+  mode = signal<'efes' | 'all'>(catalogModeFromUrl());
+  /** Режим живёт в адресе (?view=all): переживает перезагрузку и возврат со страницы сорта. */
+  private readonly modeInUrl = effect(() => syncCatalogMode(this.mode()));
   readonly skeletonCards = [1, 2, 3, 4, 5, 6];
   selectedPackaging = signal<string>('');
   onlyHoreca = signal<boolean>(false);
