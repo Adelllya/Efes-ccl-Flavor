@@ -1,0 +1,64 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "ignoreCommand": "case \"$VERCEL_PROJECT_PRODUCTION_URL $VERCEL_URL\" in *flavor-tree-backend*) exit 1;; *) exit 0;; esac",
+  "builds": [
+    {
+      "src": "backend/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "excludeFiles": [
+          "frontend/**",
+          "docs/**",
+          "data/**",
+          "scripts/**",
+          "1 version/**",
+          "2 version/**",
+          "5 version/**",
+          "flavor-tree-backend-development-2/**",
+          "backend/staticfiles/**",
+          "*.md",
+          "*.txt",
+          "*.pdf",
+          "*.docx",
+          "*.png",
+          "*.jpg",
+          "*.html"
+        ]
+      }
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist/frontend/browser" }
+    }
+  ],
+  "routes": [
+    { "src": "/api(?:/.*)?", "dest": "/backend/index.py" },
+    { "src": "/admin(?:/.*)?", "dest": "/backend/index.py" },
+    { "src": "/static/.*", "dest": "/backend/index.py" },
+    { "src": "/media/.*", "dest": "/backend/index.py" },
+    {
+      "src": "/([^/]+-[A-Z0-9]{8}\\.(?:js|css))",
+      "dest": "/frontend/$1",
+      "headers": { "cache-control": "public, max-age=31536000, immutable" }
+    },
+    {
+      "src": "/(.+\\.[A-Za-z0-9]{1,12})",
+      "dest": "/frontend/$1",
+      "headers": { "x-content-type-options": "nosniff" }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "cache-control": "public, max-age=0, must-revalidate"
+      }
+    }
+  ],
+  "crons": [
+    { "path": "/api/health/", "schedule": "0 6 * * *" }
+  ]
+}

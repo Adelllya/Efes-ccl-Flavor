@@ -9,6 +9,13 @@
 """
 import logging
 import os
+import sys
+
+# При сборке из git Vercel берёт корень репозитория (см. vercel.json в корне), и этот файл лежит
+# в backend/, а не в корне деплоя. Чтобы нашлись flavor_tree и api, добавляем свою папку в sys.path.
+_BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+if _BACKEND_DIR not in sys.path:
+    sys.path.insert(0, _BACKEND_DIR)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flavor_tree.settings')
 
