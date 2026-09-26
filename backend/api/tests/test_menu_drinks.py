@@ -143,37 +143,48 @@ class VenueMenuDrinksTests(TestCase):
 
         besh = data['sections'][0]['items'][0]
         self.assertEqual(besh['pairing']['brand_name'], 'Velkopopovický Kozel')
+        self.assertEqual(besh['pairing']['source'], 'TEAM')
         self.assertEqual(besh['pairing']['menu_drink'], {
             'id': str(self.kozel_drink.id), 'price': '2200.00', 'volume': '0,5 л', 'is_available': True,
         })
-        # Альтернативы только из карты бара, не больше двух, сначала те, что в наличии:
-        # Wheat (3) и Efes (2); IPA (4) не в наличии, Stout не в карте.
-        self.assertEqual([a['brand_name'] for a in besh['alternatives']], ['Wheat', 'Efes Pilsener'])
-        self.assertEqual(besh['alternatives'][0]['menu_drink']['price'], '1600.00')
-        self.assertEqual(besh['alternatives'][1]['menu_drink']['id'], str(self.lager_drink.id))
-        self.assertEqual(besh['alternatives'][0]['compatibility_score'], 3)
+        # Дальше только то, что есть в карте и в наличии: Efes по баллу движка, затем пара команды Wheat (3).
+        # IPA (4) закончился, Stout в карте нет.
+        self.assertEqual([a['brand_name'] for a in besh['alternatives']], ['Efes Pilsener', 'Wheat'])
+        self.assertEqual([a['source'] for a in besh['alternatives']], ['ENGINE', 'TEAM'])
+        self.assertEqual(besh['alternatives'][0]['menu_drink']['id'], str(self.lager_drink.id))
+        self.assertEqual(besh['alternatives'][0]['team_rating'], 2)
+        self.assertEqual(besh['alternatives'][1]['menu_drink']['price'], '1600.00')
+        self.assertEqual(besh['alternatives'][1]['compatibility_score'], 3)
+        self.assertEqual(besh['recommendations'], [besh['pairing']] + besh['alternatives'])
 
+        # Лучшая пара команды к мантам (Stout) в баре не продаётся: её нет, советуем то, что можно заказать.
         manty = data['sections'][0]['items'][1]
-        self.assertEqual(manty['pairing']['brand_name'], 'Stout')
-        self.assertIsNone(manty['pairing']['menu_drink'])
-        self.assertEqual([a['brand_name'] for a in manty['alternatives']], ['Efes Pilsener'])
-        self.assertEqual(manty['alternatives'][0]['menu_drink']['id'], str(self.lager_drink.id))
+        names = [r['brand_name'] for r in manty['recommendations']]
+        self.assertNotIn('Stout', names)
+        self.assertEqual(sorted(names), ['Efes Pilsener', 'Velkopopovický Kozel'])
+        self.assertTrue(all(r['menu_drink'] for r in manty['recommendations']))
+        self.assertEqual(manty['pairing'], manty['recommendations'][0])
 
-        # Когда сортов в наличии не хватает, добираем теми, что временно закончились.
+        # Закончившиеся сорта не советуем, даже если больше нечего.
         self.lager_drink.delete()
         data = client_for().get('/api/venues/efes-beer-garden/menu/').json()
         besh = data['sections'][0]['items'][0]
-        self.assertEqual([a['brand_name'] for a in besh['alternatives']], ['Wheat', 'IPA'])
-        self.assertFalse(besh['alternatives'][1]['menu_drink']['is_available'])
-        self.assertEqual(data['sections'][0]['items'][1]['alternatives'], [])
+        self.assertEqual([a['brand_name'] for a in besh['alternatives']], ['Wheat'])
+        manty = data['sections'][0]['items'][1]
+        self.assertEqual([r['brand_name'] for r in manty['recommendations']], ['Velkopopovický Kozel'])
+        self.assertEqual(manty['alternatives'], [])
 
     def test_menu_without_drinks(self):
         MenuDrink.objects.all().delete()
         data = client_for().get('/api/venues/efes-beer-garden/menu/').json()
         self.assertEqual(data['drinks'], [])
         besh = data['sections'][0]['items'][0]
+        # Карты напитков нет: пара команды остаётся советом без позиции для заказа.
+        self.assertEqual(besh['pairing']['brand_name'], 'Velkopopovický Kozel')
         self.assertIsNone(besh['pairing']['menu_drink'])
+        self.assertEqual(besh['pairing_info']['status'], 'no_drinks')
         self.assertEqual(besh['alternatives'], [])
+        self.assertEqual(besh['recommendations'], [])
 
     def test_tables_count_editable_by_owner(self):
         client = client_for(self.rest)

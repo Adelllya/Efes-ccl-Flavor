@@ -6,6 +6,9 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Brand, Dish, MenuDrink, MenuItem, Venue, VenueType } from '../../models/flavor-tree.models';
 import { FtSelectComponent, SelectOption } from '../../ui/ft-select.component';
+import { V2ApiService } from '../drinks-v2/v2-api.service';
+import { V2Drink } from '../drinks-v2/v2.models';
+import { isEfes } from '../drinks-v2/v2-ui';
 import { PanelIconComponent } from './panel-icons';
 import { PanelPhotoComponent } from './panel-photo.component';
 import { PanelQrPrintComponent } from './panel-qr-print.component';
@@ -347,7 +350,7 @@ function nextOrder(list: { sort_order: number }[]): number {
                 <div class="wa-card-head">
                   <div class="wa-card-head-text">
                     <h3 class="wa-card-title"><panel-icon name="beer" /> Напитки бара <span class="wa-count">{{ drinks().length }}</span></h3>
-                    <p class="wa-card-sub">Сорта из каталога с ценой и объёмом. Гость видит их внизу меню и в подборе к блюду, если сорт есть в этой карте</p>
+                    <p class="wa-card-sub">Сорта каталога и любые напитки из базы подбора с ценой и объёмом. Гость видит их внизу меню, а к блюдам подбор советует только то, что есть в этой карте и в наличии</p>
                   </div>
                 </div>
 
@@ -358,7 +361,20 @@ function nextOrder(list: { sort_order: number }[]): number {
                                [placeholder]="brandsLoaded() ? 'Выберите сорт' : 'Загружаем каталог сортов...'"
                                searchPlaceholder="Название или стиль" emptyText="Все сорта каталога уже в карте"
                                [disabled]="!brandsLoaded()"
-                               [ngModel]="pickBrand()" (ngModelChange)="pickBrand.set($event)" />
+                               [ngModel]="pickBrand()" (ngModelChange)="pickCatalogBrand($event)" />
+                  </div>
+                  <div class="wa-field">
+                    <span class="wa-label">Или напиток из базы подбора</span>
+                    <ft-select [options]="engineOptions()" [searchable]="true"
+                               [placeholder]="engineState() === 'ready' ? 'Пиво, 0.0, сидр, вино, лимонад...' : engineState() === 'error' ? 'База подбора не загрузилась' : 'Загружаем базу подбора...'"
+                               searchPlaceholder="Название, производитель или стиль" emptyText="Все напитки базы уже в карте"
+                               [disabled]="engineState() !== 'ready'"
+                               [ngModel]="pickEngine()" (ngModelChange)="pickEngineDrink($event)" />
+                    @if (engineState() === 'error') {
+                      <button type="button" class="wa-link-btn" (click)="loadEngineDrinks(true)">Повторить загрузку</button>
+                    } @else {
+                      <span class="wa-hint">{{ engineCount() }} напитков: пиво и 0.0, сидр, вино, крепкое, квас, лимонады, вода</span>
+                    }
                   </div>
                   <label class="wa-field">
                     <span class="wa-label">Цена, тг</span>
@@ -370,7 +386,7 @@ function nextOrder(list: { sort_order: number }[]): number {
                   </label>
                 </div>
                 <div class="wa-actions">
-                  <button type="button" class="btn-amber" [disabled]="!pickBrand() || addingDrink()" (click)="addDrink(v)">
+                  <button type="button" class="btn-amber" [disabled]="(!pickBrand() && !pickEngine()) || addingDrink()" (click)="addDrink(v)">
                     <panel-icon name="plus" /> {{ addingDrink() ? 'Добавляем...' : 'Добавить в карту' }}
                   </button>
                   @if (drinksMsg()) {
@@ -381,11 +397,11 @@ function nextOrder(list: { sort_order: number }[]): number {
                 @if (loadingDrinks()) {
                   <p class="wa-muted">Загрузка карты напитков...</p>
                 } @else if (!drinks().length) {
-                  <p class="wa-muted">В карте пока нет напитков. Выберите сорт выше</p>
+                  <p class="wa-muted">В карте пока нет напитков. Выберите сорт или напиток выше</p>
                 } @else {
                   <div class="wa-table wa-table-drinks">
                     <div class="wa-table-head">
-                      <span>Сорт</span><span>Цена, тг</span><span>Объём</span><span>Порядок</span><span></span>
+                      <span>Напиток</span><span>Цена, тг</span><span>Объём</span><span>Порядок</span><span></span>
                     </div>
                     @for (row of drinks(); track row.id) {
                       <div class="wa-table-row" [class.off]="!row.is_available">
@@ -395,7 +411,7 @@ function nextOrder(list: { sort_order: number }[]): number {
                           </span>
                           <div class="wa-table-brand-text">
                             <div class="wa-row-title">{{ row.brand_name }}</div>
-                            <div class="wa-row-sub">{{ row.brand_style }}@if (row.abv !== null && row.abv !== undefined) {<span class="wa-dot"></span>{{ row.abv }}%}</div>
+                            <div class="wa-row-sub">{{ row.brand_style }}@if (row.abv !== null && row.abv !== undefined) {<span class="wa-dot"></span>{{ row.abv }}%}@if (!row.brand) {<span class="wa-dot"></span>из базы подбора}</div>
                             <label class="wa-check wa-check-sm">
                               <input type="checkbox" [checked]="row.is_available" (change)="toggleDrinkAvailable(row, $event)" /> В наличии
                             </label>
@@ -433,6 +449,7 @@ function nextOrder(list: { sort_order: number }[]): number {
 export class PanelMenuComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
+  private v2 = inject(V2ApiService);
 
   dishes = input<Dish[]>([]);
   /** false, пока родитель ждёт справочник блюд: выбор блюда закрыт. */
@@ -491,6 +508,11 @@ export class PanelMenuComponent implements OnInit {
   drinksMsg = signal<string | null>(null);
   pendingDeleteDrink = signal<string | null>(null);
   pickBrand = signal('');
+  /** Напиток из базы подбора v2 (412 штук): выбирается вместо сорта каталога. */
+  pickEngine = signal('');
+  engineDrinks = signal<V2Drink[]>([]);
+  engineState = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  private categoryLabels = signal<Map<string, string>>(new Map());
   pickPrice = signal<number | string>(0);
   pickVolume = signal(DEFAULT_VOLUME);
   addingDrink = signal(false);
@@ -544,7 +566,7 @@ export class PanelMenuComponent implements OnInit {
 
   /** Сорта каталога, которых ещё нет в карте бара. */
   drinkOptions = computed<SelectOption[]>(() => {
-    const inList = new Set(this.drinks().map(d => d.brand));
+    const inList = new Set(this.drinks().map(d => d.brand).filter(Boolean));
     return this.brands()
       .filter(b => !inList.has(b.id))
       .map(b => ({
@@ -553,8 +575,60 @@ export class PanelMenuComponent implements OnInit {
       }));
   });
 
+  /**
+   * Напитки базы подбора, которых ещё нет в карте. 17 сортов каталога (legacy_brand_id) здесь не показываем:
+   * их добавляют из списка слева, тогда у них есть страница сорта и пары команды.
+   */
+  engineOptions = computed<SelectOption[]>(() => {
+    const inList = new Set(this.drinks().map(d => d.engine_drink_id).filter(Boolean));
+    const labels = this.categoryLabels();
+    return this.engineDrinks()
+      .filter(d => !d.legacy_brand_id && !inList.has(d.id))
+      .map(d => ({
+        value: d.id,
+        label: d.display_name || d.name,
+        hint: [
+          labels.get(d.category) ?? d.category,
+          d.abv !== null && d.abv !== undefined ? String(d.abv).replace('.', ',') + '%' : '',
+          d.producer?.name ?? '',
+          isEfes(d.efes_relation) ? 'портфель Efes' : ''
+        ].filter(Boolean).join(', ')
+      }));
+  });
+
+  engineCount = computed(() => this.engineDrinks().length);
+
   ngOnInit() {
     this.loadVenues();
+  }
+
+  /** Весь каталог базы подбора одним запросом; повторно только после ошибки. */
+  loadEngineDrinks(retry = false) {
+    const state = this.engineState();
+    if (state === 'loading' || state === 'ready' || (state === 'error' && !retry)) return;
+    this.engineState.set('loading');
+    this.v2.drinks().subscribe({
+      next: list => {
+        this.engineDrinks.set(list);
+        this.engineState.set('ready');
+      },
+      error: () => this.engineState.set('error')
+    });
+    this.v2.meta().subscribe({
+      next: meta => this.categoryLabels.set(new Map(meta.categories.map(c => [c.id, c.label]))),
+      error: () => undefined
+    });
+  }
+
+  /** Выбран сорт каталога: выбор из базы подбора сбрасываем, в карту уйдёт что-то одно. */
+  pickCatalogBrand(id: string) {
+    this.pickBrand.set(id || '');
+    if (id) this.pickEngine.set('');
+  }
+
+  pickEngineDrink(id: string) {
+    this.pickEngine.set(id || '');
+    if (id) this.pickBrand.set('');
   }
 
   venueLine(v: Venue): string {
@@ -609,6 +683,7 @@ export class PanelMenuComponent implements OnInit {
     };
     this.loadItems(v.id);
     this.loadDrinks(v.id);
+    this.loadEngineDrinks();
   }
 
   startCreate() {
@@ -829,23 +904,26 @@ export class PanelMenuComponent implements OnInit {
 
   addDrink(v: Venue) {
     const b = this.brands().find(x => x.id === this.pickBrand());
-    if (!b) return;
+    const e = b ? undefined : this.engineDrinks().find(x => x.id === this.pickEngine());
+    if (!b && !e) return;
     const price = Number(this.pickPrice()) || 0;
     if (price < 0) {
       flash(this.drinksMsg, PRICE_ERROR, 6000);
       return;
     }
+    const name = b ? b.name : (e!.display_name || e!.name);
     this.addingDrink.set(true);
     this.api.createMenuDrink({
-      venue: v.id, brand: b.id, price: price.toFixed(2),
+      venue: v.id, ...(b ? { brand: b.id } : { engine_drink_id: e!.id }), price: price.toFixed(2),
       volume: this.pickVolume().trim() || DEFAULT_VOLUME, sort_order: nextOrder(this.drinks())
     }).subscribe({
       next: drink => {
         this.addingDrink.set(false);
         this.drinks.update(list => sortDrinks([...list, drink]));
         this.pickBrand.set('');
+        this.pickEngine.set('');
         this.pickPrice.set(0);
-        flash(this.drinksMsg, b.name + ': добавлено в карту' + (price ? '' : ', осталось указать цену'));
+        flash(this.drinksMsg, name + ': добавлено в карту' + (price ? '' : ', осталось указать цену'));
       },
       error: err => {
         this.addingDrink.set(false);
@@ -918,6 +996,7 @@ export class PanelMenuComponent implements OnInit {
     this.pickDish.set('');
     this.pickSection.set(DEFAULT_SECTION);
     this.pickBrand.set('');
+    this.pickEngine.set('');
     this.pickPrice.set(0);
     this.pickVolume.set(DEFAULT_VOLUME);
   }

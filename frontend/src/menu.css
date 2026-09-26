@@ -395,6 +395,12 @@
 .vm-rec-buy { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); margin-top: 4px; }
 .vm-rec-missing { margin: 4px 0 0; color: var(--muted); }
 .vm-rec-none { padding: var(--space-md) var(--space-lg); margin: 0; }
+.vm-rec-none p { margin: 0; }
+/* Сильной пары в карте нет: честная подпись над ближайшими вариантами */
+.vm-rec-note { margin: 0; padding: var(--space-md) var(--space-lg) 0; color: var(--foam-dim); line-height: 1.45; }
+/* Балл движка 0-100 */
+.vm-score-big { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; line-height: 1; color: var(--beer-deep); }
+p.vm-score { margin: 0; align-items: baseline; gap: 6px; }
 .vm-link {
   display: inline-flex;
   align-items: center;
@@ -445,6 +451,9 @@
   cursor: pointer;
 }
 .vm-alt-name:hover, .vm-drink-name:hover { color: var(--beer-deep); text-decoration: underline; }
+/* Напиток из базы подбора без страницы сорта: название без ссылки */
+.vm-name-plain, .vm-name-plain:hover { cursor: default; color: var(--foam); text-decoration: none; }
+#vm-bar-drinks { scroll-margin-top: 210px; }
 
 /* Напитки бара */
 .vm-drinks { display: grid; gap: var(--space-md); }

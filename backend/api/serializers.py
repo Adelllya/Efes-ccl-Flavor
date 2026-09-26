@@ -8,8 +8,10 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import Max
+from django.db.models.functions import Coalesce
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
+from . import venue_pairing
 from .engine_catalog import drink_facts, engine_drink
 from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
@@ -667,19 +669,70 @@ def pairing_payload(pairing, request, menu_drink=None):
     }
 
 
+PAIRING_TYPE_DISPLAY = dict(FoodPairing.PAIRING_TYPE_CHOICES)
+
+
+def recommendation_payload(option, drink_data):
+    """
+    Вариант напитка к блюду из карты бара. Поля старого сочетания (brand, brand_name, compatibility_score,
+    pairing_type, explanation, menu_drink) на месте, чтобы старый фронт не сломался.
+    source: TEAM - пара команды Flavor Tree, ENGINE - подбор движка v2; score и band - балл движка 0-100.
+    """
+    team = option.team
+    result = option.engine
+    reasons = venue_pairing.short_reasons(result) if result else []
+    if option.source == venue_pairing.SOURCE_TEAM:
+        rating = team.compatibility_score
+        pairing_type = team.pairing_type
+        explanation = team.explanation
+    else:
+        rating = venue_pairing.engine_rating(result)
+        pairing_type = venue_pairing.MATCH_TO_PAIRING_TYPE.get(result.get('match_type'))
+        explanation = reasons[0] if reasons else result.get('band_label', '')
+    md = option.menu_drink
+    return {
+        'rank': option.rank,
+        'source': option.source,
+        'curated': option.source == venue_pairing.SOURCE_TEAM,
+        'brand': str(md.brand_id) if md.brand_id else None,
+        'engine_drink_id': option.engine_drink_id,
+        'brand_name': drink_data.get('brand_name'),
+        'brand_image': drink_data.get('brand_image'),
+        'brand_style': drink_data.get('brand_style') or '',
+        'abv': drink_data.get('abv'),
+        'category': drink_data.get('category'),
+        'is_alcoholic': drink_data.get('is_alcoholic'),
+        'compatibility_score': rating,
+        'team_rating': team.compatibility_score if team else None,
+        'score': result['score'] if result else None,
+        'band': result.get('band') if result else None,
+        'band_label': result.get('band_label') if result else None,
+        'pairing_type': pairing_type,
+        'pairing_type_display': PAIRING_TYPE_DISPLAY.get(pairing_type, ''),
+        'explanation': explanation,
+        'reasons': reasons,
+        'menu_drink': menu_drink_payload(md),
+    }
+
+
 def build_venue_menu(venue, request):
     """
     Ответ GET /api/venues/<slug>/menu/: карточка заведения, разделы с позициями и карта напитков.
-    К каждой позиции прикладываем сочетание с самой высокой оценкой среди активных сортов
-    и до двух альтернатив из тех сортов, которые есть в карте этого бара.
+    К каждой позиции прикладываем до трёх напитков из карты этого бара, которые можно заказать
+    (подбор в api/venue_pairing.py): recommendations - весь список, pairing - первый вариант,
+    alternatives - остальные, pairing_info - как нашли блюдо в движке и насколько сильна пара.
+    Если карта напитков пустая, pairing - пара команды как совет (menu_drink = null).
     """
     items = list(
         venue.menu_items.select_related('dish')
         .prefetch_related('dish__menu_items', 'dish__food_pairings')
         .order_by('section', 'sort_order', 'dish__name')
     )
-    drinks = list(venue.menu_drinks.select_related('brand').order_by('sort_order', 'brand__name'))
-    drink_by_brand = {drink.brand_id: drink for drink in drinks}
+    drinks = list(venue.menu_drinks.select_related('brand')
+                  .order_by('sort_order', Coalesce('brand__name', 'name')))
+    context = {'request': request}
+    drinks_data = MenuDrinkSerializer(drinks, many=True, context=context).data
+    data_by_id = {row['id']: row for row in drinks_data}
 
     dish_ids = set(item.dish_id for item in items)
     by_dish = {}
@@ -691,17 +744,26 @@ def build_venue_menu(venue, request):
     for pairing in pairings:
         by_dish.setdefault(pairing.dish_id, []).append(pairing)
 
-    def alternatives_for(rest):
-        # Только сорта из карты бара; те, что в наличии, идут первыми.
-        listed = [p for p in rest if p.brand_id in drink_by_brand]
-        listed.sort(key=lambda p: (not drink_by_brand[p.brand_id].is_available,
-                                   -p.compatibility_score, p.brand.name))
-        return [pairing_payload(p, request, drink_by_brand[p.brand_id]) for p in listed[:2]]
+    picks = venue_pairing.recommend_menu(items, drinks, by_dish)
 
     sections = {}
     for item in items:
-        dish_pairings = by_dish.get(item.dish_id, [])
-        best = dish_pairings[0] if dish_pairings else None
+        pick = picks[item.pk]
+        options = [recommendation_payload(o, data_by_id.get(str(o.menu_drink.pk), {})) for o in pick.options]
+        # У соседних вариантов движок часто называет одну и ту же причину: берём следующую, если она есть.
+        used = set()
+        for option in options:
+            if option['source'] == venue_pairing.SOURCE_ENGINE:
+                fresh = [r for r in option['reasons'] if r not in used]
+                if fresh:
+                    option['explanation'] = fresh[0]
+            used.add(option['explanation'])
+        if options:
+            first = options[0]
+        elif pick.reference is not None:
+            first = dict(pairing_payload(pick.reference, request), source=venue_pairing.SOURCE_TEAM, curated=True)
+        else:
+            first = None
         entry = {
             'id': str(item.id),
             'price': money(item.price),
@@ -710,9 +772,17 @@ def build_venue_menu(venue, request):
             'sort_order': item.sort_order,
             'is_available': item.is_available,
             'chef_note': item.chef_note,
-            'dish': DishSerializer(item.dish, context={'request': request}).data,
-            'pairing': pairing_payload(best, request, drink_by_brand.get(best.brand_id)) if best else None,
-            'alternatives': alternatives_for(dish_pairings[1:]),
+            'dish': DishSerializer(item.dish, context=context).data,
+            'pairing': first,
+            'alternatives': options[1:],
+            'recommendations': options,
+            'pairing_info': {
+                'status': pick.status,
+                'engine_dish': pick.engine_dish,
+                'engine_dish_name': pick.engine_dish_name,
+                'dish_match': pick.dish_match,
+                'based_on': pick.based_on,
+            },
         }
         sections.setdefault(item.section, []).append(entry)
 
@@ -720,12 +790,11 @@ def build_venue_menu(venue, request):
         sections.items(),
         key=lambda pair: (min(e['sort_order'] for e in pair[1]), pair[0]),
     )
-    context = {'request': request}
     return {
         'venue': VenueSerializer(venue, context=context).data,
         'tables_count': venue.tables_count,
         'sections': [{'name': name, 'items': entries} for name, entries in ordered],
-        'drinks': MenuDrinkSerializer(drinks, many=True, context=context).data,
+        'drinks': drinks_data,
     }
 
 
