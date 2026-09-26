@@ -9,7 +9,7 @@ import {
   DishProfile, Recommendation, bigImage, smallImage, bodyLabel, profileTitle, recommend,
 } from './pairing-engine.data';
 import { DishPick } from './dish-search';
-import { abvOf, brandForPair, curatedFor, efesBeers, pairReasons, pairWarning } from './engine-picks';
+import { abvOf, brandForPair, curatedFor, efesBeers, efesOnly, pairReasons, pairWarning } from './engine-picks';
 
 const PAIRING_HINT: Record<string, string> = {
   COMPLEMENT: 'Похожие вкусы усиливают друг друга',
@@ -18,10 +18,31 @@ const PAIRING_HINT: Record<string, string> = {
   BRIDGE: 'У пива и блюда есть общая нота',
 };
 
-/** Ниже этого балла движок считает пару нейтральной: такие сорта в «Ещё подойдут» не берём. */
+/** Ниже этого балла движок не рекомендует пару: такие сорта в «Ещё подойдут» и «Без алкоголя» не берём. */
 const MIN_ALT_SCORE = 48;
 /** Ниже этого балла честно говорим, что пиво к блюду раскрывается слабо. */
 const WEAK_SCORE = 60;
+
+/**
+ * Ответы движка по блюдам, только напитки Efes. Повторный показ того же
+ * блюда («Назад» браузера, возврат со страницы сорта) не качает список заново.
+ */
+const ENGINE_CACHE = new Map<string, { at: number; result: V2PairingResult }>();
+const ENGINE_CACHE_SIZE = 8;
+/** Веса движка можно поменять в админке, поэтому ответ живёт недолго. */
+const ENGINE_CACHE_MS = 5 * 60 * 1000;
+
+function cachedEngine(id: string): V2PairingResult | null {
+  const hit = ENGINE_CACHE.get(id);
+  return hit && Date.now() - hit.at < ENGINE_CACHE_MS ? hit.result : null;
+}
+
+function rememberEngine(id: string, result: V2PairingResult): void {
+  ENGINE_CACHE.delete(id);
+  ENGINE_CACHE.set(id, { at: Date.now(), result });
+  const oldest = ENGINE_CACHE.keys().next().value;
+  if (ENGINE_CACHE.size > ENGINE_CACHE_SIZE && oldest !== undefined) ENGINE_CACHE.delete(oldest);
+}
 
 /** Карточка сорта из ответа движка v2. */
 interface EngineCard {
@@ -41,10 +62,14 @@ interface EngineCard {
 }
 
 interface EngineView {
-  best: EngineCard;
+  /** null: все сорта Efes под вето, советовать нечего. */
+  best: EngineCard | null;
   others: EngineCard[];
   nonAlcoholic: EngineCard | null;
+  /** Лучший сорт ниже WEAK_SCORE: предупреждаем до карточки. */
   weak: boolean;
+  /** Лучший сорт ниже MIN_ALT_SCORE: это не «лучший выбор», а самый близкий. */
+  poor: boolean;
 }
 
 /**
@@ -128,75 +153,84 @@ interface EngineView {
 
         @case ('engine') {
           @if (engineView(); as v) {
-            <article class="glass-card dr-best">
-              <div class="dr-best-visual">
-                @if (v.best.image; as src) {
-                  <img [src]="src" [alt]="'Бутылка ' + v.best.name" />
-                } @else {
-                  <span class="dr-fallback" aria-hidden="true">🍺</span>
-                }
-              </div>
+            @if (v.best; as best) {
+              @if (v.weak) {
+                <p class="dr-note mb-xl">
+                  Пиво к этому блюду раскрывается слабо: у лучшего сорта Efes {{ best.pair.score }} из 99.
+                  В разделе «К блюду» движок сравнит блюдо и с другими напитками, в том числе безалкогольными.
+                </p>
+              }
 
-              <div class="dr-best-body">
-                <span class="badge badge-dark">Лучший выбор</span>
-                <h3 class="dr-best-name">{{ v.best.name }}</h3>
-                @if (v.best.line) { <p class="text-sm text-muted">{{ v.best.line }}</p> }
-                @if (v.best.credit; as c) {
-                  <p class="dr-credit">
-                    Фото: <a [href]="c.source" target="_blank" rel="noopener">{{ c.author || 'Wikimedia Commons' }}</a>,
-                    @if (c.license_url) {
-                      <a [href]="c.license_url" target="_blank" rel="noopener license">{{ c.license }}</a>
-                    } @else {
-                      {{ c.license }}
-                    }
-                  </p>
-                }
-
-                <div class="dr-points" [attr.data-band]="v.best.pair.band" [attr.aria-label]="'Совместимость ' + v.best.pair.score + ' из 99'">
-                  <strong>{{ v.best.pair.score }}</strong>
-                  <span>{{ v.best.pair.band_label }}</span>
+              <article class="glass-card dr-best">
+                <div class="dr-best-visual">
+                  @if (best.image; as src) {
+                    <img [src]="src" [alt]="'Бутылка ' + best.name" />
+                  } @else {
+                    <span class="dr-fallback" aria-hidden="true">🍺</span>
+                  }
                 </div>
 
-                @if (v.best.curated; as c) {
-                  <div class="dr-why">
-                    <span class="badge">Выбор сомелье</span>
-                    <p class="dr-why-text">«{{ c.explanation }}»</p>
-                    <div class="dr-score" [attr.aria-label]="'Оценка сомелье ' + c.compatibility_score + ' из 5'">
-                      @for (s of pips; track s) {
-                        <span class="dr-pip" [class.on]="s <= c.compatibility_score"></span>
+                <div class="dr-best-body">
+                  <span class="badge badge-dark">{{ v.poor ? 'Ближе всего из пива Efes' : 'Лучший выбор' }}</span>
+                  <h3 class="dr-best-name">{{ best.name }}</h3>
+                  @if (best.line) { <p class="text-sm text-muted">{{ best.line }}</p> }
+                  @if (best.credit; as c) {
+                    <p class="dr-credit">
+                      Фото: <a [href]="c.source" target="_blank" rel="noopener">{{ c.author || 'Wikimedia Commons' }}</a>,
+                      @if (c.license_url) {
+                        <a [href]="c.license_url" target="_blank" rel="noopener license">{{ c.license }}</a>
+                      } @else {
+                        {{ c.license }}
                       }
-                      <span class="dr-score-num">{{ c.compatibility_score }}/5</span>
+                    </p>
+                  }
+
+                  <div class="dr-points" [attr.data-band]="best.pair.band" [attr.aria-label]="'Совместимость ' + best.pair.score + ' из 99'">
+                    <strong>{{ best.pair.score }}</strong>
+                    <span>{{ best.pair.band_label }}</span>
+                  </div>
+
+                  @if (best.curated; as c) {
+                    <div class="dr-why">
+                      <span class="badge">Выбор сомелье</span>
+                      <p class="dr-why-text">«{{ c.explanation }}»</p>
+                      <div class="dr-score" [attr.aria-label]="'Оценка сомелье ' + c.compatibility_score + ' из 5'">
+                        @for (s of pips; track s) {
+                          <span class="dr-pip" [class.on]="s <= c.compatibility_score"></span>
+                        }
+                        <span class="dr-score-num">{{ c.compatibility_score }}/5</span>
+                      </div>
+                      <p class="text-xs text-muted">Оценка сомелье к этому блюду</p>
                     </div>
-                    <p class="text-xs text-muted">Оценка сомелье к этому блюду</p>
-                  </div>
-                }
+                  }
 
-                @if (v.best.reasons.length) {
-                  <div class="dr-why dr-why-engine">
-                    <span class="badge">Почему подходит</span>
-                    <ul class="dr-reasons">
-                      @for (t of v.best.reasons; track t) { <li>{{ t }}</li> }
-                    </ul>
-                    @if (v.best.warning) { <p class="text-xs text-muted">{{ v.best.warning }}</p> }
-                  </div>
-                }
+                  @if (best.reasons.length) {
+                    <div class="dr-why dr-why-engine">
+                      <span class="badge">{{ v.poor ? 'Что их сближает' : 'Почему подходит' }}</span>
+                      <ul class="dr-reasons">
+                        @for (t of best.reasons; track t) { <li>{{ t }}</li> }
+                      </ul>
+                      @if (best.warning) { <p class="text-xs text-muted">{{ best.warning }}</p> }
+                    </div>
+                  }
 
-                @if (v.best.serving) { <p class="text-sm text-dim">{{ v.best.serving }}</p> }
+                  @if (best.serving) { <p class="text-sm text-dim">{{ best.serving }}</p> }
 
-                @if (v.best.brand; as b) {
-                  <button type="button" class="btn-amber" (click)="openBrand.emit(b.id)">
-                    Узнать больше о напитке
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-                  </button>
-                }
+                  @if (best.brand; as b) {
+                    <button type="button" class="btn-amber" (click)="openBrand.emit(b.id)">
+                      Узнать больше о напитке
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+                    </button>
+                  }
+                </div>
+              </article>
+            } @else {
+              <div class="dr-none mb-xl">
+                <p class="text-dim">
+                  К этому блюду движок подбора не советует ни один сорт пива Efes.
+                  В разделе «К блюду» можно сравнить его и с другими напитками.
+                </p>
               </div>
-            </article>
-
-            @if (v.weak) {
-              <p class="dr-note mb-xl">
-                Пиво к этому блюду раскрывается слабо: у лучшего сорта Efes {{ v.best.pair.score }} из 99.
-                В разделе «К блюду» движок сравнит блюдо и с другими напитками, в том числе безалкогольными.
-              </p>
             }
 
             @if (v.others.length) {
@@ -222,19 +256,22 @@ interface EngineView {
                 <div class="dr-na-body">
                   <span class="dr-alt-top">
                     <span class="dr-alt-name">{{ na.name }}</span>
-                    <span class="dr-points dr-points-sm" [attr.data-band]="na.pair.band">
+                    <span class="dr-points dr-points-sm" [attr.data-band]="na.pair.band" [attr.aria-label]="'Совместимость ' + na.pair.score + ' из 99'">
                       <strong>{{ na.pair.score }}</strong><span>{{ na.pair.band_label }}</span>
                     </span>
                   </span>
+                  @if (na.line) { <span class="text-xs text-muted">{{ na.line }}</span> }
                   @if (na.reasons[0]; as t) { <span class="text-sm text-dim">{{ t }}</span> }
                 </div>
               </div>
             }
 
-            <p class="dr-note">
-              Сорта портфеля Efes по расчёту движка подбора: баллы от 0 до 99 те же, что в разделе «К блюду».
-              Если баллы отличаются не больше чем на {{ strongWindow }}, первым идёт сорт обычной крепости, а не крепкий.
-            </p>
+            @if (v.best) {
+              <p class="dr-note">
+                Сорта портфеля Efes по расчёту движка подбора: баллы от 0 до 99 те же, что в разделе «К блюду».
+                Если баллы отличаются не больше чем на {{ strongWindow }}, первым идёт сорт обычной крепости, а не крепкий.
+              </p>
+            }
           }
         }
 
@@ -637,6 +674,8 @@ export class DishResultComponent {
   /** Ответ движка v2 для блюда из каталога. */
   private engine = signal<V2PairingResult | null>(null);
   private engineState = signal<'idle' | 'loading' | 'ok' | 'error'>('idle');
+  /** Для какого блюда движка сейчас ответ или запрос. */
+  private engineId: string | null = null;
   private request?: Subscription;
 
   constructor() {
@@ -657,15 +696,15 @@ export class DishResultComponent {
     const result = this.engine();
     if (!result) return null;
     const { beers, nonAlcoholic } = efesBeers(result);
-    if (!beers.length) return null;
     const v1DishId = this.dish()?.v1Id ?? null;
     const card = (pair: V2Pair) => this.engineCard(pair, v1DishId);
     const [best, ...rest] = beers;
     return {
-      best: card(best),
+      best: best ? card(best) : null,
       others: rest.filter(p => p.score >= MIN_ALT_SCORE).slice(0, Math.max(0, this.alternatives())).map(card),
-      nonAlcoholic: nonAlcoholic ? card(nonAlcoholic) : null,
-      weak: best.score < WEAK_SCORE,
+      nonAlcoholic: nonAlcoholic && nonAlcoholic.score >= MIN_ALT_SCORE ? card(nonAlcoholic) : null,
+      weak: !best || best.score < WEAK_SCORE,
+      poor: !best || best.score < MIN_ALT_SCORE,
     };
   });
 
@@ -675,8 +714,9 @@ export class DishResultComponent {
     if (!dish?.v2Id) return 'local';
     const state = this.engineState();
     if (state === 'loading' || state === 'idle') return 'loading';
+    // Движок ответил: даже если советовать из пива Efes нечего, говорим это его словами
     if (state === 'ok' && this.engineView()) return 'engine';
-    // Движок молчит или не нашёл пиво Efes: выручают пары сомелье, если блюдо есть в их каталоге
+    // Движок молчит: выручают пары сомелье, если блюдо есть в их каталоге
     return dish.v1Id ? 'local' : 'error';
   });
 
@@ -713,16 +753,27 @@ export class DishResultComponent {
     WEIGHTS.find(w => w.id === this.profile().weight)?.label ?? '-');
 
   retry(): void {
-    this.loadEngine(this.dish());
+    this.loadEngine(this.dish(), true);
   }
 
-  private loadEngine(dish: DishPick | null): void {
+  private loadEngine(dish: DishPick | null, force = false): void {
+    const id = dish?.v2Id ?? null;
+    // То же блюдо новым объектом (запись истории применили ещё раз): запрос уже идёт или ответ есть
+    if (!force && id && id === this.engineId && this.engineState() !== 'error') return;
     this.request?.unsubscribe();
+    this.engineId = id;
     this.engine.set(null);
-    if (!dish?.v2Id) { this.engineState.set('idle'); return; }
+    if (!id) { this.engineState.set('idle'); return; }
+    const cached = force ? null : cachedEngine(id);
+    if (cached) { this.engine.set(cached); this.engineState.set('ok'); return; }
     this.engineState.set('loading');
-    this.request = this.api.getEnginePairing(dish.v2Id, ['beer', 'na_beer']).subscribe({
-      next: r => { this.engine.set(r); this.engineState.set('ok'); },
+    this.request = this.api.getEnginePairing(id, ['beer', 'na_beer']).subscribe({
+      next: r => {
+        const slim = efesOnly(r);
+        rememberEngine(id, slim);
+        this.engine.set(slim);
+        this.engineState.set('ok');
+      },
       error: () => this.engineState.set('error'),
     });
   }

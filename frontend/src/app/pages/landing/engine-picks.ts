@@ -6,18 +6,23 @@
    портфеля Efes. Баллы не меняем. Порядок меняем в одном случае: при
    разнице до STRONG_WINDOW баллов первым идёт сорт обычной крепости,
    а не крепкий, чтобы к мясу не советовать первым самое крепкое пиво.
+   Сорта под вето движка не советуем, а пометку «Без алкоголя» ставим
+   только напиткам до 0,5 % (isNonAlcoholic), а не всей категории na_beer.
    */
 
 import { Brand, FoodPairing } from '../../models/flavor-tree.models';
-import { V2Pair, V2PairingResult } from '../drinks-v2/v2.models';
+import { V2Pair, V2PairingResult, V2Reason } from '../drinks-v2/v2.models';
 import { normalizeDish } from './dish-search';
 import { STRONG_ABV, softenStrong } from './pairing-engine.data';
 
 /** Пиво портфеля Efes: собственные марки и дистрибуция. */
 const EFES_BEER = new Set(['own', 'distribution']);
 
+/** Предел для пометки «Без алкоголя»: 0,5 %, как в правиле V7 движка (безалкогольный выбор). */
+export const NA_MAX_ABV = 0.5;
+
 export function abvOf(p: V2Pair): number | null {
-  const v = p.drink?.abv ?? (p as V2Pair & { abv?: number | null }).abv;
+  const v = p.drink?.abv ?? p.abv;
   return typeof v === 'number' ? v : null;
 }
 
@@ -26,12 +31,41 @@ export function isStrong(p: V2Pair): boolean {
   return abv !== null && abv >= STRONG_ABV;
 }
 
-/** Пиво Efes по убыванию балла и лучший безалкогольный вариант Efes к этому блюду. */
+/**
+ * Можно ли показать напиток с пометкой «Без алкоголя». Категории na_beer
+ * мало: у «Efes 0.0 Абрикос-Малина» 0,6 % и flags.non_alcoholic = false.
+ * Верим флагу каталога, а без флага только крепости до 0,5 %.
+ */
+export function isNonAlcoholic(p: V2Pair): boolean {
+  const flag = p.drink?.flags?.non_alcoholic;
+  const abv = abvOf(p);
+  if (flag === false || (abv !== null && abv > NA_MAX_ABV)) return false;
+  return flag === true || abv !== null;
+}
+
+/** Движок наложил вето (блюдо заглушит напиток, десерт слаще пива): такой сорт не советуем. */
+export function isVetoed(p: V2Pair): boolean {
+  return !!p.vetoes?.length;
+}
+
+function isEfesPick(p: V2Pair): boolean {
+  return EFES_BEER.has(p.efes_relation) && p.drink?.in_pairing !== false;
+}
+
+/**
+ * Ответ движка только с напитками Efes. Полный список весит около 1,3 МБ,
+ * а главной нужны два-три десятка строк: их и держим в памяти и в кэше.
+ */
+export function efesOnly(result: V2PairingResult): V2PairingResult {
+  return { ...result, items: result.items.filter(isEfesPick), categories: [] };
+}
+
+/** Пиво Efes по убыванию балла и лучший безалкогольный вариант Efes к этому блюду. Сорта под вето не берём. */
 export function efesBeers(result: V2PairingResult): { beers: V2Pair[]; nonAlcoholic: V2Pair | null } {
-  const efes = result.items.filter(p => EFES_BEER.has(p.efes_relation) && p.drink?.in_pairing !== false);
+  const efes = result.items.filter(p => isEfesPick(p) && !isVetoed(p));
   const byScore = (a: V2Pair, b: V2Pair) => b.score - a.score;
   const beers = efes.filter(p => p.category === 'beer').sort(byScore);
-  const na = efes.filter(p => p.category === 'na_beer').sort(byScore);
+  const na = efes.filter(p => p.category === 'na_beer' && isNonAlcoholic(p)).sort(byScore);
   return { beers: softenStrong(beers, p => p.score, isStrong), nonAlcoholic: na[0] ?? null };
 }
 
@@ -61,12 +95,22 @@ export function pairReasons(p: V2Pair, n = 2): string[] {
   return out;
 }
 
-/** Предупреждение движка, если после чистки в нём не осталось цифр. */
+/**
+ * Штрафы R4 с ключом roast и roast_sweet звучат как похвала («обжарка
+ * уравновешивает сладость»): это смягчённый штраф, а не предупреждение.
+ */
+function praiseLike(w: V2Reason): boolean {
+  return w.rule === 'R4' && (w.key === 'roast' || w.key === 'roast_sweet');
+}
+
+/** Первое предупреждение движка, в котором после чистки не осталось цифр. */
 export function pairWarning(p: V2Pair): string {
-  const w = (p.warnings ?? [])[0] as unknown;
-  const raw = typeof w === 'string' ? w : (w as { text?: string } | undefined)?.text ?? '';
-  const text = cleanReason(raw);
-  return /\d/.test(text) ? '' : text;
+  for (const w of (p.warnings ?? []) as (V2Reason | string)[]) {
+    if (typeof w !== 'string' && praiseLike(w)) continue;
+    const text = cleanReason(typeof w === 'string' ? w : w.text ?? '');
+    if (text && !/\d/.test(text)) return text;
+  }
+  return '';
 }
 
 function nameKeys(name: string | undefined | null): string[] {

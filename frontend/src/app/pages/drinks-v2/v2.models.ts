@@ -44,6 +44,8 @@ export interface V2Drink {
   /** Автор и лицензия фото из открытых источников (CC BY / BY-SA требуют подписи). */
   image_credit?: { author: string; license: string; license_url?: string; source: string } | null;
   in_pairing?: boolean;
+  /** Флаги каталога. Категория na_beer сама по себе не значит «без алкоголя»: у Efes 0.0 Абрикос-Малина 0,6 %. */
+  flags?: { non_alcoholic?: boolean; contains_gluten?: boolean };
 }
 
 export interface V2Dish {
@@ -64,6 +66,8 @@ export interface V2Reason {
   points: number;
   text: string;
   evidence?: string;
+  /** Вариант текста правила: у R4 это gap, roast, roast_sweet и другие. */
+  key?: string;
 }
 
 /** Одна пара «напиток + блюдо» с баллом 0-99 и объяснением. */
@@ -81,6 +85,9 @@ export interface V2Pair {
   match_type: string;
   reasons: V2Reason[];
   warnings: V2Reason[] | string[];
+  /** Сработавшие вето V1-V7: балл срезан потолком, напиток к блюду не советуют. */
+  vetoes?: string[];
+  abv?: number | null;
   drink?: V2Drink;
 }
 
