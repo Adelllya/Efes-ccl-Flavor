@@ -13,7 +13,8 @@ from dataclasses import dataclass, field
 from . import ai_engine as AE
 from . import ai_safety
 from .ai_texts import (
-    category_label, detect_lang, family_label, format_abv, format_price, join_list, joined, safety_text, t,
+    GLOSSARY, GLOSSARY_DIFF, category_dative, category_genitive, category_label, detect_lang, family_label,
+    format_abv, format_price, join_list, joined, safety_text, t,
 )
 
 KIND_DISH = 'DISH'
@@ -23,7 +24,8 @@ REASON_MAX_CHARS = 300
 MIN_SCORE = 48
 
 WISH_PATTERNS = (
-    ('zero', re.compile(r'без\s*алкогол|безалкогол|нулев|\b0 0\b|\b00\b|не\s+пью\b|non\s?alcoholic|alcohol\s?free'
+    # «0.0» и «не пью» разбираются отдельно в make_plan: «Efes 0.0» это название, «не пью пиво» это не «без алкоголя»
+    ('zero', re.compile(r'без\s*алкогол|безалкогол|нулев|ноль\s+ноль|non\s?alcoholic|alcohol\s?free'
                         r'|\bno\s+alcohol|алкогольсіз|ішпеймін')),
     ('nobitter', re.compile(r'не\s+люблю\s+горьк|без\s+гореч|не\s+горьк|без\s+горьк|негорьк|помягче|\bмягк'
                             r'|not\s+bitter|no\s+bitter|ащы\s+емес')),
@@ -43,14 +45,21 @@ WISH_PATTERNS = (
     ('greet', re.compile(r'^(?:привет|здравствуй\w*|добрый\s+\w+|хай|салам|сәлем\w*|салем|hello|hi|hey)\b'
                          r'|^(?:кто\s+ты|ты\s+кто|who\s+are\s+you)')),
     ('thanks', re.compile(r'спасибо|благодар|рахмет|thank')),
-    ('cheaper', re.compile(r'дешевл|подешевл|бюджетн|недорог|cheaper|\bcheap\b|арзан')),
+    ('cheaper', re.compile(r'дешев|подешевл|бюджетн|недорог|cheaper|cheapest|\bcheap\b|арзан')),
+    ('popular', re.compile(r'популярн|\bхит\b|хиты\b|фирменн|специалитет|что\s+вкусн|самое\s+вкусное|вкусненьк'
+                           r'|бестселлер|чаще\s+всего|signature|popular|best\s*seller|танымал|дәмді')),
+    ('party', re.compile(r'компани|вдвоем|втроем|вчетвером|впятером|на\s+двоих|на\s+троих|на\s+четверых|на\s+пятерых'
+                         r'|на\s+\d+\s*(?:человек|персон|чел\b|гост)|нас\s+\d+|поужинать|пообедать|ужин\s+на'
+                         r'|for\s+(?:two|three|four|\d+)\b|\bgroup\b|\bparty\b|адамға|екеуміз|үшеуміз|төртеуміз')),
+    ('smalltalk', re.compile(r'как\s+дела|как\s+ты\b|как\s+сам|что\s+умеешь|чем\s+можешь|чем\s+поможешь|\bhelp\b'
+                             r'|what\s+can\s+you|how\s+are\s+you|қалайсың|не\s+істей')),
     ('more', re.compile(r'\bеще\b|другое|другой|второй\s+вариант|альтернатив|another|other\s+option|\belse\b'
                         r'|\bтағы\b|басқа')),
 )
 MOOD_WISHES = ('light', 'nobitter', 'bitter', 'dark', 'strong', 'sweet')
 # Категории, которые гостю с флагом безопасности не подбираем: об этом уже сказал текст правил.
 ALCOHOL_WISHES = frozenset({'beer', 'wine', 'cider', 'cocktail', 'spirit'})
-DISH_WISHES = ('spicy', 'dessert', 'meat', 'advise', 'celebrate')
+DISH_WISHES = ('spicy', 'dessert', 'meat', 'party', 'popular', 'advise', 'celebrate')
 FOLLOW_UP_WISHES = frozenset({'cheaper', 'more', 'zero', 'light', 'nobitter', 'bitter', 'dark', 'strong', 'sweet'})
 
 CATEGORY_PATTERNS = (
@@ -86,16 +95,37 @@ DRINK_WORDS_RE = re.compile(
     r'|шарап|сусын|ішу|ішсем|\bквас|\bчай|кофе|лимонад|\bсок\b|\bвод[аыу]\b|\btea\b|coffee|water|juice'
     r'|к\s+нему|к\s+ней|к\s+ним|к\s+этому|к\s+заказу|к\s+моему|goes\s+with|pair')
 FOOD_WORDS_RE = re.compile(
-    r'блюд|\bеда\b|\bеды\b|поесть|закуск|кушать|съесть|\bfood\b|\bdish|\beat\b|snack|тағам|\bжеу\b')
+    r'блюд|\bеда\b|\bеды\b|\bеду\b|поесть|закус|кушать|съесть|перекус|\bfood\b|\bdish|\beat\b|snack|тағам|\bжеу\b'
+    r'|тіскебасар')
 OFFTOPIC_RE = re.compile(
     r'игнорир|забудь|инструкц|промпт|prompt|ignore\s+(?:all|previous|the)|стих|анекдот|погод|новост|курс\s+'
     r'(?:доллар|валют|тенге)|политик|напиши\s+(?:код|программ|сочинен|эссе)|weather|poem|\bjoke|write\s+(?:code|a)'
     r'|systems?\s+message|developer\s+mode|jailbreak|\bdan\b')
 BUDGET_RE = re.compile(
-    r'(?:до|не\s+дороже|дешевле|в\s+пределах|максимум|не\s+больше|under|up\s+to|below|less\s+than|max)\s*'
+    r'(?:до|не\s+дороже|дешевле|в\s+пределах|максимум|не\s+больше|бюджет\w*|under|up\s+to|below|less\s+than|max'
+    r'|budget)\s*(?:в|на|of|is|:)?\s*'
     r'(\d[\d\s]{1,6}\d|\d{3,})\s*(?:тг|тенге|₸|kzt|tenge|т\b)?')
 BUDGET_KK_RE = re.compile(r'(\d[\d\s]{1,6}\d|\d{3,})\s*(?:тг|теңге|тенге|₸)\S*\s*(?:дейін|шейін)')
 EFES_RE = re.compile(r'\befes\b')
+GLOSSARY_RE = re.compile(r'что\s+такое|что\s+за\b|чем\s+отличается|в\s+чем\s+разница|разница\s+между|what\s+is\b'
+                         r"|what's\s+(?:a|an|the)\b|difference|деген\s+не|дегеніміз|айырмашылығы")
+PRICE_RE = re.compile(r'сколько\s+стоит|сколько\s+стоят|стоимост|\bцена|\bцены\b|\bценa|почем\b|по\s+чем\b|прайс'
+                      r'|how\s+much|\bprice|\bcost\b|бағасы|қанша\s+тұрады|\bқанша\b')
+COMPARE_PATTERNS = (
+    ('lighter', re.compile(r'легче|слабее|полегче|мягче|lighter|weaker|жеңіл')),
+    ('stronger', re.compile(r'крепче|сильнее|больше\s+градус|stronger|күшті')),
+    ('cheaper', re.compile(r'дешевле|cheaper|арзан')),
+    ('pricier', re.compile(r'дороже|pricier|more\s+expensive|қымбат')),
+    ('bitter', re.compile(r'горче|горьче|more\s+bitter|hoppier|ащы')),
+)
+# «не пью пиво», «кроме вина», «без крепкого»: слово после отрицания разбирается как категория
+EXCLUDE_RE = re.compile(r'(?:не\s+пью|не\s+люблю|не\s+хочу|не\s+буду|кроме|без|вместо|don.?t\s+(?:drink|like|want)'
+                        r'|no\b|ішпеймін)\s+(\w+)')
+PEOPLE_RE = re.compile(r'(?:на|нас|for|us)\s+(\d{1,2})\b|(\d{1,2})\s*(?:человек|персон|чел\b|гост|people|адам)')
+PEOPLE_WORDS = (('вдвоем', 2), ('на двоих', 2), ('for two', 2), ('екеуміз', 2), ('втроем', 3), ('на троих', 3),
+                ('for three', 3), ('үшеуміз', 3), ('вчетвером', 4), ('на четверых', 4), ('for four', 4),
+                ('төртеуміз', 4), ('впятером', 5), ('на пятерых', 5))
+NE_PYU_BARE_RE = re.compile(r'(?:не\s+пью|ішпеймін|don.?t\s+drink)(?!\s+\w)')
 
 
 def clean_text(value, limit):
@@ -179,10 +209,18 @@ class Plan:
     food_intent: bool = False
     # Без алкоголя по кнопке, словами или по правилам безопасности (ставит local_sommelier)
     no_alcohol: bool = False
+    # v2.4: справка по стилям, цена, сравнение двух напитков, «не пью пиво», число гостей
+    glossary: list = field(default_factory=list)
+    diff: str = ''
+    price: bool = False
+    compare: str = ''
+    exclude_category: str = ''
+    people: int = 0
 
     @property
     def mood_or_filter(self):
-        return bool(self.mood or self.category or self.budget or self.zero or self.efes or 'cheaper' in self.wishes)
+        return bool(self.mood or self.category or self.budget or self.zero or self.efes or self.exclude_category
+                    or 'cheaper' in self.wishes)
 
 
 # Записи общего каталога (движок v2): и для чата без заведения, и чтобы узнать блюдо или напиток,
@@ -258,6 +296,21 @@ def dishes_in(text, ctx):
     return AE.find_named(AE.tokens(text), ctx['dishes'])
 
 
+# Слова, после которых «0 0» это часть названия («Efes 0.0», «Кружка Свежего 0.0»), а не просьба без алкоголя.
+ZERO_BRAND_WORDS = frozenset({'efes', 'свежего', 'guinness', 'kozel', 'bavaria', 'heineken', 'carlsberg', 'tuborg',
+                              'amsterdam', 'balti', 'baltika', 'балтика', 'жигулевское', 'clausthaler', 'pilsener'})
+
+
+def zero_digits_wish(q_tokens):
+    """«0.0» в вопросе значит «без алкоголя», если не стоит сразу после названия сорта."""
+    for i in range(len(q_tokens) - 1):
+        if q_tokens[i] == '0' and q_tokens[i + 1] == '0':
+            before = q_tokens[i - 1] if i > 0 else ''
+            if before not in ZERO_BRAND_WORDS:
+                return True
+    return False
+
+
 def make_plan(messages, ctx, cart=None, prefs=None, ds=None):
     prefs = prefs or {}
     question = messages[-1]['content'] if messages else ''
@@ -273,9 +326,32 @@ def make_plan(messages, ctx, cart=None, prefs=None, ds=None):
     if prefs.get('light'):
         wishes.add('light')
     plan.wishes = wishes
-    plan.zero = 'zero' in wishes or bool(prefs.get('no_alcohol'))
     plan.mood = next((m for m in MOOD_WISHES if m in wishes), '')
     plan.category = next((name for name, pattern in CATEGORY_PATTERNS if pattern.search(plan.text)), '')
+    # «Не пью пиво», «кроме вина»: исключаем категорию, а не весь алкоголь
+    excluded = EXCLUDE_RE.search(plan.text)
+    if excluded:
+        word = excluded.group(1)
+        plan.exclude_category = next((name for name, pattern in CATEGORY_PATTERNS if pattern.search(word)), '')
+        if plan.exclude_category and plan.category == plan.exclude_category:
+            plan.category = ''
+    plan.zero = ('zero' in wishes or bool(prefs.get('no_alcohol')) or bool(NE_PYU_BARE_RE.search(plan.text))
+                 or zero_digits_wish(plan.tokens))
+    if GLOSSARY_RE.search(plan.text):
+        found_terms = sorted(((m.start(), key) for key, entry in GLOSSARY.items()
+                              for m in [re.search(entry['match'], plan.text)] if m), key=lambda x: x[0])
+        plan.glossary = [key for _, key in found_terms][:2]
+        plan.diff = (GLOSSARY_DIFF.get(frozenset(plan.glossary)) or {}).get(plan.lang, '') \
+            or (GLOSSARY_DIFF.get(frozenset(plan.glossary)) or {}).get('ru', '') if len(plan.glossary) == 2 else ''
+    plan.price = bool(PRICE_RE.search(plan.text))
+    plan.compare = next((name for name, pattern in COMPARE_PATTERNS if pattern.search(plan.text)), '')
+    people = PEOPLE_RE.search(plan.text)
+    if people:
+        plan.people = int(people.group(1) or people.group(2))
+    else:
+        plan.people = next((n for word, n in PEOPLE_WORDS if word in plan.text), 0)
+    if plan.people and 'party' not in wishes:
+        wishes.add('party')
     if plan.category == 'spirit':
         plan.family = next((name for name, pattern in SPIRIT_FAMILY_PATTERNS if pattern.search(plan.text)), '')
     plan.budget = parse_budget(question)
@@ -302,10 +378,16 @@ def make_plan(messages, ctx, cart=None, prefs=None, ds=None):
     if ctx['venue'] and ds is not None:
         listed = {AE.norm(d['name']) for d in plan.drinks}
         listed_words = {w for d in plan.drinks for w in AE.norm(d['name']).split()}
+        def echoes_listed(drink):
+            """Редкое слово напитка каталога совпадает или начинает слово сорта бара: это не другой напиток."""
+            for word in drink.get('rare_words') or ():
+                for listed_word in listed_words:
+                    if word == listed_word or (len(word) >= 4 and (listed_word.startswith(word) or word.startswith(listed_word))):
+                        return True
+            return False
         plan.drinks_absent = [
             d for d in AE.find_drinks(plan.tokens, catalog_drink_entries(ds))
-            if AE.norm(d['name']) not in listed
-            and not set(AE.norm(d['name']).split()) & listed_words & set(d.get('rare_words') or ())]
+            if AE.norm(d['name']) not in listed and not echoes_listed(d)]
 
     if plan.efes and (plan.mood or plan.category):
         # «Какое пиво Efes самое горькое»: Efes здесь фильтр по портфелю, а не название одного сорта
@@ -347,8 +429,18 @@ def allowed_fn(plan, safety):
             return False
         if plan.zero and ai_safety.drink_is_alcoholic(entry):
             return False
+        if plan.exclude_category and entry.get('category') in excluded_group(plan.exclude_category):
+            return False
         return True
     return allowed
+
+
+def excluded_group(category):
+    """«Не пью пиво» исключает и безалкогольное пиво с радлером."""
+    group = set(CATEGORY_GROUPS.get(category, {category}))
+    if category == 'beer':
+        group |= {'na_beer'}
+    return group
 
 
 def category_ok(entry, plan, family=True):
@@ -619,7 +711,27 @@ def list_drinks(ctx, ds, plan, allowed, limit=2):
             if len(picked) >= limit + 1:
                 break
         return picked
-    return pool[:limit]
+    if plan.mood and not plan.no_alcohol and not plan.budget:
+        # Гость не просил без алкоголя: 0.0 не раньше обычного сорта, который так же подходит под пожелание
+        regular = [e for e in pool if ai_safety.drink_is_alcoholic(e)]
+        pool = regular + [e for e in pool if e not in regular] if regular else pool
+    if not plan.mood and not plan.zero and not plan.budget and 'cheaper' not in plan.wishes:
+        # Без пожелания: флагман Efes первым, крепкие сорта (от STRONG_ABV) в конец
+        pool.sort(key=lambda e: (efes_first(e), (AE.abv_of(e) or 0) > STRONG_ABV, e.get('v2') != 'efes-pilsener',
+                                 not e.get('wide'), e['name']))
+    return dedupe_brand(pool)[:limit]
+
+
+def dedupe_brand(pool):
+    """«Кружка Свежего» и «Кружка Свежего 0.0» в одном списке не стоят: берём первый сорт бренда."""
+    picked, roots = [], set()
+    for entry in pool:
+        root = ' '.join(AE.norm(entry['name']).split()[:2])
+        if root in roots:
+            continue
+        roots.add(root)
+        picked.append(entry)
+    return picked
 
 
 def safety_options(kind, ctx, allowed, exclude=(), limit=3):
@@ -638,27 +750,35 @@ def safety_options(kind, ctx, allowed, exclude=(), limit=3):
     return picked
 
 
-def popular_dishes(ctx, ds, allowed, pool=None, limit=2):
-    """Блюда, к которым в карте есть самая сильная пара по движку."""
+def popular_dishes(ctx, ds, allowed, pool=None, limit=2, category='', with_dessert=False):
+    """
+    Блюда, к которым в карте есть самая сильная пара по движку. Без просьбы о десерте десерты не берём,
+    а пару считаем по напиткам бара (пиво, вино), а не по чаю и кофе: иначе «что популярного» отвечает
+    тирамису с эспрессо. category: пара только с напитками этой категории («чем закусить пиво»).
+    """
     dishes = [d for d in (ctx['dishes'] if pool is None else pool) if d.get('is_available', True)]
+    if not with_dessert and pool is None:
+        dishes = [d for d in dishes if not d.get('is_dessert')] or dishes
     if not ctx['venue']:
         # В каталоге начинаем с казахской кухни: бешбармак, казы, шашлык
         dishes.sort(key=lambda d: (not d.get('kazakh'), d.get('order', 0)))
         return dishes[:limit]
+    cat_plan = Plan(category=category)
     best = {}
     for dish in dishes:
-        ranked = ranked_for_dish(dish, ctx, ds, allowed)
-        if not ranked:
+        ranked = [r for r in ranked_for_dish(dish, ctx, ds, allowed) if category_ok(r[0], cat_plan, family=False)]
+        hard = [r for r in ranked if r[0].get('category') not in SOFT_CATEGORIES] or ranked
+        if not hard:
             best[dish['id']] = 0
-        elif ranked[0][1] is not None:
-            best[dish['id']] = ranked[0][1]
+        elif hard[0][1] is not None:
+            best[dish['id']] = hard[0][1]
         else:
-            best[dish['id']] = (ranked[0][3] or 0) * 15  # оценка сомелье 1-5 примерно в шкале движка
+            best[dish['id']] = (hard[0][3] or 0) * 15  # оценка сомелье 1-5 примерно в шкале движка
     dishes.sort(key=lambda d: (-best[d['id']], d['name']))
     return dishes[:limit]
 
 
-def combos(out, dishes, plan, ctx, ds, allowed, dish_reason):
+def combos(out, dishes, plan, ctx, ds, allowed, dish_reason, word='or'):
     texts = []
     for dish in dishes:
         out.card(dish, dish_reason)
@@ -675,7 +795,83 @@ def combos(out, dishes, plan, ctx, ds, allowed, dish_reason):
             texts.append(t('combo', plan.lang, dish=describe_dish(dish, ctx), drink=entry['name']))
         else:
             texts.append(describe_dish(dish, ctx))
-    return join_list(texts, plan.lang, 'or')
+    return join_list(texts, plan.lang, word)
+
+
+def glossary_examples(key, ctx, allowed, limit=2):
+    """Напитки карты или каталога, которые подходят под термин справки: по категории или по стилю."""
+    entry = GLOSSARY[key]
+    pool = [e for e in ctx['drinks'] if allowed(e)]
+    if entry.get('category'):
+        picked = [e for e in pool if e.get('category') == entry['category']]
+    elif entry.get('style'):
+        pattern = re.compile(entry['style'], re.I)
+        picked = [e for e in pool if pattern.search('{} {}'.format(e.get('style') or '', e.get('name') or ''))]
+    else:
+        return []
+    if not ctx['venue']:
+        picked = [e for e in picked if e.get('wide') or e.get('efes')] or picked
+    picked.sort(key=lambda e: (entry.get('category') != 'na_beer' and not ai_safety.drink_is_alcoholic(e),
+                               efes_first(e), not e.get('wide'), e['name']))
+    return dedupe_brand(picked)[:limit]
+
+
+def compare_drinks(a, b, attribute, ctx, ds, lang):
+    """Одна фраза: что легче, крепче, дешевле или горче из двух названных напитков."""
+    if attribute in ('lighter', 'stronger'):
+        va, vb = AE.abv_of(a), AE.abv_of(b)
+        if va is None or vb is None:
+            return ''
+        if abs(va - vb) < 0.3:
+            return t('compare_same', lang, a=describe_drink(a, ctx, lang), b=describe_drink(b, ctx, lang))
+        first, second = (a, b) if (va < vb) == (attribute == 'lighter') else (b, a)
+        return t('compare_' + attribute, lang, a=first['name'], b=second['name'],
+                 a_val=format_abv(AE.abv_of(first)), b_val=format_abv(AE.abv_of(second)))
+    if attribute in ('cheaper', 'pricier'):
+        if a.get('price') is None or b.get('price') is None:
+            return ''
+        pa, pb = float(a['price']), float(b['price'])
+        if pa == pb:
+            return t('compare_same', lang, a=describe_drink(a, ctx, lang), b=describe_drink(b, ctx, lang))
+        first, second = (a, b) if (pa < pb) == (attribute == 'cheaper') else (b, a)
+        return t('compare_' + attribute, lang, a=first['name'], b=second['name'],
+                 a_val=format_price(first['price']), b_val=format_price(second['price']))
+    if attribute == 'bitter':
+        ba, bb = AE.traits(ds, a)['bitter'], AE.traits(ds, b)['bitter']
+        if abs(ba - bb) < 0.05:
+            return t('compare_same', lang, a=a['name'], b=b['name'])
+        first, second = (a, b) if ba > bb else (b, a)
+        return t('compare_bitter', lang, a=first['name'], b=second['name'])
+    return ''
+
+
+def party_dishes(ctx, ds, allowed, plan, limit=3):
+    """
+    На компанию: два горячих или гриль и одна закуска. При бюджете набираем блюда по силе пары, пока сумма
+    блюд плюс самый дешёвый напиток на каждого укладывается в бюджет; если не входит ничего, бюджет не обещаем.
+    """
+    people = plan.people or 2
+    pool = [d for d in ctx['dishes'] if d.get('is_available', True) and not d.get('is_dessert')]
+    snacks = [d for d in pool if re.search(r'закус|snack|тіскебасар', (d.get('section') or '').lower())]
+    mains = [d for d in pool if d not in snacks] or pool
+    ordered = popular_dishes(ctx, ds, allowed, mains, limit=len(mains))
+    if snacks:
+        ordered = ordered[:limit - 1] + popular_dishes(ctx, ds, allowed, snacks, limit=len(snacks)) + ordered[limit - 1:]
+    if not (plan.budget and ctx['venue']):
+        return ordered[:limit]
+    drink_prices = [float(e['price']) for e in ctx['drinks'] if allowed(e) and e.get('price') is not None]
+    reserve = min(drink_prices) * people if drink_prices else 0
+    picks, total = [], reserve
+    for dish in ordered:
+        price = float(dish['price']) if dish.get('price') is not None else None
+        if price is None or total + price > plan.budget or len(picks) >= limit:
+            continue
+        picks.append(dish)
+        total += price
+    if not picks:
+        plan.budget = None  # ничего не входит: советуем как без бюджета, без обещания «укладывается»
+        return ordered[:limit]
+    return picks
 
 
 def drink_facts_text(entry, ctx, lang):
@@ -720,8 +916,9 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
                 out.card(entry, reason, main_dish['id'], score_5)
                 exclude.append(entry['id'])
         elif safety.pairing_allowed and (plan.wishes & {'advise', 'meat', 'dessert', 'spicy'} or plan.food_intent):
-            # «Мне 16, что посоветуешь»: блюдо и безалкогольный напиток к нему
-            picks = popular_dishes(ctx, ds, allowed, limit=1)
+            # «Мне 16, что посоветуешь»: блюдо (ребёнку без остроты) и безалкогольный напиток к нему
+            mild = [d for d in ctx['dishes'] if not d.get('spicy')] if safety.kind in ('child', 'minor') else None
+            picks = popular_dishes(ctx, ds, allowed, mild or None, limit=1)
             if picks:
                 text = combos(out, picks, plan, ctx, ds, allowed, t('reason_popular', lang))
                 out.say(t(advise_key, lang, combos=text))
@@ -747,13 +944,16 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
         out.say(t('no_energy', lang))
 
     related = bool(plan.dishes or plan.missing or plan.drinks or plan.drinks_absent or plan.category
-                   or plan.budget or plan.drink_intent or plan.food_intent or energy
-                   or plan.wishes - {'greet', 'thanks'})
+                   or plan.budget or plan.drink_intent or plan.food_intent or energy or plan.glossary
+                   or plan.exclude_category or plan.wishes - {'greet', 'thanks', 'smalltalk'})
 
-    # 2. Приветствие и спасибо без вопроса
+    # 2. Приветствие, спасибо и «как дела» без вопроса
     if not related and 'thanks' in plan.wishes:
         out.say(t('thanks', lang))
         return out.result('thanks')
+    if not related and 'smalltalk' in plan.wishes:
+        out.say(t('greet_help', lang))
+        return out.result('greet')
     if not related and 'greet' in plan.wishes:
         out.say(t('greet_venue' if ctx['venue'] else 'greet_catalog', lang))
         return out.result('greet')
@@ -768,24 +968,64 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
     elif 'cheaper' in plan.wishes and not ctx['venue']:
         out.say(t('cheaper_catalog', lang))
 
-    # 4. Названные напитки без блюда: что это и к чему лучше
+    # 3а. Справка: «что такое лагер», «чем отличается стаут от портера»
+    if plan.glossary and not plan.drinks and not plan.dishes:
+        if plan.diff:
+            out.say(plan.diff)
+        for key in plan.glossary:
+            out.say(GLOSSARY[key].get(lang) or GLOSSARY[key]['ru'])
+        examples = glossary_examples(plan.glossary[0], ctx, allowed)
+        if examples:
+            out.say(t('glossary_example', lang, drinks=join_list([describe_drink(e, ctx, lang) for e in examples], lang)))
+            for entry in examples:
+                out.card(entry, entry.get('style') or category_label(entry.get('category'), lang))
+        return out.result('glossary')
+    if GLOSSARY_RE.search(plan.text) and not plan.drinks and not plan.dishes and not plan.drinks_absent \
+            and not plan.missing:
+        term = ' '.join(w for w in plan.tokens if w not in AE.QUESTION_SKIP
+                        and w not in ('такое', 'что', 'за', 'чем', 'отличается', 'what', 'is'))[:40]
+        out.say(t('glossary_unknown', lang, term=term or '?'))
+        return out.result('glossary')
+
+    # 3б. Цена: «сколько стоит бешбармак», «почём козел»
+    if plan.price and (plan.dishes or plan.drinks):
+        for entry in (plan.dishes + plan.drinks)[:2]:
+            if not ctx['venue']:
+                out.say(t('price_catalog', lang))
+                break
+            facts = drink_facts_text(entry, ctx, lang) if entry['kind'] == KIND_DRINK else \
+                ', '.join(p for p in (entry.get('portion'), format_price(entry.get('price'))) if p)
+            if entry.get('price') is None:
+                out.say(t('price_unknown', lang, name=entry['name']))
+            else:
+                out.say(t('price_dish', lang, name=entry['name'], facts=facts))
+            out.card(entry, entry.get('style') or '' if entry['kind'] == KIND_DRINK else t('reason_popular', lang))
+        if plan.dishes and ctx['venue']:
+            pair_for_dish(out, plan.dishes[0], plan, ctx, ds, allowed, with_efes=False)
+        return out.result('price', plan.dishes[0].get('v2') if plan.dishes else None)
+
+    # 4. Названные напитки без блюда: что это, к чему лучше, сравнение двух
     if (plan.drinks or plan.drinks_absent) and not plan.dishes:
         for entry in plan.drinks_absent[:2]:
             out.say(t('drink_not_listed', lang, drink=entry['name']))
-        for entry in plan.drinks[:2]:
-            if not allowed(entry):
-                continue
+        shown = [e for e in plan.drinks[:2] if allowed(e)]
+        if len(shown) == 2 and plan.compare:
+            out.say(compare_drinks(shown[0], shown[1], plan.compare, ctx, ds, lang))
+        elif len(shown) == 2 and plan.diff:
+            # «Чем отличается Efes Pilsener от Efes 0.0»: разница стилей одной фразой
+            out.say(plan.diff)
+        for entry in shown:
             out.say(t('drink_info', lang, drink=entry['name'], facts=drink_facts_text(entry, ctx, lang)))
             out.card(entry, entry.get('style') or '')
             dish_pool = ctx['dishes'] if ctx['venue'] else catalog_dish_entries(ds) if ds else []
             best = [(d, r) for d, r in AE.rank_dishes_for_drink(ds, entry.get('v2'), dish_pool)
                     if d.get('is_available', True)][:2] if ds else []
-            if best:
+            if best and not (len(shown) == 2 and plan.compare):
                 out.say(t('drink_best_dishes', lang, dishes=join_list([d['name'] for d, _ in best], lang)))
-                if ctx['venue']:
+                if ctx['venue'] or plan.food_intent:
                     for dish, result in best:
                         out.card(dish, AE.guest_reason(result))
-        if len(plan.drinks) + len(plan.drinks_absent) >= 2:
+        if len(plan.drinks) + len(plan.drinks_absent) >= 2 and not plan.compare:
             out.say(t('drink_compare', lang))
         elif plan.drinks and not out.suggestions:
             out.say(t('ask_dish', lang))
@@ -816,14 +1056,45 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
             out.say(t('allergy_note', lang))
         return out.result('pairing', main_dish.get('v2'))
 
-    # 6. Пожелания без блюда: без алкоголя, лёгкое, без горечи, категория, бюджет
-    if plan.mood_or_filter and not any(w in plan.wishes for w in ('dessert', 'meat', 'spicy')):
+    # 5а. Еда к напитку: «чем закусить пиво», «что к вину из закусок»
+    if plan.food_intent and plan.category and not plan.drinks and not plan.dishes and not plan.missing:
+        snacks = bool(re.search(r'закус|snack|тіскебасар', plan.text))
+        pool = [d for d in ctx['dishes'] if not d.get('is_dessert')]
+        if snacks:
+            light = [d for d in pool if re.search(r'закус|snack|тіскебасар', (d.get('section') or '').lower())]
+            pool = light or pool
+        picks = popular_dishes(ctx, ds, allowed, pool or None, limit=2, category=plan.category)
+        if picks:
+            cat_plan = Plan(lang=lang, category=plan.category, zero=plan.zero, no_alcohol=plan.no_alcohol,
+                            budget=plan.budget, exclude_category=plan.exclude_category)
+            text = combos(out, picks, cat_plan, ctx, ds, allowed, t('reason_best', lang))
+            key = 'dishes_for_category' if ctx['venue'] else 'dishes_for_category_catalog'
+            out.say(t(key, lang, category=category_dative(plan.category, lang), combos=text))
+            return out.result('food_for_drink', picks[0].get('v2'))
+
+    # 6. Пожелания без блюда: без алкоголя, лёгкое, без горечи, категория, бюджет, «кроме пива»
+    if plan.mood_or_filter and not any(w in plan.wishes for w in ('dessert', 'meat', 'spicy', 'party')):
         picks = list_drinks(ctx, ds, plan, allowed, limit=2)
         drinks_text = join_list([describe_drink(e, ctx, lang) for e in picks], lang)
         if picks and family_missing(ctx['drinks'], plan, allowed):
             say_family_missing(out, plan)
+        if not picks and plan.category and ctx['venue'] and not plan.zero and not plan.no_alcohol:
+            # «Есть вино?» в пивном баре: честно, что нет, и два варианта из того, что есть
+            alt_plan = Plan(lang=lang, exclude_category=plan.exclude_category)
+            alternatives = [e for e in list_drinks(ctx, ds, alt_plan, allowed, limit=2)
+                            if e.get('category') not in SOFT_CATEGORIES] or list_drinks(ctx, ds, alt_plan, allowed, limit=2)
+            label = category_label(plan.category, lang)
+            out.say(t('list_alternatives', lang, category=label[:1].upper() + label[1:],
+                      drinks=join_list([describe_drink(e, ctx, lang) for e in alternatives], lang)))
+            for entry in alternatives:
+                out.card(entry, entry.get('style') or category_label(entry.get('category'), lang))
+            if alternatives:
+                out.say(t('ask_dish', lang))
+            return out.result('drinks')
         if not picks:
             out.say(t('no_na_in_bar', lang) if plan.zero and ctx['venue'] else t('list_none', lang))
+        elif plan.exclude_category and not plan.category and not plan.mood and not plan.zero:
+            out.say(t('list_excluding', lang, category=category_genitive(plan.exclude_category, lang), drinks=drinks_text))
         elif plan.budget and ctx['venue']:
             out.say(t('list_budget', lang, budget=format_price(plan.budget), drinks=drinks_text))
         elif plan.zero and not plan.mood:
@@ -856,18 +1127,33 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
         elif dish_wish == 'spicy':
             pool = [d for d in ctx['dishes'] if d.get('spicy')]
             key, reason = 'dishes_spicy', t('reason_spicy', lang)
+        elif dish_wish == 'party':
+            pool = None
+            key, reason = 'dishes_party', t('reason_best', lang)
+        elif dish_wish == 'popular':
+            pool = None
+            key, reason = 'dishes_popular' if ctx['venue'] else advise_key, t('reason_popular', lang)
         else:
             pool = None
             key, reason = ('celebrate' if dish_wish == 'celebrate' else advise_key), t('reason_best', lang)
         if pool is not None and not pool:
             out.say(t('dishes_none', lang))
             return out.result(dish_wish)
-        picks = popular_dishes(ctx, ds, allowed, pool, limit=1 if dish_wish == 'celebrate' else 2)
+        if dish_wish == 'party':
+            picks = party_dishes(ctx, ds, allowed, plan)
+            if picks and plan.budget and ctx['venue']:
+                key = 'dishes_party_budget'
+        else:
+            picks = popular_dishes(ctx, ds, allowed, pool, limit=1 if dish_wish == 'celebrate' else 2,
+                                   with_dessert=dish_wish == 'dessert')
         if not picks:
             out.say(t('menu_empty', lang))
             return out.result(dish_wish)
         note_filter_gap(out, plan, ctx, allowed)
-        out.say(t(key, lang, combos=combos(out, picks, plan, ctx, ds, allowed, reason)))
+        slots = {'combos': combos(out, picks, plan, ctx, ds, allowed, reason, word='and' if dish_wish == 'party' else 'or')}
+        if key == 'dishes_party_budget':
+            slots['budget'] = format_price(plan.budget)
+        out.say(t(key, lang, **slots))
         if plan.no_alcohol and ctx['venue'] and not any(s['kind'] == KIND_DRINK for s in out.suggestions):
             out.say(t('no_na_in_bar', lang))
         return out.result(dish_wish, picks[0].get('v2'))

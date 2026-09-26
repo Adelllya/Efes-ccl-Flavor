@@ -28,6 +28,13 @@ GENERIC_TERMS = frozenset({
     'сосиски', 'говядина', 'курица', 'дамплинги', 'печень', 'потроха', 'жаркое', 'чипсы', 'пирожок',
 })
 STOP_WORDS = frozenset({'и', 'с', 'со', 'в', 'на', 'к', 'по', 'под', 'из', 'для', 'а', 'the', 'a', 'with', 'and', 'of'})
+# Слова вопроса, которые никогда не считаются названием блюда или напитка («такое» не «тако», «это» не «эт»).
+QUESTION_SKIP = STOP_WORDS | frozenset({
+    'такое', 'такой', 'такая', 'такие', 'такого', 'такую', 'таких', 'также', 'это', 'этот', 'эта', 'эти', 'этого',
+    'что', 'чем', 'как', 'или', 'есть', 'ли', 'мне', 'нам', 'вам', 'вы', 'ты', 'же', 'бы', 'вот', 'еще', 'самое',
+    'самый', 'самая', 'самые', 'нет', 'да', 'ну', 'не', 'уже', 'очень', 'можно', 'хочу', 'хотим', 'нас', 'меня',
+    'what', 'which', 'this', 'that', 'some', 'something', 'about',
+})
 # Как гости пишут бренды по-русски.
 ALIASES = {
     'козел': 'kozel', 'козела': 'kozel', 'козелу': 'kozel', 'эфес': 'efes', 'эфеса': 'efes', 'эфесу': 'efes',
@@ -39,13 +46,32 @@ NUMERIC_RE = re.compile(r'\d|↔')
 SCORE5 = {'ideal': 5, 'excellent': 4, 'good': 3, 'neutral': 2}
 
 
+# Бренд, написанный кириллицей в любом падеже: по началу слова («козеле», «эфесу», «гиннесса»).
+ALIAS_PREFIXES = (
+    ('козел', 'kozel'), ('козл', 'kozel'), ('эфес', 'efes'), ('бавари', 'bavaria'), ('миллер', 'miller'),
+    ('гиннес', 'guinness'), ('гинес', 'guinness'), ('хайнекен', 'heineken'), ('туборг', 'tuborg'),
+    ('карлсберг', 'carlsberg'), ('перони', 'peroni'), ('гролш', 'grolsch'), ('амстердам', 'amsterdam'),
+    ('стелл', 'stella'), ('корон', 'corona'), ('хугарден', 'hoegaarden'), ('хугард', 'hoegaarden'),
+    ('лефф', 'leffe'), ('пилснер урквел', 'pilsner urquell'), ('старопрамен', 'staropramen'),
+    ('крушовиц', 'krusovice'), ('велкопопов', 'velkopopovicky'),
+)
+
+
 def norm(text):
     text = (text or '').lower().replace('ё', 'е')
     return ' '.join(re.sub(r'[^\w\s]+', ' ', text).split())
 
 
 def tokens(text):
-    return [ALIASES.get(tok, tok) for tok in norm(text).split()]
+    out = []
+    for tok in norm(text).split():
+        tok = ALIASES.get(tok, tok)
+        for prefix, alias in ALIAS_PREFIXES:
+            if tok.startswith(prefix) and len(tok) <= len(prefix) + 4:
+                tok = alias
+                break
+        out.append(tok)
+    return out
 
 
 def data_dir():
@@ -117,6 +143,13 @@ NON_BRAND_WORDS = frozenset({
     'большой', 'большая', 'большое', 'свежее', 'живое', 'холодный', 'горячий', 'летний', 'бочковой', 'фирменный',
     'lager', 'beer', 'wine', 'tea', 'water', 'light', 'dark', 'premium', 'original', 'classic', 'draft', 'zero',
     'alcoholic', 'non', 'free', 'pilsner', 'lemonade', 'cider', 'dry', 'brut', 'red', 'white', 'rose',
+    # мера и посуда: «две кружки козела» не «Кружка Свежего»
+    'кружка', 'кружки', 'кружку', 'кружек', 'кружкой', 'бокал', 'бокала', 'стакан', 'бутылка', 'бутылку', 'банка',
+    'свежего',
+    # стиль, а не марка: «что такое лагер» не «BAZAвый Лагер»
+    'лагер', 'эль', 'ipa', 'ипа', 'стаут', 'портер', 'пилснер', 'пилзнер', 'пильзнер', 'пшеничное', 'вайцен',
+    'нефильтрованное', 'фильтрованное', 'светлый', 'темный', 'крепкий', 'легкий', 'легкое', 'классик', 'премиум',
+    'экстра', 'strong', 'extra', 'wheat', 'stout', 'porter', 'ale', 'pils', 'export', 'gold', 'ice',
 })
 RARE_WORD_MAX = 6
 
@@ -147,20 +180,45 @@ def stem(word):
     return word[:-2]
 
 
+def close_enough(a, b):
+    """Одна опечатка: замена буквы или перестановка соседних (длины равны)."""
+    if a == b:
+        return True
+    if len(a) != len(b):
+        return False
+    diff = [i for i in range(len(a)) if a[i] != b[i]]
+    if len(diff) == 1:
+        return True
+    return len(diff) == 2 and diff[1] == diff[0] + 1 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]]
+
+
+FUZZY_MIN = 7
+
+
 def word_hits(q_tokens, word):
-    """Позиции слов вопроса, в которых узнаётся слово названия с любым окончанием («шашлыку», «бешбармаққа»)."""
+    """Позиции слов вопроса, в которых узнаётся слово названия с любым окончанием («шашлыку», «бешбармаққа»).
+
+    Длинное слово (от FUZZY_MIN букв) узнаётся и с одной опечаткой в основе: «бешбормаку» это бешбармак.
+    """
     if len(word) <= 3:
         return [i for i, q in enumerate(q_tokens) if q == word]
     s = stem(word)
-    return [i for i, q in enumerate(q_tokens) if q.startswith(s) and len(q) <= len(word) + 4]
+    hits = [i for i, q in enumerate(q_tokens)
+            if q not in QUESTION_SKIP and q.startswith(s) and len(q) <= len(word) + 4]
+    if hits or len(word) < FUZZY_MIN:
+        return hits
+    # Опечатка редко бывает в первых двух буквах: «system» не «oysters», «бешбормак» это бешбармак
+    return [i for i, q in enumerate(q_tokens)
+            if q not in QUESTION_SKIP and len(s) <= len(q) <= len(word) + 4 and q[:2] == s[:2]
+            and close_enough(q[:len(s)], s)]
 
 
 def brand_hits(q_tokens, word):
     """Строже, чем для блюд: бренд пишут почти без окончаний («Kozel», «Жигулевского»)."""
     if len(word) <= 4:
-        return [i for i, q in enumerate(q_tokens) if q.startswith(word) and len(q) <= len(word) + 2]
+        return [i for i, q in enumerate(q_tokens) if q not in QUESTION_SKIP and q.startswith(word) and len(q) <= len(word) + 2]
     s = word[:-1]
-    return [i for i, q in enumerate(q_tokens) if q.startswith(s) and len(q) <= len(word) + 3]
+    return [i for i, q in enumerate(q_tokens) if q not in QUESTION_SKIP and q.startswith(s) and len(q) <= len(word) + 3]
 
 
 def match_term(q_tokens, term, allow_generic=False):
@@ -212,7 +270,9 @@ def find_drinks(q_tokens, entries):
         name_words = [w for w in norm(entry['name']).split() if w not in STOP_WORDS]
         if not name_words:
             continue
-        if all(brand_hits(q_tokens, w) for w in name_words):
+        # Описательные слова («классическое», «светлое») не обязательны: «Efes 0.0» это «Efes 0.0 (классическое)»
+        core_words = [w for w in name_words if w not in NON_BRAND_WORDS] or name_words
+        if all(brand_hits(q_tokens, w) for w in core_words):
             full.append(entry)
             continue
         for word in name_words:

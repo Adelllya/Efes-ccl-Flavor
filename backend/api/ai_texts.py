@@ -366,6 +366,109 @@ TEXTS = {
         'kk': 'Даяшыдан су немесе шай сұраңыз.',
         'en': 'Ask the waiter for water or tea.',
     },
+
+    # v2.4: справка, цена, сравнение, еда к напитку, исключение категории, компания, популярное
+    'glossary_example': {
+        'ru': 'Здесь из таких: {drinks}.',
+        'kk': 'Мұнда солардың ішінен: {drinks}.',
+        'en': 'Examples here: {drinks}.',
+    },
+    'glossary_unknown': {
+        'ru': 'Про «{term}» рассказать не могу, я разбираюсь в напитках и их сочетаниях с едой. '
+              'Спросите, например, что такое лагер или что взять к шашлыку.',
+        'kk': '«{term}» туралы айта алмаймын, мен сусындар мен тағамға сәйкестігін білемін. '
+              'Мысалы, лагер деген не немесе шашлыққа не алу керек деп сұраңыз.',
+        'en': "I can't explain «{term}», I know drinks and how they pair with food. "
+              'Ask, for example, what a lager is or what goes with shashlyk.',
+    },
+    'price_dish': {
+        'ru': '«{name}»: {facts}.',
+        'kk': '«{name}»: {facts}.',
+        'en': '«{name}»: {facts}.',
+    },
+    'price_unknown': {
+        'ru': 'Цены на «{name}» у меня нет, уточните у официанта.',
+        'kk': '«{name}» бағасы менде жоқ, даяшыдан сұраңыз.',
+        'en': "I don't have a price for «{name}», please ask the waiter.",
+    },
+    'price_catalog': {
+        'ru': 'Цены зависят от заведения: откройте меню бара по QR-коду на столе, и я покажу их.',
+        'kk': 'Бағалар мекемеге байланысты: үстелдегі QR-код арқылы бар мәзірін ашыңыз, көрсетемін.',
+        'en': 'Prices depend on the venue: open the bar menu via the QR code on the table and I will show them.',
+    },
+    'compare_lighter': {
+        'ru': 'Легче {a}: {a_val} против {b_val} у {b}.',
+        'kk': '{a} жеңілірек: {a_val}, ал {b}: {b_val}.',
+        'en': '{a} is lighter: {a_val} versus {b_val} for {b}.',
+    },
+    'compare_stronger': {
+        'ru': 'Крепче {a}: {a_val} против {b_val} у {b}.',
+        'kk': '{a} күштірек: {a_val}, ал {b}: {b_val}.',
+        'en': '{a} is stronger: {a_val} versus {b_val} for {b}.',
+    },
+    'compare_cheaper': {
+        'ru': 'Дешевле {a}: {a_val} против {b_val} у {b}.',
+        'kk': '{a} арзанырақ: {a_val}, ал {b}: {b_val}.',
+        'en': '{a} is cheaper: {a_val} versus {b_val} for {b}.',
+    },
+    'compare_pricier': {
+        'ru': 'Дороже {a}: {a_val} против {b_val} у {b}.',
+        'kk': '{a} қымбатырақ: {a_val}, ал {b}: {b_val}.',
+        'en': '{a} is pricier: {a_val} versus {b_val} for {b}.',
+    },
+    'compare_bitter': {
+        'ru': 'Горче {a}, у {b} горечь мягче.',
+        'kk': '{a} ащырақ, {b} жұмсағырақ.',
+        'en': '{a} is more bitter, {b} is softer.',
+    },
+    'compare_same': {
+        'ru': 'По этому они почти одинаковы: {a} и {b}.',
+        'kk': 'Бұл жағынан олар шамалас: {a} және {b}.',
+        'en': 'They are about the same on that: {a} and {b}.',
+    },
+    'dishes_for_category': {
+        'ru': 'К {category} из меню лучше всего: {combos}.',
+        'kk': '{category} үшін мәзірден ең жақсысы: {combos}.',
+        'en': 'With {category}, the best from the menu: {combos}.',
+    },
+    'dishes_for_category_catalog': {
+        'ru': 'К {category} лучше всего подходят: {combos}.',
+        'kk': '{category} үшін ең жақсысы: {combos}.',
+        'en': 'With {category}, the best matches are: {combos}.',
+    },
+    'list_excluding': {
+        'ru': 'Кроме {category} здесь есть: {drinks}.',
+        'kk': '{category} басқа мұнда бар: {drinks}.',
+        'en': 'Besides {category}, there is: {drinks}.',
+    },
+    'list_alternatives': {
+        'ru': '{category} в карте этого бара нет. Из того, что есть: {drinks}.',
+        'kk': 'Бұл бардың картасында {category} жоқ. Бар нәрседен: {drinks}.',
+        'en': 'There is no {category} on this bar\'s list. From what there is: {drinks}.',
+    },
+    'dishes_party': {
+        'ru': 'На компанию советую: {combos}.',
+        'kk': 'Компанияға ұсынамын: {combos}.',
+        'en': 'For the table I suggest: {combos}.',
+    },
+    'dishes_party_budget': {
+        'ru': 'В {budget} на компанию укладывается: {combos}.',
+        'kk': '{budget} компанияға жетеді: {combos}.',
+        'en': 'Within {budget} for the table: {combos}.',
+    },
+    'dishes_popular': {
+        'ru': 'Самые удачные пары в этом меню: {combos}.',
+        'kk': 'Бұл мәзірдегі ең сәтті жұптар: {combos}.',
+        'en': 'The strongest pairings on this menu: {combos}.',
+    },
+    'greet_help': {
+        'ru': 'У меня всё хорошо, спасибо. Я подбираю напиток к блюду и блюдо к напитку, могу сравнить два сорта, '
+              'сказать цену и крепость или объяснить, что такое лагер или IPA. С чего начнём?',
+        'kk': 'Жақсымын, рахмет. Тағамға сусын, сусынға тағам таңдаймын, екі сортты салыстырамын, бағасы мен '
+              'күштілігін айтамын. Неден бастаймыз?',
+        'en': "I'm fine, thanks. I pair drinks with dishes and dishes with drinks, compare two beers, tell prices "
+              'and strength, or explain what a lager or an IPA is. Where shall we start?',
+    },
 }
 
 # Ответы правил безопасности: первая фраза, когда гость сказал об этом сейчас,
@@ -484,6 +587,245 @@ CATEGORY_LABELS = {
         'sparkling': 'sparkling wine', 'fortified': 'fortified wine', 'cocktail': 'cocktail', 'spirit': 'spirit',
         'liqueur': 'liqueur', 'kvass': 'kvass', 'lemonade': 'lemonade', 'soda': 'soft drink', 'dairy': 'dairy drink',
         'tea': 'tea', 'coffee': 'coffee', 'water': 'water',
+    },
+}
+
+
+# «К пиву», «к вину»: категория в дательном падеже для русского текста.
+CATEGORY_DATIVE_RU = {
+    'beer': 'пиву', 'na_beer': 'безалкогольному пиву', 'radler': 'радлеру', 'cider': 'сидру', 'wine': 'вину',
+    'sparkling': 'игристому', 'fortified': 'креплёному вину', 'cocktail': 'коктейлю', 'spirit': 'крепкому',
+    'liqueur': 'ликёру', 'kvass': 'квасу', 'lemonade': 'лимонаду', 'soda': 'газировке', 'dairy': 'кисломолочному',
+    'tea': 'чаю', 'coffee': 'кофе', 'water': 'воде',
+}
+
+
+# «Кроме пива», «без вина»: родительный падеж.
+CATEGORY_GENITIVE_RU = {
+    'beer': 'пива', 'na_beer': 'безалкогольного пива', 'radler': 'радлера', 'cider': 'сидра', 'wine': 'вина',
+    'sparkling': 'игристого', 'fortified': 'креплёного вина', 'cocktail': 'коктейлей', 'spirit': 'крепкого',
+    'liqueur': 'ликёров', 'kvass': 'кваса', 'lemonade': 'лимонада', 'soda': 'газировки', 'dairy': 'кисломолочного',
+    'tea': 'чая', 'coffee': 'кофе', 'water': 'воды',
+}
+
+
+def category_genitive(category, lang):
+    if lang == 'ru':
+        return CATEGORY_GENITIVE_RU.get(category) or category_label(category, lang)
+    return category_label(category, lang)
+
+
+def category_dative(category, lang):
+    if lang == 'ru':
+        return CATEGORY_DATIVE_RU.get(category) or category_label(category, lang)
+    return category_label(category, lang)
+
+
+# Справочник стилей и терминов: короткие определения для «что такое лагер», «чем отличается стаут от портера».
+# match: как гость называет термин; style: как найти пример в карте (стиль или название), category: или категория.
+GLOSSARY = {
+    'lager': {
+        'match': r'лагер|lager',
+        'style': r'lager|лагер|pils|пилс|helles|хеллес|вычепни|výčepní',
+        'ru': 'Лагер: пиво низового брожения при низкой температуре, вкус чистый, без фруктовых эфиров, подаётся '
+              'холодным. Большинство светлого пива в Казахстане, включая Efes Pilsener, это лагеры.',
+        'kk': 'Лагер: төмен температурада ашытылған сыра, дәмі таза, суық беріледі. Қазақстандағы ашық сыраның '
+              'көбі, Efes Pilsener де, лагер.',
+        'en': 'Lager is beer fermented cool with bottom-fermenting yeast: clean and crisp, served cold. Most pale beer '
+              'in Kazakhstan, including Efes Pilsener, is lager.',
+    },
+    'ale': {
+        'match': r'\bэль\b|\bэля\b|\bэли\b|\bэлем\b|\bale\b|\bales\b',
+        'style': r'\bale\b|эль|ipa|stout|стаут|porter|портер|weiss|wit|пшенич|gose|гозе|saison',
+        'ru': 'Эль: верховое брожение при более тёплой температуре, поэтому больше фруктовых и пряных нот, часто '
+              'плотнее лагера. IPA, стаут, портер и пшеничное это эли.',
+        'kk': 'Эль: жылырақ температурада жоғарғы ашыту, сондықтан жемісті және дәмдеуіш ноталары көбірек. '
+              'IPA, стаут, портер және бидай сырасы эльге жатады.',
+        'en': 'Ale is top-fermented at warmer temperatures, so it has more fruity and spicy notes and is often fuller '
+              'than lager. IPA, stout, porter and wheat beer are ales.',
+    },
+    'pilsner': {
+        'match': r'пилс|пилз|пильз|pils',
+        'style': r'pils|пилс|пилз|пильз',
+        'ru': 'Пилснер: светлый лагер родом из чешского Пльзеня, выраженная хмелевая горечь и сухое послевкусие, '
+              'крепость около 4-5 %.',
+        'kk': 'Пилснер: чех Пльзенінен шыққан ашық лагер, айқын құлмақ ащылығы мен құрғақ дәмі, күштілігі 4-5 %.',
+        'en': 'Pilsner is a pale lager from Czech Pilsen: pronounced hop bitterness and a dry finish, about 4-5 % ABV.',
+    },
+    'ipa': {
+        'match': r'\bipa\b|\bипа\b|индийск',
+        'style': r'\bipa\b|\bapa\b|pale ale|пейл',
+        'ru': 'IPA (India Pale Ale): эль с большой дозой хмеля, заметная горечь и цитрусовые, хвойные или '
+              'тропические ароматы, крепость обычно 5-7 %.',
+        'kk': 'IPA (India Pale Ale): құлмақ көп қосылған эль, айқын ащылық және цитрус, қылқан немесе тропикалық '
+              'хош иіс, күштілігі әдетте 5-7 %.',
+        'en': 'IPA (India Pale Ale) is a heavily hopped ale: marked bitterness with citrus, pine or tropical aromas, '
+              'usually 5-7 % ABV.',
+    },
+    'stout': {
+        'match': r'стаут|stout',
+        'style': r'stout|стаут',
+        'ru': 'Стаут: тёмный эль на жжёном солоде, кофе, шоколад, плотное тело. Сухой стаут (как Guinness) горчит, '
+              'молочный стаут сладковатый.',
+        'kk': 'Стаут: күйдірілген уыттан жасалған қара эль, кофе, шоколад, қою дене. Құрғақ стаут ащы, сүтті стаут '
+              'тәттілеу.',
+        'en': 'Stout is a dark ale on roasted malt: coffee, chocolate, full body. Dry stout (like Guinness) is bitter, '
+              'milk stout is sweetish.',
+    },
+    'porter': {
+        'match': r'портер|porter',
+        'style': r'porter|портер',
+        'ru': 'Портер: тёмный эль, предок стаута, шоколад и карамель, обычно чуть легче и мягче стаута.',
+        'kk': 'Портер: қара эль, стауттың арғы атасы, шоколад пен карамель, әдетте стауттан жеңілірек.',
+        'en': 'Porter is a dark ale and the ancestor of stout: chocolate and caramel, usually a bit lighter and '
+              'softer than stout.',
+    },
+    'wheat': {
+        'match': r'пшенич|вайцен|витбир|weiss|weizen|wheat|witbier|бидай',
+        'style': r'weiss|weizen|\bwit|wheat|пшенич|вайцен|blanche',
+        'ru': 'Пшеничное пиво (вайцен, витбир): эль на пшеничном солоде, обычно нефильтрованное, мягкое, с нотами '
+              'банана, гвоздики или цитруса и кориандра.',
+        'kk': 'Бидай сырасы (вайцен, витбир): бидай уытынан жасалған эль, әдетте сүзілмеген, жұмсақ, банан, қалампыр '
+              'немесе цитрус ноталары бар.',
+        'en': 'Wheat beer (weizen, witbier) is an ale on wheat malt, usually unfiltered and soft, with banana, clove '
+              'or citrus and coriander notes.',
+    },
+    'dark': {
+        'match': r'\bтемн|\bтёмн|\bdark\b|қара сыра',
+        'style': r'dark|dunkel|černý|cerny|темн|тёмн|black|schwarz|stout|porter|стаут|портер|bock|бок',
+        'ru': 'Тёмное пиво: цвет даёт обжаренный солод, а не крепость, ноты карамели, хлеба и кофе. Тёмный лагер '
+              '(как Kozel Dark) мягкий и часто не крепче светлого.',
+        'kk': 'Қара сыра: түсін күштілік емес, қуырылған уыт береді, карамель, нан және кофе ноталары. Қара лагер '
+              'жұмсақ, көбіне ашықтан күшті емес.',
+        'en': 'Dark beer gets its colour from roasted malt, not from strength: caramel, bread and coffee notes. A dark '
+              'lager (like Kozel Dark) is soft and often no stronger than a pale one.',
+    },
+    'zero': {
+        'match': r'безалкогол|\b0 0\b|нулев|ноль ноль|\bzero\b|alcohol.?free|non.?alcoholic|алкогольсіз',
+        'category': 'na_beer',
+        'ru': 'Безалкогольное пиво (0.0): обычное пиво, из которого убрали спирт, или сваренное так, чтобы он почти '
+              'не образовался, до 0,5 % алкоголя, вкус ближе всего к светлому лагеру.',
+        'kk': 'Алкогольсіз сыра (0.0): спирті алынған немесе спирт түзілмейтіндей қайнатылған сыра, 0,5 %-ға дейін, '
+              'дәмі ашық лагерге жақын.',
+        'en': 'Alcohol-free beer (0.0) is regular beer with the alcohol removed or brewed so that almost none forms: '
+              'up to 0.5 % ABV, closest in taste to a pale lager.',
+    },
+    'radler': {
+        'match': r'радлер|radler',
+        'category': 'radler',
+        'ru': 'Радлер: пиво пополам с лимонадом или соком, 2-3 % алкоголя, сладковатое и освежающее.',
+        'kk': 'Радлер: лимонадпен немесе шырынмен араласқан сыра, 2-3 %, тәттілеу және сергітеді.',
+        'en': 'Radler is beer mixed half and half with lemonade or juice: 2-3 % ABV, sweetish and refreshing.',
+    },
+    'cider': {
+        'match': r'сидр|cider',
+        'category': 'cider',
+        'ru': 'Сидр: сброженный яблочный (реже грушевый) сок, 4-7 %, от сухого до сладкого, с яблочной кислинкой и '
+              'пузырьками.',
+        'kk': 'Сидр: ашытылған алма (сирек алмұрт) шырыны, 4-7 %, құрғақтан тәттіге дейін, алма қышқылы мен '
+              'көпіршігі бар.',
+        'en': 'Cider is fermented apple (sometimes pear) juice: 4-7 % ABV, from dry to sweet, with apple tang and '
+              'bubbles.',
+    },
+    'gose': {
+        'match': r'гозе|\bgose\b',
+        'style': r'gose|гозе',
+        'ru': 'Гозе: кисло-солёное пшеничное пиво с кориандром, освежающее, около 4-5 %.',
+        'kk': 'Гозе: кориандр қосылған қышқыл-тұзды бидай сырасы, сергітеді, шамамен 4-5 %.',
+        'en': 'Gose is a sour and salty wheat beer with coriander: refreshing, about 4-5 % ABV.',
+    },
+    'kvass': {
+        'match': r'\bквас|kvass',
+        'category': 'kvass',
+        'ru': 'Квас: слабоалкогольный напиток на ржаном хлебе или солоде, до 1,2 %, кисло-сладкий.',
+        'kk': 'Квас: қара бидай наны немесе уытынан жасалған әлсіз алкогольді сусын, 1,2 %-ға дейін, қышқыл-тәтті.',
+        'en': 'Kvass is a low-alcohol drink made from rye bread or malt: up to 1.2 % ABV, sweet and sour.',
+    },
+    'kumys': {
+        'match': r'кумыс|қымыз|kumys|koumiss',
+        'style': r'кумыс|қымыз|kumys',
+        'ru': 'Кумыс: сброженное кобылье молоко, кислый, слегка газированный, 1-2 % алкоголя.',
+        'kk': 'Қымыз: ашытылған бие сүті, қышқыл, сәл газды, 1-2 % алкоголь.',
+        'en': "Kumys is fermented mare's milk: sour, slightly fizzy, 1-2 % ABV.",
+    },
+    'shubat': {
+        'match': r'шубат|shubat',
+        'style': r'шубат|shubat',
+        'ru': 'Шубат: сброженное верблюжье молоко, плотнее кумыса, солоноватый.',
+        'kk': 'Шұбат: ашытылған түйе сүті, қымыздан қоюырақ, тұздылау.',
+        'en': "Shubat is fermented camel's milk: thicker than kumys, slightly salty.",
+    },
+    'ayran': {
+        'match': r'айран|ayran',
+        'style': r'айран|ayran',
+        'ru': 'Айран: кисломолочный напиток с водой и солью, без алкоголя, освежает и гасит остроту.',
+        'kk': 'Айран: су мен тұз қосылған ашыған сүт сусыны, алкогольсіз, сергітеді және ащылықты басады.',
+        'en': 'Ayran is a salted yoghurt drink diluted with water: no alcohol, refreshing, tames chilli heat.',
+    },
+    'abv': {
+        'match': r'крепост|градус|\babv\b|alcohol content|\bstrength|күштілі',
+        'ru': 'Крепость (ABV): доля спирта по объёму. 5 % значит около 25 мл чистого спирта в кружке 0,5 л. Лагеры '
+              'обычно 4-5 %, крепкие лагеры 7-9 %.',
+        'kk': 'Күштілік (ABV): көлемдегі спирт үлесі. 5 % дегеніміз 0,5 л кружкада шамамен 25 мл таза спирт. '
+              'Лагерлер әдетте 4-5 %, күшті лагерлер 7-9 %.',
+        'en': 'Strength (ABV) is alcohol by volume: 5 % means about 25 ml of pure alcohol in a 0.5 l glass. Lagers '
+              'are usually 4-5 %, strong lagers 7-9 %.',
+    },
+    'ibu': {
+        'match': r'\bibu\b',
+        'ru': 'IBU: единицы горечи от хмеля. Светлый лагер 10-20, пилснер 25-40, IPA 40-70.',
+        'kk': 'IBU: құлмақ ащылығының бірлігі. Ашық лагер 10-20, пилснер 25-40, IPA 40-70.',
+        'en': 'IBU is the hop bitterness scale: pale lager 10-20, pilsner 25-40, IPA 40-70.',
+    },
+    'tannin': {
+        'match': r'танин|tannin',
+        'ru': 'Танины: вяжущие вещества из кожицы винограда и дуба, сушат рот, а жир и белок мяса их смягчают.',
+        'kk': 'Таниндер: жүзім қабығы мен еменнен шығатын тұтқыр заттар, ауызды кептіреді, ет майы мен ақуызы '
+              'жұмсартады.',
+        'en': 'Tannins are astringent compounds from grape skins and oak: they dry the mouth, and the fat and protein '
+              'of meat soften them.',
+    },
+    'sommelier': {
+        'match': r'сомелье|sommelier',
+        'ru': 'Сомелье: специалист по напиткам, который подбирает их к еде. Здесь это я, вкусовой движок Flavor Tree.',
+        'kk': 'Сомелье: сусындарды тағамға таңдайтын маман. Мұнда бұл мен, Flavor Tree дәм қозғалтқышы.',
+        'en': 'A sommelier is a drinks expert who pairs them with food. Here that is me, the Flavor Tree flavour engine.',
+    },
+}
+# Чем отличается X от Y: одна фраза о разнице для частых пар.
+GLOSSARY_DIFF = {
+    frozenset({'lager', 'ale'}): {
+        'ru': 'Разница в дрожжах и температуре: лагер бродит холодно и получается чистым, эль тепло и получается '
+              'ароматнее.',
+        'kk': 'Айырмашылығы ашытқы мен температурада: лагер суықта ашып таза шығады, эль жылыда ашып хош иісті '
+              'болады.',
+        'en': 'The difference is yeast and temperature: lager ferments cold and comes out clean, ale ferments warm and '
+              'comes out more aromatic.',
+    },
+    frozenset({'pilsner', 'lager'}): {
+        'ru': 'Пилснер это один из видов лагера, самый хмелевой и сухой.',
+        'kk': 'Пилснер лагердің бір түрі, ең құлмақты және құрғағы.',
+        'en': 'Pilsner is one kind of lager, the hoppiest and driest.',
+    },
+    frozenset({'stout', 'porter'}): {
+        'ru': 'Стаут обычно плотнее и с более жжёными нотами, портер мягче и слаще, граница условная.',
+        'kk': 'Стаут әдетте қоюырақ және күйдірілген ноталары көбірек, портер жұмсағырақ, шекарасы шартты.',
+        'en': 'Stout is usually fuller with more roasted notes, porter softer and sweeter; the line is blurry.',
+    },
+    frozenset({'zero', 'lager'}): {
+        'ru': '0.0 это то же пиво, но без спирта: до 0,5 % против 4-5 % у обычного светлого.',
+        'kk': '0.0 дегеніміз сол сыра, бірақ спиртсіз: 0,5 %-ға дейін, ал қарапайым ашық сырада 4-5 %.',
+        'en': '0.0 is the same beer without the alcohol: up to 0.5 % versus 4-5 % for a regular pale beer.',
+    },
+    frozenset({'zero', 'pilsner'}): {
+        'ru': '0.0 это то же пиво, но без спирта: до 0,5 % против 4-5 % у обычного пилснера.',
+        'kk': '0.0 дегеніміз сол сыра, бірақ спиртсіз: 0,5 %-ға дейін, ал қарапайым пилснерде 4-5 %.',
+        'en': '0.0 is the same beer without the alcohol: up to 0.5 % versus 4-5 % for a regular pilsner.',
+    },
+    frozenset({'dark', 'lager'}): {
+        'ru': 'Цвет даёт обжарка солода, а не крепость: тёмное может быть таким же лёгким, как светлое.',
+        'kk': 'Түсті күштілік емес, уыттың қуырылуы береді: қара сыра ашық сияқты жеңіл болуы мүмкін.',
+        'en': 'Colour comes from roasting the malt, not from strength: a dark beer can be as light as a pale one.',
     },
 }
 

@@ -228,7 +228,10 @@ def drink_allowed(kind, drink):
     if is_energy(drink) or drink_is_alcoholic(drink):
         return False
     category = drink.get('category')
-    if kind in ('minor', 'child', 'pregnancy', 'drunk'):
+    if kind == 'child':
+        # Ребёнку без кофе и энергетиков: лимонад, сок, кисломолочное, вода, чай.
+        return category in SOFT_CATEGORIES - {'coffee'} and _zero(drink)
+    if kind in ('minor', 'pregnancy', 'drunk'):
         return category in SOFT_CATEGORIES and _zero(drink)
     if kind == 'unwell':
         return category in ('water', 'tea')
