@@ -275,12 +275,14 @@ export class ApiService {
   }
 
   /**
-   * Подбор движка v2 к блюду: весь отсортированный список напитков нужных
-   * категорий (top=0). Главная берёт из него пиво портфеля Efes, поэтому
-   * баллы совпадают с вкладкой «К блюду». Ошибка уходит вызывающему.
+   * Подбор движка v2 к блюду: весь отсортированный список напитков портфеля
+   * Efes нужных категорий (top=0, efes=1: сервер отдаёт около 200 КБ вместо
+   * 1,2 МБ). Баллы те же, что во вкладке «К блюду». brief=1 не берём: в нём
+   * нет причин и предупреждений, из которых главная строит объяснение.
+   * Ошибка уходит вызывающему.
    */
   getEnginePairing(dishId: string, categories: string[]): Observable<V2PairingResult> {
-    const params = new HttpParams().set('categories', categories.join(',')).set('top', 0);
+    const params = new HttpParams().set('categories', categories.join(',')).set('top', 0).set('efes', 1);
     return this.http.get<V2PairingResult>(`${this.baseUrl}/v2/pairing/dish/${encodeURIComponent(dishId)}/`, { params });
   }
 
