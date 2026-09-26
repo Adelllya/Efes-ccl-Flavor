@@ -1,17 +1,27 @@
-import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, OnInit, Output, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Brand } from '../../models/flavor-tree.models';
 import { V2ApiService } from './v2-api.service';
 import { V2Drink, V2DrinkDetail, V2Meta } from './v2.models';
-import { V2GlassComponent, drinkLine, isEfes, priceLabel, topReasons } from './v2-ui';
+import { V2GlassComponent, drinkLine, drinkTitle, isEfes, isEnergy, loadErrorText, priceLabel, reasonLines } from './v2-ui';
+import { CATALOG_PATH, isSheetEntry, setUrlParams, urlParam } from './v2-url';
 import { countOf } from '../venue-menu/plural';
 
 const PAGE = 48;
 
+/** Порядок в каталоге: сначала собственные марки Efes, потом дистрибуция и CCI, потом весь рынок. */
+const EFES_ORDER: Record<string, number> = { own: 0, distribution: 1, cci: 2 };
+
+function efesFirst(list: V2Drink[]): V2Drink[] {
+  const rank = (d: V2Drink) => EFES_ORDER[d.efes_relation] ?? 3;
+  return [...list].sort((a, b) => rank(a) - rank(b));
+}
+
 /**
- * Все 412 напитков движка v2: фильтр по категориям, поиск, портфель Efes.
+ * Все 412 напитков движка v2: фильтр по категориям, поиск, портфель Efes (он идёт первым).
  * У 17 сортов Efes из каталога есть фото и своя страница с пирамидой: ведём туда.
+ * Категория, поиск, фильтр Efes и открытый напиток живут в адресе (?cat=&q=&efes=1&drink=), см. v2-url.ts.
  */
 @Component({
   selector: 'app-drinks-catalog',
@@ -49,6 +59,13 @@ const PAGE = 48;
           <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
         }
       </div>
+    } @else if (loadError()) {
+      <!-- Сбой API не выдаём за пустой каталог: честно пишем, что не загрузилось, и даём повторить -->
+      <div class="glass-panel text-center p-4xl" role="alert">
+        <p class="font-semibold mb-sm">Не удалось загрузить каталог напитков</p>
+        <p class="text-muted text-sm mb-lg">{{ loadError() }}</p>
+        <button class="btn-amber" (click)="reload()">Повторить</button>
+      </div>
     } @else {
       <p class="text-sm text-muted mb-lg">
         Найдено: <strong style="color: var(--foam);">{{ filtered().length }}</strong> из {{ drinks().length }}
@@ -66,7 +83,7 @@ const PAGE = 48;
                 <span class="badge">{{ categoryLabel(d.category) }}</span>
                 @if (isEfes(d.efes_relation)) { <span class="badge v2-efes">Efes</span> }
               </span>
-              <strong class="v2-name">{{ d.display_name || d.name }}</strong>
+              <strong class="v2-name">{{ title(d) }}</strong>
               <span class="text-muted text-sm v2-line">{{ drinkLine(d) }}</span>
               @if (priceLabel(d.price_kzt); as price) { <span class="text-xs text-muted">{{ price }}</span> }
             </span>
@@ -102,7 +119,7 @@ const PAGE = 48;
               <span class="badge">{{ categoryLabel(d.category) }}</span>
               @if (isEfes(d.efes_relation)) { <span class="badge v2-efes">Портфель Efes</span> }
             </div>
-            <h2 class="v2-sheet-title">{{ d.display_name || d.name }}</h2>
+            <h2 class="v2-sheet-title">{{ title(d) }}</h2>
             <p class="text-muted text-sm">{{ drinkLine(d) }}</p>
           </div>
         </div>
@@ -130,18 +147,25 @@ const PAGE = 48;
         </div>
 
         <h3 class="v2-h3 mb-md">С чем пить</h3>
-        @if (detailLoading()) {
+        @if (isEnergy(d)) {
+          <p class="text-muted text-sm">Энергетики к еде мы не советуем, поэтому блюда к ним не подбираем.</p>
+        } @else if (detailLoading()) {
           <p class="text-muted text-sm">Подбираем блюда...</p>
+        } @else if (detailError()) {
+          <p class="text-muted text-sm mb-md">Не удалось подобрать блюда: сервер не ответил.</p>
+          <button class="btn-outline btn-sm" (click)="loadDetail(d)">Повторить</button>
         } @else {
           @if (detail(); as det) {
           <ul class="v2-dishes">
-            @for (p of det.best_dishes; track p.dish_id) {
+            @for (p of det.best_dishes; track p.dish_id; let i = $index) {
               <li>
                 <span class="v2-dish-row">
                   <strong>{{ p.dish_name }}</strong>
                   <span class="v2-dish-score" [attr.data-band]="p.band">{{ p.score }}</span>
                 </span>
-                @if (topReasons(p, 1)[0]; as why) { <span class="text-sm text-muted">{{ why }}</span> }
+                @if (dishReasons()[i]; as why) {
+                  <span class="text-sm text-muted" [attr.title]="why.source || null">{{ why.text }}</span>
+                }
               </li>
             }
           </ul>
@@ -218,22 +242,25 @@ export class DrinksCatalogComponent implements OnInit {
 
   readonly PAGE = PAGE;
   readonly isEfes = isEfes;
+  readonly isEnergy = isEnergy;
   readonly drinkLine = drinkLine;
   readonly priceLabel = priceLabel;
-  readonly topReasons = topReasons;
   readonly countOf = countOf;
 
   meta = signal<V2Meta | null>(null);
   drinks = signal<V2Drink[]>([]);
   loaded = signal(false);
+  /** Текст ошибки загрузки каталога; null, если всё загрузилось. */
+  loadError = signal<string | null>(null);
   brands = signal<Brand[]>([]);
-  category = signal('');
-  query = signal('');
-  efesOnly = signal(false);
+  category = signal(urlParam(CATALOG_PATH, 'cat') ?? '');
+  query = signal(urlParam(CATALOG_PATH, 'q') ?? '');
+  efesOnly = signal(urlParam(CATALOG_PATH, 'efes') === '1');
   limit = signal(PAGE);
   selected = signal<V2Drink | null>(null);
   detail = signal<V2DrinkDetail | null>(null);
   detailLoading = signal(false);
+  detailError = signal(false);
 
   private categoryLabels = computed(() => new Map((this.meta()?.categories ?? []).map(c => [c.id, c.label])));
   private brandsByName = computed(() => new Map(this.brands().map(b => [b.name, b])));
@@ -254,13 +281,57 @@ export class DrinksCatalogComponent implements OnInit {
 
   shown = computed(() => this.filtered().slice(0, this.limit()));
 
-  ngOnInit() {
-    this.v2.meta().subscribe({ next: m => this.meta.set(m) });
-    this.v2.drinks().subscribe({
-      next: list => { this.drinks.set(list); this.loaded.set(true); },
-      error: () => this.loaded.set(true),
+  /** Одна причина на блюдо и без повторов в списке: иначе у многих блюд одна и та же фраза про баланс. */
+  dishReasons = computed(() => {
+    const used = new Set<string>();
+    return (this.detail()?.best_dishes ?? []).map(p => {
+      const [line] = reasonLines(p, 1, used);
+      if (line) used.add(line.text);
+      return line ?? null;
     });
+  });
+
+  constructor() {
+    // Фильтры и поиск держим в адресе, не добавляя шагов истории: переживают перезагрузку и возврат со страницы сорта
+    effect(() => setUrlParams(CATALOG_PATH, {
+      cat: this.category() || null,
+      q: this.query().trim() || null,
+      efes: this.efesOnly() ? '1' : null,
+    }));
+  }
+
+  ngOnInit() {
+    this.load();
     this.api.getBrands().subscribe({ next: list => this.brands.set(list.filter(b => b.is_active !== false)) });
+  }
+
+  private load() {
+    if (!this.meta()) {
+      this.v2.meta().subscribe({
+        next: m => {
+          this.meta.set(m);
+          // Категория из старой ссылки, которой больше нет: показываем все
+          if (this.category() && !m.categories.some(c => c.id === this.category())) this.category.set('');
+        },
+        error: () => { /* без счётчиков категорий каталог всё равно работает */ },
+      });
+    }
+    this.v2.drinks().subscribe({
+      next: list => {
+        this.drinks.set(efesFirst(list));
+        this.loadError.set(null);
+        this.loaded.set(true);
+        this.showFromUrl();
+      },
+      error: err => { this.loadError.set(loadErrorText(err)); this.loaded.set(true); },
+    });
+  }
+
+  /** Кнопка «Повторить» на экране ошибки. */
+  reload() {
+    this.loaded.set(false);
+    this.loadError.set(null);
+    this.load();
   }
 
   setCategory(id: string) {
@@ -272,19 +343,59 @@ export class DrinksCatalogComponent implements OnInit {
     return this.categoryLabels().get(id) ?? id;
   }
 
+  title(d: V2Drink): string {
+    return drinkTitle(d.display_name || d.name);
+  }
+
   /** Сорт из каталога Efes с тем же названием: у 17 напитков движка есть legacy_brand_id. */
   brandFor(d: V2Drink): Brand | null {
     return d.legacy_brand_id ? this.brandsByName().get(d.name) ?? null : null;
   }
 
+  /** Карточка из списка: новая запись истории, чтобы «Назад» браузера закрывал карточку, а не уводил с сайта. */
   open(d: V2Drink) {
+    this.show(d);
+    setUrlParams(CATALOG_PATH, { drink: d.id }, true);
+  }
+
+  private show(d: V2Drink) {
     this.selected.set(d);
+    this.loadDetail(d);
+  }
+
+  loadDetail(d: V2Drink) {
     this.detail.set(null);
-    this.detailLoading.set(true);
+    this.detailError.set(false);
+    // Энергетики к еде не советуем: блюда к ним не запрашиваем
+    this.detailLoading.set(!isEnergy(d));
+    if (isEnergy(d)) return;
     this.v2.drinkDetail(d.id).subscribe({
       next: det => { if (this.selected()?.id === d.id) { this.detail.set(det); this.detailLoading.set(false); } },
-      error: () => this.detailLoading.set(false),
+      error: () => { if (this.selected()?.id === d.id) { this.detailError.set(true); this.detailLoading.set(false); } },
     });
+  }
+
+  /** Карточка из адреса: ссылка с ?drink=, «Назад» или «Вперёд» браузера. Незнакомый id убираем из адреса. */
+  private showFromUrl() {
+    const id = urlParam(CATALOG_PATH, 'drink');
+    if (!id) {
+      this.selected.set(null);
+      return;
+    }
+    if (this.selected()?.id === id || !this.drinks().length) return;
+    const d = this.drinks().find(x => x.id === id);
+    if (d) this.show(d);
+    else setUrlParams(CATALOG_PATH, { drink: null });
+  }
+
+  /** «Назад» и «Вперёд» браузера внутри каталога: фильтры и карточку берём из адреса. */
+  @HostListener('window:popstate')
+  onPopState() {
+    if (location.pathname !== CATALOG_PATH) return;
+    this.category.set(urlParam(CATALOG_PATH, 'cat') ?? '');
+    this.query.set(urlParam(CATALOG_PATH, 'q') ?? '');
+    this.efesOnly.set(urlParam(CATALOG_PATH, 'efes') === '1');
+    this.showFromUrl();
   }
 
   @ViewChild('sheet') set sheet(ref: ElementRef<HTMLDialogElement> | undefined) {
@@ -297,8 +408,15 @@ export class DrinksCatalogComponent implements OnInit {
     if (event.target === event.currentTarget) this.close();
   }
 
-  /** Escape закрывает dialog сам и присылает close. */
+  /**
+   * Крестик, подложка и Escape (dialog закрывается сам и присылает close).
+   * Карточку открыли кликом: убираем её шаг из истории. Открыли по ссылке: просто чистим адрес.
+   */
   close() {
+    if (!this.selected()) return;
     this.selected.set(null);
+    if (!urlParam(CATALOG_PATH, 'drink')) return;
+    if (isSheetEntry()) history.back();
+    else setUrlParams(CATALOG_PATH, { drink: null });
   }
 }

@@ -28,8 +28,10 @@ export class V2ApiService {
       .pipe(map(r => r.results), shareReplay(1));
   }
 
-  pairingForDish(dishId: string, top = 5): Observable<V2PairingResult> {
-    const params = new HttpParams().set('top', top);
+  /** nonAlcoholic: движок убирает всё с алкоголем (параметр non_alcoholic=1 в /api/v2). */
+  pairingForDish(dishId: string, top = 5, nonAlcoholic = false): Observable<V2PairingResult> {
+    let params = new HttpParams().set('top', top);
+    if (nonAlcoholic) params = params.set('non_alcoholic', 1);
     return this.http.get<V2PairingResult>(`${this.base}/pairing/dish/${encodeURIComponent(dishId)}/`, { params });
   }
 
