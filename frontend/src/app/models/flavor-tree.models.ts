@@ -444,7 +444,7 @@ export interface Order {
   venue: { slug: string; name: string };
 }
 
-/** ИИ-сомелье: claude, когда на сервере есть ключ, иначе локальный подбор по правилам. */
+/** Сомелье: claude, когда на сервере есть ключ и не исчерпан дневной лимит, иначе вкусовой движок Flavor Tree. */
 export type AiMode = 'claude' | 'local';
 
 export interface AiStatus {
@@ -452,6 +452,8 @@ export interface AiStatus {
   enabled: boolean;
   model: string;
   mode: AiMode;
+  /** Дневной лимит ответов Claude исчерпан: до конца суток отвечает вкусовой движок. */
+  limit_reached?: boolean;
 }
 
 export interface AiMessage {
@@ -479,6 +481,8 @@ export interface AiPrefs {
 export interface AiRequest {
   /** slug заведения; null - совет по общему каталогу. */
   venue: string | null;
+  /** id браузера гостя (localStorage ft_sid) для статистики пилота. */
+  session?: string;
   table: number | null;
   messages: AiMessage[];
   cart?: AiCartItem[];
@@ -497,12 +501,22 @@ export interface AiSuggestion {
   score: number | null;
   /** id блюда из этого же ответа, к которому предложен напиток. */
   pairs_with: string | null;
+  /** Сорт каталога за напитком: ссылка «О напитке»; у напитков движка без сорта её нет. */
+  brand?: string | null;
+  /** Напиток крепче 0,5%. */
+  is_alcoholic?: boolean;
 }
 
 export interface AiReply {
   reply: string;
   suggestions: AiSuggestion[];
   mode: AiMode;
-  /** Пусто или "ИИ недоступен, отвечает локальный подбор". */
+  /** Пусто, «ИИ сейчас недоступен...» или «Лимит ответов ИИ на сегодня исчерпан...». */
   note: string;
+  /** Сработало правило безопасности (minor, driving, pregnancy...): в ответе нет алкоголя. */
+  safety?: string;
+  /** Пометка «Алкоголь только для гостей старше 21 года», если среди карточек есть алкоголь. */
+  disclaimer?: string;
+  /** Язык ответа: ru, kk или en. */
+  lang?: string;
 }

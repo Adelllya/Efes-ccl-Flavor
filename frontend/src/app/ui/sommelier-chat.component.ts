@@ -3,9 +3,9 @@ import {
   untracked, viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { TimeoutError, timeout } from 'rxjs';
-import { ApiService } from '../services/api.service';
+import { API_BASE, ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { SelectionService } from '../services/selection.service';
 import {
@@ -16,8 +16,8 @@ import { CartLine, addToCart, notifyCartChanged, readCart } from '../pages/venue
 /** Сколько реплик уходит на сервер и сколько знаков в каждой: лимиты API. */
 const MAX_TURNS = 12;
 const MAX_CHARS = 1500;
-/** Сервер ждёт модель до 25 секунд; сверх этого показываем ошибку с повтором. */
-const REQUEST_TIMEOUT_MS = 45000;
+/** Сервер ждёт модель до 8 секунд, потом отвечает вкусовой движок; сверх этого показываем ошибку с повтором. */
+const REQUEST_TIMEOUT_MS = 20000;
 /** Сколько сообщений храним в sessionStorage. */
 const STORED_LIMIT = 40;
 const ADDED_FLASH_MS = 1600;
@@ -27,6 +27,10 @@ interface ChatMessage extends AiMessage {
   suggestions?: AiSuggestion[];
   mode?: AiMode;
   note?: string;
+  /** Сработало правило безопасности: ответ без алкоголя. */
+  safety?: string;
+  /** «Алкоголь только для гостей старше 21 года», если в карточках есть алкоголь. */
+  disclaimer?: string;
   /** slug заведения на момент ответа; по нему решаем, можно ли класть карточку в заказ. */
   venue?: string | null;
 }
@@ -63,6 +67,43 @@ function writeHistory(key: string, chat: StoredChat | null): void {
   }
 }
 
+/** Ключ localStorage с id браузера гостя: общий для всего фронтенда (статистика пилота). */
+const SESSION_KEY = 'ft_sid';
+
+/** Случайный UUID v4. crypto.randomUUID есть только на https и localhost, поэтому запасной вариант. */
+function newUuid(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
+/** id браузера гостя: читаем из localStorage или создаём; без хранилища живёт до перезагрузки. */
+let memorySession = '';
+function guestSession(): string {
+  try {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (saved) return saved;
+    const created = newUuid();
+    localStorage.setItem(SESSION_KEY, created);
+    return created;
+  } catch {
+    if (!memorySession) {
+      try { memorySession = newUuid(); } catch { memorySession = ''; }
+    }
+    return memorySession;
+  }
+}
+
+/** Строка корзины из чата: откуда позиция и к какому блюду подобран напиток (поля как в API заказа). */
+interface AiCartMeta {
+  source: 'AI';
+  paired_with: string | null;
+  rank: number;
+}
+
 /** Последние реплики для запроса: не больше MAX_TURNS, первая и последняя от гостя. */
 function lastTurns(all: ChatMessage[]): AiMessage[] {
   let turns = all.slice(-MAX_TURNS);
@@ -83,12 +124,15 @@ function subFromSubtitle(subtitle: string): string {
 }
 
 /**
- * ИИ-сомелье: плавающая кнопка и чат для гостя.
+ * Сомелье Flavor Tree: плавающая кнопка и чат для гостя.
  *
  * Монтируется один раз в AppComponent. Знает открытое заведение, стол и корзину
  * через SelectionService и общую запись корзины, поэтому советует из карты бара
  * и кладёт карточки прямо в заказ. Без заведения советует по общему каталогу.
  * История хранится в памяти и в sessionStorage отдельно для каждого заведения.
+ * Честно показывает, кто отвечает: ИИ Claude или вкусовой движок, и когда сработали
+ * правила безопасности. Вопросы сервер пишет в статистику пилота сам (AI_ASK),
+ * а добавление карточки в заказ чат отправляет событием AI_ADD.
  */
 @Component({
   selector: 'app-sommelier-chat',
@@ -102,7 +146,7 @@ function subFromSubtitle(subtitle: string): string {
       (click)="toggle()"
       [attr.aria-expanded]="open()"
       aria-controls="ai-sheet"
-      aria-label="ИИ-сомелье"
+      aria-label="Сомелье Flavor Tree"
       #fab
     >
       <!-- Пузырь диалога с кружкой пива внутри -->
@@ -112,18 +156,18 @@ function subFromSubtitle(subtitle: string): string {
         <path d="M14 10.5h1a1.5 1.5 0 0 1 0 3h-1"/>
         <path d="M9 9c0-1 .8-1.5 2.5-1.5S14 8 14 9"/>
       </svg>
-      <span class="ai-fab-label">ИИ-сомелье</span>
+      <span class="ai-fab-label">Сомелье</span>
     </button>
 
     @if (open()) {
       <section class="ai-sheet" id="ai-sheet" role="dialog" aria-labelledby="ai-title">
         <header class="ai-head">
           <div class="ai-head-text">
-            <h2 id="ai-title" class="ai-title">ИИ-сомелье</h2>
+            <h2 id="ai-title" class="ai-title">Сомелье</h2>
             <span class="ai-sub">{{ contextLabel() }}</span>
           </div>
-          @if (status(); as s) {
-            <span class="ai-status" [class.ai-status-on]="s.enabled" [title]="s.enabled && s.model ? s.model : ''">{{ s.enabled ? 'Claude' : 'локальный подбор' }}</span>
+          @if (status()) {
+            <span class="ai-status" [class.ai-status-on]="claudeOn()" [title]="statusTitle()">{{ claudeOn() ? 'ИИ Claude' : 'Ответы по вкусовому движку' }}</span>
           }
           @if (messages().length) {
             <button type="button" class="btn-ghost ai-icon-btn" (click)="clearHistory()" aria-label="Начать заново" title="Начать заново">
@@ -166,7 +210,7 @@ function subFromSubtitle(subtitle: string): string {
                       <div class="ai-card-actions">
                         @if (canOrder(m)) {
                           @if (isAvailable(s)) {
-                            <button type="button" class="ai-card-btn" [class.ai-card-btn-done]="isAdded(s)" (click)="addToOrder(s)">
+                            <button type="button" class="ai-card-btn" [class.ai-card-btn-done]="isAdded(s)" (click)="addToOrder(m, s, $index)">
                               @if (isAdded(s)) {
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
                                 Добавлено
@@ -181,12 +225,16 @@ function subFromSubtitle(subtitle: string): string {
                             <button type="button" class="ai-card-link" (click)="openBrandPage(b)">О напитке</button>
                           }
                         } @else if (canOpen(m, s)) {
-                          <button type="button" class="ai-card-btn ai-card-btn-outline" (click)="openBrandPage(s.id)">Открыть</button>
+                          <button type="button" class="ai-card-btn ai-card-btn-outline" (click)="openBrandPage(s.brand || s.id)">Открыть</button>
                         }
                       </div>
                     </article>
                   }
                 </div>
+              }
+              @if (m.disclaimer) { <p class="ai-note">{{ m.disclaimer }}</p> }
+              @if (m.role !== 'user' && m.mode) {
+                <p class="ai-note">{{ modeCaption(m) }}</p>
               }
               @if (m.note) { <p class="ai-note">{{ m.note }}</p> }
             </div>
@@ -234,6 +282,7 @@ function subFromSubtitle(subtitle: string): string {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
             </button>
           </form>
+          <p class="ai-foot-note">Алкоголь только для гостей старше 21 года. Чрезмерное употребление алкоголя вредит вашему здоровью. Про аллергию и состав блюд спросите официанта.</p>
         </div>
       </section>
     }
@@ -242,6 +291,7 @@ function subFromSubtitle(subtitle: string): string {
 })
 export class SommelierChatComponent {
   private api = inject(ApiService);
+  private http = inject(HttpClient);
   private selection = inject(SelectionService);
   private destroyRef = inject(DestroyRef);
   private injector = inject(Injector);
@@ -334,6 +384,20 @@ export class SommelierChatComponent {
     ];
   });
 
+  /** Отвечает ли сейчас Claude: ключ на сервере есть и дневной лимит не исчерпан. */
+  readonly claudeOn = computed(() => {
+    const s = this.status();
+    return !!s && s.enabled && s.mode === 'claude' && !s.limit_reached;
+  });
+
+  readonly statusTitle = computed(() => {
+    const s = this.status();
+    if (!s) return '';
+    if (this.claudeOn()) return `Отвечает модель ${s.model}; при сбое отвечает вкусовой движок Flavor Tree`;
+    if (s.enabled && s.limit_reached) return 'Лимит ответов ИИ на сегодня исчерпан, отвечает вкусовой движок Flavor Tree';
+    return 'Ответы подбирает вкусовой движок Flavor Tree по правилам сочетания, без языковой модели';
+  });
+
   readonly contextLabel = computed(() => {
     const slug = this.slug();
     if (!slug) return 'Совет по каталогу сортов';
@@ -421,6 +485,7 @@ export class SommelierChatComponent {
     const p = this.prefs();
     const body: AiRequest = {
       venue: slug,
+      session: guestSession(),
       table: table && table > 0 ? table : null,
       messages: turns,
       prefs: { no_bitter: !!p.no_bitter, light: !!p.light, no_alcohol: !!p.no_alcohol },
@@ -442,6 +507,8 @@ export class SommelierChatComponent {
           suggestions: Array.isArray(r?.suggestions) ? r.suggestions : [],
           mode: r?.mode,
           note: r?.note || '',
+          safety: r?.safety || '',
+          disclaimer: r?.disclaimer || '',
           venue: slug,
         });
       },
@@ -457,7 +524,7 @@ export class SommelierChatComponent {
     if (err instanceof TimeoutError) return 'Сомелье долго не отвечает. Попробуйте ещё раз.';
     if (err instanceof HttpErrorResponse) {
       if (err.status === 429) return 'Слишком много вопросов подряд. Подождите минуту и повторите.';
-      if (err.status === 404) return 'ИИ-сомелье пока недоступен на сервере.';
+      if (err.status === 404) return 'Сомелье пока недоступен на сервере.';
     }
     return AuthService.errorText(err);
   }
@@ -490,9 +557,15 @@ export class SommelierChatComponent {
     return !!slug && m.venue === slug;
   }
 
-  /** Без заведения id напитка - это сорт каталога, его страницу можно открыть. */
+  /** Без заведения у напитка есть страница, только если за ним стоит сорт каталога. */
   canOpen(m: ChatMessage, s: AiSuggestion): boolean {
-    return !m.venue && s.kind === 'DRINK';
+    return !m.venue && s.kind === 'DRINK' && !!s.brand;
+  }
+
+  /** Подпись под ответом: кто отвечал. */
+  modeCaption(m: ChatMessage): string {
+    if (m.safety) return 'Ответ по правилам безопасности: без алкоголя';
+    return m.mode === 'claude' ? 'Ответ: ИИ Claude' : 'Ответ по вкусовому движку Flavor Tree';
   }
 
   /** Меню загружено и позиции в нём нет или она снята: класть в заказ нельзя. */
@@ -504,7 +577,7 @@ export class SommelierChatComponent {
 
   /** Сорт каталога за напитком карты бара, чтобы дать ссылку «О напитке». */
   brandIdOf(s: AiSuggestion): string | null {
-    return s.kind === 'DRINK' ? this.drinks().get(s.id)?.brand ?? null : null;
+    return s.kind === 'DRINK' ? s.brand ?? this.drinks().get(s.id)?.brand ?? null : null;
   }
 
   isAdded(s: AiSuggestion): boolean {
@@ -519,11 +592,19 @@ export class SommelierChatComponent {
     return this.entries().get(s.pairs_with)?.dish.name ?? null;
   }
 
-  addToOrder(s: AiSuggestion): void {
+  addToOrder(m: ChatMessage, s: AiSuggestion, index: number): void {
     const slug = this.slug();
     if (!slug || !this.isAvailable(s)) return;
-    addToCart(slug, this.lineFor(s));
+    // Метка источника уходит в заказ (source, paired_with, rank как в API заказа)
+    const line: Omit<CartLine, 'qty'> & AiCartMeta = {
+      ...this.lineFor(s),
+      source: 'AI',
+      paired_with: s.kind === 'DRINK' ? s.pairs_with : null,
+      rank: index + 1,
+    };
+    addToCart(slug, line);
     notifyCartChanged(slug);
+    this.trackAdd(slug, m, s, index + 1);
     const key = `${s.kind}:${s.id}`;
     this.added.update(a => ({ ...a, [key]: true }));
     if (this.addedTimers[key]) clearTimeout(this.addedTimers[key]);
@@ -531,6 +612,22 @@ export class SommelierChatComponent {
       this.added.update(a => ({ ...a, [key]: false }));
       delete this.addedTimers[key];
     }, ADDED_FLASH_MS);
+  }
+
+  /** Событие пилота AI_ADD: гость положил карточку сомелье в заказ. Ошибка сети гостю не мешает. */
+  private trackAdd(slug: string, m: ChatMessage, s: AiSuggestion, rank: number): void {
+    const event = {
+      kind: 'AI_ADD',
+      [s.kind === 'DISH' ? 'menu_item' : 'menu_drink']: s.id,
+      dish_ref: s.kind === 'DRINK' ? s.pairs_with || '' : s.id,
+      rank,
+      source: 'AI',
+      table: this.selection.tableNumber() || null,
+      meta: { mode: m.mode || '', safety: m.safety || '' },
+    };
+    this.http.post(`${API_BASE}/events/`, { session: guestSession(), venue: slug, events: [event] })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => undefined });
   }
 
   openBrandPage(brandId: string): void {
