@@ -64,6 +64,10 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "src/app/pages/auth/demo-accounts.ts",
+                  "with": "src/app/pages/auth/demo-accounts.prod.ts"
                 }
               ],
               "budgets": [

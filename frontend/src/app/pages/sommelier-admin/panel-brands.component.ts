@@ -18,7 +18,7 @@ type BrandFilter = 'all' | 'nophoto' | 'nopyramid' | 'horeca';
 const EMPTY_PYRAMID: PyramidData = { top: [], heart: [], base: [] };
 
 const BRAND_PHOTO_HINT =
-  'Одно фото в хорошем качестве (PNG или WebP без фона, JPG допустим), до 5 МБ, от 800 px по длинной стороне. '
+  'Одно фото в хорошем качестве (PNG или WebP без фона, JPG допустим), до 4 МБ, от 800 px по длинной стороне. '
   + 'Маленькую версию для списков сделаем сами.';
 
 /**

@@ -2,23 +2,9 @@ import { Component, EventEmitter, Input, Output, inject, signal } from '@angular
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
+import { DEMO_ACCOUNTS, DemoAccount } from './demo-accounts';
 
 export type AuthMode = 'login' | 'register';
-
-interface DemoAccount {
-  username: string;
-  password: string;
-  role: string;
-  hint: string;
-}
-
-/** Аккаунты из команды seed_roles: команда пробует роли без регистрации. */
-const DEMO_ACCOUNTS: DemoAccount[] = [
-  { username: 'moderator', password: 'moderator12345', role: 'Модератор', hint: 'все вкладки панели' },
-  { username: 'sommelier', password: 'sommelier12345', role: 'Сомелье', hint: 'сочетания и пирамида' },
-  { username: 'restaurant', password: 'restaurant12345', role: 'Администратор заведения', hint: 'меню и блюда' },
-  { username: 'guest', password: 'guest12345', role: 'Пользователь', hint: 'только сайт и профиль' }
-];
 
 @Component({
   selector: 'app-auth',
