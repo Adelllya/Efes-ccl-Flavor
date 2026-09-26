@@ -1,15 +1,59 @@
-import { Component, OnInit, inject, signal, computed, Output, EventEmitter } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal, computed, Output, EventEmitter, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SelectionService } from '../../services/selection.service';
-import { Brand, Dish, FoodPairing, CuisineType, FoodIcon, SiteSettings } from '../../models/flavor-tree.models';
+import { Brand, Dish, FoodPairing, FoodIcon, SiteSettings } from '../../models/flavor-tree.models';
 import { ActiveTab } from '../../app.component';
+import { V2ApiService } from '../drinks-v2/v2-api.service';
+import { V2Dish } from '../drinks-v2/v2.models';
 import { HeroComponent } from './hero/hero.component';
-import { DishWizardComponent } from './dish-wizard.component';
+import { DishWizardComponent, LAST_STEP, WizardMove } from './dish-wizard.component';
 import { DishResultComponent } from './dish-result.component';
 import { BeerPairingsComponent } from './beer-pairings.component';
-import { DishProfile, findDish } from './pairing-engine.data';
+import { DishProfile, emptyProfile } from './pairing-engine.data';
+import { DishChoice, DishPick, buildDishIndex, resolveDish } from './dish-search';
+
+type Stage = 'idle' | 'searching' | 'wizard' | 'dish-result' | 'brand';
+
+/**
+ * Шаг подбора в записи истории браузера. Только простые данные:
+ * history.state их копирует и хранит даже после перезагрузки страницы.
+ */
+interface LandingSnap {
+  stage: 'idle' | 'wizard' | 'dish-result' | 'brand';
+  step?: number;
+  profile?: DishProfile | null;
+  dish?: DishPick | null;
+  also?: DishPick[];
+  brandId?: string | null;
+}
+
+interface LandingEntry {
+  ftLanding: LandingSnap;
+  /** Шаг, из которого пришли в эту запись: кнопки «Назад» подбора уходят в него по истории. */
+  prev: LandingSnap | null;
+}
+
+const IDLE: LandingSnap = { stage: 'idle' };
+
+/** Один и тот же экран подбора: этап, шаг мастера, блюдо или сорт. */
+function sameSpot(a: LandingSnap, b: LandingSnap): boolean {
+  if (a.stage !== b.stage) return false;
+  if (a.stage === 'wizard') return (a.step ?? 0) === (b.step ?? 0);
+  if (a.stage === 'dish-result') return (a.dish?.v2Id ?? a.dish?.v1Id ?? null) === (b.dish?.v2Id ?? b.dish?.v1Id ?? null);
+  if (a.stage === 'brand') return (a.brandId ?? null) === (b.brandId ?? null);
+  return true;
+}
+
+function landingEntry(): Partial<LandingEntry> {
+  try {
+    const state = history.state as Partial<LandingEntry> | null;
+    return state && typeof state === 'object' ? state : {};
+  } catch {
+    return {};
+  }
+}
 
 interface MoodOption {
   id: string;
@@ -29,44 +73,64 @@ interface MoodOption {
     DishWizardComponent, DishResultComponent, BeerPairingsComponent,
   ],
   template: `
-    <!-- ═══════════════════════════════════════════════════════════════
+    <!--
          1. HERO SECTION & VALUE PROPOSITION
-         ═══════════════════════════════════════════════════════════════ -->
+         -->
     @if (stage() === 'idle') {
       <app-hero (choose)="scrollToSelector($event)" (dishSearch)="onHeroSearch($event)" />
     }
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         2. ПОДБОР: ДВА ПУТИ — ОТ БЛЮДА И ОТ НАПИТКА
-         Вход только через две кнопки в hero. Дальше — мастер из четырёх
+    <!--
+         2. ПОДБОР: ДВА ПУТИ - ОТ БЛЮДА И ОТ НАПИТКА
+         Вход только через две кнопки в hero. Дальше - мастер из четырёх
          вопросов для блюда либо витрина сортов для напитка.
-         ═══════════════════════════════════════════════════════════════ -->
+         -->
     @if (stage() !== 'idle') {
     <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel">
       @switch (stage()) {
+        @case ('searching') {
+          <div class="skeleton-grid" aria-busy="true" aria-label="Ищем блюдо в каталоге">
+            @for (i of [1, 2, 3]; track i) {
+              <div class="skeleton-card">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+              </div>
+            }
+          </div>
+        }
+
         @case ('wizard') {
           <app-dish-wizard
-            [dishes]="dishes()"
+            [catalog]="dishIndex()"
             [icons]="foodIcons()"
-            [restore]="dishProfile()"
+            [restore]="wizardProfile()"
+            [restoreStep]="wizardStep()"
             (done)="onProfileReady($event)"
-            (dishPicked)="onExactDish($event)"
+            (dishPicked)="onExactChoice($event)"
+            (advance)="onWizardAdvance($event)"
+            (retreat)="onWizardRetreat($event)"
             (exit)="resetFlow()"
           />
         }
 
         @case ('dish-result') {
-          @if (dishProfile(); as p) {
+          @if (resultProfile(); as p) {
             <app-dish-result
               [profile]="p"
+              [dish]="exactDish()"
+              [also]="alsoDishes()"
               [brands]="brands()"
               [dishes]="dishes()"
               [pairings]="pairings()"
               [icons]="foodIcons()"
+              [loaded]="dataLoaded()"
               [alternatives]="settings().alternatives_count"
               (openBrand)="openBrandPage($event)"
-              (back)="stage.set('wizard')"
+              (back)="backToAnswers()"
               (restart)="resetFlow()"
+              (otherDish)="startDish()"
+              (pickDish)="onPickDish($event)"
             />
           }
         }
@@ -77,9 +141,12 @@ interface MoodOption {
             [pairings]="pairings()"
             [dishes]="dishes()"
             [icons]="foodIcons()"
+            [loaded]="dataLoaded()"
             [intro]="settings().pairing_intro"
             [minScore]="settings().min_score_to_show"
+            [initial]="selectedBrand()"
             (openBrand)="openBrandPage($event)"
+            (picked)="onBrandPicked($event)"
             (exit)="resetFlow()"
           />
         }
@@ -87,14 +154,14 @@ interface MoodOption {
     </section>
     }
 
-    <!-- ═══════════════════════════════════════════════════════════════
+    <!--
          3. ЭКСПРЕСС-ПОДБОР: ВКУСОВОЙ КОМПАС & НАСТРОЕНИЕ
-         ═══════════════════════════════════════════════════════════════ -->
+         -->
     <section class="page-section mb-4xl">
       <div class="mb-2xl">
         <span class="badge mb-xs">Экспресс-сценарии</span>
         <h2 class="section-header">Что выберешь сегодня?</h2>
-        <p class="section-subtitle">Выберите повод или гастрономическое настроение — получите готовую рекомендацию за 1 клик</p>
+        <p class="section-subtitle">Выберите повод или настроение - получите готовую рекомендацию за 1 клик</p>
       </div>
 
       <div class="grid grid-3">
@@ -115,9 +182,9 @@ interface MoodOption {
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════════
+    <!--
          4. ХРОНОМЕТРАЖ ГЛОТКА (СЕНСОРНАЯ ПИРАМИДА)
-         ═══════════════════════════════════════════════════════════════ -->
+         -->
     <section class="glass-panel p-4xl mb-4xl">
       <div class="text-center max-w-2xl mx-auto mb-3xl">
         <span class="badge badge-accent mb-sm">Методология дегустации</span>
@@ -127,14 +194,14 @@ interface MoodOption {
 
       <div class="grid grid-3">
         <div class="glass-card p-2xl stagger-item pyramid-info-card">
-          <div class="pyramid-time-badge top-time">0–3 сек</div>
+          <div class="pyramid-time-badge top-time">0-3 сек</div>
           <h3 class="mb-sm">Top Notes · Ароматическая вершина</h3>
           <p class="text-dim text-sm mb-md">Первое впечатление при поднесении бокала: эфирные масла хмеля, цитрусовые, хвойные и цветочные летучие ароматы.</p>
           <div class="text-xs font-semibold text-muted">Примеры: Цитрус, Хвоя, Зелёное яблоко, Травы</div>
         </div>
 
         <div class="glass-card p-2xl stagger-item pyramid-info-card">
-          <div class="pyramid-time-badge heart-time">3–15 сек</div>
+          <div class="pyramid-time-badge heart-time">3-15 сек</div>
           <h3 class="mb-sm">Heart Notes · Солодовое сердце</h3>
           <p class="text-dim text-sm mb-md">Полнота вкуса и тела на языке: баланс солодовой сладости, хлебной корочки, зерновых тонов и текстуры.</p>
           <div class="text-xs font-semibold text-muted">Примеры: Солод, Карамель, Хлебная корочка, Рис</div>
@@ -437,6 +504,7 @@ interface MoodOption {
 })
 export class LandingComponent implements OnInit {
   private api = inject(ApiService);
+  private v2 = inject(V2ApiService);
   private selection = inject(SelectionService);
 
   @Output() navigate = new EventEmitter<ActiveTab>();
@@ -445,8 +513,21 @@ export class LandingComponent implements OnInit {
   brands = signal<Brand[]>([]);
   dishes = signal<Dish[]>([]);
   pairings = signal<FoodPairing[]>([]);
+  /** Блюда движка v2 с синонимами: по ним ищем «плов», «к шашлыку», «баурсаки». */
+  v2Dishes = signal<V2Dish[]>([]);
 
-  // Картинки характеристик и настройки витрины — из админки
+  /** Пока не пришли все три списка, подбор показывает скелет, а не "пусто". */
+  brandsLoaded = signal(false);
+  dishesLoaded = signal(false);
+  pairingsLoaded = signal(false);
+  v2DishesLoaded = signal(false);
+  dataLoaded = computed(() => this.brandsLoaded() && this.dishesLoaded() && this.pairingsLoaded());
+
+  /** Поиск блюда: каталог движка и каталог сомелье одним списком. */
+  dishIndex = computed(() => buildDishIndex(this.dishes(), this.v2Dishes()));
+  private searchReady = computed(() => this.dishesLoaded() && this.v2DishesLoaded());
+
+  // Картинки характеристик и настройки витрины - из админки
   foodIcons = signal<FoodIcon[]>([]);
   settings = signal<SiteSettings>({
     alternatives_count: 3,
@@ -456,17 +537,52 @@ export class LandingComponent implements OnInit {
   });
 
   /**
-   * Шаг подбора. Вход всегда через две кнопки: 'idle' — выбор пути,
-   * 'wizard' — четыре вопроса о блюде, 'dish-result' — сорта к блюду,
-   * 'brand' — витрина сортов и пары к выбранному.
+   * Шаг подбора. Вход через две кнопки или поиск: 'idle' - выбор пути,
+   * 'searching' - ждём каталог для поиска, 'wizard' - четыре вопроса о блюде,
+   * 'dish-result' - сорта к блюду, 'brand' - витрина сортов и пары к выбранному.
    */
-  stage = signal<'idle' | 'wizard' | 'dish-result' | 'brand'>('idle');
+  stage = signal<Stage>('idle');
 
-  /** Ответы мастера: сохраняем, чтобы «изменить ответы» не начинало заново. */
+  /** Ответы мастера для результата. */
   dishProfile = signal<DishProfile | null>(null);
+  /** Блюдо, которое человек назвал сам: ответ даёт движок v2. */
+  exactDish = signal<DishPick | null>(null);
+  /** Другие блюда по тому же запросу, подсказками под результатом. */
+  alsoDishes = signal<DishPick[]>([]);
+  /** С чем открыть мастер: ответы и шаг из истории браузера. */
+  wizardProfile = signal<DishProfile | null>(null);
+  wizardStep = signal<number | null>(null);
 
-  selectedDish = signal<Dish | null>(null);
+  /**
+   * Профиль для результата. У блюда из каталога сомелье берём его
+   * характеристики и id: запасной расчёт покажет только его пары.
+   */
+  resultProfile = computed<DishProfile | null>(() => {
+    const pick = this.exactDish();
+    if (!pick) return this.dishProfile();
+    const dish = pick.v1Id ? this.dishes().find(d => d.id === pick.v1Id) : undefined;
+    if (!dish) return { ...emptyProfile(), freeText: pick.name };
+    return {
+      category: null,
+      cooking: dish.cooking_method === 'OTHER' ? null : dish.cooking_method,
+      taste: dish.dominant_taste,
+      weight: dish.weight,
+      fat: dish.fat_level,
+      freeText: dish.name,
+      dishId: dish.id,
+    };
+  });
+
+  /** Сорт для витрины «у меня есть пиво»: экспресс-сценарий открывает её сразу на нём. */
   selectedBrand = signal<Brand | null>(null);
+  /** Экспресс-сценарий сорта, нажатый до загрузки каталога: применим, когда данные придут. */
+  private pendingMood: MoodOption | null = null;
+  /** Запрос блюда, отправленный до загрузки каталога. */
+  private pendingQuery: string | null = null;
+  /** Сорт из истории браузера, пока каталог сортов ещё грузится. */
+  private pendingBrandId: string | null = null;
+  private readonly beerPairings = viewChild(BeerPairingsComponent);
+  private readonly wizard = viewChild(DishWizardComponent);
 
 
   // Экспресс-сценарии настроения (на основе CustDev-сегментов)
@@ -475,7 +591,7 @@ export class LandingComponent implements OnInit {
       id: 'kazakh',
       icon: '🥩',
       title: 'Казахское застолье',
-      desc: 'Бешбармак, казы, куырдак — баланс плотного умами и солода.',
+      desc: 'Бешбармак, казы, куырдак - баланс плотного умами и солода.',
       targetType: 'dish',
       targetName: 'Бешбармак',
       badge: 'Казахская кухня'
@@ -484,7 +600,7 @@ export class LandingComponent implements OnInit {
       id: 'steak',
       icon: '🔥',
       title: 'Мясо на гриле & BBQ',
-      desc: 'Шашлык, стейк, рёбрышки — высокая горечь гасит жирность.',
+      desc: 'Шашлык, стейк, рёбрышки - высокая горечь гасит жирность.',
       targetType: 'dish',
       targetName: 'Шашлык',
       badge: 'Мясо & Гриль'
@@ -496,7 +612,7 @@ export class LandingComponent implements OnInit {
       desc: 'Хрустящий хмелевой профиль и чистый сухой финиш.',
       targetType: 'brand',
       targetName: 'Efes Pilsener',
-      badge: 'Свежесть 5–7°C'
+      badge: 'Свежесть 5-7°C'
     },
     {
       id: 'sushi',
@@ -528,119 +644,109 @@ export class LandingComponent implements OnInit {
   ];
 
 
-
-  // Пары для выбранного блюда с прикрепленными объектами брендов
-  pairingsForSelectedDish = computed(() => {
-    const dish = this.selectedDish();
-    if (!dish) return [];
-
-    const pairs = this.pairings().filter(p =>
-      p.dish === dish.id ||
-      p.dish_name.toLowerCase() === dish.name.toLowerCase()
-    );
-
-    // Добавляем Brand объект для каждого пейринга
-    return pairs.map(p => {
-      const brandObj = this.brands().find(b =>
-        b.id === p.brand ||
-        b.name.toLowerCase() === p.brand_name.toLowerCase()
-      );
-      return {
-        ...p,
-        brandObj
-      };
-    }).sort((a, b) => b.compatibility_score - a.compatibility_score);
-  });
-
-  // Топ-пара для блюда
-  topPairingForDish = computed(() => {
-    const list = this.pairingsForSelectedDish();
-    return list.length > 0 ? list[0] : null;
-  });
-
-  // Альтернативные пары
-  alternativePairingsForDish = computed(() => {
-    const list = this.pairingsForSelectedDish();
-    return list.slice(1);
-  });
-
-  // Пары для выбранного пива
-  pairingsForSelectedBrand = computed(() => {
-    const brand = this.selectedBrand();
-    if (!brand) return [];
-
-    return this.pairings().filter(p =>
-      p.brand === brand.id ||
-      p.brand_name.toLowerCase() === brand.name.toLowerCase()
-    ).sort((a, b) => b.compatibility_score - a.compatibility_score);
-  });
-
   ngOnInit() {
-    this.api.getBrands().subscribe(brands => {
-      this.brands.set(brands);
-      if (brands.length > 0 && !this.selectedBrand()) {
-        this.selectedBrand.set(brands[0]);
-      }
+    this.api.getBrands().subscribe({
+      next: brands => {
+        this.brands.set(brands);
+        this.brandsLoaded.set(true);
+        this.applyPendingBrand();
+        this.applyPendingMood();
+      },
+      error: () => this.brandsLoaded.set(true),
     });
 
-    this.api.getDishes().subscribe(dishes => {
-      this.dishes.set(dishes);
-      if (dishes.length > 0 && !this.selectedDish()) {
-        // По умолчанию выберем Бешбармак (главный символ казахской кухни)
-        const besh = dishes.find(d => d.name.toLowerCase().includes('бешбармак')) || dishes[0];
-        this.selectedDish.set(besh);
-      }
+    this.api.getDishes().subscribe({
+      next: dishes => {
+        this.dishes.set(dishes);
+        this.dishesLoaded.set(true);
+        this.runPendingSearch();
+      },
+      error: () => { this.dishesLoaded.set(true); this.runPendingSearch(); },
     });
 
-    this.api.getPairings().subscribe(pairings => {
-      this.pairings.set(pairings);
+    this.api.getPairings().subscribe({
+      next: pairings => {
+        this.pairings.set(pairings);
+        this.pairingsLoaded.set(true);
+      },
+      error: () => this.pairingsLoaded.set(true),
+    });
+
+    // Каталог движка нужен поиску; без него ищем по каталогу сомелье
+    this.v2.dishes().subscribe({
+      next: list => {
+        this.v2Dishes.set(list);
+        this.v2DishesLoaded.set(true);
+        this.runPendingSearch();
+      },
+      error: () => { this.v2DishesLoaded.set(true); this.runPendingSearch(); },
     });
 
     this.api.getFoodIcons().subscribe(icons => this.foodIcons.set(icons));
     this.api.getSettings().subscribe(settings => this.settings.set(settings));
+
+    // Вернулись на главную «Назад» со страницы сорта или перезагрузили её: открываем тот же шаг
+    const saved = landingEntry().ftLanding;
+    if (saved && saved.stage !== 'idle') this.apply(saved);
   }
 
-  // ─── Переходы подбора ───────────────────────────────────────────
+  // Переходы подбора
 
   startDish(): void {
-    this.dishProfile.set(null);
-    this.stage.set('wizard');
+    this.go({ stage: 'wizard', step: 0, profile: null });
   }
 
-  startBrand(): void {
-    this.stage.set('brand');
+  /** Витрина сортов; с initial сразу открывается второй шаг - пары к этому сорту. */
+  startBrand(initial: Brand | null = null): void {
+    this.go({ stage: 'brand', brandId: initial?.id ?? null });
   }
 
-  /** Мастер пройден — показываем сорта под собранный профиль. */
+  /** Мастер пройден - показываем сорта под собранный профиль. */
   onProfileReady(profile: DishProfile): void {
-    this.dishProfile.set(profile);
-    this.stage.set('dish-result');
-    this.scrollToSection();
+    this.go({ stage: 'dish-result', profile }, { from: { stage: 'wizard', step: LAST_STEP, profile } });
   }
 
-  /**
-   * Человек назвал блюдо, которое уже есть в каталоге. Профиль собираем
-   * из его же характеристик — так подбор опирается на данные сомелье,
-   * а не на догадки по названию.
-   */
-  onExactDish(dish: Dish): void {
-    this.selectedDish.set(dish);
-    this.dishProfile.set({
-      category: null,
-      cooking: dish.cooking_method === 'OTHER' ? null : dish.cooking_method,
-      taste: dish.dominant_taste,
-      weight: dish.weight,
-      fat: dish.fat_level,
-      freeText: dish.name,
-    });
-    this.stage.set('dish-result');
-    this.scrollToSection();
+  /** Человек назвал блюдо из каталога: ответ даст движок v2, пары сомелье - только этого блюда. */
+  onExactChoice(choice: DishChoice): void {
+    this.go({ stage: 'dish-result', dish: choice.pick, also: choice.also });
+  }
+
+  /** Другое блюдо из подсказок «Ещё по запросу»: текущее остаётся среди подсказок. */
+  onPickDish(pick: DishPick): void {
+    const current = this.exactDish();
+    const also = [...(current ? [current] : []), ...this.alsoDishes().filter(d => !sameDish(d, pick))];
+    this.go({ stage: 'dish-result', dish: pick, also });
+  }
+
+  /** «Изменить ответы» в результате мастера: обратно к последнему вопросу. */
+  backToAnswers(): void {
+    this.goBackTo({ stage: 'wizard', step: LAST_STEP, profile: this.dishProfile() });
+  }
+
+  onWizardAdvance(move: WizardMove): void {
+    this.go(
+      { stage: 'wizard', step: move.step, profile: move.profile },
+      { from: { stage: 'wizard', step: move.step - 1, profile: move.profile }, applied: true },
+    );
+  }
+
+  onWizardRetreat(move: WizardMove): void {
+    this.goBackTo({ stage: 'wizard', step: move.step, profile: move.profile }, true);
+  }
+
+  /** Гость открыл сорт в витрине или вернулся из него к списку. */
+  onBrandPicked(brand: Brand | null): void {
+    if (brand) {
+      this.go({ stage: 'brand', brandId: brand.id }, { from: { stage: 'brand', brandId: null }, applied: true });
+    } else {
+      this.goBackTo({ stage: 'brand', brandId: null }, true);
+    }
   }
 
   resetFlow(): void {
-    this.dishProfile.set(null);
-    this.stage.set('idle');
-    this.scrollToSection();
+    this.pendingMood = null;
+    this.pendingQuery = null;
+    this.goBackTo(IDLE);
   }
 
   /** Кнопка «Узнать больше о напитке» ведёт на страницу сорта. */
@@ -656,41 +762,193 @@ export class LandingComponent implements OnInit {
     el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }
 
-
-
-
-  /** Две кнопки из hero — единственный вход в подбор. */
+  /** Две кнопки из hero - вход в подбор. */
   scrollToSelector(mode: 'dish' | 'brand') {
     if (mode === 'dish') this.startDish(); else this.startBrand();
-    this.scrollToSection();
   }
 
   /**
-   * Поиск из hero. Если блюдо нашлось в каталоге — сразу показываем сорта,
-   * иначе открываем мастер: по одному названию подобрать нечего.
+   * Поиск из hero. Блюдо нашлось - сразу показываем сорта, иначе открываем
+   * мастер: по одному названию подобрать нечего, но вкус блюда можно описать.
    */
   onHeroSearch(query: string) {
-    const found = findDish(this.dishes(), query);
-    if (found) { this.onExactDish(found); return; }
-    this.startDish();
-    this.scrollToSection();
+    this.searchFor(query);
   }
 
   /** Экспресс-сценарий: сразу ведём к результату, минуя вопросы. */
   applyMoodPreset(mood: MoodOption) {
-    if (mood.targetType === 'dish') {
-      const found = this.dishes().find(d => d.name.toLowerCase().includes(mood.targetName.toLowerCase()));
-      if (found) { this.onExactDish(found); return; }
-      this.startDish();
-    } else {
-      const found = this.brands().find(b => b.name.toLowerCase().includes(mood.targetName.toLowerCase()));
-      if (found) this.selectedBrand.set(found);
-      this.startBrand();
-    }
-    this.scrollToSection();
+    this.pendingMood = null;
+    if (mood.targetType === 'dish') { this.searchFor(mood.targetName); return; }
+    // Каталог ещё грузится: открываем витрину, а сорт выберем, когда данные придут
+    if (!this.brandsLoaded()) { this.pendingMood = mood; this.startBrand(); return; }
+    this.startBrand(this.moodBrand(mood));
   }
 
+  private searchFor(query: string): void {
+    const text = (query || '').trim();
+    if (text.length < 2) { this.startDish(); return; }
+    if (!this.searchReady()) {
+      // Каталог ещё грузится: показываем ожидание, в историю этот шаг не пишем
+      this.pendingQuery = text;
+      this.stage.set('searching');
+      setTimeout(() => this.scrollToSection());
+      return;
+    }
+    const found = resolveDish(this.dishIndex(), text);
+    if (found?.sure) { this.onExactChoice(found); return; }
+    // Неточное совпадение мастер покажет подсказкой «Возможно, вы искали»
+    this.go({ stage: 'wizard', step: 0, profile: { ...emptyProfile(), freeText: text } });
+  }
 
+  private runPendingSearch(): void {
+    const query = this.pendingQuery;
+    if (query === null || !this.searchReady()) return;
+    this.pendingQuery = null;
+    if (this.stage() === 'searching') this.searchFor(query);
+  }
 
+  /** Снятые с публикации сорта витрина не показывает, значит и пресет их не открывает. */
+  private moodBrand(mood: MoodOption): Brand | null {
+    return this.brands().find(b =>
+      b.is_active !== false && b.name.toLowerCase().includes(mood.targetName.toLowerCase())) ?? null;
+  }
 
+  /** Данные пришли: доигрываем экспресс-сценарий сорта, нажатый во время загрузки. */
+  private applyPendingMood(): void {
+    const mood = this.pendingMood;
+    if (!mood || !this.brandsLoaded()) return;
+    this.pendingMood = null;
+    // Витрина уже открыта и лежит в истории: подменяем запись, а не добавляем новую
+    if (this.stage() === 'brand') this.replace({ stage: 'brand', brandId: this.moodBrand(mood)?.id ?? null });
+  }
+
+  private applyPendingBrand(): void {
+    const id = this.pendingBrandId;
+    this.pendingBrandId = null;
+    if (id && this.stage() === 'brand') this.apply({ stage: 'brand', brandId: id });
+  }
+
+  // История браузера: «Назад» на телефоне идёт по шагам подбора, а не уводит с сайта
+
+  @HostListener('window:popstate')
+  onPopState(): void {
+    if (location.pathname !== '/') return;
+    this.pendingQuery = null;
+    this.apply(landingEntry().ftLanding ?? IDLE);
+  }
+
+  /** Что сейчас на экране, в виде записи истории. */
+  private current(): LandingSnap {
+    switch (this.stage()) {
+      case 'wizard': {
+        const w = this.wizard();
+        return { stage: 'wizard', step: w ? w.index() : this.wizardStep() ?? 0, profile: w ? w.profile() : this.wizardProfile() };
+      }
+      case 'dish-result':
+        return this.exactDish()
+          ? { stage: 'dish-result', dish: this.exactDish(), also: this.alsoDishes() }
+          : { stage: 'dish-result', profile: this.dishProfile() };
+      case 'brand':
+        return { stage: 'brand', brandId: this.beerPairings()?.selected()?.id ?? this.selectedBrand()?.id ?? null };
+      default:
+        return IDLE;
+    }
+  }
+
+  /**
+   * Шаг вперёд: новая запись в истории. Текущая запись перед этим получает
+   * свежие ответы, чтобы, вернувшись к ней, гость увидел свой выбор.
+   * applied - дочерний компонент уже показал новый шаг сам.
+   */
+  private go(next: LandingSnap, opts: { from?: LandingSnap; applied?: boolean } = {}): void {
+    const from = opts.from ?? this.current();
+    try {
+      const entry = landingEntry();
+      history.replaceState({ ...entry, ftLanding: from, prev: entry.prev ?? null }, '');
+      history.pushState({ ftLanding: next, prev: from } satisfies LandingEntry, '');
+    } catch {
+      // История недоступна: подбор работает и без неё
+    }
+    this.apply(next, opts.applied);
+  }
+
+  /**
+   * Шаг назад кнопкой подбора. Если предыдущая запись истории и есть цель,
+   * уходим в неё через history.back(): тогда «Назад» браузера после этого
+   * не покажет тот же экран второй раз. Иначе подменяем текущую запись.
+   */
+  private goBackTo(target: LandingSnap, applied = false): void {
+    const prev = landingEntry().prev;
+    if (prev && sameSpot(prev, target)) {
+      history.back();
+      return;
+    }
+    this.replace(target, applied);
+  }
+
+  private replace(snap: LandingSnap, applied = false): void {
+    try {
+      const entry = landingEntry();
+      history.replaceState({ ...entry, ftLanding: snap, prev: entry.prev ?? null }, '');
+    } catch {
+      // История недоступна: подбор работает и без неё
+    }
+    this.apply(snap, applied);
+  }
+
+  /** Показывает шаг подбора из записи истории. */
+  private apply(snap: LandingSnap, applied = false): void {
+    const before = this.stage();
+    switch (snap.stage) {
+      case 'wizard': {
+        const step = snap.step ?? 0;
+        const w = this.wizard();
+        if (before === 'wizard' && w) {
+          // Мастер уже открыт: переходим по шагам, ответы остаются
+          if (!applied) w.show(step, w.profile());
+        } else {
+          this.wizardProfile.set(snap.profile ?? null);
+          this.wizardStep.set(step);
+          this.stage.set('wizard');
+        }
+        break;
+      }
+      case 'dish-result':
+        this.exactDish.set(snap.dish ?? null);
+        this.alsoDishes.set(snap.dish ? snap.also ?? [] : []);
+        this.dishProfile.set(snap.dish ? null : snap.profile ?? null);
+        this.stage.set('dish-result');
+        break;
+      case 'brand': {
+        const id = snap.brandId ?? null;
+        const brand = id ? this.brands().find(b => b.id === id) ?? null : null;
+        // Каталог сортов ещё не пришёл: откроем сорт, когда он загрузится
+        this.pendingBrandId = id && !brand && !this.brandsLoaded() ? id : null;
+        this.selectedBrand.set(brand);
+        this.stage.set('brand');
+        // Витрина уже открыта и вход initial мог не измениться: переводим её напрямую.
+        // null тоже передаём - без цели гость возвращается к выбору сорта
+        if (!applied) this.beerPairings()?.selected.set(brand);
+        break;
+      }
+      default:
+        this.dishProfile.set(null);
+        this.exactDish.set(null);
+        this.alsoDishes.set([]);
+        this.selectedBrand.set(null);
+        this.stage.set('idle');
+    }
+
+    const after = this.stage();
+    if (after === before && after !== 'dish-result') return;
+    if (after === 'idle') {
+      window.scrollTo({ top: 0 });
+    } else {
+      setTimeout(() => this.scrollToSection());
+    }
+  }
+}
+
+function sameDish(a: DishPick, b: DishPick): boolean {
+  return (a.v2Id ?? a.v1Id) === (b.v2Id ?? b.v1Id);
 }

@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='brand',
             name='image_hd',
-            field=models.ImageField(blank=True, help_text='Крупная версия для страницы сорта и большой карточки подбора. Если пусто — там показывается обычное изображение.', max_length=500, null=True, upload_to='brands/hd/', verbose_name='Фото в высоком качестве'),
+            field=models.ImageField(blank=True, help_text='Крупная версия для страницы сорта и большой карточки подбора. Если пусто - там показывается обычное изображение.', max_length=500, null=True, upload_to='brands/hd/', verbose_name='Фото в высоком качестве'),
         ),
         migrations.AlterField(
             model_name='brand',

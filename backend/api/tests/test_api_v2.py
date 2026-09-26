@@ -1,14 +1,14 @@
 """API движка v2 (api/views_engine_v2.py): каталог, подбор, вкладки, объяснение, политика Efes.
 
 Запуск: python manage.py test api.tests.test_api_v2
-Работает на data/*.json. Если каталога напитков (data/drinks.json) нет — тесты подбора пропускаются.
+Работает на backend/data/engine/*.json. Если каталога напитков нет, тесты подбора пропускаются.
 """
 from __future__ import annotations
 
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from api.models import Venue, VenueMenuItem
+from api.models import Brand, MenuDrink, Venue
 from api.pairing import engine_v2 as E
 from api.pairing.dataset_v2 import get_dataset
 
@@ -123,14 +123,16 @@ class TestPairing(ApiV2Base):
         self.assertEqual(self.c.get("/api/v2/pairing/dish/no-such-dish/").status_code, 404)
 
     def test_venue_filter(self):
-        venue = Venue.objects.create(name="Тестовый бар", address="—", venue_type="BAR", slug="test-bar-v2")
+        """В баре подбор идёт только по его карте напитков: сорт каталога = напиток движка с тем же названием."""
+        venue = Venue.objects.create(name="Тестовый бар", address="-", venue_type="BAR", slug="test-bar-v2",
+                                     is_published=True)
         legacy = [d for d in self.ds.drinks if d.get("legacy_brand_id")][:2]
-        plain = [d for d in self.ds.drinks if not d.get("legacy_brand_id")][:1]
-        for d in legacy:     # позиция карты по старому slug сорта
-            VenueMenuItem.objects.create(venue=venue, kind="BEER", ref_slug=d["legacy_brand_id"], price=1000)
-        for d in plain:      # и по id напитка v2
-            VenueMenuItem.objects.create(venue=venue, kind="BEER", ref_slug=d["id"], price=1500)
-        allowed = {d["id"] for d in legacy + plain}
+        for d in legacy:
+            brand = Brand.objects.create(name=d["name"], style="Lager")
+            MenuDrink.objects.create(venue=venue, brand=brand, price=1000)
+        hidden = Brand.objects.create(name="Сорт не из движка", style="Lager")
+        MenuDrink.objects.create(venue=venue, brand=hidden, price=900)
+        allowed = {d["id"] for d in legacy}
         j = self.get("/api/v2/pairing/dish/beshbarmak/", venue="test-bar-v2", top=0)
         self.assertTrue(j["items"])
         self.assertTrue({x["drink_id"] for x in j["items"]} <= allowed)

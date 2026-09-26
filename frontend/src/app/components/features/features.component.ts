@@ -13,7 +13,7 @@ export class FeaturesComponent {
     {
       icon: '🧬',
       title: 'Flavor DNA',
-      text: 'Персональный вкусовой профиль — как Spotify Wrapped. «Ты 70% цитрусовый».'
+      text: 'Персональный вкусовой профиль - как Spotify Wrapped. «Ты 70% цитрусовый».'
     },
     {
       icon: '🍖',

@@ -1,0 +1,48 @@
+# Что не должно уезжать на Vercel при `vercel --prod` из этой папки.
+# CLI Vercel не читает .gitignore: всё, что лежит в папке, иначе попадёт в деплой.
+# Надёжнее всего деплоить из чистой копии коммита (см. DEPLOY.md), этот список страхует.
+.env
+.env.*
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+staticfiles
+Procfile
+railway.json
+.agents
+.claude
+skills-lock.json
+
+# Локальные базы и их копии
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Снимок локальной базы (в нём хэши паролей). В рабочую базу он всё равно не загрузится,
+# но и лежать в деплое ему незачем.
+data/snapshot.json
+data/*.bak
+
+# Резервные копии, выгрузки пилота, логи и временные файлы в корне папки
+/backups
+/backup-*
+/pilot_reports
+/exports
+/tmp
+/scratch
+/*.csv
+/*.sql
+/*.dump
+*.log
+*.orig
+*.rej
+*.swp
+
+# Фото, загруженные на своей машине через панель. В деплой идут только фото
+# из репозитория: media/brands, media/dishes, media/sample_efes.png.
+media/venues
+media/flavor_notes
+media/food_icons

@@ -3,11 +3,12 @@ from django.utils.html import format_html
 from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
-    FoodIcon, SiteSettings,
+    FoodIcon, SiteSettings, MenuItem, MenuDrink, Order, OrderItem, ChangeRequest,
+    PilotEvent, PairingFeedback,
 )
 
 
-# ─── Inlines ─────────────────────────────────────────────────────────────────
+# Inlines
 
 class FlavorProfileInline(admin.TabularInline):
     model = FlavorProfile
@@ -34,7 +35,29 @@ class QRCodeInline(admin.TabularInline):
     extra = 0
 
 
-# ─── Model Admins ────────────────────────────────────────────────────────────
+class MenuItemInline(admin.TabularInline):
+    model = MenuItem
+    extra = 0
+    fields = ['dish', 'section', 'price', 'portion', 'sort_order', 'is_available', 'chef_note']
+    autocomplete_fields = ['dish']
+
+
+class MenuDrinkInline(admin.TabularInline):
+    model = MenuDrink
+    extra = 0
+    fields = ['brand', 'engine_drink_id', 'name', 'price', 'volume', 'sort_order', 'is_available']
+    autocomplete_fields = ['brand']
+
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    fields = ['kind', 'title', 'price', 'qty', 'note', 'source', 'paired_menu_item', 'rec_rank',
+              'menu_item', 'menu_drink']
+    readonly_fields = ['menu_item', 'menu_drink', 'paired_menu_item']
+
+
+# Model Admins
 
 @admin.register(FlavorNote)
 class FlavorNoteAdmin(admin.ModelAdmin):
@@ -52,13 +75,13 @@ class FlavorNoteAdmin(admin.ModelAdmin):
     def thumb(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="height:34px;width:auto;object-fit:contain" />', obj.image.url)
-        return '—'
+        return '-'
 
     @admin.display(description='Предпросмотр')
     def preview(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="max-height:220px;width:auto;object-fit:contain" />', obj.image.url)
-        return 'Загрузите фото — оно встанет вокруг бутылки на странице сорта.'
+        return 'Загрузите фото - оно встанет вокруг бутылки на странице сорта.'
 
 
 @admin.register(FoodIcon)
@@ -73,13 +96,13 @@ class FoodIconAdmin(admin.ModelAdmin):
     def thumb(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="height:40px;width:auto;object-fit:contain" />', obj.image.url)
-        return '—'
+        return '-'
 
     @admin.display(description='Предпросмотр')
     def preview(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="max-height:220px;width:auto;object-fit:contain" />', obj.image.url)
-        return 'Загрузите PNG без фона — он заменит emoji в мастере подбора.'
+        return 'Загрузите PNG без фона - он заменит emoji в мастере подбора.'
 
 
 @admin.register(SiteSettings)
@@ -97,9 +120,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     list_display = ['image_preview', 'name', 'brand_owner', 'style', 'abv', 'packaging_type', 'is_horeca_only', 'is_active', 'profile_status']
-    list_filter = ['packaging_type', 'is_horeca_only', 'brand_owner', 'style_family', 'is_active', 'abv_estimated']
-    search_fields = ['name', 'brand_owner', 'style', 'slug']
-    prepopulated_fields = {'slug': ('name',)}
+    list_filter = ['packaging_type', 'is_horeca_only', 'brand_owner', 'style', 'is_active']
+    search_fields = ['name', 'brand_owner', 'style']
     readonly_fields = ['image_preview_large']
     inlines = [FlavorProfileInline, ServingRecommendationInline, FoodPairingInline]
     fields = [
@@ -113,7 +135,7 @@ class BrandAdmin(admin.ModelAdmin):
     def image_preview(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="height: 38px; width: auto; border-radius: 4px; object-fit: contain;" />', obj.image.url)
-        return '—'
+        return '-'
 
     @admin.display(description='Предпросмотр фото')
     def image_preview_large(self, obj):
@@ -161,9 +183,15 @@ class TeamMemberAdmin(admin.ModelAdmin):
 
 @admin.register(Dish)
 class DishAdmin(admin.ModelAdmin):
-    list_display = ['name', 'cuisine', 'category', 'dominant_taste', 'weight', 'fat_level', 'cooking_method']
+    list_display = ['thumb', 'name', 'cuisine', 'category', 'dominant_taste', 'weight', 'fat_level', 'cooking_method']
     list_filter = ['cuisine', 'dominant_taste', 'weight', 'fat_level', 'cooking_method']
     search_fields = ['name', 'category', 'description']
+
+    @admin.display(description='Фото')
+    def thumb(self, obj):
+        if obj.photo:
+            return format_html('<img src="{}" style="height:34px;width:auto;object-fit:cover;border-radius:4px" />', obj.photo.url)
+        return '-'
 
 
 @admin.register(FoodPairing)
@@ -175,10 +203,93 @@ class FoodPairingAdmin(admin.ModelAdmin):
 
 @admin.register(Venue)
 class VenueAdmin(admin.ModelAdmin):
-    list_display = ['name', 'venue_type', 'address']
-    list_filter = ['venue_type']
-    search_fields = ['name']
-    inlines = [QRCodeInline]
+    list_display = ['name', 'slug', 'venue_type', 'city', 'owner', 'is_published', 'created_at']
+    list_filter = ['venue_type', 'is_published', 'city']
+    search_fields = ['name', 'slug', 'address']
+    autocomplete_fields = ['owner']
+    readonly_fields = ['created_at']
+    fields = [
+        'name', 'slug', 'venue_type', 'city', 'address', 'phone', 'working_hours',
+        'description', 'logo', 'logo_file', 'cover', 'tables_count', 'accepts_orders', 'owner', 'is_published',
+        'created_at',
+    ]
+    inlines = [MenuItemInline, MenuDrinkInline, QRCodeInline]
+
+
+@admin.register(MenuItem)
+class MenuItemAdmin(admin.ModelAdmin):
+    list_display = ['dish', 'venue', 'section', 'price', 'portion', 'sort_order', 'is_available']
+    list_filter = ['venue', 'section', 'is_available']
+    search_fields = ['dish__name', 'venue__name', 'section']
+    autocomplete_fields = ['venue', 'dish']
+    ordering = ['venue', 'section', 'sort_order']
+
+
+@admin.register(MenuDrink)
+class MenuDrinkAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'brand', 'engine_drink_id', 'venue', 'price', 'volume', 'sort_order', 'is_available']
+    list_filter = ['venue', 'is_available']
+    search_fields = ['brand__name', 'name', 'engine_drink_id', 'venue__name']
+    autocomplete_fields = ['venue', 'brand']
+    ordering = ['venue', 'sort_order']
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['number', 'venue', 'table_number', 'status', 'total', 'guest_name', 'age_confirmed', 'created_at']
+    list_filter = ['status', 'venue']
+    search_fields = ['guest_name', 'comment', 'venue__name', 'items__title']
+    readonly_fields = ['number', 'total', 'guest_token', 'session', 'age_confirmed', 'created_at', 'updated_at']
+    autocomplete_fields = ['venue']
+    ordering = ['-created_at']
+    inlines = [OrderItemInline]
+
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ['title', 'order', 'kind', 'price', 'qty', 'source']
+    list_filter = ['kind', 'source']
+    search_fields = ['title', 'order__venue__name']
+    readonly_fields = ['menu_item', 'menu_drink', 'paired_menu_item']
+
+
+@admin.register(PilotEvent)
+class PilotEventAdmin(admin.ModelAdmin):
+    """События пилота только для просмотра: их пишет сайт, руками их не правят."""
+    list_display = ['created_at', 'kind', 'venue', 'table_number', 'session', 'dish_ref', 'drink_ref', 'rank', 'source']
+    list_filter = ['kind', 'venue']
+    search_fields = ['session', 'dish_ref', 'drink_ref']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(PairingFeedback)
+class PairingFeedbackAdmin(admin.ModelAdmin):
+    list_display = ['created_at', 'venue', 'rating', 'dish_ref', 'drink_ref', 'comment']
+    list_filter = ['rating', 'venue']
+    search_fields = ['comment', 'dish_ref', 'drink_ref', 'session']
+    readonly_fields = ['venue', 'order', 'session', 'dish_ref', 'drink_ref', 'rating', 'created_at']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(ChangeRequest)
+class ChangeRequestAdmin(admin.ModelAdmin):
+    list_display = ['brand', 'kind', 'status', 'author', 'reviewer', 'created_at', 'reviewed_at']
+    list_filter = ['status', 'kind', 'brand']
+    search_fields = ['brand__name', 'author__username', 'comment', 'review_comment']
+    autocomplete_fields = ['brand', 'author', 'reviewer']
+    readonly_fields = ['created_at']
+    ordering = ['-created_at']
 
 
 @admin.register(QRCode)
@@ -192,115 +303,3 @@ class AnonymousSessionAdmin(admin.ModelAdmin):
     list_display = ['id', 'qr_code', 'completed_levels', 'score', 'created_at']
     list_filter = ['completed_levels']
     ordering = ['-created_at']
-
-
-# ── SaaS: заведения-клиенты, их карта, столы, события и воронка продаж ──
-from datetime import timedelta
-
-from django.utils import timezone
-
-from .models import Lead, MenuEvent, ScanEvent, VenueAccount, VenueMenuItem
-
-
-class VenueMenuItemInline(admin.TabularInline):
-    model = VenueMenuItem
-    extra = 0
-    fields = ('kind', 'ref_slug', 'price', 'volume', 'is_available', 'is_featured', 'sort_order')
-
-
-@admin.register(VenueAccount)
-class VenueAccountAdmin(admin.ModelAdmin):
-    list_display = ('email', 'venue', 'plan', 'days_left', 'subscription_ok', 'is_active', 'last_login_at')
-    list_filter = ('plan', 'is_active')
-    search_fields = ('email', 'venue__name', 'phone', 'contact_name')
-    readonly_fields = ('api_token', 'created_at', 'last_login_at', 'password_hash')
-    actions = ('extend_month', 'rotate_tokens')
-
-    @admin.display(description='Осталось дней')
-    def days_left(self, obj):
-        return obj.days_left
-
-    @admin.display(boolean=True, description='Подписка активна')
-    def subscription_ok(self, obj):
-        return obj.subscription_ok
-
-    @admin.action(description='Продлить на 30 дней')
-    def extend_month(self, request, queryset):
-        now = timezone.now()
-        for account in queryset:
-            base = account.paid_until if account.paid_until and account.paid_until > now else now
-            account.paid_until = base + timedelta(days=30)
-            account.save(update_fields=['paid_until'])
-        self.message_user(request, f'Продлено аккаунтов: {queryset.count()}')
-
-    @admin.action(description='Сбросить токен API')
-    def rotate_tokens(self, request, queryset):
-        for account in queryset:
-            account.rotate_token()
-        self.message_user(request, 'Токены обновлены')
-
-
-@admin.register(VenueMenuItem)
-class VenueMenuItemAdmin(admin.ModelAdmin):
-    list_display = ('venue', 'kind', 'ref_slug', 'price', 'volume', 'is_available', 'is_featured')
-    list_filter = ('kind', 'is_available', 'is_featured', 'venue')
-    list_editable = ('price', 'is_available', 'is_featured')
-    search_fields = ('ref_slug', 'custom_name', 'venue__name')
-
-
-@admin.register(Lead)
-class LeadAdmin(admin.ModelAdmin):
-    list_display = ('venue_name', 'contact_name', 'phone', 'city', 'tables', 'plan_interest', 'status', 'created_at')
-    list_filter = ('status', 'city', 'plan_interest')
-    list_editable = ('status',)
-    search_fields = ('venue_name', 'phone', 'email', 'contact_name')
-    date_hierarchy = 'created_at'
-
-
-@admin.register(ScanEvent)
-class ScanEventAdmin(admin.ModelAdmin):
-    list_display = ('venue', 'table_number', 'created_at')
-    list_filter = ('venue',)
-    date_hierarchy = 'created_at'
-
-
-@admin.register(MenuEvent)
-class MenuEventAdmin(admin.ModelAdmin):
-    list_display = ('venue', 'kind', 'dish_slug', 'beer_slug', 'score', 'price', 'created_at')
-    list_filter = ('kind', 'venue')
-    search_fields = ('dish_slug', 'beer_slug')
-    date_hierarchy = 'created_at'
-
-
-# ── Отзывы гостей о парах (docs/REVIEWS.md) ──────────────────────────────────
-from .models import PairingReview  # noqa: E402
-
-
-@admin.register(PairingReview)
-class PairingReviewAdmin(admin.ModelAdmin):
-    """Модерация отзывов: статус меняется действиями списка; хеши и разбор ИИ — только для чтения."""
-    list_display = ('created_at', 'drink_id', 'dish_id', 'rating', 'helpful', 'status', 'verified', 'venue', 'short_text')
-    list_filter = ('status', 'verified', 'rating', 'locale', 'venue')
-    search_fields = ('drink_id', 'dish_id', 'dish_name', 'text', 'ai_summary_ru')
-    date_hierarchy = 'created_at'
-    readonly_fields = [f.name for f in PairingReview._meta.fields if f.name not in ('status',)]
-    actions = ('publish', 'hide', 'mark_spam')
-
-    @admin.display(description='Текст')
-    def short_text(self, obj):
-        return (obj.text[:80] + '…') if len(obj.text) > 80 else obj.text
-
-    def has_add_permission(self, request):
-        return False   # отзывы оставляют только гости через API
-
-    @admin.action(description='Опубликовать')
-    def publish(self, request, queryset):
-        queryset.update(status='published', moderated_at=timezone.now())
-
-    @admin.action(description='Скрыть')
-    def hide(self, request, queryset):
-        queryset.update(status='hidden', moderated_at=timezone.now())
-
-    @admin.action(description='Пометить как спам')
-    def mark_spam(self, request, queryset):
-        queryset.update(status='spam', moderated_at=timezone.now())

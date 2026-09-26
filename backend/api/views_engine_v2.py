@@ -31,12 +31,12 @@ from .pairing.dataset_v2 import DatasetV2, get_dataset, get_dataset_locale, is_g
 
 OCCASIONS = ("meal", "aperitif", "dessert", "hot", "evening", "party", "gourmet", "non_alcoholic")
 SENSITIVITY = ("sensitive", "median", "tolerant")   # R17.harsh_tol (Hanni: ≈ 25 / 50 / 25 %)
-MAX_LIMIT = 200
+MAX_LIMIT = 500  # весь каталог (412) одним запросом
 
 # что отдаём в списках (карточка напитка — целиком)
 DRINK_LIST_FIELDS = ("id", "name", "display_name", "category", "style", "producer", "efes_relation", "abv", "abv_source",
-                     "ibu", "vector_confidence", "vector_source", "availability_kz", "price_kzt", "image", "serving",
-                     "legacy_brand_id", "description", "flags", "status")
+                     "ibu", "vector_confidence", "vector_source", "availability_kz", "price_kzt", "image", "image_credit",
+                     "serving", "legacy_brand_id", "description", "flags", "status")
 DISH_LIST_FIELDS = ("id", "name", "display_name", "emoji", "cuisine", "category", "is_dessert", "cook_method",
                     "description", "synonyms")
 
@@ -45,7 +45,9 @@ def _ds(request=None) -> DatasetV2:
     """Набор данных; ?locale=kk|en — объяснения движка на языке гостя (баллы те же, см. docs/ENGINE_TEXTS.md)."""
     data_dir = str(getattr(settings, "FLAVOR_DATA_DIR", "")) or None
     locale = (request.query_params.get("locale") if request is not None else None) or "ru"
-    return get_dataset_locale(data_dir, locale) if locale != "ru" else get_dataset(data_dir)
+    # Веса из админки (если заданы) накладываются поверх базы; без них — обычный кэш.
+    from . import engine_tuning
+    return engine_tuning.tuned_dataset(data_dir, locale)
 
 
 def _float(x: Any, lo: float, hi: float) -> Optional[float]:
@@ -100,17 +102,17 @@ def _ctx_from(data) -> Dict[str, Any]:
 
 
 def _venue_drink_ids(ds: DatasetV2, venue_slug: Optional[str]) -> Optional[List[str]]:
-    """Что есть в заведении: сорта заведения (v1 Brand) + позиции карты kind=BEER в наличии.
-    Ссылки v1 (slug сорта) переводятся в id напитков v2 через legacy_brand_id."""
+    """Что есть в заведении: сорта из карты напитков бара (MenuDrink в наличии).
+    Сорт каталога связан с напитком движка по названию (у 17 сортов Efes есть legacy_brand_id)."""
     if not venue_slug:
         return None
     venue = Venue.objects.filter(slug=venue_slug).first()
     if not venue:
         return None
-    refs = {b.slug or str(b.id) for b in venue.brands.all()}
-    refs |= set(venue.menu_items.filter(kind="BEER", is_available=True).values_list("ref_slug", flat=True))
-    ids = [d["id"] for d in ds.drinks if d["id"] in refs or d.get("legacy_brand_id") in refs]
-    return ids
+    # Хелпер сопоставляет карту бара с движком и по сортам каталога (legacy_brand_id),
+    # и по MenuDrink.engine_drink_id (вино/сидр/б-а из карты), с учётом наличия.
+    from .venue_pairing import venue_engine_drink_ids
+    return venue_engine_drink_ids(venue, ds)
 
 
 def _drink_brief(raw: Dict[str, Any]) -> Dict[str, Any]:
@@ -153,6 +155,29 @@ def _dish_from_request(ds: DatasetV2, data) -> Optional[Dict[str, Any]]:
     return E.dish_vector(raw, ds.params)
 
 
+def _efes_ids(ds: DatasetV2) -> List[str]:
+    """id напитков движка из портфеля Efes (own/distribution — см. recommend.efes_relations)."""
+    return [d["id"] for d in ds.drinks if E.is_efes_relation(d.get("efes_relation"), ds.params)]
+
+
+def _brief_item(ds: DatasetV2, r: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Лёгкая карточка пары (?brief=1): без разбора по правилам и текстов, только суть для списка."""
+    if not r:
+        return r
+    raw = ds.drink_raw_by_id.get(r["drink_id"]) or ds.archetype_raw_by_id.get(r["drink_id"]) or {}
+    return {
+        "drink_id": r["drink_id"],
+        "score": r["score"],
+        "band": r.get("band"),
+        "band_label": r.get("band_label"),
+        "match_type": r.get("match_type"),
+        "efes_partner": r.get("efes_partner"),
+        "drink": {"id": r["drink_id"], "name": raw.get("name"), "category": raw.get("category"),
+                  "abv": raw.get("abv"), "image": raw.get("image"), "efes_relation": raw.get("efes_relation"),
+                  "style": raw.get("style"), "legacy_brand_id": raw.get("legacy_brand_id")},
+    }
+
+
 def _pairing_payload(ds: DatasetV2, dish: Dict[str, Any], data, ctx: Dict[str, Any]) -> Dict[str, Any]:
     top_raw = data.get("top")
     if str(top_raw).strip() == "0":
@@ -160,25 +185,35 @@ def _pairing_payload(ds: DatasetV2, dish: Dict[str, Any], data, ctx: Dict[str, A
     else:
         top = int(_float(top_raw, 1, 50) or ds.params["recommend"]["top_n"])
     categories = _csv(data.get("categories")) or None
+    efes_only = _truthy(data.get("efes"))
+    brief = _truthy(data.get("brief"))
     venue_ids = _venue_drink_ids(ds, data.get("venue"))
+    if efes_only:                                 # ?efes=1 — только портфель Efes (own/distribution), лёгкая выдача для главной
+        eids = set(_efes_ids(ds))
+        venue_ids = [i for i in venue_ids if i in eids] if venue_ids is not None else list(eids)
     pool = ds.guest_drink_profiles or ds.archetype_profiles
     rec = E.recommend(dish, pool, ctx, top, ds.params, ds.classic_index, categories=categories, venue_drink_ids=venue_ids)
-    tabs = E.by_category(dish, pool, ctx, ds.params, ds.classic_index, per_category=3, venue_drink_ids=venue_ids)
+    witem = (lambda r: _brief_item(ds, r)) if brief else (lambda r: _with_drink(ds, r))
     raw_dish = ds.dish_raw_by_id.get(dish["id"])
-    return {
+    out = {
         "engine": E.ENGINE_VERSION,
         "calibration": (ds.calibration or {}).get("version"),
         "dish": _dish_brief(raw_dish) if raw_dish else {"id": dish["id"], "name": dish.get("name")},
         "context": ctx,
         "venue": data.get("venue") or None,
-        "items": [_with_drink(ds, r) for r in rec["items"]],
-        "best_partner": _with_drink(ds, rec["best_partner"]),
-        "categories": [{**c, "best": _with_drink(ds, c["best"]), "items": [_with_drink(ds, x) for x in c["items"]]}
-                       for c in tabs["categories"]],
+        "items": [witem(r) for r in rec["items"]],
+        "best_partner": witem(rec["best_partner"]),
         "n_candidates": rec["n_candidates"],
         "excluded_non_alcoholic": rec["excluded_non_alcoholic"],
         "policy": rec["policy"],
     }
+    if brief:
+        out["categories"] = []                    # 17 вкладок по категориям — самая тяжёлая часть, в brief не нужны
+    else:
+        tabs = E.by_category(dish, pool, ctx, ds.params, ds.classic_index, per_category=3, venue_drink_ids=venue_ids)
+        out["categories"] = [{**c, "best": _with_drink(ds, c["best"]), "items": [_with_drink(ds, x) for x in c["items"]]}
+                             for c in tabs["categories"]]
+    return out
 
 
 # ─────────────────────────────────────────────────────────────────────────────

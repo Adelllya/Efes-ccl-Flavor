@@ -52,12 +52,24 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "src/panel.css",
+              "src/menu.css"
             ],
             "scripts": []
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "src/app/pages/auth/demo-accounts.ts",
+                  "with": "src/app/pages/auth/demo-accounts.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",

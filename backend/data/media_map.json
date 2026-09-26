@@ -1,0 +1,205 @@
+{
+ "brands": {
+  "Бочковое": {
+   "image": "brands/Bochkovoe.png"
+  },
+  "13 регион": {
+   "image": "brands/13_region_hd_sm.png",
+   "image_hd": "brands/hd/13_region_hd.png"
+  },
+  "Хмельной Лось": {
+   "image": "brands/khmelnoy_los_hd_sm.png",
+   "image_hd": "brands/hd/khmelnoy_los_hd.png"
+  },
+  "Жигулевское": {
+   "image": "brands/zhigulevskoe_hd_sm.png",
+   "image_hd": "brands/hd/zhigulevskoe_hd.png"
+  },
+  "Slavna ПРАГА": {
+   "image": "brands/praga_hd_sm.png",
+   "image_hd": "brands/hd/praga_hd.png"
+  },
+  "Карагандинское": {
+   "image": "brands/karagandinskoe_hd_sm.png",
+   "image_hd": "brands/hd/karagandinskoe_hd.png"
+  },
+  "Wùkōng Jū (悟空居)": {
+   "image": "brands/wukong_hd_sm.png",
+   "image_hd": "brands/hd/wukong_hd.png"
+  },
+  "Bavaria": {
+   "image": "brands/bavaria_hd_sm.png",
+   "image_hd": "brands/hd/bavaria_hd.png"
+  },
+  "Bremen von Lustig": {
+   "image": "brands/bremen_hd_sm.png",
+   "image_hd": "brands/hd/bremen_hd.png"
+  },
+  "Velkopopovický Kozel": {
+   "image": "brands/kozel_hd_sm.png",
+   "image_hd": "brands/hd/kozel_hd.png"
+  },
+  "Miller Genuine Draft": {
+   "image": "brands/miller_hd_sm.png",
+   "image_hd": "brands/hd/miller_hd.png"
+  },
+  "Белый Медведь": {
+   "image": "brands/belyi_medved_hd_sm.png",
+   "image_hd": "brands/hd/belyi_medved_hd.png"
+  },
+  "Кружка Свежего": {
+   "image": "brands/kruzhka_svezhego_hd_sm.png",
+   "image_hd": "brands/hd/kruzhka_svezhego_hd.png"
+  },
+  "Efes Pilsener": {
+   "image": "brands/efes_ingredients_hd_sm.png",
+   "image_hd": "brands/hd/efes_ingredients_hd.png"
+  },
+  "Легенда 777": {
+   "image": "brands/legenda_777_hd_sm.png",
+   "image_hd": "brands/hd/legenda_777_hd.png"
+  },
+  "Северное Сияние": {
+   "image": "brands/severnoe_siyanie_hd_sm.png",
+   "image_hd": "brands/hd/severnoe_siyanie_hd.png"
+  },
+  "Старый мельник (из бочонка)": {
+   "image": "brands/Melnik.png"
+  }
+ },
+ "dishes": {
+  "Бургер": {
+   "photo": "dishes/burger.webp"
+  },
+  "Куриные крылышки Buffalo": {
+   "photo": "dishes/buffalo-wings.webp"
+  },
+  "Мак-энд-чиз": {
+   "photo": "dishes/mac-and-cheese.webp"
+  },
+  "Начос": {
+   "photo": "dishes/nachos.webp"
+  },
+  "Рёбрышки BBQ": {
+   "photo": "dishes/bbq-ribs.webp"
+  },
+  "Стейк": {
+   "photo": "dishes/steak.webp"
+  },
+  "Яблочный пирог": {
+   "photo": "dishes/apple-pie.webp"
+  },
+  "Братвурст (сосиски)": {
+   "photo": "dishes/bratwurst.webp"
+  },
+  "Брецель": {
+   "photo": "dishes/pretzel.webp"
+  },
+  "Карривурст": {
+   "photo": "dishes/currywurst.webp"
+  },
+  "Картофельный салат": {
+   "photo": "dishes/kartoffelsalat.webp"
+  },
+  "Квашеная капуста": {
+   "photo": "dishes/sauerkraut.webp"
+  },
+  "Шницель": {
+   "photo": "dishes/schnitzel.webp"
+  },
+  "Штрудель": {
+   "photo": "dishes/strudel.webp"
+  },
+  "Брускетта": {
+   "photo": "dishes/bruschetta.webp"
+  },
+  "Капрезе": {
+   "photo": "dishes/caprese.webp"
+  },
+  "Лазанья": {
+   "photo": "dishes/lasagna.webp"
+  },
+  "Паста Карбонара": {
+   "photo": "dishes/carbonara.webp"
+  },
+  "Пицца Маргарита": {
+   "photo": "dishes/pizza-margherita.webp"
+  },
+  "Ризотто": {
+   "photo": "dishes/risotto.webp"
+  },
+  "Тирамису": {
+   "photo": "dishes/tiramisu.webp"
+  },
+  "Моти": {
+   "photo": "dishes/mochi.webp"
+  },
+  "Рамен": {
+   "photo": "dishes/ramen.webp"
+  },
+  "Суши (нигири)": {
+   "photo": "dishes/sushi.webp"
+  },
+  "Темпура": {
+   "photo": "dishes/tempura.webp"
+  },
+  "Тонкацу": {
+   "photo": "dishes/tonkatsu.webp"
+  },
+  "Эдамаме": {
+   "photo": "dishes/edamame.webp"
+  },
+  "Якитори": {
+   "photo": "dishes/yakitori.webp"
+  },
+  "Баурсаки": {
+   "photo": "dishes/baursaki.webp"
+  },
+  "Бешбармак": {
+   "photo": "dishes/beshbarmak.webp"
+  },
+  "Жети-ас (мясная нарезка)": {
+   "photo": "dishes/zheti-as.webp"
+  },
+  "Казы": {
+   "photo": "dishes/kazy.webp"
+  },
+  "Курт": {
+   "photo": "dishes/kurt.webp"
+  },
+  "Манты": {
+   "photo": "dishes/manty.webp"
+  },
+  "Плов": {
+   "photo": "dishes/plov.webp"
+  },
+  "Самса": {
+   "photo": "dishes/samsa.webp"
+  },
+  "Шашлык": {
+   "photo": "dishes/shashlyk.webp"
+  },
+  "Буррито": {
+   "photo": "dishes/burrito.webp"
+  },
+  "Гуакамоле": {
+   "photo": "dishes/guacamole.webp"
+  },
+  "Кесадилья": {
+   "photo": "dishes/quesadilla.webp"
+  },
+  "Тако": {
+   "photo": "dishes/tacos.webp"
+  },
+  "Чили кон карне": {
+   "photo": "dishes/chili-con-carne.webp"
+  },
+  "Чуррос": {
+   "photo": "dishes/churros.webp"
+  },
+  "Энчилада": {
+   "photo": "dishes/enchilada.webp"
+  }
+ },
+ "food_icons": {}
+}

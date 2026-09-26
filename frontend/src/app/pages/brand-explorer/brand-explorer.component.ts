@@ -1,19 +1,41 @@
-import { Component, EventEmitter, OnInit, Output, inject, signal, computed } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { catalogModeFromUrl, syncCatalogMode } from '../drinks-v2/v2-url';
 import { ApiService } from '../../services/api.service';
 import { Brand } from '../../models/flavor-tree.models';
 import { SelectionService } from '../../services/selection.service';
+import { countOf } from '../venue-menu/plural';
+import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
+import { V2ApiService } from '../drinks-v2/v2-api.service';
+import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
 
 @Component({
   selector: 'app-brand-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DrinksCatalogComponent],
   template: `
+    <!-- Сорта Efes с пирамидой или все напитки движка подбора -->
+    <div class="flex gap-md flex-wrap mb-2xl">
+      <button class="btn-outline" [class.active]="mode() === 'efes'" (click)="mode.set('efes')">
+        Сорта Efes{{ loaded() ? ' (' + brands().length + ')' : '' }}
+      </button>
+      <button class="btn-outline" [class.active]="mode() === 'all'" (click)="mode.set('all')">
+        Все напитки{{ drinksTotal() ? ' (' + drinksTotal() + ')' : '' }}
+      </button>
+    </div>
+
+    @if (mode() === 'all') {
+      <div class="mb-3xl">
+        <h1 class="section-header">Все напитки</h1>
+        <p class="text-muted">Пиво, вино, крепкое, коктейли и безалкогольное: всё, с чем работает подбор к блюдам</p>
+      </div>
+      <app-drinks-catalog (openBrand)="openBrandById($event)" />
+    } @else {
     <div class="flex justify-between items-start mb-3xl flex-wrap gap-lg">
       <div>
-        <h1 class="section-header">Каталог 17 сортов & Вкусовая пирамида</h1>
-        <p class="text-muted">Исследуйте сенсорные профили, температуру подачи, бокалы и гастрономические характеристики</p>
+        <h1 class="section-header">Каталог {{ loaded() ? countOf(brands().length, 'сорта', 'сортов', 'сортов') : 'сортов' }} и вкусовая пирамида</h1>
+        <p class="text-muted">Исследуйте сенсорные профили, температуру подачи, бокалы и подходящие блюда</p>
       </div>
       <div style="position: relative; min-width: 280px; max-width: 380px; width: 100%;">
         <input
@@ -37,7 +59,7 @@ import { SelectionService } from '../../services/selection.service';
     <!-- Панель фильтров -->
     <div class="glass-panel flex items-center gap-md flex-wrap mb-3xl" style="padding: 16px 24px;">
       <span class="text-muted font-semibold text-sm">Упаковка:</span>
-      <button class="btn-outline" [class.active]="selectedPackaging() === ''" (click)="selectedPackaging.set('')">Все ({{ brands().length }})</button>
+      <button class="btn-outline" [class.active]="selectedPackaging() === ''" (click)="selectedPackaging.set('')">Все{{ loaded() ? ' (' + brands().length + ')' : '' }}</button>
       <button class="btn-outline" [class.active]="selectedPackaging() === 'BOTTLE'" (click)="selectedPackaging.set('BOTTLE')">Бутылка</button>
       <button class="btn-outline" [class.active]="selectedPackaging() === 'CAN'" (click)="selectedPackaging.set('CAN')">Банка</button>
       <button class="btn-outline" [class.active]="selectedPackaging() === 'DRAFT'" (click)="selectedPackaging.set('DRAFT')">Разливное</button>
@@ -62,6 +84,17 @@ import { SelectionService } from '../../services/selection.service';
     }
 
     <!-- Сетка сортов -->
+    @if (!loaded()) {
+      <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сорта">
+        @for (i of skeletonCards; track i) {
+          <div class="skeleton-card">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+          </div>
+        }
+      </div>
+    } @else {
     <div class="grid grid-cards">
       @for (brand of filteredBrands(); track brand.id) {
         <div class="glass-card beer-card p-xl stagger-item" (click)="openBrandDetail(brand)">
@@ -73,7 +106,7 @@ import { SelectionService } from '../../services/selection.service';
               <span class="badge badge-dark beer-card-image-badge">{{ brand.packaging_type_display || brand.packaging_type }}</span>
             }
             @if (brand.image) {
-              <img [src]="brand.image" [alt]="brand.name" />
+              <img [src]="brand.image" [alt]="brand.name" loading="lazy" decoding="async" />
             } @else {
               <div class="beer-card-placeholder">
                 <span>🍺</span>
@@ -87,9 +120,10 @@ import { SelectionService } from '../../services/selection.service';
             <div>
               <div class="beer-card-meta">
                 <span class="badge">{{ brand.style }}</span>
-                <span class="beer-card-abv">
-                  {{ brand.abv !== null && brand.abv !== undefined ? brand.abv + '% ABV' : 'N/A' }}
-                </span>
+                <!-- Крепости нет: бейдж не показываем. Оценку по стилю подписываем «около». -->
+                @if (abvText(brand.abv, brand.abv_estimated); as abv) {
+                  <span class="beer-card-abv" [attr.title]="brand.abv_estimated ? abvHint : 'Крепость'">{{ abv }}</span>
+                }
               </div>
               <h3 class="beer-card-name">{{ brand.name }}</h3>
               @if (brand.brand_owner) {
@@ -99,16 +133,15 @@ import { SelectionService } from '../../services/selection.service';
             </div>
 
             <div class="beer-card-footer">
-              <div class="flex justify-between items-center text-sm mb-md">
-                <span class="text-muted">Пирамида:</span>
-                @if (brand.profile?.complete) {
-                  <span class="font-bold" style="color: var(--success);">Заполнен</span>
-                } @else {
-                  <span class="font-semibold text-deep">Черновик</span>
-                }
-              </div>
+              <!-- Внутренний статус пирамиды (черновик или заполнена) гостю не показываем, только число нот -->
+              @if (brand.note_count) {
+                <div class="flex justify-between items-center text-sm mb-md">
+                  <span class="text-muted">Вкусовая пирамида:</span>
+                  <span class="font-semibold text-deep">{{ countOf(brand.note_count, 'нота', 'ноты', 'нот') }}</span>
+                </div>
+              }
               <button class="btn-amber btn-block btn-sm" (click)="$event.stopPropagation(); openBrandDetail(brand)">
-                Пирамида & Подача
+                Пирамида и подача
               </button>
             </div>
           </div>
@@ -120,8 +153,8 @@ import { SelectionService } from '../../services/selection.service';
         </div>
       }
     </div>
-
-
+    }
+    }
   `,
   styles: [`
     .beer-card-image-badge {
@@ -136,13 +169,27 @@ import { SelectionService } from '../../services/selection.service';
 })
 export class BrandExplorerComponent implements OnInit {
   private api = inject(ApiService);
+  private v2 = inject(V2ApiService);
   private selection = inject(SelectionService);
 
-  /** Просит показать страницу сорта — маршрут выбирает AppComponent. */
+  /** Просит показать страницу сорта - маршрут выбирает AppComponent. */
   @Output() openBrand = new EventEmitter<string>();
 
   brands = signal<Brand[]>([]);
+  /** Пока false - скелет; "ничего не найдено" показываем только после загрузки. */
+  loaded = signal(false);
   searchQuery = signal<string>('');
+
+  readonly countOf = countOf;
+  readonly abvText = abvText;
+  readonly abvHint = ABV_ESTIMATE_HINT;
+  /** Сколько напитков в каталоге движка: число берём из /api/v2/meta/, а не пишем текстом. */
+  drinksTotal = signal<number | null>(null);
+  /** efes - 17 сортов с пирамидой, all - все напитки движка подбора. */
+  mode = signal<'efes' | 'all'>(catalogModeFromUrl());
+  /** Режим живёт в адресе (?view=all): переживает перезагрузку и возврат со страницы сорта. */
+  private readonly modeInUrl = effect(() => syncCatalogMode(this.mode()));
+  readonly skeletonCards = [1, 2, 3, 4, 5, 6];
   selectedPackaging = signal<string>('');
   onlyHoreca = signal<boolean>(false);
 
@@ -163,13 +210,23 @@ export class BrandExplorerComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.api.getBrands().subscribe(data => this.brands.set(data));
+    this.v2.meta().subscribe({ next: m => this.drinksTotal.set(m.drinks || null), error: () => {} });
+    this.api.getBrands().subscribe({
+      // Снятые с публикации сорта в каталог не попадают
+      next: data => { this.brands.set(data.filter(b => b.is_active !== false)); this.loaded.set(true); },
+      error: () => this.loaded.set(true),
+    });
   }
 
   resetFilters() {
     this.searchQuery.set('');
     this.selectedPackaging.set('');
     this.onlyHoreca.set(false);
+  }
+
+  openBrandById(id: string) {
+    const brand = this.brands().find(b => b.id === id);
+    if (brand) this.openBrandDetail(brand);
   }
 
   /** Каталог и подбор ведут на одну и ту же страницу сорта. */

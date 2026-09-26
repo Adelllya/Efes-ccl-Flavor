@@ -3,69 +3,77 @@ Django settings for flavor_tree project.
 """
 
 import os
-import re
+import sys
 from pathlib import Path
 
-from corsheaders.defaults import default_headers
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-def _load_dotenv(path: Path) -> None:
-    """backend/.env → os.environ, без сторонних пакетов. Образец — backend/.env.example.
-
-    Формат: KEY=VALUE, строки с # — комментарии, кавычки вокруг значения необязательны,
-    префикс `export ` допустим. Пустое значение = переменная не задана.
-    Реальное окружение главнее файла: уже заданные переменные НЕ перезаписываются.
-    Значения попадают в os.environ при импорте настроек, поэтому их видит и код,
-    который читает окружение сам (api/ai.py → ANTHROPIC_API_KEY, api/auth.py → FT_ADMIN_TOKEN).
+def load_dotenv(path):
     """
-    if not path.is_file():
+    Читает backend/.env: строки KEY=VALUE, комментарии и пустые строки пропускаются,
+    кавычки вокруг значения не обязательны. Настоящие переменные окружения важнее файла,
+    пустое значение в файле ничего не задаёт.
+    """
+    try:
+        lines = Path(path).read_text(encoding='utf-8').splitlines()
+    except OSError:
         return
-    for raw in path.read_text(encoding='utf-8-sig').splitlines():
+    for raw in lines:
         line = raw.strip()
-        if not line or line.startswith('#'):
+        if not line or line.startswith('#') or '=' not in line:
             continue
-        if line.startswith('export '):
-            line = line[7:].lstrip()
-        key, sep, value = line.partition('=')
-        key, value = key.strip(), value.strip()
-        if not sep or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key):
-            continue
-        if value[:1] in ('"', "'"):
-            end = value.find(value[0], 1)
-            value = value[1:end] if end != -1 else value[1:]
-        else:
-            # хвостовой комментарий у значения без кавычек: KEY=value  # пояснение
-            value = re.split(r'\s+#', value, maxsplit=1)[0].strip()
-        if value:
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            value = value[1:-1]
+        if key and value:
             os.environ.setdefault(key, value)
 
 
-_load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / '.env')
 
 
-def _env_list(name: str) -> list[str]:
-    return [v.strip() for v in os.environ.get(name, '').split(',') if v.strip()]
+def env_flag(name, default=False):
+    value = os.environ.get(name, '').strip().lower()
+    if not value:
+        return default
+    return value in ('true', '1', 'yes', 'on')
 
 
-_DEV_SECRET_KEY = 'django-insecure-flavor-tree-dev-key-change-in-production'
+def env_list(name):
+    return [item.strip() for item in os.environ.get(name, '').split(',') if item.strip()]
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or _DEV_SECRET_KEY
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
+# Vercel сам ставит переменную VERCEL=1 во всех своих функциях.
+ON_VERCEL = bool(os.environ.get('VERCEL'))
 
-# Прод с ключом из репозитория не запускаем: им подписаны сессии и токены сброса пароля.
-if not DEBUG and SECRET_KEY.startswith('django-insecure-'):
-    raise ImproperlyConfigured(
-        'DJANGO_DEBUG=False, а DJANGO_SECRET_KEY не задан (или это dev-ключ). '
-        'Задайте свой ключ в окружении или в backend/.env — см. backend/.env.example.'
-    )
+# Без явного DJANGO_DEBUG отладка включена только на своей машине, когда Django запущен
+# через manage.py (runserver, test, команды). На Vercel и под gunicorn она выключена.
+DEBUG = env_flag('DJANGO_DEBUG', default=not ON_VERCEL and Path(sys.argv[0]).name == 'manage.py')
 
-# В разработке пускаем любой Host; в проде — только перечисленные в DJANGO_ALLOWED_HOSTS.
-# Пустой список при DEBUG=False означает 400 на любой запрос — это безопаснее, чем '*'.
-ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS') or (['*'] if DEBUG else [])
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '').strip()
+if not SECRET_KEY or SECRET_KEY.startswith('django-insecure'):
+    if not DEBUG:
+        raise ImproperlyConfigured(
+            'Задайте DJANGO_SECRET_KEY: длинная случайная строка, например из '
+            'python -c "import secrets; print(secrets.token_urlsafe(50))"')
+    SECRET_KEY = SECRET_KEY or 'django-insecure-flavor-tree-dev-key-change-in-production'
+
+# Домены через запятую в DJANGO_ALLOWED_HOSTS. На Vercel к ним добавляются адреса,
+# которые Vercel сообщает сам: основной домен проекта, адрес ветки и конкретного деплоя.
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS')
+if ON_VERCEL:
+    ALLOWED_HOSTS += [host for host in (
+        os.environ.get('VERCEL_PROJECT_PRODUCTION_URL', ''),
+        os.environ.get('VERCEL_BRANCH_URL', ''),
+        os.environ.get('VERCEL_URL', ''),
+    ) if host]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*'] if DEBUG else ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -76,14 +84,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third party
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'django_filters',
     # Local
     'api',
+    # Загруженные фото в базе: на Vercel нет постоянного диска (см. STORAGES ниже)
+    'media_db',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,23 +125,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'flavor_tree.wsgi.application'
 
-# Database — PostgreSQL на проде (DATABASE_URL или DB_*), SQLite локально по умолчанию
-from urllib.parse import urlparse
-
-_db_url = os.environ.get('DATABASE_URL', '')
-if _db_url:
-    _u = urlparse(_db_url)
+# Database - PostgreSQL.
+# На проде (Railway) подключаемся по DATABASE_URL, который выдаёт плагин Postgres.
+# Локально — по отдельным переменным DB_* или их значениям по умолчанию.
+# DATABASE_URL — общий стандарт; Vercel Postgres кладёт строку в POSTGRES_URL.
+DATABASE_URL = (
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('POSTGRES_URL_NON_POOLING')
+    or os.environ.get('POSTGRES_URL')
+)
+if DATABASE_URL:
+    import dj_database_url
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': _u.path.lstrip('/'),
-            'USER': _u.username or '',
-            'PASSWORD': _u.password or '',
-            'HOST': _u.hostname or '127.0.0.1',
-            'PORT': str(_u.port or 5432),
-        }
+        # conn_health_checks: соединение, которое база закрыла за время простоя, заменяется новым, а не даёт 500
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True, ssl_require=False)
     }
-elif os.environ.get('DB_NAME'):
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -140,19 +151,6 @@ elif os.environ.get('DB_NAME'):
             'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
-else:
-    # FT_SQLITE_PATH — другой файл SQLite вместо backend/db.sqlite3: например, временная база, в которой
-    # seed_brand_demo собирает data/brand_demo_overview.json, не трогая рабочую (docs/EFES_ANALYTICS.md).
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': Path(os.environ['FT_SQLITE_PATH']).resolve() if os.environ.get('FT_SQLITE_PATH')
-            else BASE_DIR / 'db.sqlite3',
-        }
-    }
-
-# Канонические данные Flavor Tree (общие с фронтендом): /data/*.json
-FLAVOR_DATA_DIR = Path(os.environ.get('FLAVOR_DATA_DIR', BASE_DIR.parent / 'data'))
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -168,26 +166,94 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# WhiteNoise: раздаёт статику Django (админка, DRF) прямо из приложения на проде.
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+    },
+}
+
+# На Vercel collectstatic не запускается, поэтому WhiteNoise берёт статику
+# (админка, DRF) прямо из пакетов.
+WHITENOISE_USE_FINDERS = True
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# На Vercel диск функции только для чтения: новые фото (логотип, блюда, сорта) пишутся в базу
+# (приложение media_db), а фото из репозитория по-прежнему читаются из media/.
+# Локально файлы лежат на диске, как раньше. Переключить вручную: FT_MEDIA_IN_DB=1 или 0.
+FT_MEDIA_IN_DB = env_flag('FT_MEDIA_IN_DB', default=ON_VERCEL)
+if FT_MEDIA_IN_DB:
+    STORAGES['default'] = {'BACKEND': 'media_db.storage.DatabaseStorage'}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings — Angular dev server
+# CORS. Локальные адреса dev-сервера плюс дополнительные origin из окружения
+# (например, домен фронтенда на Vercel), заданные через запятую в DJANGO_CORS_ALLOWED_ORIGINS.
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
     'http://127.0.0.1:4200',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-] + _env_list('CORS_ALLOWED_ORIGINS')
+    'http://localhost:4201',
+    'http://127.0.0.1:4201',
+]
+_extra_cors = os.environ.get('DJANGO_CORS_ALLOWED_ORIGINS', '')
+CORS_ALLOWED_ORIGINS += [o.strip() for o in _extra_cors.split(',') if o.strip()]
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-# Authorization разрешён по умолчанию; X-Admin-Token / X-Brand-Token — второй способ передать токен
-# сомелье и бренда (api/auth.py)
-CORS_ALLOW_HEADERS = (*default_headers, 'x-admin-token', 'x-brand-token')
+
+# CSRF: домены, которым доверяем для форм админки и session-запросов на проде (https).
+# Задаются через запятую, каждый со схемой, напр. https://myapp.up.railway.app,https://myfront.vercel.app
+_csrf_origins = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
+
+# За обратным прокси Railway/Vercel запрос приходит по https — сообщаем об этом Django,
+# иначе ломаются CSRF-проверка админки и secure-cookie.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+# Счётчики лимитов запросов (вход, регистрация, заказы, ИИ) живут в кэше. На Vercel у каждого
+# инстанса функции своя память, поэтому там кэш общий, в таблице базы ft_cache.
+# Таблицу создаёт холодный старт (index.py) или manage.py createcachetable.
+if ON_VERCEL or env_flag('FT_DB_CACHE'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'ft_cache',
+            'OPTIONS': {'MAX_ENTRIES': 5000},
+        }
+    }
+
+# Лимиты: ИИ ограничен всегда, вход, регистрация, смена пароля и заказы гостей только на сервере
+# (на своей машине и в manage.py test их нет, даже с DJANGO_DEBUG=False). Значения: переменные FT_RATE_*.
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+THROTTLE_RATES = {
+    'ai': '30/min',
+    'ai_user': '60/min',
+}
+if not DEBUG and not TESTING:
+    THROTTLE_RATES.update({
+        'login': os.environ.get('FT_RATE_LOGIN', '10/min'),
+        'register': os.environ.get('FT_RATE_REGISTER', '10/hour'),
+        'password': os.environ.get('FT_RATE_PASSWORD', '10/hour'),
+        # Гости бара часто сидят в одном Wi-Fi, то есть за одним IP: лимит с запасом.
+        'orders': os.environ.get('FT_RATE_ORDERS', '60/hour'),
+    })
 
 # REST Framework
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # Токен DRF с ограниченным сроком жизни (FT_TOKEN_TTL_DAYS, по умолчанию 30 дней)
+        'api.authentication.ExpiringTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    # Чтение открыто всем, доступ на запись задаётся в каждой view отдельно.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
@@ -198,7 +264,28 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    # Глобальное ограничение не включаем: классы throttle указаны в самих view.
+    'DEFAULT_THROTTLE_RATES': THROTTLE_RATES,
 }
+if not DEBUG:
+    # На сервере API отвечает только JSON: HTML-страницы DRF там не нужны.
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = ['rest_framework.renderers.JSONRenderer']
+if ON_VERCEL:
+    # Перед функцией один прокси Vercel: IP гостя последний в X-Forwarded-For.
+    # Без этого лимиты обходятся подделкой заголовка.
+    REST_FRAMEWORK['NUM_PROXIES'] = int(os.environ.get('DJANGO_NUM_PROXIES', '1'))
 
-# Фото блюда или этикетки для ИИ-сомелье: клиент ужимает до ~0.3 МБ, сервер принимает до 5 МБ картинки в base64 (+ конверт)
-DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+# Срок жизни токена входа в днях. 0 - бессрочно.
+FT_TOKEN_TTL_DAYS = int(os.environ.get('FT_TOKEN_TTL_DAYS', '30'))
+
+# ИИ-сомелье. Ключ ANTHROPIC_API_KEY берётся из окружения или backend/.env и в настройках не хранится;
+# без ключа работает локальный подбор. Модель можно заменить через FT_AI_MODEL.
+FT_AI_MODEL = os.environ.get('FT_AI_MODEL', 'claude-opus-5')
+# Сколько ответов Claude можно за сутки (по Алматы) на весь сервис; дальше отвечает вкусовой движок.
+# 0 выключает Claude. Число разбирает ai_usage.daily_limit(), поэтому опечатка не роняет весь бэкенд.
+FT_AI_DAILY_LIMIT = os.environ.get('FT_AI_DAILY_LIMIT', '300')
+
+# Адрес сайта (фронтенда), на который ведут QR-коды столов: FT_PUBLIC_SITE_URL/menu/<slug>?table=N&src=qr.
+# На проде задать обязательно, например https://<домен-фронта>.vercel.app. Пусто: берётся сайт,
+# с которого открыли картинку QR (Origin или Referer), а в DEBUG - http://localhost:4200.
+FT_PUBLIC_SITE_URL = os.environ.get('FT_PUBLIC_SITE_URL', '').strip().rstrip('/')

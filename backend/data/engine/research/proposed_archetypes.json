@@ -1,0 +1,235 @@
+{
+ "fino_sherry": {
+  "category": "fortified",
+  "family": "SHERRY",
+  "abv": 15.5,
+  "ibu": null,
+  "sensory": {
+   "sweet": 0.0,
+   "acid": 0.45,
+   "bitter": 0.15,
+   "tannin": 0.05,
+   "carbonation": 0.0,
+   "alcohol": 0.3875,
+   "body": 0.35,
+   "dairy": 0.0,
+   "salt": 0.2,
+   "umami": 0.4,
+   "aroma_intensity": 0.7,
+   "roast": 0.0,
+   "smoke": 0.0,
+   "serve_temp": 8.0
+  },
+  "aroma_tags": {
+   "nutty": 0.7,
+   "yeast": 0.6,
+   "brine": 0.6,
+   "mineral": 0.3
+  },
+  "origin_affinity": [
+   "spanish"
+  ],
+  "anchor": "Сухой херес под флором, ≈ 15 % ABV, < 5 г/л сахара; WSET: «This gives the wine an umami (extremely savoury) taste»",
+  "label_ru": "Херес фино / мансанилья",
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Сухое креплёное с умами и солёностью — пары с фиш-энд-чипс, суши, копчёным, спаржей (Decanter, WSET)",
+   "used_by_pairs": [
+    "R220",
+    "R221",
+    "R222",
+    "R223"
+   ]
+  }
+ },
+ "rose": {
+  "category": "wine",
+  "family": "ROSE",
+  "abv": 12.5,
+  "ibu": null,
+  "sensory": {
+   "sweet": 0.1,
+   "acid": 0.7,
+   "bitter": 0.05,
+   "tannin": 0.15,
+   "carbonation": 0.0,
+   "alcohol": 0.3125,
+   "body": 0.4,
+   "dairy": 0.0,
+   "salt": 0.0,
+   "umami": 0.0,
+   "aroma_intensity": 0.55,
+   "roast": 0.0,
+   "smoke": 0.0,
+   "serve_temp": 9.0
+  },
+  "aroma_tags": {
+   "red_fruit": 0.7,
+   "citrus": 0.4,
+   "herbal": 0.2,
+   "mineral": 0.3
+  },
+  "origin_affinity": [
+   "french",
+   "spanish",
+   "italian"
+  ],
+  "anchor": "Сухое розовое (≤ 4 г/л сахара по EU), без газа; подача ≈ 8–10 °C (WSET 2022 для лёгких вин)",
+  "label_ru": "Розовое сухое",
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Пары с тако, суши, лососем, бараниной (Wine Folly, Decanter); среди архетипов нет вина с низким танином и красными ягодами при высокой кислотности",
+   "used_by_pairs": [
+    "R210",
+    "R211",
+    "R212",
+    "R213",
+    "R214"
+   ]
+  }
+ },
+ "saison": {
+  "category": "beer",
+  "family": "SAISON",
+  "abv": 6.0,
+  "ibu": 28,
+  "sensory": {
+   "sweet": 0.05,
+   "acid": 0.35,
+   "bitter": 0.45,
+   "tannin": 0.05,
+   "carbonation": 0.9,
+   "alcohol": 0.15,
+   "body": 0.3,
+   "dairy": 0.0,
+   "salt": 0.0,
+   "umami": 0.0,
+   "aroma_intensity": 0.7,
+   "roast": 0.0,
+   "smoke": 0.0,
+   "serve_temp": 8.0
+  },
+  "aroma_tags": {
+   "pepper": 0.6,
+   "citrus": 0.5,
+   "yeast": 0.5,
+   "herbal": 0.3,
+   "clove": 0.2
+  },
+  "origin_affinity": [
+   "belgian",
+   "french"
+  ],
+  "anchor": "BJCP 25B Saison: IBU 20–35, OG 1.048–1.065, FG 1.002–1.008, ABV 5.0–7.0 % (standard); «Light to medium-low body. Very high carbonation»",
+  "label_ru": "Сезон (бельгийский фермерский эль)",
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Сухой, очень газированный, перечный эль — пары с сырами, мидиями (CraftBeer.com, Oxford Companion); среди 57 архетипов аналога нет",
+   "used_by_pairs": [
+    "R122",
+    "R138",
+    "R139"
+   ]
+  }
+ },
+ "sake": {
+  "category": "wine",
+  "family": "SAKE",
+  "abv": 15.0,
+  "ibu": null,
+  "sensory": {
+   "sweet": 0.2,
+   "acid": 0.35,
+   "bitter": 0.05,
+   "tannin": 0.0,
+   "carbonation": 0.0,
+   "alcohol": 0.375,
+   "body": 0.45,
+   "dairy": 0.0,
+   "salt": 0.0,
+   "umami": 0.5,
+   "aroma_intensity": 0.55,
+   "roast": 0.0,
+   "smoke": 0.0,
+   "serve_temp": 10.0
+  },
+  "aroma_tags": {
+   "rice": 1,
+   "stone_fruit": 0.3,
+   "floral": 0.3,
+   "yeast": 0.3
+  },
+  "origin_affinity": [
+   "japanese"
+  ],
+  "anchor": "Саке: ≈ 15–16 % ABV, без газа; WSET: «It contains no tannins and very little bitterness» (низкая кислотность, высокий умами). Сладость (SMV) и подача (5–50 °C) сильно различаются — один архетип это не описывает",
+  "label_ru": "Саке (дзюнмай / гиндзё)",
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Много пар из WSET, JSS (японская ассоциация производителей саке), Decanter. Категории sake в контракте нет — предлагаем wine или отдельную категорию",
+   "used_by_pairs": [
+    "R254",
+    "R255",
+    "R256",
+    "R257",
+    "R258",
+    "R285",
+    "R286",
+    "R287",
+    "R288"
+   ]
+  }
+ },
+ "sweet_white": {
+  "category": "wine",
+  "family": "SWEET_WINE",
+  "abv": 13.0,
+  "ibu": null,
+  "sensory": {
+   "sweet": 0.9,
+   "acid": 0.7,
+   "bitter": 0.05,
+   "tannin": 0.05,
+   "carbonation": 0.0,
+   "alcohol": 0.325,
+   "body": 0.8,
+   "dairy": 0.0,
+   "salt": 0.0,
+   "umami": 0.0,
+   "aroma_intensity": 0.8,
+   "roast": 0.0,
+   "smoke": 0.0,
+   "serve_temp": 8.0
+  },
+  "aroma_tags": {
+   "honey": 0.8,
+   "stone_fruit": 0.7,
+   "citrus": 0.4,
+   "tropical_fruit": 0.4
+  },
+  "origin_affinity": [
+   "french",
+   "hungarian",
+   "german"
+  ],
+  "anchor": "Сладкое вино > 45 г/л сахара по EU (сотерн, токай, айсвайн); высокая кислотность; подача ≈ 8 °C",
+  "label_ru": "Сладкое белое (сотерн, поздний сбор, айсвайн)",
+  "proposal": {
+   "status": "proposed",
+   "by": "research_v2",
+   "justification": "Классика «сотерн × рокфор» (Jancis Robinson), десертные пары; port покрывает красные креплёные, но не белые сладкие некреплёные",
+   "used_by_pairs": [
+    "R215",
+    "R216",
+    "R217",
+    "R218",
+    "R219",
+    "R338"
+   ]
+  }
+ }
+}

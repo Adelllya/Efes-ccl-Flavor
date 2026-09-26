@@ -24,13 +24,5 @@ Thumbs.db
 # Large archives (GitHub limit 100 MB)
 *.zip
 
-# Flavor Tree v2
-backend/.venv/
-backend/staticfiles/
-frontend/scripts/.engine-build/
-frontend/.angular/
-
-# Генерируемые артефакты (пересобираются скриптами)
-docs/drink-art/gallery.html
-docs/drink-art/*.png
-docs/dish-photos/*.png
+# Django collected static (generated on deploy)
+staticfiles/

@@ -1,11 +1,7 @@
-import { Component, EventEmitter, Input, Output, computed, signal } from '@angular/core';
+import { Component, EventEmitter, Output, computed, effect, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Brand, Dish, FoodIcon, FoodPairing, PairingType } from '../../models/flavor-tree.models';
+import { Brand, Dish, FoodIcon, FoodPairing, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { COOKING, TASTES, CATEGORIES, bigImage, smallImage } from './pairing-engine.data';
-
-const PAIRING_LABEL: Record<string, string> = {
-  COMPLEMENT: 'Дополняет', CONTRAST: 'Контраст', CLEANSE: 'Очищает', BRIDGE: 'Мостик',
-};
 
 const PAIRING_HINT: Record<string, string> = {
   COMPLEMENT: 'Похожие вкусы усиливают друг друга',
@@ -25,8 +21,8 @@ interface PairCard {
 /**
  * Ветка «у меня есть пиво»: витрина сортов, затем пары к выбранному.
  *
- * Сорт человек знает по названию, поэтому первый шаг — не опросник, а
- * полка с бутылками. На втором шаге слева стоит напиток, справа — блюда
+ * Сорт человек знает по названию, поэтому первый шаг - не опросник, а
+ * полка с бутылками. На втором шаге слева стоит напиток, справа - блюда
  * карточками: с оценкой, объяснением сомелье целиком и значками того,
  * за счёт чего пара работает.
  */
@@ -54,7 +50,7 @@ interface PairCard {
       @if (!selected()) {
         <header class="bp-ask">
           <h2 class="section-header">Что у тебя <span class="bp-accent">в бокале?</span></h2>
-          <p class="section-subtitle">Выбери сорт — покажем блюда, которые к нему подходят, и объясним почему</p>
+          <p class="section-subtitle">Выбери сорт - покажем блюда, которые к нему подходят, и объясним почему</p>
         </header>
 
         <div class="bp-find">
@@ -77,7 +73,19 @@ interface PairCard {
         </div>
 
         @if (!visible().length) {
-          <p class="bp-empty">Такого сорта не нашли. Проверьте написание или уберите фильтр.</p>
+          @if (loaded()) {
+            <p class="bp-empty">Такого сорта не нашли. Проверьте написание или уберите фильтр.</p>
+          } @else {
+            <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сорта">
+              @for (i of skeletonCards; track i) {
+                <div class="skeleton-card">
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line"></div>
+                </div>
+              }
+            </div>
+          }
         } @else {
           <div class="bp-grid">
             @for (b of visible(); track b.id; let i = $index) {
@@ -120,7 +128,7 @@ interface PairCard {
 
             @if (b.serving_recommendation; as rec) {
               <p class="text-xs text-muted bp-serve">
-                Подавать при {{ rec.serving_temp_min }}–{{ rec.serving_temp_max }} °C, {{ rec.glass_type }}
+                Подавать при {{ rec.serving_temp_min }}-{{ rec.serving_temp_max }} °C, {{ rec.glass_type }}
               </p>
             }
 
@@ -133,14 +141,26 @@ interface PairCard {
           <div class="bp-list">
             <header class="bp-list-head">
               <h3 class="section-header bp-list-title">Что к нему подать</h3>
-              @if (intro) { <p class="text-muted">{{ intro }}</p> }
+              @if (intro()) { <p class="text-muted">{{ intro() }}</p> }
             </header>
 
             @if (!cards().length) {
-              <div class="bp-none">
-                <p class="text-dim">Для этого сорта пары пока не описаны.</p>
-                <p class="text-sm text-muted">Их заполняет сомелье в своей панели — как только появятся, они будут здесь.</p>
-              </div>
+              @if (loaded()) {
+                <div class="bp-none">
+                  <p class="text-dim">Для этого сорта пары пока не описаны.</p>
+                  <p class="text-sm text-muted">Их заполняет сомелье в своей панели - как только появятся, они будут здесь.</p>
+                </div>
+              } @else {
+                <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сочетания">
+                  @for (i of skeletonCards; track i) {
+                    <div class="skeleton-card">
+                      <div class="skeleton-line"></div>
+                      <div class="skeleton-line"></div>
+                      <div class="skeleton-line"></div>
+                    </div>
+                  }
+                </div>
+              }
             } @else {
               <div class="bp-cards">
                 @for (c of cards(); track c.pairing.id; let i = $index) {
@@ -385,7 +405,7 @@ interface PairCard {
     .bp-pair:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
 
     /* ── Пара в лицах: слева блюдо, справа напиток ──
-       Тот же приём, что на плакатах о гастропарах: два предмета рядом
+       Тот же приём, что на плакатах о еде и напитках: два предмета рядом
        читаются как сочетание быстрее любой подписи. */
     .bp-duo {
       display: flex;
@@ -493,16 +513,25 @@ interface PairCard {
   `],
 })
 export class BeerPairingsComponent {
-  @Input() brands: Brand[] = [];
-  @Input() pairings: FoodPairing[] = [];
-  @Input() dishes: Dish[] = [];
-  @Input() icons: FoodIcon[] = [];
-  @Input() intro = '';
-  /** Минимальная оценка пары — приходит из настроек витрины. */
-  @Input() minScore = 1;
+  // Сигнальные входы: computed ниже пересчитываются, когда родитель дозагрузит каталог
+  brands = input<Brand[]>([]);
+  pairings = input<FoodPairing[]>([]);
+  dishes = input<Dish[]>([]);
+  icons = input<FoodIcon[]>([]);
+  /** false, пока родитель ещё грузит каталог: тогда вместо "пусто" скелет. */
+  loaded = input(true);
+  intro = input('');
+  /** Сорт, с которого открыть сразу второй шаг (экспресс-сценарии главной). */
+  initial = input<Brand | null>(null);
+
+  readonly skeletonCards = [1, 2, 3];
+  /** Минимальная оценка пары - приходит из настроек витрины. */
+  minScore = input(1);
 
   @Output() openBrand = new EventEmitter<string>();
   @Output() exit = new EventEmitter<void>();
+  /** Гость сам открыл сорт или вернулся к списку: родитель ведёт историю браузера. */
+  @Output() picked = new EventEmitter<Brand | null>();
 
   readonly packs = [
     { id: '', label: 'Все' },
@@ -515,13 +544,21 @@ export class BeerPairingsComponent {
   query = signal('');
   pack = signal('');
 
+  constructor() {
+    // Родитель передал сорт: открываем сразу пары к нему
+    effect(() => {
+      const brand = this.initial();
+      if (brand) this.selected.set(brand);
+    }, { allowSignalWrites: true });
+  }
+
   readonly big = bigImage;
   readonly small = smallImage;
 
   visible = computed(() => {
     const q = this.query().trim().toLowerCase();
     const p = this.pack();
-    return this.brands.filter(b => {
+    return this.brands().filter(b => {
       if (b.is_active === false) return false;
       if (p && b.packaging_type !== p) return false;
       if (q && !`${b.name} ${b.style}`.toLowerCase().includes(q)) return false;
@@ -541,17 +578,18 @@ export class BeerPairingsComponent {
   cards = computed<PairCard[]>(() => {
     const brand = this.selected();
     if (!brand) return [];
-    const byId = new Map(this.dishes.map(d => [d.id, d]));
-    const byName = new Map(this.dishes.map(d => [d.name.toLowerCase(), d]));
+    const byId = new Map(this.dishes().map(d => [d.id, d]));
+    const byName = new Map(this.dishes().map(d => [d.name.toLowerCase(), d]));
+    const minScore = this.minScore();
 
-    return this.pairings
-      .filter(p => (p.brand === brand.id || p.brand_name === brand.name) && p.compatibility_score >= this.minScore)
+    return this.pairings()
+      .filter(p => (p.brand === brand.id || p.brand_name === brand.name) && p.compatibility_score >= minScore)
       .sort((a, b) => b.compatibility_score - a.compatibility_score)
       .map(p => {
         const dish = byId.get(p.dish) ?? byName.get((p.dish_name ?? '').toLowerCase()) ?? null;
         return {
           pairing: p,
-          label: PAIRING_LABEL[p.pairing_type] ?? p.pairing_type,
+          label: PAIRING_LABELS[p.pairing_type] ?? p.pairing_type,
           hint: PAIRING_HINT[p.pairing_type] ?? '',
           photo: dish?.image || null,
           marks: this.marksFor(dish),
@@ -561,16 +599,17 @@ export class BeerPairingsComponent {
 
   select(brand: Brand): void {
     this.selected.set(brand);
+    this.picked.emit(brand);
     window.scrollTo({ top: Math.max(0, window.scrollY - 200), behavior: 'smooth' });
   }
 
   goBack(): void {
-    if (this.selected()) { this.selected.set(null); return; }
+    if (this.selected()) { this.selected.set(null); this.picked.emit(null); return; }
     this.exit.emit();
   }
 
   /**
-   * Значки под объяснением: способ приготовления, вкус и категория блюда —
+   * Значки под объяснением: способ приготовления, вкус и категория блюда -
    * именно они объясняют пару. Картинка берётся из админки, emoji остаётся
    * запасным вариантом.
    */
@@ -581,7 +620,7 @@ export class BeerPairingsComponent {
     const add = (kind: string, key: string | undefined, list: readonly { id: string; emoji: string; label: string }[]) => {
       if (!key) return;
       const from = list.find(x => x.id === key);
-      const icon = this.icons.find(i => i.kind === kind && i.key === key);
+      const icon = this.icons().find(i => i.kind === kind && i.key === key);
       if (!from && !icon) return;
       out.push({
         key: `${kind}:${key}`,
@@ -597,7 +636,7 @@ export class BeerPairingsComponent {
     return out;
   }
 
-  /** Категория блюда в базе — свободный текст, сводим её к коду мастера. */
+  /** Категория блюда в базе - свободный текст, сводим её к коду мастера. */
   private categoryKey(dish: Dish): string | undefined {
     const text = `${dish.name} ${dish.category ?? ''}`.toLowerCase();
     const rules: [string, RegExp][] = [

@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 
 from .engine import build_beer_profile, build_dish_profile, index_curated
 
-DATA_DIR = Path(__file__).resolve().parents[3] / "data"
+DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "engine"
 
 
 def load_json(name: str) -> Any:
