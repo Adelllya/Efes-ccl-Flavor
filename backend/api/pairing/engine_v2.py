@@ -296,7 +296,9 @@ def drink_vector(drink: Dict[str, Any], params: Optional[Dict[str, Any]] = None)
     ibu = drink.get("ibu")
     name = drink.get("display_name") or drink.get("name") or drink.get("label_ru") or drink.get("id")
     L = P["labels"]
-    cat_gen = L["category_gen"].get(category, L["category_gen_default"])
+    # cat_gen по семейству важнее категории: горячий шоколад — category "coffee", но family COCOA,
+    # чтобы в текстах было «какао», а не «кофе» (PAIR-8 #6).
+    cat_gen = (L.get("family_gen") or {}).get(family) or L["category_gen"].get(category, L["category_gen_default"])
     ibu_s = fmt_num(ibu) if ibu is not None else None
     if category in L["hop_categories"]:
         bitter_phrase = tpl(L["bitter_ibu"], {"ibu": ibu_s}) if ibu_s is not None else L["bitter_hop"]
@@ -889,7 +891,9 @@ def score_pair(drink: Dict[str, Any], dish: Dict[str, Any], ctx: Optional[Dict[s
             key = "plus"
         else:
             key, _ = _argmin([("fish", fish), ("green", green), ("dry", float(dry))])
-        text = tpl(p["texts"][key], W) if explain else ""
+        # «мягче и фруктовее» — про вино; у чая и кофе фруктовости нет (PAIR-8 #7).
+        tkey = "plus_soft" if key == "plus" and b["category"] in ("tea", "coffee") else key
+        text = tpl(p["texts"].get(tkey, p["texts"][key]), W) if explain else ""
         addfit("R8", clamp(pts, p["min"], p["max"]), "complement" if pts >= 0 else "penalty", key, p["evidence"], text)
         if bv["tannin"] >= V["V4"]["tannin"] and x["fish_oil"] >= V["V4"]["fish_oil"]:
             vetoes.append("V4")
