@@ -9,12 +9,15 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import Max
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
+from .engine_catalog import drink_facts, engine_drink
 from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
     FoodIcon, SiteSettings, MenuItem, MenuDrink, Order, OrderItem, ChangeRequest,
 )
 from .permissions import user_role, ROLE_LABELS, ROLE_USER
+from .pilot import clean_rank, clean_session
 
 
 def media_url(request, file_field):
@@ -483,7 +486,7 @@ class VenueSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'slug', 'name', 'city', 'address', 'venue_type', 'venue_type_display',
             'logo', 'logo_url', 'cover', 'description', 'phone', 'working_hours', 'is_published',
-            'tables_count', 'items_count', 'owner', 'created_at',
+            'tables_count', 'accepts_orders', 'items_count', 'owner', 'created_at',
         ]
         read_only_fields = ['id', 'slug', 'created_at']
         extra_kwargs = {'tables_count': {'min_value': 1, 'max_value': 500}}
@@ -529,21 +532,88 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
 
 class MenuDrinkSerializer(serializers.ModelSerializer):
-    brand_name = serializers.CharField(source='brand.name', read_only=True)
-    brand_style = serializers.CharField(source='brand.style', read_only=True)
+    """
+    Напиток карты бара: сорт каталога (brand) или напиток движка подбора (engine_drink_id).
+    brand_name, brand_style, brand_image и abv заполнены в обоих случаях; для напитка движка
+    brand_image - путь к картинке на сайте фронтенда (/img/beers/...).
+    """
+    brand_name = serializers.SerializerMethodField()
+    brand_style = serializers.SerializerMethodField()
     brand_image = serializers.SerializerMethodField()
-    abv = serializers.FloatField(source='brand.abv', read_only=True)
+    abv = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    is_alcoholic = serializers.SerializerMethodField()
 
     class Meta:
         model = MenuDrink
         fields = [
             'id', 'venue', 'brand', 'brand_name', 'brand_style', 'brand_image', 'abv',
+            'engine_drink_id', 'name', 'category', 'is_alcoholic',
             'price', 'volume', 'is_available', 'sort_order',
         ]
-        extra_kwargs = {'price': {'min_value': Decimal('0')}}
+        extra_kwargs = {
+            'price': {'min_value': Decimal('0')},
+            'brand': {'required': False, 'allow_null': True},
+        }
+        # Повторы в карте проверяем в validate(), чтобы ошибка была по-русски и для напитков движка тоже.
+        validators = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._facts = {}
+
+    def facts(self, obj):
+        key = (obj.pk, obj.brand_id, obj.engine_drink_id, obj.name)
+        if key not in self._facts:
+            self._facts[key] = drink_facts(obj)
+        return self._facts[key]
+
+    def get_brand_name(self, obj):
+        return self.facts(obj)['name']
+
+    def get_brand_style(self, obj):
+        return self.facts(obj)['style']
 
     def get_brand_image(self, obj):
-        return absolute_media(self, obj.brand.image or obj.brand.image_hd)
+        if obj.brand_id:
+            return absolute_media(self, obj.brand.image or obj.brand.image_hd)
+        return self.facts(obj)['image']
+
+    def get_abv(self, obj):
+        return self.facts(obj)['abv']
+
+    def get_category(self, obj):
+        return self.facts(obj)['category']
+
+    def get_is_alcoholic(self, obj):
+        return self.facts(obj)['is_alcoholic']
+
+    def validate(self, attrs):
+        instance = self.instance
+        venue = attrs.get('venue', getattr(instance, 'venue', None))
+        brand = attrs['brand'] if 'brand' in attrs else getattr(instance, 'brand', None)
+        engine_id = attrs.get('engine_drink_id', getattr(instance, 'engine_drink_id', '')) or ''
+        engine_id = engine_id.strip()
+        if 'engine_drink_id' in attrs:
+            attrs['engine_drink_id'] = engine_id
+        if brand is None and not engine_id:
+            raise serializers.ValidationError({'brand': ['Выберите сорт из каталога или напиток из базы подбора']})
+        if engine_id:
+            raw = engine_drink(engine_id)
+            if raw is None:
+                raise serializers.ValidationError({'engine_drink_id': ['Такого напитка нет в базе подбора']})
+            name = attrs.get('name', getattr(instance, 'name', '') if 'engine_drink_id' not in attrs else '')
+            if brand is None and not (name or '').strip():
+                attrs['name'] = (raw.get('display_name') or raw.get('name') or engine_id)[:120]
+        if venue is not None:
+            others = MenuDrink.objects.filter(venue=venue)
+            if instance is not None:
+                others = others.exclude(pk=instance.pk)
+            if brand is not None and others.filter(brand=brand).exists():
+                raise serializers.ValidationError({'brand': ['Этот сорт уже есть в карте заведения']})
+            if engine_id and others.filter(engine_drink_id=engine_id).exists():
+                raise serializers.ValidationError({'engine_drink_id': ['Этот напиток уже есть в карте заведения']})
+        return attrs
 
 
 def money(value):
@@ -643,10 +713,14 @@ def build_venue_menu(venue, request):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+    source_display = serializers.CharField(source='get_source_display', read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'kind', 'kind_display', 'menu_item', 'menu_drink', 'title', 'price', 'qty', 'note']
+        fields = [
+            'id', 'kind', 'kind_display', 'menu_item', 'menu_drink', 'title', 'price', 'qty', 'note',
+            'source', 'source_display', 'paired_menu_item', 'rec_rank',
+        ]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -658,7 +732,7 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'number', 'status', 'status_display', 'table_number', 'guest_name', 'comment',
-            'total', 'guest_token', 'items', 'venue', 'created_at', 'updated_at',
+            'total', 'guest_token', 'age_confirmed', 'items', 'venue', 'created_at', 'updated_at',
         ]
         read_only_fields = fields
 
@@ -666,17 +740,64 @@ class OrderSerializer(serializers.ModelSerializer):
         return {'slug': obj.venue.slug, 'name': obj.venue.name}
 
 
+class OrdersClosed(APIException):
+    status_code = 409
+    default_detail = 'Заведение сейчас не принимает заказы через приложение'
+    default_code = 'orders_closed'
+
+
+class AgeConfirmationRequired(APIException):
+    status_code = 400
+    default_detail = 'Подтвердите, что вам исполнился 21 год'
+    default_code = 'age_confirmation_required'
+
+
+SOURCE_ALIASES = {'RECOMMENDATION': OrderItem.SOURCE_PAIRING, 'REC': OrderItem.SOURCE_PAIRING}
+
+
+def clean_item_source(value):
+    source = str(value or '').strip().upper()
+    source = SOURCE_ALIASES.get(source, source)
+    return source if source in dict(OrderItem.SOURCE_CHOICES) else OrderItem.SOURCE_MENU
+
+
+class LenientField(serializers.Field):
+    """Поле для меток пилота: кривое значение не ломает заказ, а превращается в значение по умолчанию."""
+
+    def __init__(self, clean, **kwargs):
+        self.clean = clean
+        kwargs.setdefault('required', False)
+        kwargs.setdefault('allow_null', True)
+        super().__init__(**kwargs)
+
+    def validate_empty_values(self, data):
+        if data is None:
+            return (True, self.clean(None))
+        return super().validate_empty_values(data)
+
+    def to_internal_value(self, data):
+        return self.clean(data)
+
+    def to_representation(self, value):
+        return value
+
+
 class OrderItemInputSerializer(serializers.Serializer):
     kind = serializers.ChoiceField(choices=[OrderItem.KIND_DISH, OrderItem.KIND_DRINK])
     id = serializers.UUIDField()
     qty = serializers.IntegerField(min_value=1, max_value=20)
     note = serializers.CharField(max_length=200, required=False, allow_blank=True, default='')
+    # Метки пилота: откуда позиция (MENU, PAIRING, AI), к какому блюду подобран напиток и его место в подборе.
+    source = LenientField(clean_item_source, default=OrderItem.SOURCE_MENU)
+    paired_with = LenientField(parse_uuid, default=None)
+    rank = LenientField(clean_rank, default=None)
 
 
 class OrderCreateSerializer(serializers.Serializer):
     """
     POST /api/orders/: заказ от гостя без входа. Позиции должны быть из карты этого заведения
     и в наличии; названия и цены сохраняются на момент заказа.
+    Заведение с выключенными заказами отвечает 409, алкоголь без age_confirmed - 400.
     """
     MAX_ITEMS = 50
 
@@ -685,12 +806,16 @@ class OrderCreateSerializer(serializers.Serializer):
     guest_name = serializers.CharField(max_length=80, required=False, allow_blank=True, default='')
     comment = serializers.CharField(required=False, allow_blank=True, default='')
     items = OrderItemInputSerializer(many=True)
+    session = LenientField(clean_session, default='')
+    age_confirmed = serializers.BooleanField(required=False, default=False)
 
     def validate_venue(self, value):
         venue_id = parse_uuid(value)
         venue = Venue.objects.filter(pk=venue_id).first() if venue_id else Venue.objects.filter(slug=value).first()
         if venue is None or not venue.is_published:
             raise serializers.ValidationError('Заведение не найдено')
+        if not venue.accepts_orders:
+            raise OrdersClosed()
         return venue
 
     def validate_items(self, value):
@@ -711,13 +836,16 @@ class OrderCreateSerializer(serializers.Serializer):
 
         errors = []
         lines = []
+        has_alcohol = False
         for raw in attrs['items']:
             if raw['kind'] == OrderItem.KIND_DISH:
                 source = MenuItem.objects.select_related('dish').filter(pk=raw['id'], venue=venue).first()
                 title = source.dish.name if source else None
             else:
                 source = MenuDrink.objects.select_related('brand').filter(pk=raw['id'], venue=venue).first()
-                title = source.brand.name if source else None
+                facts = drink_facts(source) if source else None
+                title = facts['name'] if facts else None
+                has_alcohol = has_alcohol or bool(facts and facts['is_alcoholic'])
             if source is None:
                 errors.append('Позиция {} не найдена в меню заведения'.format(raw['id']))
                 continue
@@ -731,7 +859,14 @@ class OrderCreateSerializer(serializers.Serializer):
             lines.append((raw, source, title))
         if errors:
             raise serializers.ValidationError({'items': errors})
-        attrs['lines'] = lines
+        if has_alcohol and not attrs.get('age_confirmed'):
+            raise AgeConfirmationRequired()
+        # Блюдо, к которому подобран напиток, должно быть из меню этого же заведения; чужое просто не пишем.
+        paired_ids = set(raw['paired_with'] for raw, _, _ in lines if raw.get('paired_with'))
+        paired = {}
+        if paired_ids:
+            paired = {item.pk: item for item in MenuItem.objects.filter(pk__in=paired_ids, venue=venue)}
+        attrs['lines'] = [(raw, source, title, paired.get(raw.get('paired_with'))) for raw, source, title in lines]
         return attrs
 
     def create(self, validated_data):
@@ -747,10 +882,12 @@ class OrderCreateSerializer(serializers.Serializer):
                 guest_name=validated_data.get('guest_name', '').strip(),
                 comment=validated_data.get('comment', '').strip(),
                 guest_token=secrets.token_hex(24),
+                session=validated_data.get('session') or '',
+                age_confirmed=bool(validated_data.get('age_confirmed')),
             )
             total = Decimal('0')
             rows = []
-            for raw, source, title in validated_data['lines']:
+            for raw, source, title, paired_item in validated_data['lines']:
                 is_dish = raw['kind'] == OrderItem.KIND_DISH
                 rows.append(OrderItem(
                     order=order,
@@ -761,6 +898,9 @@ class OrderCreateSerializer(serializers.Serializer):
                     price=source.price,
                     qty=raw['qty'],
                     note=raw.get('note', ''),
+                    source=raw.get('source') or OrderItem.SOURCE_MENU,
+                    paired_menu_item=paired_item,
+                    rec_rank=raw.get('rank'),
                 ))
                 total += source.price * raw['qty']
             OrderItem.objects.bulk_create(rows)

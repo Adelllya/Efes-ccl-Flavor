@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from .models import Order, Venue
 from .permissions import ROLE_MODERATOR, has_role, IsOwnerOfVenueOrModerator
+from .pilot import record_order_event
 from .serializers import OrderCreateSerializer, OrderSerializer, parse_uuid
 
 
@@ -26,7 +27,8 @@ def find_venue(value):
 class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,
                    mixins.UpdateModelMixin, viewsets.GenericViewSet):
     """
-    POST  /api/orders/                   - гость: новый заказ (без входа)
+    POST  /api/orders/                   - гость: новый заказ (без входа); session, age_confirmed,
+                                           у позиций source (MENU, PAIRING, AI), paired_with, rank
     GET   /api/orders/<id>/?token=       - гость: свой заказ по токену; владелец и модератор - без токена
     GET   /api/orders/?venue=&status=    - владелец или модератор: заказы заведения, новые сверху
     PATCH /api/orders/<id>/  {status}    - владелец или модератор: следующий статус или отмена
@@ -70,6 +72,8 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
         serializer = OrderCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
+        # Событие для отчёта пилота: стол, сессия гостя и откуда каждая позиция. Сбой записи заказ не ломает.
+        record_order_event(order)
         return Response(self.get_serializer(order).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, *args, **kwargs):

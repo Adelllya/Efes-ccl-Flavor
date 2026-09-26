@@ -1,12 +1,14 @@
+import logging
 import uuid
 
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import api_view, action, permission_classes
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.db.models import Count, Q, Prefetch
+from django.db import DatabaseError, connection
+from django.db.models import Count, Q, Prefetch, ProtectedError
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
@@ -36,6 +38,13 @@ from .serializers import (
     ServingRecommendationSerializer,
     VenueSerializer, MenuItemSerializer, MenuDrinkSerializer, build_venue_menu, parse_uuid,
 )
+
+logger = logging.getLogger(__name__)
+
+
+class Conflict(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_code = 'conflict'
 
 
 def pyramid_payload(brand, request=None):
@@ -355,7 +364,7 @@ class VenueViewSet(viewsets.ModelViewSet):
     POST   /api/venues/              - администратор заведения (одно на пользователя) или модератор
     GET    /api/venues/<slug>/       - карточка
     PATCH  /api/venues/<slug>/       - владелец или модератор
-    DELETE /api/venues/<slug>/       - модератор
+    DELETE /api/venues/<slug>/       - модератор; заведение с заказами не удаляется (409), его снимают с публикации
     GET    /api/venues/mine/         - заведения текущего пользователя
     GET    /api/venues/<slug>/menu/  - публичное меню с сочетаниями
     POST   /api/venues/<slug>/upload-logo/   - загрузить логотип (владелец или модератор)
@@ -403,6 +412,13 @@ class VenueViewSet(viewsets.ModelViewSet):
         if Venue.objects.filter(owner=user).exists():
             raise ValidationError({'detail': 'У вас уже есть заведение'})
         serializer.save(owner=user)
+
+    def perform_destroy(self, instance):
+        # Заказы держат заведение (on_delete=PROTECT): данные пилота не должны пропасть вместе с ним.
+        try:
+            instance.delete()
+        except ProtectedError:
+            raise Conflict('У заведения есть заказы, удалить его нельзя. Снимите его с публикации.')
 
     @action(detail=True, methods=['post', 'delete'], url_path='upload-logo',
             parser_classes=[MultiPartParser, FormParser])
@@ -534,8 +550,15 @@ def landing_data(request):
 
 @api_view(['GET'])
 def health_check(request):
-    """GET /api/health/ - health check."""
-    return Response({'ok': True})
+    """GET /api/health/ - сервис жив и база отвечает. Без базы 503: так падение увидит внешний мониторинг."""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+            cursor.fetchone()
+    except DatabaseError:
+        logger.exception('Health check: база не отвечает')
+        return Response({'ok': False, 'db': False}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    return Response({'ok': True, 'db': True})
 
 
 @api_view(['POST'])

@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views, views_ai, views_auth, views_engine_v2, views_engine_tuning, views_orders, views_requests
+from . import (
+    views, views_ai, views_auth, views_engine_v2, views_engine_tuning, views_orders, views_pilot, views_requests,
+)
 
 router = DefaultRouter()
 router.register(r'brands', views.BrandViewSet)
@@ -17,6 +19,14 @@ router.register(r'orders', views_orders.OrderViewSet, basename='order')
 router.register(r'change-requests', views_requests.ChangeRequestViewSet, basename='change-request')
 
 urlpatterns = [
+    # Пилот в баре: события гостя, оценка пары, отчёт и выгрузка, QR столов.
+    # QR стоит раньше роутера, чтобы venues/<slug>/qr.svg не разбирался как адрес заведения.
+    path('events/', views_pilot.events, name='pilot-events'),
+    path('feedback/', views_pilot.feedback, name='pilot-feedback'),
+    path('pilot/report/', views_pilot.report, name='pilot-report'),
+    path('pilot/export.csv', views_pilot.ExportCsvView.as_view(), name='pilot-export'),
+    path('venues/<slug:slug>/qr.svg', views_pilot.VenueQrView.as_view(), name='venue-qr'),
+
     # Router-generated CRUD + custom actions (pyramid, brands)
     path('', include(router.urls)),
 

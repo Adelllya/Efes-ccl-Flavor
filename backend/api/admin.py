@@ -4,6 +4,7 @@ from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
     FoodIcon, SiteSettings, MenuItem, MenuDrink, Order, OrderItem, ChangeRequest,
+    PilotEvent, PairingFeedback,
 )
 
 
@@ -44,15 +45,16 @@ class MenuItemInline(admin.TabularInline):
 class MenuDrinkInline(admin.TabularInline):
     model = MenuDrink
     extra = 0
-    fields = ['brand', 'price', 'volume', 'sort_order', 'is_available']
+    fields = ['brand', 'engine_drink_id', 'name', 'price', 'volume', 'sort_order', 'is_available']
     autocomplete_fields = ['brand']
 
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    fields = ['kind', 'title', 'price', 'qty', 'note', 'menu_item', 'menu_drink']
-    readonly_fields = ['menu_item', 'menu_drink']
+    fields = ['kind', 'title', 'price', 'qty', 'note', 'source', 'paired_menu_item', 'rec_rank',
+              'menu_item', 'menu_drink']
+    readonly_fields = ['menu_item', 'menu_drink', 'paired_menu_item']
 
 
 # Model Admins
@@ -208,7 +210,8 @@ class VenueAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
     fields = [
         'name', 'slug', 'venue_type', 'city', 'address', 'phone', 'working_hours',
-        'description', 'logo', 'logo_file', 'cover', 'tables_count', 'owner', 'is_published', 'created_at',
+        'description', 'logo', 'logo_file', 'cover', 'tables_count', 'accepts_orders', 'owner', 'is_published',
+        'created_at',
     ]
     inlines = [MenuItemInline, MenuDrinkInline, QRCodeInline]
 
@@ -224,19 +227,19 @@ class MenuItemAdmin(admin.ModelAdmin):
 
 @admin.register(MenuDrink)
 class MenuDrinkAdmin(admin.ModelAdmin):
-    list_display = ['brand', 'venue', 'price', 'volume', 'sort_order', 'is_available']
+    list_display = ['__str__', 'brand', 'engine_drink_id', 'venue', 'price', 'volume', 'sort_order', 'is_available']
     list_filter = ['venue', 'is_available']
-    search_fields = ['brand__name', 'venue__name']
+    search_fields = ['brand__name', 'name', 'engine_drink_id', 'venue__name']
     autocomplete_fields = ['venue', 'brand']
     ordering = ['venue', 'sort_order']
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['number', 'venue', 'table_number', 'status', 'total', 'guest_name', 'created_at']
+    list_display = ['number', 'venue', 'table_number', 'status', 'total', 'guest_name', 'age_confirmed', 'created_at']
     list_filter = ['status', 'venue']
     search_fields = ['guest_name', 'comment', 'venue__name', 'items__title']
-    readonly_fields = ['number', 'total', 'guest_token', 'created_at', 'updated_at']
+    readonly_fields = ['number', 'total', 'guest_token', 'session', 'age_confirmed', 'created_at', 'updated_at']
     autocomplete_fields = ['venue']
     ordering = ['-created_at']
     inlines = [OrderItemInline]
@@ -244,10 +247,39 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'order', 'kind', 'price', 'qty']
-    list_filter = ['kind']
+    list_display = ['title', 'order', 'kind', 'price', 'qty', 'source']
+    list_filter = ['kind', 'source']
     search_fields = ['title', 'order__venue__name']
-    readonly_fields = ['menu_item', 'menu_drink']
+    readonly_fields = ['menu_item', 'menu_drink', 'paired_menu_item']
+
+
+@admin.register(PilotEvent)
+class PilotEventAdmin(admin.ModelAdmin):
+    """События пилота только для просмотра: их пишет сайт, руками их не правят."""
+    list_display = ['created_at', 'kind', 'venue', 'table_number', 'session', 'dish_ref', 'drink_ref', 'rank', 'source']
+    list_filter = ['kind', 'venue']
+    search_fields = ['session', 'dish_ref', 'drink_ref']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(PairingFeedback)
+class PairingFeedbackAdmin(admin.ModelAdmin):
+    list_display = ['created_at', 'venue', 'rating', 'dish_ref', 'drink_ref', 'comment']
+    list_filter = ['rating', 'venue']
+    search_fields = ['comment', 'dish_ref', 'drink_ref', 'session']
+    readonly_fields = ['venue', 'order', 'session', 'dish_ref', 'drink_ref', 'rating', 'created_at']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(ChangeRequest)

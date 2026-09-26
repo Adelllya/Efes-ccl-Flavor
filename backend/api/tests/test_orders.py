@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from api.models import MenuDrink, MenuItem, Order
+from api.models import MenuDrink, MenuItem, Order, PilotEvent, Venue
 from .helpers import make_user, client_for, make_brand, make_dish, make_venue, make_menu_item
 
 
@@ -24,6 +24,7 @@ class OrderTestsBase(TestCase):
             'table_number': 7,
             'guest_name': 'Айдар',
             'comment': 'Без лука',
+            'age_confirmed': True,
             'items': [
                 {'kind': 'DISH', 'id': str(self.besh.id), 'qty': 2},
                 {'kind': 'DRINK', 'id': str(self.kozel.id), 'qty': 1, 'note': 'похолоднее'},
@@ -246,3 +247,135 @@ class OrderOwnerTests(OrderTestsBase):
         self.assertEqual(mod.get(self.url + 'new-count/?venue=bar-13').json(), {'count': 3})
         self.assertEqual(mod.get(self.url + 'new-count/?venue=efes-beer-garden').json(), {'count': 2})
         self.assertEqual(client_for(make_user('somm', role='sommelier')).get(self.url + 'new-count/').json(), {'count': 0})
+
+
+class OrderPilotTests(OrderTestsBase):
+    """Метки пилота в заказе, проверка возраста и выключенные заказы."""
+
+    def test_source_fields_session_and_order_event(self):
+        order = self.place(session='3f2c7a9e-1b2d-4c5e-8f90-123456789abc', items=[
+            {'kind': 'DISH', 'id': str(self.besh.id), 'qty': 1},
+            {'kind': 'DRINK', 'id': str(self.kozel.id), 'qty': 2,
+             'source': 'pairing', 'paired_with': str(self.besh.id), 'rank': 1},
+        ])
+        stored = Order.objects.get(pk=order['id'])
+        self.assertEqual(stored.session, '3f2c7a9e-1b2d-4c5e-8f90-123456789abc')
+        self.assertTrue(stored.age_confirmed)
+        dish, drink = stored.items.order_by('id')
+        self.assertEqual((dish.source, dish.paired_menu_item, dish.rec_rank), ('MENU', None, None))
+        self.assertEqual((drink.source, drink.paired_menu_item_id, drink.rec_rank), ('PAIRING', self.besh.id, 1))
+        self.assertEqual(order['items'][1]['source'], 'PAIRING')
+        self.assertEqual(order['items'][1]['source_display'], 'Подбор')
+        self.assertEqual(order['items'][1]['paired_menu_item'], str(self.besh.id))
+        self.assertTrue(order['age_confirmed'])
+
+        # Сервер сам пишет событие ORDER: стол, сессия, откуда каждая позиция.
+        event = PilotEvent.objects.get(kind='ORDER')
+        self.assertEqual(event.venue, self.venue)
+        self.assertEqual(event.session, stored.session)
+        self.assertEqual(event.table_number, 7)
+        self.assertEqual(event.source, 'PAIRING')
+        self.assertEqual(event.meta['order'], order['id'])
+        self.assertEqual(event.meta['number'], 1)
+        self.assertEqual(event.meta['total'], '8900.00')
+        self.assertEqual(
+            [(i['kind'], i['source'], i['qty'], i['paired_with'], i['rank']) for i in event.meta['items']], [
+                ('DISH', 'MENU', 1, None, None),
+                ('DRINK', 'PAIRING', 2, str(self.besh.id), 1),
+            ])
+
+    def test_pilot_labels_never_break_order(self):
+        # Кривые метки не мешают заказу: источник по умолчанию MENU, чужое блюдо и странное место не пишем.
+        order = self.place(session='<script>', items=[
+            {'kind': 'DRINK', 'id': str(self.kozel.id), 'qty': 1,
+             'source': 'something', 'paired_with': str(self.foreign_item.id), 'rank': 'first'},
+            {'kind': 'DRINK', 'id': str(self.kozel.id), 'qty': 1, 'source': 'ai', 'paired_with': 'nope', 'rank': -3},
+            {'kind': 'DRINK', 'id': str(self.kozel.id), 'qty': 1, 'source': None, 'paired_with': None, 'rank': None},
+        ])
+        rows = list(Order.objects.get(pk=order['id']).items.order_by('id')
+                    .values_list('source', 'paired_menu_item', 'rec_rank'))
+        self.assertEqual(rows, [('MENU', None, None), ('AI', None, None), ('MENU', None, None)])
+        self.assertEqual(Order.objects.get(pk=order['id']).session, '')
+        self.assertEqual(PilotEvent.objects.get(kind='ORDER').session, '')
+
+    def test_age_confirmation_required_for_alcohol(self):
+        body = self.body()
+        del body['age_confirmed']
+        resp = client_for().post(self.url, body, format='json')
+        self.assertEqual(resp.status_code, 400, resp.content)
+        self.assertEqual(resp.json(), {'detail': 'Подтвердите, что вам исполнился 21 год'})
+        resp = client_for().post(self.url, dict(body, age_confirmed=False), format='json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(Order.objects.count(), 0)
+        self.assertFalse(PilotEvent.objects.exists())
+
+        # Еда и безалкогольное пиво заказываются без подтверждения.
+        zero = MenuDrink.objects.create(venue=self.venue, brand=make_brand('Efes 0.0', abv=0.0), price='900')
+        resp = client_for().post(self.url, {
+            'venue': 'efes-beer-garden', 'table_number': 1,
+            'items': [{'kind': 'DISH', 'id': str(self.besh.id), 'qty': 1},
+                      {'kind': 'DRINK', 'id': str(zero.id), 'qty': 1}],
+        }, format='json')
+        self.assertEqual(resp.status_code, 201, resp.content)
+        self.assertFalse(resp.data['age_confirmed'])
+        # Сорт каталога без крепости считаем пивом с алкоголем.
+        unknown = MenuDrink.objects.create(venue=self.venue, brand=make_brand('Разливное', abv=None), price='800')
+        resp = client_for().post(self.url, {
+            'venue': 'efes-beer-garden', 'table_number': 1,
+            'items': [{'kind': 'DRINK', 'id': str(unknown.id), 'qty': 1}],
+        }, format='json')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_age_check_uses_engine_drinks(self):
+        # Напитки из базы движка без сорта каталога: крепость и категория берутся из drinks.json.
+        na = MenuDrink.objects.create(venue=self.venue, engine_drink_id='efes-0-0', name='Efes 0.0', price='900')
+        beer = MenuDrink.objects.create(venue=self.venue, engine_drink_id='kozel', price='2000')
+        kvass = MenuDrink.objects.create(venue=self.venue, engine_drink_id='kvas-ochakovskiy', price='700')
+
+        def order(drink, **extra):
+            return client_for().post(self.url, dict({
+                'venue': 'efes-beer-garden', 'table_number': 2,
+                'items': [{'kind': 'DRINK', 'id': str(drink.id), 'qty': 1}],
+            }, **extra), format='json')
+
+        resp = order(na)
+        self.assertEqual(resp.status_code, 201, resp.content)
+        self.assertEqual(resp.data['items'][0]['title'], 'Efes 0.0')
+        self.assertEqual(order(beer).status_code, 400)
+        # Квас 1,2% тоже просит подтверждение: порог 0,5%.
+        self.assertEqual(order(kvass).status_code, 400)
+        resp = order(beer, age_confirmed=True)
+        self.assertEqual(resp.status_code, 201, resp.content)
+        self.assertEqual(resp.data['items'][0]['title'], 'Velkopopovický Kozel')
+
+    def test_venue_not_accepting_orders(self):
+        self.venue.accepts_orders = False
+        self.venue.save()
+        resp = client_for().post(self.url, self.body(), format='json')
+        self.assertEqual(resp.status_code, 409, resp.content)
+        self.assertEqual(resp.json(), {'detail': 'Заведение сейчас не принимает заказы через приложение'})
+        self.assertEqual(Order.objects.count(), 0)
+        # Меню при этом открыто и сообщает, что заказ через приложение выключен.
+        menu = client_for().get('/api/venues/efes-beer-garden/menu/').json()
+        self.assertFalse(menu['venue']['accepts_orders'])
+
+    def test_owner_toggles_accepts_orders(self):
+        url = '/api/venues/efes-beer-garden/'
+        self.assertTrue(client_for().get(url).json()['accepts_orders'])
+        resp = client_for(self.rest).patch(url, {'accepts_orders': False}, format='json')
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.assertFalse(resp.data['accepts_orders'])
+        self.assertEqual(client_for(self.other).patch(url, {'accepts_orders': True}, format='json').status_code, 403)
+        self.assertEqual(client_for().patch(url, {'accepts_orders': True}, format='json').status_code, 401)
+        self.assertFalse(client_for().get(url).json()['accepts_orders'])
+
+    def test_venue_with_orders_is_not_deleted(self):
+        self.place()
+        resp = client_for(self.mod).delete('/api/venues/efes-beer-garden/')
+        self.assertEqual(resp.status_code, 409, resp.content)
+        self.assertIn('Снимите его с публикации', resp.json()['detail'])
+        self.assertTrue(Venue.objects.filter(slug='efes-beer-garden').exists())
+        self.assertEqual(Order.objects.filter(venue=self.venue).count(), 1)
+        self.assertEqual(MenuItem.objects.filter(venue=self.venue).count(), 2)
+        # Заведение без заказов удаляется как раньше.
+        self.assertEqual(client_for(self.mod).delete('/api/venues/bar-13/').status_code, 204)
