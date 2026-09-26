@@ -1,0 +1,41 @@
+# Нужен, если проект Vercel настроен с Root Directory (backend или frontend)
+# и `vercel --prod` запускают из корня репозитория: тогда загружается весь корень.
+# CLI Vercel не читает .gitignore. Правила для самих папок: backend/.vercelignore, frontend/.vercelignore.
+
+# Старые версии и документы, которые сайту не нужны
+/1 version
+/2 version
+/5 version
+/8 version
+/flavor-tree-backend-development-2
+/*.pdf
+/*.docx
+/*.jpg
+/*.png
+/*.html
+
+# Секреты, окружения и сборки
+.env
+.env.*
+**/.venv
+**/venv
+**/__pycache__
+**/node_modules
+**/.angular
+frontend/dist
+backend/staticfiles
+
+# Локальные базы, снимок базы, резервные копии и временные файлы
+**/*.sqlite3
+**/*.sqlite3-journal
+backend/data/snapshot.json
+/backups
+backend/backups
+/tmp
+/scratch
+**/*.log
+
+# Фото, загруженные на своей машине через панель
+backend/media/venues
+backend/media/flavor_notes
+backend/media/food_icons

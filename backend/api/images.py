@@ -11,7 +11,8 @@ from PIL import Image, ImageOps
 IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
 # MPO - JPEG с несколькими кадрами, такие снимают некоторые телефоны; для браузера это обычный JPEG.
 IMAGE_FORMATS = {'JPEG', 'MPO', 'PNG', 'WEBP'}
-IMAGE_MAX_BYTES = 5 * 1024 * 1024
+# Vercel не принимает запрос больше 4,5 МБ, поэтому предел 4 МБ с запасом на остальную форму.
+IMAGE_MAX_BYTES = 4 * 1024 * 1024
 THUMB_MAX_SIDE = 480
 
 
@@ -26,7 +27,7 @@ def read_image_upload(request):
     if (file_obj.content_type or '').lower() not in IMAGE_TYPES:
         return None, 'Подходят только PNG, JPG или WebP'
     if file_obj.size > IMAGE_MAX_BYTES:
-        return None, 'Файл больше 5 МБ'
+        return None, 'Файл больше 4 МБ'
     try:
         image = Image.open(file_obj)
         image_format = image.format
@@ -43,7 +44,7 @@ def read_image_upload(request):
 
 
 def replace_image(instance, field_name, file_obj):
-    """Кладёт новый файл в ImageField (или очищает при None), старый файл удаляется с диска."""
+    """Кладёт новый файл в ImageField (или очищает при None), старый файл удаляется из хранилища."""
     current = getattr(instance, field_name)
     if current:
         current.delete(save=False)

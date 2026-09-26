@@ -1,6 +1,8 @@
 """
 Вход, регистрация, профиль и управление пользователями (для модератора).
-Токен DRF выдаётся при входе и регистрации, удаляется при выходе.
+Токен DRF выдаётся при входе и регистрации. Выход на одном устройстве токен не трогает
+(иначе вылетят остальные устройства этого аккаунта, например планшет бара),
+выход на всех устройствах и смена пароля его отзывают.
 """
 import uuid
 
@@ -12,13 +14,15 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from .authentication import token_expired
 from .models import Venue
 from .permissions import ALL_ROLES, GROUP_ROLES, ROLE_MODERATOR, ROLE_USER, IsModerator
 from .serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer
+from .throttles import LoginThrottle, PasswordChangeThrottle, RegisterThrottle
 
 LOGIN_ERROR = 'Неверный логин или пароль'
 
@@ -31,9 +35,19 @@ def _user_queryset():
     return User.objects.prefetch_related('groups', 'venues')
 
 
+def _token_for(user):
+    """Токен пользователя; просроченный заменяется новым."""
+    token, created = Token.objects.get_or_create(user=user)
+    if not created and token_expired(token):
+        token.delete()
+        token = Token.objects.create(user=user)
+    return token
+
+
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([RegisterThrottle])
 def register(request):
     """POST /api/auth/register/ {username, email, password, first_name?} -> 201 {token, user}."""
     serializer = RegisterSerializer(data=request.data)
@@ -47,6 +61,7 @@ def register(request):
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([LoginThrottle])
 def login(request):
     """POST /api/auth/login/ {username, password} -> {token, user}. В username можно передать почту."""
     username = str(request.data.get('username') or '').strip()
@@ -63,7 +78,7 @@ def login(request):
     if user is None or not user.is_active:
         return Response({'detail': LOGIN_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
-    token, _ = Token.objects.get_or_create(user=user)
+    token = _token_for(user)
     user = _user_queryset().get(pk=user.pk)
     return Response(auth_payload(user, token))
 
@@ -71,8 +86,13 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    """POST /api/auth/logout/ -> 204, токен удаляется."""
-    Token.objects.filter(user=request.user).delete()
+    """
+    POST /api/auth/logout/ -> 204. Фронт забывает токен, другие устройства остаются в системе.
+    POST /api/auth/logout/ {everywhere: true} -> 204, токен отзывается на всех устройствах.
+    """
+    data = request.data if isinstance(request.data, dict) else {}
+    if _parse_bool(data.get('everywhere', False)):
+        Token.objects.filter(user=request.user).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -91,6 +111,7 @@ def me(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([PasswordChangeThrottle])
 def change_password(request):
     """POST /api/auth/change-password/ {old_password, new_password} -> {token} (новый токен)."""
     user = request.user

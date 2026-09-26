@@ -70,6 +70,10 @@ interface Feedback {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
               Выйти
             </button>
+            <button type="button" class="btn-ghost btn-block" (click)="logout(true)"
+                    title="Все устройства под этим аккаунтом выйдут из системы">
+              Выйти на всех устройствах
+            </button>
           </div>
         </aside>
 
@@ -173,8 +177,8 @@ export class ProfileComponent {
   }
 
   /** Выход ведёт на страницу входа, как и кнопка в шапке. */
-  logout() {
-    this.auth.logout();
+  logout(everywhere = false) {
+    this.auth.logout(everywhere);
     this.navigate.emit('login');
   }
 

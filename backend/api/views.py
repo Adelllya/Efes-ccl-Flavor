@@ -548,24 +548,42 @@ def landing_data(request):
     })
 
 
-@api_view(['GET'])
+@api_view(['GET', 'HEAD'])
 def health_check(request):
-    """GET /api/health/ - сервис жив и база отвечает. Без базы 503: так падение увидит внешний мониторинг."""
+    """
+    GET /api/health/ - сервер жив и база отвечает: {ok, db}; без базы 503, так падение увидит внешний мониторинг.
+    Дёшево: один SELECT 1. Его же дёргает cron Vercel (backend/vercel.json) и внешний мониторинг.
+    """
     try:
         with connection.cursor() as cursor:
             cursor.execute('SELECT 1')
             cursor.fetchone()
     except DatabaseError:
         logger.exception('Health check: база не отвечает')
-        return Response({'ok': False, 'db': False}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-    return Response({'ok': True, 'db': True})
+        response = Response({'ok': False, 'db': False}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    else:
+        response = Response({'ok': True, 'db': True})
+    response['Cache-Control'] = 'no-store'
+    return response
 
 
 @api_view(['POST'])
 @permission_classes([IsModerator])
 def seed_data(request):
-    """POST /api/seed/ - загрузка демо-данных и 17 сортов (идемпотентно). Только модератор."""
+    """
+    POST /api/seed/ - загрузка демо-данных и 17 сортов (идемпотентно). Только модератор.
+    На сервере выключено: команда стирает пары блюд и сортов и правки сомелье.
+    Включить на время: FT_ALLOW_SEED=1.
+    """
+    import os
+
+    from django.conf import settings
     from django.core.management import call_command
+    if not settings.DEBUG and os.environ.get('FT_ALLOW_SEED') != '1':
+        return Response(
+            {'ok': False, 'detail': 'На сервере перезагрузка каталога выключена: она стирает пары и правки сомелье'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
     try:
         call_command('load_flavor_data')
         return Response({'ok': True, 'message': '17 brands and flavor pyramid data loaded successfully'})

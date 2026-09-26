@@ -146,11 +146,16 @@ export class AuthService {
     );
   }
 
-  /** Сообщает серверу и чистит состояние сразу, ответа не ждём. Переход на вход делает AppComponent. */
-  logout(): void {
+  /**
+   * Сообщает серверу и чистит состояние сразу, ответа не ждём. Переход на вход делает AppComponent.
+   * Обычный выход не трогает другие устройства (например, планшет бара под тем же аккаунтом),
+   * everywhere=true отзывает токен и на них.
+   */
+  logout(everywhere = false): void {
     const token = this.store.token();
     if (token) {
-      this.http.post(`${API_BASE}/auth/logout/`, {}, { headers: { Authorization: `Token ${token}` } })
+      const body = everywhere ? { everywhere: true } : {};
+      this.http.post(`${API_BASE}/auth/logout/`, body, { headers: { Authorization: `Token ${token}` } })
         .pipe(catchError(() => of(null)))
         .subscribe();
     }

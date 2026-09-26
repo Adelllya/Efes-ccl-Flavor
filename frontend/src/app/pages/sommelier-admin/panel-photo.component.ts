@@ -4,7 +4,7 @@ import { PanelIconComponent } from './panel-icons';
 import { checkImageFile, confirmTwice } from './panel-shared';
 
 export const DEFAULT_PHOTO_HINT =
-  'PNG, JPG или WebP, до 5 МБ. Лучше квадратное фото 800×800, блюдо по центру на светлом фоне.';
+  'PNG, JPG или WebP, до 4 МБ. Лучше квадратное фото 800×800, блюдо по центру на светлом фоне.';
 
 /**
  * Блок фото для карточек блюда, заведения и сорта.

@@ -17,17 +17,38 @@ from django.db.models import Count
 
 from .models import Brand, Dish, FoodPairing, Venue
 
-try:
-    import anthropic
-except ImportError:  # без SDK остаётся только локальный режим
-    anthropic = None
+# SDK Anthropic импортируется при первом обращении к модели, а не при старте сервера:
+# импорт занимает 1-2 с, и платить их на каждом холодном старте Vercel незачем.
+anthropic = None
 
 log = logging.getLogger(__name__)
 
+
+def _sdk():
+    """Модуль anthropic или None, если SDK не установлен (тогда остаётся только локальный режим)."""
+    global anthropic
+    if anthropic is None:
+        try:
+            import anthropic as sdk
+        except ImportError:
+            return None
+        anthropic = sdk
+    return anthropic
+
+
+def _env_seconds(name, default):
+    try:
+        return float(os.environ.get(name, '') or default)
+    except ValueError:
+        return default
+
+
 DEFAULT_MODEL = 'claude-opus-5'
 MAX_TOKENS = 4000  # мысли модели тоже считаются в лимит, поэтому запас
-REQUEST_TIMEOUT = 25
-MAX_RETRIES = 1
+# Ответ модели должен успеть до лимита функции Vercel (на Hobby без Fluid compute это 10 с),
+# иначе гость получит 504 вместо локального подбора. Если лимит функции больше: FT_AI_TIMEOUT.
+REQUEST_TIMEOUT = _env_seconds('FT_AI_TIMEOUT', 8)
+MAX_RETRIES = 0
 CONTEXT_MAX_CHARS = 12000
 CATALOG_DISHES_LIMIT = 60
 MAX_SUGGESTIONS = 6
@@ -72,7 +93,7 @@ SYSTEM_PROMPT = """Ты ИИ-сомелье Flavor Tree: помогаешь го
 
 def ai_enabled():
     """Ключ есть в окружении (или подхвачен из backend/.env) и SDK установлен."""
-    return anthropic is not None and bool(os.environ.get('ANTHROPIC_API_KEY', '').strip())
+    return bool(os.environ.get('ANTHROPIC_API_KEY', '').strip()) and _sdk() is not None
 
 
 def ai_model():
@@ -414,7 +435,7 @@ def api_messages(messages):
 
 def call_claude(system_blocks, messages, model=None):
     """Один запрос к модели. Возвращает текст ответа; ошибки SDK уходят вызывающему."""
-    client = anthropic.Anthropic(timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
+    client = _sdk().Anthropic(timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
     response = client.messages.create(
         model=model or ai_model(),
         max_tokens=MAX_TOKENS,

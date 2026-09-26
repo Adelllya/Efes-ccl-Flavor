@@ -1,14 +1,20 @@
 """
-python manage.py seed_roles
+python manage.py seed_roles [--reset-passwords]
 
 Группы ролей, демо-пользователи, демо-заведение с меню и два запроса сомелье
 для модератора. Команду можно запускать повторно.
+
+Пароль ставится только новой учётке (или всем с --reset-passwords). Публичные пароли
+из DEMO_USERS работают только на своей машине; на сервере пароль берётся из
+FT_PASSWORD_MODERATOR, FT_PASSWORD_SOMMELIER, FT_PASSWORD_RESTAURANT, FT_PASSWORD_GUEST,
+а без переменной вход по паролю закрыт (см. api/demo_accounts.py и rotate_demo_passwords).
 """
 from decimal import Decimal
 
 from django.contrib.auth.models import Group, User
 from django.core.management.base import BaseCommand
 
+from api.demo_accounts import apply_password, env_name, initial_password
 from api.models import Brand, ChangeRequest, Dish, MenuDrink, MenuItem, ServingRecommendation, Venue
 from api.permissions import GROUP_ROLES, ROLE_MODERATOR, ROLE_RESTAURANT, ROLE_SOMMELIER
 
@@ -97,6 +103,10 @@ def find_brand(names):
 class Command(BaseCommand):
     help = 'Создаёт группы ролей, демо-пользователей и демо-заведение с меню (идемпотентно)'
 
+    def add_arguments(self, parser):
+        parser.add_argument('--reset-passwords', action='store_true',
+                            help='Заново задать пароли уже существующим демо-учёткам')
+
     def handle(self, *args, **options):
         groups = {}
         for name in GROUP_ROLES:
@@ -110,16 +120,28 @@ class Command(BaseCommand):
                 username=username,
                 defaults={'email': username + '@flavortree.kz', 'first_name': first_name},
             )
-            user.set_password(password)
+            # Пароль и is_active трогаем только у новой учётки: повторный запуск на сервере
+            # не должен вернуть публичный пароль или включить отключённый аккаунт.
+            if created or options.get('reset_passwords'):
+                new_password = initial_password(username, password)
+                apply_password(user, new_password)
+                user.is_active = True
+                if new_password == password:
+                    shown = password
+                elif new_password:
+                    shown = 'пароль из ' + env_name(username)
+                else:
+                    shown = 'вход закрыт, задайте ' + env_name(username)
+            else:
+                shown = 'пароль не менялся'
             user.is_staff = is_staff
-            user.is_active = True
             user.save()
             user.groups.remove(*groups.values())
             if role:
                 user.groups.add(groups[role])
             users[username] = user
             label = 'создан' if created else 'обновлён'
-            self.stdout.write(f'Пользователь {label}: {username} / {password} ({role or "user"})')
+            self.stdout.write(f'Пользователь {label}: {username} / {shown} ({role or "user"})')
 
         # Суперпользователь и так модератор, но членство в группе не помешает.
         for admin in User.objects.filter(is_superuser=True):

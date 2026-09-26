@@ -43,7 +43,7 @@ const DEFAULT_SECTION = 'Основное';
 const DEFAULT_TABLES = 20;
 const DEFAULT_VOLUME = '0,5 л';
 
-const LOGO_HINT = 'PNG, JPG или WebP, до 5 МБ. Квадратный логотип 400×400 на светлом или прозрачном фоне.';
+const LOGO_HINT = 'PNG, JPG или WebP, до 4 МБ. Квадратный логотип 400×400 на светлом или прозрачном фоне.';
 
 function emptyVenue(): VenueForm {
   return {

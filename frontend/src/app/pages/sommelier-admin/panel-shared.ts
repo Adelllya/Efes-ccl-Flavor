@@ -208,11 +208,11 @@ export function initialOf(name: string | null | undefined): string {
 
 /* Фото: те же ограничения, что проверяет бэкенд. */
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 /** Возвращает текст ошибки или null, если файл подходит. */
 export function checkImageFile(file: File): string | null {
   if (!IMAGE_TYPES.includes(file.type)) return 'Подходят только PNG, JPG или WebP';
-  if (file.size > MAX_IMAGE_BYTES) return 'Файл больше 5 МБ';
+  if (file.size > MAX_IMAGE_BYTES) return 'Файл больше 4 МБ';
   return null;
 }
