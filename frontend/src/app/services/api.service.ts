@@ -28,7 +28,10 @@ import {
   RequestStatus,
   AiStatus,
   AiRequest,
-  AiReply
+  AiReply,
+  PairFeedbackInput,
+  PilotReport,
+  QrLink
 } from '../models/flavor-tree.models';
 import { environment } from '../../environments/environment';
 
@@ -372,6 +375,44 @@ export class ApiService {
     return this.http.get<{ count: number }>(`${this.baseUrl}/orders/new-count/`, { params }).pipe(
       map(res => res?.count ?? 0)
     );
+  }
+
+  // 7c. Пилот в баре
+
+  /** Гость оценивает пару после заказа. Без входа; ответ 201 {id, rating}. */
+  submitFeedback(body: PairFeedbackInput): Observable<{ id: number; rating: number }> {
+    return this.http.post<{ id: number; rating: number }>(`${this.baseUrl}/feedback/`, body);
+  }
+
+  /** Цифры пилота: владелец видит своё заведение, модератор любое или все сразу (без venue). */
+  getPilotReport(venue?: string | null, from?: string, to?: string): Observable<PilotReport> {
+    let params = new HttpParams();
+    if (venue) params = params.set('venue', venue);
+    if (from) params = params.set('from', from);
+    if (to) params = params.set('to', to);
+    return this.http.get<PilotReport>(`${this.baseUrl}/pilot/report/`, { params });
+  }
+
+  /** CSV для Excel. Нужен токен, поэтому качаем через HttpClient, а не обычной ссылкой. */
+  downloadPilotCsv(kind: 'events' | 'orders' | 'feedback', venue?: string | null, from?: string, to?: string): Observable<Blob> {
+    let params = new HttpParams().set('kind', kind);
+    if (venue) params = params.set('venue', venue);
+    if (from) params = params.set('from', from);
+    if (to) params = params.set('to', to);
+    return this.http.get(`${this.baseUrl}/pilot/export.csv`, { params, responseType: 'blob' });
+  }
+
+  /** SVG с QR стола. Через HttpClient с токеном: так печатаются и коды скрытого заведения. */
+  getTableQr(slug: string, table: number): Observable<Blob> {
+    const params = new HttpParams().set('table', table);
+    return this.http.get(`${this.baseUrl}/venues/${slug}/qr.svg`, { params, responseType: 'blob' });
+  }
+
+  /** Какая ссылка окажется в QR: проверка адреса сайта перед печатью. */
+  getQrLink(slug: string, table?: number): Observable<QrLink> {
+    let params = new HttpParams();
+    if (table) params = params.set('table', table);
+    return this.http.get<QrLink>(`${this.baseUrl}/venues/${slug}/qr-link/`, { params });
   }
 
   // 8. Пользователи, только модератор

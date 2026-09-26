@@ -13,6 +13,7 @@ import { ProfileComponent } from './pages/profile/profile.component';
 import { SommelierChatComponent } from './ui/sommelier-chat.component';
 import { AuthService } from './services/auth.service';
 import { SelectionService } from './services/selection.service';
+import { TrackService } from './services/track.service';
 import { ActiveTab } from './models/navigation';
 
 export type { ActiveTab } from './models/navigation';
@@ -527,6 +528,7 @@ function parsePath(pathname: string): ParsedPath {
 export class AppComponent implements OnInit, OnDestroy {
   readonly auth = inject(AuthService);
   private readonly selection = inject(SelectionService);
+  private readonly track = inject(TrackService);
   private readonly zone = inject(NgZone);
 
   activeTab = signal<ActiveTab>('landing');
@@ -586,8 +588,12 @@ export class AppComponent implements OnInit, OnDestroy {
     if (parsed.brandId) this.selection.open(parsed.brandId);
     if (parsed.tab === 'menu') {
       this.selection.openVenue(parsed.venueSlug ?? null);
-      // QR-ссылка вида /menu/<slug>?table=7: стол запоминаем, query из адреса убираем
-      if (parsed.venueSlug) this.selection.setTableFromQuery(parsed.venueSlug);
+      // QR-ссылка вида /menu/<slug>?table=7&src=qr: стол запоминаем, а стол и src отдаём в TrackService
+      // для события SCAN (его шлёт меню заведения). Только потом query убираем из адреса
+      if (parsed.venueSlug) {
+        this.track.noteEntry(parsed.venueSlug, location.search);
+        this.selection.setTableFromQuery(parsed.venueSlug);
+      }
     }
     this.activeTab.set(parsed.tab);
     // Незнакомый или неполный адрес (или адрес с query) подменяем каноническим без новой записи в истории

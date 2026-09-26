@@ -1,4 +1,4 @@
-import { OrderItemKind } from '../../models/flavor-tree.models';
+import { OrderItemKind, OrderItemSource } from '../../models/flavor-tree.models';
 
 /**
  * Корзина гостя в localStorage, отдельно для каждого заведения.
@@ -15,6 +15,12 @@ export interface CartLine {
   sub: string;
   price: string;
   qty: number;
+  /** Откуда позиция: без поля - из меню. Уходит в заказ для отчёта пилота. */
+  source?: OrderItemSource;
+  /** Позиция меню (блюдо), к которой подобран напиток. */
+  pairedWith?: string;
+  /** Место напитка в подборе, 1 - лучший. */
+  rank?: number;
 }
 
 export const MAX_QTY = 20;
@@ -54,12 +60,25 @@ export function writeCart(slug: string, lines: CartLine[]): void {
   writeJson(cartKey(slug), lines.length ? lines : null);
 }
 
+/**
+ * Метка источника для строки, в которую добавили ещё одну единицу. Одна строка на позицию,
+ * поэтому подсказка побеждает: напиток, взятый из подбора или у ИИ-сомелье хотя бы раз,
+ * считается выбранным по подсказке. Уже поставленную подсказку меню не перезаписывает.
+ */
+export function withSource<T extends Pick<CartLine, 'source' | 'pairedWith' | 'rank'>>(
+  line: T, from: Pick<CartLine, 'source' | 'pairedWith' | 'rank'> | undefined,
+): T {
+  if (!from?.source || from.source === 'MENU') return line;
+  if (line.source && line.source !== 'MENU') return line;
+  return { ...line, source: from.source, pairedWith: from.pairedWith, rank: from.rank };
+}
+
 /** Плюс одна единица позиции в корзине заведения; новая строка получает qty 1. Возвращает новую корзину. */
 export function addToCart(slug: string, line: Omit<CartLine, 'qty'>): CartLine[] {
   const lines = [...readCart(slug)];
   const i = lines.findIndex(l => l.kind === line.kind && l.id === line.id);
   if (i < 0) lines.push({ ...line, qty: 1 });
-  else if (lines[i].qty < MAX_QTY) lines[i] = { ...lines[i], qty: lines[i].qty + 1 };
+  else if (lines[i].qty < MAX_QTY) lines[i] = withSource({ ...lines[i], qty: lines[i].qty + 1 }, line);
   writeCart(slug, lines);
   return lines;
 }

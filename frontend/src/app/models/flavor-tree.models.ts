@@ -230,6 +230,8 @@ export interface Venue {
   is_published: boolean;
   /** Сколько столов у заведения: гость выбирает номер из 1..tables_count. */
   tables_count: number;
+  /** false: заказ через приложение выключен, POST /orders/ отвечает 409. */
+  accepts_orders?: boolean;
   items_count?: number;
   owner?: { id: number; username: string } | null;
 }
@@ -279,6 +281,12 @@ export interface MenuDrink {
   volume: string;
   is_available: boolean;
   sort_order: number;
+  /** Напиток из базы движка подбора вместо сорта каталога. */
+  engine_drink_id?: string;
+  name?: string;
+  category?: string | null;
+  /** Решает сервер: для алкоголя заказ требует подтверждения 21+. */
+  is_alcoholic?: boolean;
 }
 
 /** Короткая ссылка на позицию карты бара внутри рекомендации к блюду. */
@@ -397,12 +405,20 @@ export function isOrderClosed(status: OrderStatus): boolean {
 
 export type OrderItemKind = 'DISH' | 'DRINK';
 
+/** Откуда позиция попала в заказ: из меню, из панели «Подобрать напиток» или из чата ИИ-сомелье. */
+export type OrderItemSource = 'MENU' | 'PAIRING' | 'AI';
+
 /** Строка корзины для POST /orders/: id позиции меню (MenuItem) или напитка (MenuDrink). */
 export interface OrderItemInput {
   kind: OrderItemKind;
   id: string;
   qty: number;
   note?: string;
+  source?: OrderItemSource;
+  /** id позиции меню (блюда), к которой подобран напиток. */
+  paired_with?: string;
+  /** Место напитка в подборе, 1 - лучший. */
+  rank?: number;
 }
 
 export interface OrderInput {
@@ -412,6 +428,10 @@ export interface OrderInput {
   guest_name?: string;
   comment?: string;
   items: OrderItemInput[];
+  /** id сессии гостя (ft_sid) для отчёта пилота. */
+  session?: string;
+  /** Гость отметил «Мне исполнился 21 год»; без этого заказ с алкоголем сервер не примет. */
+  age_confirmed?: boolean;
 }
 
 /** Строка заказа со снимком названия и цены на момент заказа. */
@@ -424,6 +444,10 @@ export interface OrderItem {
   price: string;
   qty: number;
   note: string;
+  source?: OrderItemSource;
+  source_display?: string;
+  paired_menu_item?: string | null;
+  rec_rank?: number | null;
 }
 
 export interface Order {
@@ -442,6 +466,74 @@ export interface Order {
   guest_name: string;
   comment: string;
   venue: { slug: string; name: string };
+  age_confirmed?: boolean;
+}
+
+/** Оценка пары гостем: POST /feedback/. dish_ref и drink_ref - id позиции меню и напитка карты. */
+export interface PairFeedbackInput {
+  session: string;
+  venue: string;
+  order?: string;
+  dish_ref?: string;
+  drink_ref?: string;
+  rating: number;
+  comment?: string;
+}
+
+/** Ответ GET /pilot/report/. Доли от 0 до 1, деньги в тенге, null - делить не на что. */
+export interface PilotTotals {
+  sessions: number;
+  scans: number;
+  menu_opens: number;
+  pair_opens: number;
+  pair_adds: number;
+  orders: number;
+  orders_with_pairing: number;
+  items: number;
+  items_from_pairing: number;
+  share_items_from_pairing: number | null;
+  avg_check: number | null;
+  avg_check_with_pairing: number | null;
+  avg_check_without_pairing: number | null;
+  feedback_count: number;
+  avg_rating: number | null;
+  ai_asks: number;
+  ai_adds: number;
+  age_confirmations?: number;
+  orders_cancelled?: number;
+  items_from_ai?: number;
+  drinks?: number;
+  drinks_from_pairing?: number;
+  share_drinks_from_pairing?: number | null;
+  revenue?: number;
+}
+
+export interface PilotReport {
+  venue: { slug: string; name: string } | null;
+  period: { from: string; to: string; tz?: string };
+  totals: PilotTotals;
+  funnel: { step: string; label: string; count: number }[];
+  by_day: {
+    date: string; sessions: number; orders: number; pair_opens: number; avg_check: number | null;
+    scans?: number; pair_adds?: number; orders_with_pairing?: number; revenue?: number;
+  }[];
+  by_table: { table: number; sessions: number; orders: number; scans?: number }[];
+  top_pairs: {
+    dish: string; drink: string; opens: number; adds: number; ordered: number; avg_rating: number | null; ratings?: number;
+  }[];
+  feedback?: {
+    created_at: string; dish: string; drink: string; rating: number; comment: string; order_number: number | null;
+  }[];
+}
+
+/** Ответ GET /venues/<slug>/qr-link/: какая ссылка зашита в QR стола. */
+export interface QrLink {
+  url: string;
+  site: string;
+  /** Адрес задан на сервере в FT_PUBLIC_SITE_URL, а не взят из адреса панели. */
+  configured: boolean;
+  /** Адрес компьютера или локальной сети: у гостей не откроется. */
+  local: boolean;
 }
 
 /** ИИ-сомелье: claude, когда на сервере есть ключ, иначе локальный подбор по правилам. */
