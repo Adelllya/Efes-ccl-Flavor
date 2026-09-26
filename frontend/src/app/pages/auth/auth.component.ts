@@ -61,6 +61,15 @@ export type AuthMode = 'login' | 'register';
               <input id="auth-confirm" class="input" name="confirm" type="password" [(ngModel)]="confirm"
                      autocomplete="new-password" required />
             </div>
+
+            <!-- Без согласия сервер тоже не создаст аккаунт -->
+            <label class="auth-consent">
+              <input type="checkbox" name="consent" [(ngModel)]="consent" required />
+              <span>
+                Даю согласие на обработку персональных данных и принимаю
+                <a href="/privacy" target="_blank" rel="noopener">политику конфиденциальности</a>
+              </span>
+            </label>
           }
 
           @if (error()) {
@@ -116,6 +125,7 @@ export class AuthComponent {
   firstName = '';
   password = '';
   confirm = '';
+  consent = false;
 
   readonly loading = signal(false);
   readonly error = signal('');
@@ -146,7 +156,8 @@ export class AuthComponent {
           username: this.username.trim(),
           email: this.email.trim(),
           password: this.password,
-          first_name: this.firstName.trim() || undefined
+          first_name: this.firstName.trim() || undefined,
+          consent: this.consent
         });
 
     request.subscribe({
@@ -168,6 +179,7 @@ export class AuthComponent {
     if (!this.email.trim()) return 'Введите email';
     if (this.password.length < 8) return 'Пароль должен быть не короче 8 символов';
     if (this.password !== this.confirm) return 'Пароли не совпадают';
+    if (!this.consent) return 'Подтвердите согласие на обработку персональных данных';
     return '';
   }
 }

@@ -11,6 +11,10 @@ import { VenueMenuComponent } from './pages/venue-menu/venue-menu.component';
 import { AuthComponent } from './pages/auth/auth.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { SommelierChatComponent } from './ui/sommelier-chat.component';
+import { AgeGateComponent } from './ui/age-gate.component';
+import { ageConfirmed } from './ui/age-storage';
+import { SiteFooterComponent } from './ui/site-footer.component';
+import { PrivacyComponent } from './pages/privacy/privacy.component';
 import { AuthService } from './services/auth.service';
 import { SelectionService } from './services/selection.service';
 import { ActiveTab } from './models/navigation';
@@ -29,6 +33,7 @@ function pathFor(tab: ActiveTab, brandId: string | null, venueSlug: string | nul
     case 'login': return '/login';
     case 'register': return '/register';
     case 'profile': return '/profile';
+    case 'privacy': return '/privacy';
     default: return '/';
   }
 }
@@ -59,9 +64,24 @@ function parsePath(pathname: string): ParsedPath {
     case 'login': return { tab: 'login' };
     case 'register': return { tab: 'register' };
     case 'profile': return { tab: 'profile' };
+    case 'privacy': return { tab: 'privacy' };
     default: return { tab: 'landing' };
   }
 }
+
+/** Заголовок вкладки браузера по разделу. На главной остаётся title из index.html. */
+const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
+  explorer: 'Каталог',
+  beer: 'Каталог',
+  pairing: 'К блюду',
+  academy: 'Академия',
+  admin: 'Панель',
+  menu: 'Меню',
+  login: 'Вход',
+  register: 'Регистрация',
+  profile: 'Профиль',
+  privacy: 'Конфиденциальность'
+};
 
 @Component({
   selector: 'app-root',
@@ -78,7 +98,10 @@ function parsePath(pathname: string): ParsedPath {
     VenueMenuComponent,
     AuthComponent,
     ProfileComponent,
-    SommelierChatComponent
+    SommelierChatComponent,
+    AgeGateComponent,
+    SiteFooterComponent,
+    PrivacyComponent
   ],
   template: `
     <!-- Колосья по краям страницы: растут из-за кулис, едут при прокрутке -->
@@ -313,6 +336,20 @@ function parsePath(pathname: string): ParsedPath {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
           }
         }
+        @case ('privacy') {
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-privacy />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          }
+        }
+      }
+
+      <!-- Предупреждение о вреде алкоголя и ссылка на /privacy. В панели персонала не нужно -->
+      @if (activeTab() !== 'admin') {
+        <app-site-footer [menu]="venueMenuOpen()" (privacy)="goTo('privacy')" />
       }
     </main>
 
@@ -355,6 +392,14 @@ function parsePath(pathname: string): ParsedPath {
     @if (activeTab() !== 'admin' && activeTab() !== 'login' && activeTab() !== 'register') {
       @defer (on idle) {
         <app-sommelier-chat [lift]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
+      }
+    }
+
+    <!-- Вопрос «Вам исполнился 21 год?» при первом входе. Политику конфиденциальности им не закрываем.
+         Отдельный чанк: тем, кто уже ответил, код окна не грузится -->
+    @if (showAgeGate()) {
+      @defer (on immediate) {
+        <app-age-gate (confirmed)="ageOk.set(true)" (privacy)="goTo('privacy')" />
       }
     }
   `,
@@ -533,12 +578,26 @@ export class AppComponent implements OnInit, OnDestroy {
   mobileMenuOpen = signal(false);
   showStickyTitle = signal(false);
 
+  /** Открыто меню конкретного заведения: в подвале строка о подаче алкоголя с 21 года. */
+  readonly venueMenuOpen = computed(() => this.activeTab() === 'menu' && !!this.selection.venueSlug());
+
   /** Нижняя панель разделов (видна только на телефоне). В меню заведения снизу своя полоса корзины. */
-  readonly showTabBar = computed(() => !(this.activeTab() === 'menu' && !!this.selection.venueSlug()));
+  readonly showTabBar = computed(() => !this.venueMenuOpen());
+
+  /** Гость подтвердил, что ему есть 21 (ft_age_ok в localStorage). */
+  readonly ageOk = signal(ageConfirmed());
+  readonly showAgeGate = computed(() => !this.ageOk() && this.activeTab() !== 'privacy');
 
   constructor() {
     // Адрес читаем до первого запуска эффекта, иначе он перепишет его на главную
     this.applyPath(location.pathname);
+
+    // Заголовок вкладки браузера по разделу, чтобы вкладки и история различались
+    const baseTitle = document.title;
+    effect(() => {
+      const title = TAB_TITLES[this.activeTab()];
+      document.title = title ? `${title} · Flavor Tree` : baseTitle;
+    });
 
     // Раздел, сорт или заведение поменялись: кладём новый адрес в историю
     effect(() => {

@@ -25,6 +25,12 @@ from .serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerial
 from .throttles import LoginThrottle, PasswordChangeThrottle, RegisterThrottle
 
 LOGIN_ERROR = 'Неверный логин или пароль'
+CONSENT_ERROR = 'Подтвердите согласие на обработку персональных данных'
+
+
+def _consent_given(value):
+    """Согласие с политикой /privacy: true из JSON или 'true'/'on'/'1' из формы."""
+    return str(value).strip().lower() in ('true', 'on', '1')
 
 
 def auth_payload(user, token):
@@ -49,10 +55,14 @@ def _token_for(user):
 @permission_classes([AllowAny])
 @throttle_classes([RegisterThrottle])
 def register(request):
-    """POST /api/auth/register/ {username, email, password, first_name?} -> 201 {token, user}."""
+    """POST /api/auth/register/ {username, email, password, first_name?, consent: true} -> 201 {token, user}."""
     serializer = RegisterSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    errors = {} if serializer.is_valid() else dict(serializer.errors)
+    # Без согласия на обработку персональных данных аккаунт не создаём (закон РК № 94-V).
+    if not _consent_given(request.data.get('consent')):
+        errors['consent'] = [CONSENT_ERROR]
+    if errors:
+        return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
     user = serializer.save()
     token, _ = Token.objects.get_or_create(user=user)
     return Response(auth_payload(user, token), status=status.HTTP_201_CREATED)

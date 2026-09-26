@@ -1254,6 +1254,33 @@ body:has(.nav-mobile-menu.open) {
   margin-bottom: var(--space-lg);
 }
 
+.auth-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: var(--space-lg);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--foam-dim);
+  cursor: pointer;
+}
+
+.auth-consent input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--beer-mid);
+  cursor: pointer;
+}
+
+.auth-consent a {
+  color: var(--beer-mid);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .auth-feedback {
   font-size: 0.88rem;
   font-weight: 600;

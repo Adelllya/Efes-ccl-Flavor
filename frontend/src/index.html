@@ -2,12 +2,31 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Flavor Tree - Сенсорный гид по вкусам напитков и гастрономии</title>
+  <title>Flavor Tree: вкусы напитков и подбор к блюду</title>
   <base href="/">
   <!-- viewport-fit=cover: без него env(safe-area-inset-*) на iPhone всегда 0 -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Вкусовая пирамида сортов Efes Kazakhstan, пиво к блюду и электронное меню заведений с заказом со стола.">
+  <meta name="description" content="Справочник вкусов 412 напитков, подбор напитка к блюду и электронное меню заведения с заказом со стола по QR-коду. Для гостей старше 21 года.">
   <meta name="theme-color" content="#FAFAF9">
+  <!-- Сервис для гостей заведений по QR, а не публичная витрина алкоголя: в поиск страницы не отдаём (и public/robots.txt) -->
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Превью ссылки в Telegram, WhatsApp и соцсетях. Картинка 1200x630 лежит в public/og.jpg.
+       Адрес относительный, пока домен фронтенда не закреплён; потом лучше указать полный https://<домен>/og.jpg и og:url -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Flavor Tree">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="Flavor Tree: вкусы напитков и подбор к блюду">
+  <meta property="og:description" content="Справочник вкусов напитков, подбор к блюду и электронное меню заведения с заказом со стола. Для гостей старше 21 года.">
+  <meta property="og:image" content="/og.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Логотип Flavor Tree: дерево вкусов">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Flavor Tree: вкусы напитков и подбор к блюду">
+  <meta name="twitter:description" content="Справочник вкусов напитков, подбор к блюду и электронное меню заведения с заказом со стола. Для гостей старше 21 года.">
+  <meta name="twitter:image" content="/og.jpg">
+  <meta name="twitter:image:alt" content="Логотип Flavor Tree: дерево вкусов">
   <meta name="format-detection" content="telephone=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
