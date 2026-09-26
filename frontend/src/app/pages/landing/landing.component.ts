@@ -795,7 +795,8 @@ export class LandingComponent implements OnInit {
       return;
     }
     const found = resolveDish(this.dishIndex(), text);
-    if (found) { this.onExactChoice(found); return; }
+    if (found?.sure) { this.onExactChoice(found); return; }
+    // Неточное совпадение мастер покажет подсказкой «Возможно, вы искали»
     this.go({ stage: 'wizard', step: 0, profile: { ...emptyProfile(), freeText: text } });
   }
 

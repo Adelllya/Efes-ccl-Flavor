@@ -32,6 +32,11 @@ export interface DishChoice {
   also: DishPick[];
 }
 
+/** Результат поиска: sure = false, если совпадение только по опечатке или лишнему слову. */
+export interface DishFound extends DishChoice {
+  sure: boolean;
+}
+
 interface SearchKey {
   norm: string;
   tokens: string[];
@@ -65,10 +70,16 @@ const STOP_WORDS = new Set([
 const PREFERRED: Record<string, string> = {
   'рыба': 'salmon-grilled',
   'торт': 'medovik',
+  'курица': 'shashlyk-chicken',
 };
 
 /** Нижняя граница совпадения: ниже неё считаем, что блюда в каталоге нет. */
 export const MIN_MATCH = 60;
+/**
+ * С этого балла открываем результат сразу. Ниже (опечатка во всём слове,
+ * лишнее слово) только предлагаем блюдо: «кофе» не должно открыть «Наурыз-коже».
+ */
+export const SURE_MATCH = 70;
 
 export function normalizeDish(text: string): string {
   return (text || '')
@@ -101,7 +112,11 @@ function sameStem(a: string, b: string): boolean {
   // Одна буква окончания: «рыба» и «рыбу», «плов» и «плова»
   if (n >= 3 && n >= longest - 1) return true;
   // Окончание длиннее: «шашлык» и «шашлыками». У короткой основы строже: «бауыр» не «бауырсак»
-  return n >= 4 && n >= longest - (shortest >= 6 ? 3 : 2);
+  if (n < 4 || n < longest - (shortest >= 6 ? 3 : 2)) return false;
+  // У падежных форм одно окончание короткое: «пельмени» и «пельменями». Два разных
+  // длинных окончания дают другое слово: «вареники» не «варёные», «сырники» не «сырная»
+  const tails = [a.length - n, b.length - n];
+  return Math.min(...tails) <= 1 || Math.max(...tails) <= 2;
 }
 
 /** Расстояние Дамерау-Левенштейна с ранним выходом, если уже больше limit. */
@@ -246,12 +261,13 @@ export function toPick(d: DishPick): DishPick {
 /**
  * Блюдо для запроса и ещё несколько близких вариантов: на «торт» или
  * «плов» в каталоге есть не одно блюдо, их покажем подсказками.
+ * Если совпадение неточное (sure = false), блюдо лучше предложить, а не открывать.
  */
-export function resolveDish(index: IndexedDish[], query: string): DishChoice | null {
+export function resolveDish(index: IndexedDish[], query: string): DishFound | null {
   const [first, ...rest] = searchDishes(index, query, 5);
   if (!first) return null;
   const also = rest.filter(m => m.score >= 75).slice(0, 4).map(m => toPick(m.dish));
-  return { pick: toPick(first.dish), also };
+  return { pick: toPick(first.dish), also, sure: first.score >= SURE_MATCH };
 }
 
 /** Блюдо по названию из экспресс-сценария или ссылки. */

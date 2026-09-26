@@ -77,7 +77,19 @@ const STEP_KIND: Record<string, string> = {
         <h2 class="section-header">{{ step().title }} <span class="wiz-accent">{{ step().accent }}</span></h2>
         <p class="section-subtitle">{{ step().sub }}</p>
         @if (index() === 0 && profile().freeText) {
-          <p class="wiz-miss">«{{ profile().freeText }}» пока нет в каталоге. Ответьте на четыре вопроса, и мы подберём пиво по вкусу блюда.</p>
+          @if (missHints().length) {
+            <p class="wiz-miss">Точно «{{ profile().freeText }}» в каталоге не нашлось. Возможно, вы искали:</p>
+            <div class="wiz-maybe" aria-label="Похожие блюда из каталога">
+              @for (d of missHints(); track $index) {
+                <button type="button" class="wiz-chip" (click)="pickExact(d)">
+                  @if (d.emoji) { <span aria-hidden="true">{{ d.emoji }}</span> }{{ d.name }}
+                </button>
+              }
+            </div>
+            <p class="wiz-miss">Если нужного блюда нет, ответьте на четыре вопроса, и мы подберём пиво по вкусу блюда.</p>
+          } @else {
+            <p class="wiz-miss">«{{ profile().freeText }}» пока нет в каталоге. Ответьте на четыре вопроса, и мы подберём пиво по вкусу блюда.</p>
+          }
         }
       </header>
 
@@ -251,6 +263,7 @@ const STEP_KIND: Record<string, string> = {
     .wiz-ask .section-header { margin-bottom: var(--space-sm); }
     .wiz-ask .section-subtitle { max-width: 54ch; margin: 0 auto; text-wrap: balance; }
     .wiz-miss { max-width: 54ch; margin: var(--space-md) auto 0; font-size: 0.85rem; color: var(--beer-deep); text-wrap: balance; }
+    .wiz-maybe { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-sm); margin-top: var(--space-sm); }
 
     .wiz-accent {
       background: linear-gradient(120deg, var(--beer-light), var(--beer-deep));
@@ -526,6 +539,9 @@ export class DishWizardComponent implements OnInit, OnDestroy {
 
   suggestions = computed(() => searchDishes(this.catalog, this.query(), 5).map(m => m.dish));
 
+  /** Неточные совпадения для названия, которого нет в каталоге: «пица», «стэйк». */
+  missHints = computed(() => searchDishes(this.catalog, this.profile().freeText, 4).map(m => m.dish));
+
   chosen = computed(() => {
     const p = this.profile();
     const out: { key: string; step: number; emoji: string; label: string }[] = [];
@@ -623,10 +639,12 @@ export class DishWizardComponent implements OnInit, OnDestroy {
     if (text.length < 2) return;
 
     const found = resolveDish(this.catalog, text);
-    if (found) { this.query.set(''); this.dishPicked.emit(found); return; }
+    if (found?.sure) { this.query.set(''); this.dishPicked.emit(found); return; }
 
     // Блюда нет в каталоге - запоминаем название и уточняем его вручную.
     this.profile.update(p => ({ ...p, freeText: text }));
+    // Похожее есть: остаёмся на первом шаге, где видно «Возможно, вы искали»
+    if (found) { this.query.set(''); return; }
     this.next();
   }
 
