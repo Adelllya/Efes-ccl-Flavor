@@ -27,6 +27,7 @@ export interface SelectOption {
       [class.placeholder]="!current()"
       [disabled]="disabled()"
       [attr.aria-expanded]="open()"
+      [attr.aria-label]="triggerLabel()"
       aria-haspopup="listbox"
       (click)="toggle()"
       (keydown)="onTriggerKey($event)"
@@ -38,15 +39,16 @@ export interface SelectOption {
     </button>
 
     @if (open()) {
-      <div class="ft-select-menu" role="listbox">
+      <!-- Клавиши ловим на всём меню: так стрелки, Enter и Escape работают и без поля поиска -->
+      <div class="ft-select-menu" role="listbox" [attr.aria-label]="ariaLabel || null" (keydown)="onListKey($event)">
         @if (searchable) {
           <input
             class="ft-select-search"
             type="text"
             [placeholder]="searchPlaceholder"
+            [attr.aria-label]="searchPlaceholder"
             [ngModel]="query()"
             (ngModelChange)="query.set($event); active.set(0)"
-            (keydown)="onListKey($event)"
             #search
           />
         }
@@ -85,6 +87,8 @@ export class FtSelectComponent implements ControlValueAccessor {
   @Input() emptyText = 'Ничего не найдено';
   /** Текст, когда варианты есть, но под введённый запрос ничего не подошло. */
   @Input() noMatchText = 'Ничего не найдено';
+  /** Название поля для экранных читалок, когда видимая подпись стоит рядом, а не внутри label. */
+  @Input() ariaLabel = '';
   @Output() changed = new EventEmitter<string>();
 
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -110,9 +114,14 @@ export class FtSelectComponent implements ControlValueAccessor {
   registerOnTouched(fn: () => void): void { this.onTouched = fn; }
   setDisabledState(d: boolean): void { this.disabled.set(d); }
 
+  /** Имя кнопки для читалки: подпись поля и выбранное значение, иначе aria-label заслонил бы само значение. */
+  triggerLabel(): string | null {
+    return this.ariaLabel ? `${this.ariaLabel}: ${this.current()?.label || this.placeholder}` : null;
+  }
+
   toggle(): void {
     if (this.disabled()) return;
-    if (this.open()) { this.close(); return; }
+    if (this.open()) { this.close(true); return; }
     this.query.set('');
     const idx = this.opts().findIndex(o => o.value === this.value());
     this.active.set(idx >= 0 ? idx : 0);
@@ -125,10 +134,13 @@ export class FtSelectComponent implements ControlValueAccessor {
     });
   }
 
-  close(): void {
+  /** refocus: вернуть фокус на кнопку. При клике мимо списка не нужно: фокус уже там, куда нажали. */
+  close(refocus = false): void {
     if (!this.open()) return;
     this.open.set(false);
     this.onTouched();
+    // Вариант или поле поиска с фокусом исчезают вместе со списком: без возврата фокус упал бы на body
+    if (refocus) this.host.nativeElement.querySelector<HTMLElement>('.ft-select-trigger')?.focus();
   }
 
   choose(o: SelectOption): void {
@@ -137,8 +149,7 @@ export class FtSelectComponent implements ControlValueAccessor {
       this.onChange(o.value);
       this.changed.emit(o.value);
     }
-    this.close();
-    this.host.nativeElement.querySelector<HTMLElement>('.ft-select-trigger')?.focus();
+    this.close(true);
   }
 
   onTriggerKey(e: KeyboardEvent): void {
@@ -151,6 +162,7 @@ export class FtSelectComponent implements ControlValueAccessor {
     }
   }
 
+  /** Клавиши внутри открытого списка: из поля поиска, с варианта или с самой кнопки. */
   onListKey(e: KeyboardEvent): void {
     const list = this.filtered();
     if (e.key === 'ArrowDown') {
@@ -162,16 +174,27 @@ export class FtSelectComponent implements ControlValueAccessor {
       this.active.set(Math.max(0, this.active() - 1));
       this.scrollActive();
     } else if (e.key === 'Enter') {
+      // На самом варианте Enter сработает как обычное нажатие кнопки
+      if ((e.target as HTMLElement | null)?.classList?.contains('ft-select-option')) return;
       e.preventDefault();
       const o = list[this.active()];
       if (o) this.choose(o);
-    } else if (e.key === 'Escape' || e.key === 'Tab') {
+    } else if (e.key === 'Escape') {
+      this.close(true);
+    } else if (e.key === 'Tab') {
+      // Фокус уходит дальше по странице сам
       this.close();
     }
   }
 
   private scrollActive(): void {
-    setTimeout(() => this.host.nativeElement.querySelector<HTMLElement>('.ft-select-option.active')?.scrollIntoView({ block: 'nearest' }));
+    setTimeout(() => {
+      const el = this.host.nativeElement.querySelector<HTMLElement>('.ft-select-option.active');
+      if (!el) return;
+      // Без поля поиска фокус стоит на вариантах и идёт вместе с подсветкой
+      if (!this.searchable) el.focus({ preventScroll: true });
+      el.scrollIntoView({ block: 'nearest' });
+    });
   }
 
   @HostListener('document:click', ['$event'])
@@ -180,5 +203,5 @@ export class FtSelectComponent implements ControlValueAccessor {
   }
 
   @HostListener('document:keydown.escape')
-  onEscape(): void { this.close(); }
+  onEscape(): void { this.close(true); }
 }

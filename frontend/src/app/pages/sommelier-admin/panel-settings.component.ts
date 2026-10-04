@@ -6,7 +6,7 @@ import { SiteSettings } from '../../models/flavor-tree.models';
 import { PanelIconComponent } from './panel-icons';
 import { flash, isErrorText } from './panel-shared';
 
-const DEFAULTS: SiteSettings = { alternatives_count: 3, min_score_to_show: 1, show_wheat_decor: true, pairing_intro: '' };
+const DEFAULTS: SiteSettings = { alternatives_count: 3, min_score_to_show: 1, show_wheat_decor: true, pairing_intro: '', show_team: false };
 
 /** Вкладка "Настройки" (только модератор): без списка, одна карточка с четырьмя полями витрины. */
 @Component({
@@ -25,6 +25,12 @@ const DEFAULTS: SiteSettings = { alternatives_count: 3, min_score_to_show: 1, sh
 
         @if (loading()) {
           <p class="wa-muted">Загрузка...</p>
+        } @else if (loadError()) {
+          <div class="wa-loadbar" role="alert">
+            <panel-icon name="alert" />
+            <span>{{ loadError() }}</span>
+            <button type="button" class="btn-outline" (click)="load()"><panel-icon name="refresh" /> Обновить</button>
+          </div>
         } @else {
           <div class="wa-fields">
             <label class="wa-field">
@@ -43,17 +49,23 @@ const DEFAULTS: SiteSettings = { alternatives_count: 3, min_score_to_show: 1, sh
             <label class="wa-check wa-field-wide">
               <input type="checkbox" [(ngModel)]="form.show_wheat_decor" /> Показывать декор из колосьев на главной
             </label>
+            <label class="wa-check wa-field-wide">
+              <input type="checkbox" [(ngModel)]="form.show_team" /> Показывать блок команды в Академии
+            </label>
           </div>
-          <p class="wa-muted">Сорта с оценкой ниже минимальной гость в подборе не увидит.</p>
+          <p class="wa-muted">
+            Сорта с оценкой ниже минимальной гость в подборе не увидит. Блок команды включайте, когда в разделе
+            «Команда» в Django admin записаны настоящие люди: стартовые записи там условные.
+          </p>
           <div class="wa-actions">
-            <button type="button" class="btn-amber" [disabled]="saving()" (click)="save()">
+            <button type="button" class="btn-amber" [disabled]="saving() || !ready()" (click)="save()">
               <panel-icon name="save" /> {{ saving() ? 'Сохраняем...' : 'Сохранить' }}
             </button>
-            <button type="button" class="btn-outline" [disabled]="saving()" (click)="reset()">
+            <button type="button" class="btn-outline" [disabled]="saving() || !ready()" (click)="reset()">
               <panel-icon name="undo" /> Вернуть сохранённые
             </button>
             @if (msg()) {
-              <p class="wa-msg" [class.error]="isError(msg())">{{ msg() }}</p>
+              <p class="wa-msg" [class.error]="isError(msg())" [attr.role]="isError(msg()) ? 'alert' : 'status'">{{ msg() }}</p>
             }
           </div>
         }
@@ -70,14 +82,32 @@ export class PanelSettingsComponent implements OnInit {
   /** Последнее сохранённое состояние: к нему возвращает "Вернуть сохранённые". */
   private saved: SiteSettings = { ...DEFAULTS };
   loading = signal(true);
+  /** Настройки не прочитались: текст держится до удачной попытки, формы при этом нет. */
+  loadError = signal<string | null>(null);
+  /** true только после настоящего ответа сервера. До него "Сохранить" закрыто: значения по умолчанию не должны лечь поверх настоящих. */
+  ready = signal(false);
   saving = signal(false);
   msg = signal<string | null>(null);
 
   ngOnInit() {
-    this.api.getSettings().subscribe(s => {
-      this.saved = { ...s };
-      this.form = { ...s };
-      this.loading.set(false);
+    this.load();
+  }
+
+  /** Без значений по умолчанию: при ошибке показываем её и кнопку "Обновить", а не форму с заглушками. */
+  load() {
+    this.loading.set(true);
+    this.loadError.set(null);
+    this.api.getSettingsStrict().subscribe({
+      next: s => {
+        this.saved = { ...s };
+        this.form = { ...s };
+        this.ready.set(true);
+        this.loading.set(false);
+      },
+      error: err => {
+        this.loading.set(false);
+        this.loadError.set('Не удалось загрузить настройки: ' + AuthService.errorText(err));
+      }
     });
   }
 
@@ -87,11 +117,13 @@ export class PanelSettingsComponent implements OnInit {
   }
 
   save() {
+    if (!this.ready()) return;
     this.saving.set(true);
     this.api.updateSettings({
       alternatives_count: Number(this.form.alternatives_count) || 1,
       min_score_to_show: Number(this.form.min_score_to_show) || 1,
       show_wheat_decor: !!this.form.show_wheat_decor,
+      show_team: !!this.form.show_team,
       pairing_intro: (this.form.pairing_intro || '').trim()
     }).subscribe({
       next: saved => {

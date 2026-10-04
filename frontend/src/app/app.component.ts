@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LandingComponent } from './pages/landing/landing.component';
 import { BrandExplorerComponent } from './pages/brand-explorer/brand-explorer.component';
@@ -10,22 +10,27 @@ import { BeerDetailComponent } from './pages/beer-detail/beer-detail.component';
 import { VenueMenuComponent } from './pages/venue-menu/venue-menu.component';
 import { AuthComponent } from './pages/auth/auth.component';
 import { ProfileComponent } from './pages/profile/profile.component';
+import { PassportComponent } from './pages/passport/passport.component';
 import { SommelierChatComponent } from './ui/sommelier-chat.component';
+import { SiteFooterComponent } from './ui/site-footer.component';
+import { AgeGateComponent } from './ui/age-gate.component';
 import { AuthService } from './services/auth.service';
 import { SelectionService } from './services/selection.service';
+import { AgeGateService } from './services/age-gate.service';
 import { ActiveTab } from './models/navigation';
 
 export type { ActiveTab } from './models/navigation';
 
-/** Путь в адресной строке для раздела. Сорт и заведение попадают в него параметром. */
-function pathFor(tab: ActiveTab, brandId: string | null, venueSlug: string | null): string {
+/** Путь в адресной строке для раздела. Сорт, заведение и урок попадают в него параметром. */
+function pathFor(tab: ActiveTab, brandId: string | null, venueSlug: string | null, lessonSlug: string | null, staff = false): string {
   switch (tab) {
     case 'explorer': return '/catalog';
     case 'beer': return brandId ? `/beer/${encodeURIComponent(brandId)}` : '/catalog';
     case 'pairing': return '/pairings';
-    case 'academy': return '/academy';
+    case 'academy': return lessonSlug ? `/academy/${encodeURIComponent(lessonSlug)}` : '/academy';
+    case 'passport': return '/passport';
     case 'admin': return '/panel';
-    case 'menu': return venueSlug ? `/menu/${encodeURIComponent(venueSlug)}` : '/menu';
+    case 'menu': return venueSlug ? `/menu/${encodeURIComponent(venueSlug)}${staff ? '/staff' : ''}` : '/menu';
     case 'login': return '/login';
     case 'register': return '/register';
     case 'profile': return '/profile';
@@ -37,6 +42,9 @@ interface ParsedPath {
   tab: ActiveTab;
   brandId?: string;
   venueSlug?: string | null;
+  lessonSlug?: string | null;
+  /** /menu/<slug>/staff: шпаргалка официанта вместо меню гостя. */
+  staff?: boolean;
 }
 
 /** Обратная операция: из адреса в раздел. Незнакомый адрес ведёт на главную. */
@@ -47,15 +55,16 @@ function parsePath(pathname: string): ParsedPath {
   } catch {
     return { tab: 'landing' };
   }
-  const [first = '', second = ''] = parts;
+  const [first = '', second = '', third = ''] = parts;
   switch (first) {
     case '': return { tab: 'landing' };
     case 'catalog': return { tab: 'explorer' };
     case 'beer': return second ? { tab: 'beer', brandId: second } : { tab: 'explorer' };
     case 'pairings': return { tab: 'pairing' };
-    case 'academy': return { tab: 'academy' };
+    case 'academy': return { tab: 'academy', lessonSlug: second || null };
+    case 'passport': return { tab: 'passport' };
     case 'panel': return { tab: 'admin' };
-    case 'menu': return { tab: 'menu', venueSlug: second || null };
+    case 'menu': return { tab: 'menu', venueSlug: second || null, staff: !!second && third === 'staff' };
     case 'login': return { tab: 'login' };
     case 'register': return { tab: 'register' };
     case 'profile': return { tab: 'profile' };
@@ -78,9 +87,16 @@ function parsePath(pathname: string): ParsedPath {
     VenueMenuComponent,
     AuthComponent,
     ProfileComponent,
-    SommelierChatComponent
+    PassportComponent,
+    SommelierChatComponent,
+    SiteFooterComponent,
+    AgeGateComponent
   ],
   template: `
+    <!-- Проверка возраста 21+. Пока она не пройдена, сам сайт не рисуется: ни страницы, ни их окна, ни запросы -->
+    <app-age-gate />
+
+    @if (age.passed()) {
     <!-- Колосья по краям страницы: растут из-за кулис, едут при прокрутке -->
     <app-wheat-decor />
 
@@ -124,6 +140,7 @@ function parsePath(pathname: string): ParsedPath {
           <button class="nav-tab" [class.active]="activeTab() === 'explorer' || activeTab() === 'beer'" [attr.aria-current]="activeTab() === 'explorer' ? 'page' : null" (click)="goTo('explorer')">Каталог</button>
           <button class="nav-tab" [class.active]="activeTab() === 'pairing'" [attr.aria-current]="activeTab() === 'pairing' ? 'page' : null" (click)="goTo('pairing')">К блюду</button>
           <button class="nav-tab" [class.active]="activeTab() === 'academy'" [attr.aria-current]="activeTab() === 'academy' ? 'page' : null" (click)="goTo('academy')">Академия</button>
+          <button class="nav-tab" [class.active]="activeTab() === 'passport'" [attr.aria-current]="activeTab() === 'passport' ? 'page' : null" (click)="goTo('passport')">Паспорт</button>
           <button class="nav-tab" [class.active]="activeTab() === 'menu'" [attr.aria-current]="activeTab() === 'menu' ? 'page' : null" (click)="goTo('menu')">Меню</button>
         </div>
 
@@ -152,7 +169,14 @@ function parsePath(pathname: string): ParsedPath {
         </div>
 
         <!-- Гамбургер (мобильный) -->
-        <button class="nav-hamburger" [class.open]="mobileMenuOpen()" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()" aria-label="Открыть меню">
+        <button
+          class="nav-hamburger"
+          [class.open]="mobileMenuOpen()"
+          (click)="toggleMobileMenu()"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-controls="mobile-menu"
+          [attr.aria-label]="mobileMenuOpen() ? 'Закрыть меню' : 'Открыть меню'"
+        >
           <span></span>
           <span></span>
           <span></span>
@@ -162,7 +186,7 @@ function parsePath(pathname: string): ParsedPath {
 
     <!-- Мобильное меню (slide-out) -->
     <div class="nav-mobile-backdrop" [class.open]="mobileMenuOpen()" (click)="closeMobileMenu()"></div>
-    <div class="nav-mobile-menu" [class.open]="mobileMenuOpen()">
+    <div class="nav-mobile-menu" id="mobile-menu" [class.open]="mobileMenuOpen()">
       <button class="btn-outline" [class.active]="activeTab() === 'landing'" (click)="goTo('landing')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Главная
@@ -177,7 +201,11 @@ function parsePath(pathname: string): ParsedPath {
       </button>
       <button class="btn-outline" [class.active]="activeTab() === 'academy'" (click)="goTo('academy')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 10 3 12 0v-5"/></svg>
-        Академия Сомелье
+        Академия вкуса
+      </button>
+      <button class="btn-outline" [class.active]="activeTab() === 'passport'" (click)="goTo('passport')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 15 8.5l7 1-5 4.9 1.2 7L12 18l-6.2 3.4 1.2-7-5-4.9 7-1L12 2Z"/></svg>
+        Паспорт вкуса
       </button>
       <button class="btn-outline" [class.active]="activeTab() === 'menu'" (click)="goTo('menu')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -207,38 +235,73 @@ function parsePath(pathname: string): ParsedPath {
       }
     </div>
 
+    <!-- Пока код раздела загружается (каждый раздел лежит отдельным файлом) -->
+    <ng-template #pageWait>
+      <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем раздел">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="skeleton-card">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+          </div>
+        }
+      </div>
+    </ng-template>
+    <ng-template #pageFail>
+      <div class="glass-card page-fail" role="alert">
+        <p>Не удалось загрузить раздел. Проверьте соединение и обновите страницу.</p>
+        <button type="button" class="btn-amber btn-sm" (click)="reloadPage()">Обновить страницу</button>
+      </div>
+    </ng-template>
+
     <!-- Основной контент -->
-    <main style="position: relative; z-index: 1; max-width: var(--container-max); margin: 32px auto; padding: 0 var(--container-padding) 80px;">
-      <!-- Каждый @case монтирует свою обёртку .page-enter, поэтому раздел плавно появляется при каждом переключении -->
+    <main class="app-main">
+      <!--
+        Каждый @case монтирует свою обёртку .page-enter, поэтому раздел плавно появляется при каждом переключении.
+        @defer: код раздела не входит в первый файл сайта и подгружается, когда раздел открыли.
+        Гость с QR-кодом получает только меню, а не панель и все остальные страницы.
+      -->
       @switch (activeTab()) {
         @case ('landing') {
           <div class="page-enter">
-            <app-landing (navigate)="goTo($event)" />
+            @defer (on immediate) {
+              <app-landing (navigate)="goTo($event)" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('explorer') {
           <div class="page-enter">
-            <app-brand-explorer (openBrand)="goTo('beer')" />
+            @defer (on immediate) {
+              <app-brand-explorer (openBrand)="goTo('beer')" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('beer') {
           <div class="page-enter">
-            <app-beer-detail (back)="goTo('explorer')" />
+            @defer (on immediate) {
+              <app-beer-detail [backLabel]="beerBackLabel()" (back)="goTo(beerFrom())" (login)="goTo('login')" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('pairing') {
           <div class="page-enter">
-            <app-food-pairing />
+            @defer (on immediate) {
+              <app-food-pairing />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('academy') {
           <div class="page-enter">
-            <app-academy />
+            @defer (on immediate) {
+              <app-academy (navigate)="goTo($event)" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('menu') {
           <div class="page-enter">
-            <app-venue-menu (openBrand)="goTo('beer')" />
+            @defer (on immediate) {
+              <app-venue-menu (openBrand)="goTo('beer')" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('admin') {
@@ -247,36 +310,61 @@ function parsePath(pathname: string): ParsedPath {
             @if (!auth.ready()) {
               <p class="text-muted text-center p-4xl">Проверяем сессию...</p>
             } @else if (auth.canSeePanel()) {
-              <app-sommelier-admin (openMenu)="openVenueMenu($event)" />
+              @defer (on immediate) {
+                <app-sommelier-admin (openMenu)="openVenueMenu($event)" />
+              } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
             } @else {
               @if (auth.isLoggedIn()) {
                 <p class="text-muted text-center mb-lg">Аккаунту {{ auth.user()?.username }} панель недоступна. Войдите под другой учётной записью.</p>
               }
-              <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
+              @defer (on immediate) {
+                <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
+              } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
             }
           </div>
         }
         @case ('login') {
           <div class="page-enter">
-            <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
+            @defer (on immediate) {
+              <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('register') {
           <div class="page-enter">
-            <app-auth mode="register" (done)="afterAuth()" (switchMode)="goTo($event)" />
+            @defer (on immediate) {
+              <app-auth mode="register" (done)="afterAuth()" (switchMode)="goTo($event)" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
         @case ('profile') {
           <div class="page-enter">
-            <app-profile (navigate)="goTo($event)" />
+            @defer (on immediate) {
+              <app-profile (navigate)="goTo($event)" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
+          </div>
+        }
+        @case ('passport') {
+          <div class="page-enter">
+            @defer (on immediate) {
+              <app-passport (navigate)="goTo($event)" />
+            } @placeholder { <ng-container *ngTemplateOutlet="pageWait" /> } @error { <ng-container *ngTemplateOutlet="pageFail" /> }
           </div>
         }
       }
     </main>
 
-    <!-- ИИ-сомелье: плавающая кнопка и чат. В панели и на формах входа не нужен -->
+    <!-- Подвал со слоем ответственного потребления: на всех страницах, кроме панели -->
+    @if (activeTab() !== 'admin') {
+      <app-site-footer (navigate)="goTo($event)" />
+    }
+
+    <!-- ИИ-сомелье: плавающая кнопка и чат. В панели и на формах входа не нужен. Подгружается, когда браузер свободен -->
     @if (activeTab() !== 'admin' && activeTab() !== 'login' && activeTab() !== 'register') {
-      <app-sommelier-chat [lift]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
+      @defer (on idle) {
+        <app-sommelier-chat [lift]="activeTab() === 'menu'" [inVenue]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
+      }
+    }
     }
   `,
   styles: [`
@@ -346,7 +434,7 @@ function parsePath(pathname: string): ParsedPath {
       inset: 0;
       z-index: -1;
       border-radius: inherit;
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       opacity: 0;
       transition: opacity 180ms ease;
     }
@@ -408,16 +496,25 @@ function parsePath(pathname: string): ParsedPath {
       .nav-sticky-title { transition: opacity var(--duration-fast) ease; }
     }
 
+    .page-fail { display: grid; gap: var(--space-md); justify-items: center; padding: var(--space-3xl); text-align: center; color: var(--foam-dim); }
+    .page-fail p { margin: 0; }
+
+    /* Узкий ноутбук: имя пользователя прячем, остаётся иконка профиля, иначе кнопки не влезают в шапку */
+    @media (max-width: 1279px) {
+      .nav-user .btn-outline { padding: 7px 10px; }
+      .nav-user .btn-outline span { display: none; }
+    }
+
     @media (max-width: 1100px) {
       .nav-tab { padding: 0 12px; font-size: 0.76rem; }
-      .nav-user .btn-outline { max-width: 130px; }
     }
 
     @media (max-width: 860px) {
       .nav-sticky-title { display: none; }
     }
 
-    @media (max-width: 768px) {
+    /* Вход, профиль и панель на планшете и телефоне переезжают в меню-гамбургер вместе с разделами */
+    @media (max-width: 1024px) {
       .nav-admin-btn {
         display: none;
       }
@@ -426,11 +523,25 @@ function parsePath(pathname: string): ParsedPath {
 })
 export class AppComponent implements OnInit, OnDestroy {
   readonly auth = inject(AuthService);
+  readonly age = inject(AgeGateService);
   private readonly selection = inject(SelectionService);
 
   activeTab = signal<ActiveTab>('landing');
   mobileMenuOpen = signal(false);
   showStickyTitle = signal(false);
+  /** Раздел, из которого открыли страницу сорта: туда ведёт её кнопка «назад». */
+  readonly beerFrom = signal<ActiveTab>('explorer');
+  readonly beerBackLabel = computed(() => {
+    switch (this.beerFrom()) {
+      case 'landing': return 'К подбору';
+      case 'menu': return 'К меню';
+      case 'profile': return 'В профиль';
+      case 'passport': return 'В паспорт';
+      case 'pairing': return 'К парам';
+      case 'academy': return 'В Академию';
+      default: return 'Все сорта';
+    }
+  });
 
   constructor() {
     // Адрес читаем до первого запуска эффекта, иначе он перепишет его на главную
@@ -438,7 +549,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Раздел, сорт или заведение поменялись: кладём новый адрес в историю
     effect(() => {
-      const path = pathFor(this.activeTab(), this.selection.brandId(), this.selection.venueSlug());
+      const path = pathFor(this.activeTab(), this.selection.brandId(), this.selection.venueSlug(), this.selection.lessonSlug(),
+        this.selection.staffMode());
       if (path !== location.pathname) history.pushState({}, '', path);
     });
 
@@ -449,6 +561,11 @@ export class AppComponent implements OnInit, OnDestroy {
       const tab = untracked(this.activeTab);
       if (ready && user === null && (tab === 'admin' || tab === 'profile')) untracked(() => this.goTo('login'));
     }, { allowSignalWrites: true });
+
+    // Пока открыто мобильное меню, страница под ним не прокручивается (правило в styles.css только для узких экранов)
+    effect(() => {
+      document.documentElement.classList.toggle('ft-no-scroll', this.mobileMenuOpen());
+    });
   }
 
   ngOnInit() {
@@ -475,10 +592,19 @@ export class AppComponent implements OnInit, OnDestroy {
       // QR-ссылка вида /menu/<slug>?table=7: стол запоминаем, query из адреса убираем
       if (parsed.venueSlug) this.selection.setTableFromQuery(parsed.venueSlug);
     }
+    this.selection.lessonSlug.set(parsed.tab === 'academy' ? parsed.lessonSlug ?? null : null);
+    this.selection.staffMode.set(parsed.tab === 'menu' && !!parsed.staff);
     this.activeTab.set(parsed.tab);
     // Незнакомый или неполный адрес (или адрес с query) подменяем каноническим без новой записи в истории
-    const canonical = pathFor(parsed.tab, this.selection.brandId(), this.selection.venueSlug());
+    const canonical = pathFor(parsed.tab, this.selection.brandId(), this.selection.venueSlug(), this.selection.lessonSlug(),
+      this.selection.staffMode());
     if (canonical !== pathname || location.search) history.replaceState({}, '', canonical);
+  }
+
+  /** Esc закрывает мобильное меню. */
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    if (this.mobileMenuOpen()) this.closeMobileMenu();
   }
 
   /** Показываем липкий заголовок, когда H1 главной ушёл за навбар. */
@@ -502,6 +628,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }));
 
   goTo(tab: ActiveTab) {
+    const from = this.activeTab();
+    if (tab === 'beer' && from !== 'beer') this.beerFrom.set(from === 'admin' || from === 'login' || from === 'register' ? 'explorer' : from);
+    // Урок Академии живёт в адресе только пока открыт её раздел
+    if (tab !== 'academy' || from !== 'academy') this.selection.lessonSlug.set(null);
+    // Режим официанта относится к одному заведению: переход в любой раздел возвращает меню гостя
+    this.selection.staffMode.set(false);
     this.activeTab.set(tab);
     this.closeMobileMenu();
     this.showStickyTitle.set(false);
@@ -524,6 +656,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.auth.logout();
     this.closeMobileMenu();
     this.goTo('login');
+  }
+
+  /** Код раздела не загрузился (нет сети или сайт обновился): перезагрузка страницы берёт свежие файлы. */
+  reloadPage() {
+    location.reload();
   }
 
   toggleMobileMenu() {

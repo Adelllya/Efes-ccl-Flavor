@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
@@ -7,6 +8,9 @@ from .helpers import PASSWORD, make_user, client_for, make_venue, token_for
 
 
 class RegisterLoginTests(TestCase):
+    def setUp(self):
+        cache.clear()  # счётчики лимита входа живут в кэше
+
     def test_register_returns_token_and_user_role(self):
         client = client_for()
         resp = client.post('/api/auth/register/', {
@@ -80,6 +84,7 @@ class RegisterLoginTests(TestCase):
 
 class ProfileTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.user = make_user('plain')
         self.client_auth = client_for(self.user)
 
@@ -124,6 +129,7 @@ class ProfileTests(TestCase):
 
 class UsersAdminTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.moderator = make_user('mod', role='moderator')
         self.somm = make_user('somm', role='sommelier')
         self.mod_client = client_for(self.moderator)

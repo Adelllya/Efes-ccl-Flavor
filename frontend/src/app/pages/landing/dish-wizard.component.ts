@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, computed, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, computed, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Dish, FoodIcon } from '../../models/flavor-tree.models';
 import {
@@ -137,7 +137,7 @@ const STEP_KIND: Record<string, string> = {
               autocomplete="off"
               placeholder="Например: стейк рибай, том ям, тирамису…"
               [ngModel]="query()"
-              (ngModelChange)="query.set($event)"
+              (ngModelChange)="onQuery($event)"
             />
 
             @if (suggestions().length) {
@@ -350,7 +350,7 @@ const STEP_KIND: Record<string, string> = {
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       border: 2.5px solid var(--bg-0);
       color: #fff;
       box-shadow: 0 4px 12px rgba(180, 83, 9, 0.35);
@@ -401,7 +401,7 @@ const STEP_KIND: Record<string, string> = {
     }
     .wiz-fat:hover { border-color: rgba(180, 83, 9, 0.3); color: var(--foam); }
     .wiz-fat.on {
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       border-color: transparent;
       color: #fff;
       font-weight: 700;
@@ -480,13 +480,15 @@ const STEP_KIND: Record<string, string> = {
     }
   `],
 })
-export class DishWizardComponent implements OnInit {
+export class DishWizardComponent implements OnInit, OnDestroy {
   /** Каталог блюд - нужен для подсказок в свободном вводе. */
   @Input() dishes: Dish[] = [];
   /** Картинки вариантов из админки. Пусто - на кружках остаются emoji. */
   @Input() icons: FoodIcon[] = [];
   /** Ответы прошлого прохода: с ними «назад» из результата не теряет выбор. */
   @Input() restore: DishProfile | null = null;
+  /** Текст из поиска на главной: в каталоге такого блюда нет или каталог ещё грузится. */
+  @Input() search = '';
 
   @Output() done = new EventEmitter<DishProfile>();
   @Output() dishPicked = new EventEmitter<Dish>();
@@ -500,6 +502,11 @@ export class DishWizardComponent implements OnInit {
   index = signal(0);
   profile = signal<DishProfile>(emptyProfile());
   query = signal('');
+
+  /** Единственный таймер автоперехода: двойное нажатие не копит переходы. */
+  private advanceTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Название пришло из поиска на главной: пока гость правит его в поле, оно остаётся названием блюда. */
+  private carried = false;
 
   step = computed(() => this.steps[this.index()]);
   isLast = computed(() => this.index() === this.steps.length - 1);
@@ -524,9 +531,31 @@ export class DishWizardComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    if (!this.restore) return;
-    this.profile.set({ ...this.restore });
-    this.index.set(this.steps.length - 1);
+    if (this.restore) {
+      this.profile.set({ ...this.restore });
+      this.index.set(this.steps.length - 1);
+      return;
+    }
+    const text = this.search.trim();
+    if (!text) return;
+    // Название из поиска на главной: стоит в поле и станет заголовком результата
+    this.carried = true;
+    this.query.set(text);
+    this.profile.update(p => ({ ...p, freeText: text }));
+  }
+
+  ngOnDestroy(): void {
+    this.cancelAdvance();
+  }
+
+  /** Гость ещё на первом шаге и не менял текст из поиска: его можно сверить с каталогом. */
+  holds(text: string): boolean {
+    return this.index() === 0 && this.query().trim() === text;
+  }
+
+  onQuery(value: string): void {
+    this.query.set(value);
+    if (this.carried) this.profile.update(p => ({ ...p, freeText: value.trim() }));
   }
 
   value(key: keyof DishProfile): string | null {
@@ -542,11 +571,23 @@ export class DishWizardComponent implements OnInit {
 
   choose(id: string): void {
     this.profile.update(p => ({ ...p, [this.step().key]: id }));
+    this.cancelAdvance();
     // На промежуточных шагах ведём дальше сами: выбор виден, ждать нечего.
-    if (!this.isLast()) {
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      setTimeout(() => this.next(), reduce ? 0 : 260);
-    }
+    if (this.isLast()) return;
+    const at = this.index();
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    this.advanceTimer = setTimeout(() => {
+      this.advanceTimer = null;
+      // Шаг уже сменили вручную: этот переход опоздал
+      if (this.index() === at) this.next();
+    }, reduce ? 0 : 260);
+  }
+
+  /** Отменяет отложенный автопереход: иначе он сработал бы поверх ручного шага. */
+  private cancelAdvance(): void {
+    if (this.advanceTimer === null) return;
+    clearTimeout(this.advanceTimer);
+    this.advanceTimer = null;
   }
 
   setFat(id: string): void {
@@ -559,12 +600,14 @@ export class DishWizardComponent implements OnInit {
   }
 
   next(): void {
+    this.cancelAdvance();
     if (this.isLast()) { this.finish(); return; }
     this.index.update(i => i + 1);
     this.focusGrid();
   }
 
   back(): void {
+    this.cancelAdvance();
     if (this.index() === 0) { this.exit.emit(); return; }
     this.index.update(i => i - 1);
     this.focusGrid();
@@ -572,11 +615,13 @@ export class DishWizardComponent implements OnInit {
 
   goTo(i: number): void {
     if (i > this.index()) return;
+    this.cancelAdvance();
     this.index.set(i);
     this.focusGrid();
   }
 
   finish(): void {
+    this.cancelAdvance();
     this.done.emit(this.profile());
   }
 
@@ -588,11 +633,13 @@ export class DishWizardComponent implements OnInit {
     if (exact) { this.pickExact(exact); return; }
 
     // Блюда нет в каталоге - запоминаем название и уточняем его вручную.
-    this.profile.update(p => ({ ...p, freeText: text }));
+    // Прежнее блюдо каталога (если ответы меняли после результата) к новому названию не относится.
+    this.profile.update(p => ({ ...p, freeText: text, dishId: null }));
     this.next();
   }
 
   pickExact(dish: Dish): void {
+    this.cancelAdvance();
     this.query.set('');
     this.dishPicked.emit(dish);
   }

@@ -1,120 +1,114 @@
-# 🍺 Flavor Tree
+# Flavor Tree
 
-> *"Don't just drink – listen to the flavor"*
+"Don't just drink - listen to the flavor"
 
-**Первая в СНГ платформа сенсорного образования для напитков.**  
-Помогаем людям слышать вкус, а брендам — быть понятыми.
+Сенсорный гид по вкусу пива и сочетаниям с едой. Раскладываем вкус каждого сорта на три слоя, подбираем пиво к блюду и блюдо к пиву, учим слышать вкус.
 
-**OneIdea Championship 2026 × Efes Kazakhstan**
+Проект участников OneIdea Championship 2026 × Efes Kazakhstan.
 
----
-
-## 👥 Команда
-
-- **Аджибаева Аделия** — Co-founder
-- **Абуталифулы Ералы** — Co-founder
+Сайт только для лиц старше 21 года.
 
 ---
 
-## 🛠 Технологии
+## Команда
+
+- Аджибаева Аделия
+- Абуталифулы Ералы
+
+---
+
+## Что умеет
+
+Гостю
+- Подбор пива к блюду за четыре вопроса и блюда к пиву.
+- Каталог сортов: вкусовая пирамида, подача, пары, отметки гостей.
+- Опрос вкуса за минуту и совпадение каждого сорта с вашим вкусом.
+- Меню заведения по QR-коду: пара у каждого блюда, заказ со стола, статус заказа.
+- ИИ-сомелье в чате, в том числе по фото блюда.
+- Академия: 4 ступени, 12 уроков, тесты.
+- Паспорт вкуса: отметки сортов, баллы за знания, значки, награды.
+
+Заведению
+- Меню, карта бара, заказы.
+- Блюда по фото: ИИ читает страницу меню, администратор проверяет и сохраняет.
+- Аналитика: что дают рекомендации.
+- Награды за баллы и выдача по коду.
+- Шпаргалка официанта.
+
+Сомелье и модератору
+- Пирамиды и подача сортов, сочетания, вопросы тестов.
+- Сводка: что гости слышат в сортах.
+- Пользователи, роли, настройки витрины.
+
+---
+
+## Технологии
 
 | Слой | Технология |
 |------|-----------|
-| Frontend | Angular 18, TypeScript, CSS |
-| Backend | Django 4.2, Django REST Framework |
-| Deploy | Vercel (frontend) |
+| Сайт | Angular 18, TypeScript, CSS |
+| Сервер | Django 4.2, Django REST Framework, PostgreSQL |
+| ИИ | Claude (Anthropic), без ключа работает подбор по правилам |
+| Хостинг | Vercel |
 
 ---
 
-## 📁 Структура проекта
+## Структура
 
 ```
 Flavor/
-├── backend/          # Django DRF API
-│   ├── manage.py
-│   ├── requirements.txt
-│   ├── flavor_tree/  # Django settings
-│   └── api/          # REST API (models, views, serializers)
-├── frontend/         # Angular 18 SPA
-│   ├── src/
-│   │   ├── app/
-│   │   │   └── components/  # 10 landing page sections
-│   │   ├── styles.css       # Global design system
-│   │   └── index.html
-│   ├── vercel.json          # Vercel deployment config
-│   └── angular.json
-└── README.md
+  backend/             сервер (Django)
+    api/               модели, адреса API, ИИ, тесты
+    flavor_tree/       настройки
+  frontend/            сайт (Angular)
+    src/app/pages/     страницы
+    src/app/ui/        общие окна: возраст, чат, опрос вкуса, отметка сорта
+  10 version/          копия проекта до версии 11
+  ИЗМЕНЕНИЯ_ВЕРСИИ_11.md
+  СТРАТЕГИЯ_ПОБЕДЫ.md
+  BACKEND_DOCUMENTATION.md
+  DEPLOY.md
+  СТРАНИЦЫ_САЙТА.md
 ```
 
 ---
 
-## 🚀 Запуск
+## Запуск
 
-### Frontend (Angular)
+Сервер. Нужен PostgreSQL с базой `app_db`.
+
+```bash
+cd backend
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+cp .env.example .env        # впишите ANTHROPIC_API_KEY, если нужен ИИ
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py seed_roles
+.venv/bin/python manage.py runserver
+```
+
+Сайт.
 
 ```bash
 cd frontend
 npm install
-ng serve
-# → http://localhost:4200
+npx ng serve
 ```
 
-### Backend (Django)
+Проверка.
 
 ```bash
-cd backend
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-# → http://localhost:8000/api/
+cd backend && .venv/bin/python manage.py test    # 272 теста
+cd frontend && npx ng build                      # сборка для сервера
 ```
 
 ---
 
-## 🌐 Деплой на Vercel
+## Документы
 
-### Frontend
+- [ИЗМЕНЕНИЯ_ВЕРСИИ_11.md](ИЗМЕНЕНИЯ_ВЕРСИИ_11.md) - что нового и где это лежит
+- [СТРАТЕГИЯ_ПОБЕДЫ.md](СТРАТЕГИЯ_ПОБЕДЫ.md) - с чем идти на защиту
+- [BACKEND_DOCUMENTATION.md](BACKEND_DOCUMENTATION.md) - сервер и API
+- [DEPLOY.md](DEPLOY.md) - выкладка на Vercel
+- [СТРАНИЦЫ_САЙТА.md](СТРАНИЦЫ_САЙТА.md) - как называются страницы
 
-```bash
-cd frontend
-ng build --configuration=production
-# Результат → dist/frontend/browser/
-```
-
-На Vercel:
-1. Подключить репозиторий
-2. Framework Preset: **Other**
-3. Build Command: `cd frontend && npm install && npx ng build --configuration=production`
-4. Output Directory: `frontend/dist/frontend/browser`
-
----
-
-## 📡 API Endpoints
-
-| Метод | URL | Описание |
-|-------|-----|----------|
-| GET | `/api/landing/` | Все данные для лендинга |
-| GET | `/api/beers/` | Список пива |
-| GET | `/api/notes/` | Вкусовые ноты |
-| GET | `/api/courses/` | Курсы сомелье |
-| GET | `/api/team/` | Команда |
-
----
-
-## 🎨 Дизайн
-
-Лендинг включает 10 секций:
-1. **Hero** — Логотипы, название, слоган, команда
-2. **Проблема** — Почему люди не понимают пиво
-3. **Решение** — Вкусовая пирамида (TOP / HEART / BASE)
-4. **Как это работает** — Двусторонняя навигация
-5. **Образование** — Школа Пивных Сомелье (4 уровня)
-6. **Уникальные фичи** — Flavor DNA, казахская кухня, scan
-7. **Бизнес-модель** — 4 потока монетизации
-8. **Impact** — Влияние на потребителя, Efes, рынок
-9. **Наш Ask** — Данные, пилот, менторство
-10. **Footer** — Цитата и кредиты
-
----
-
-*© 2026 Flavor Tree. Все права защищены.*
+Те же документы в виде страниц для браузера лежат в папке `docs_html/`.

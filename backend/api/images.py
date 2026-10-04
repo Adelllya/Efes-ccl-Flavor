@@ -4,6 +4,7 @@
 """
 import io
 import os
+import uuid
 
 from django.core.files.base import ContentFile
 from PIL import Image, ImageOps
@@ -12,7 +13,10 @@ IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
 # MPO - JPEG с несколькими кадрами, такие снимают некоторые телефоны; для браузера это обычный JPEG.
 IMAGE_FORMATS = {'JPEG', 'MPO', 'PNG', 'WEBP'}
 IMAGE_MAX_BYTES = 5 * 1024 * 1024
+# Маленький по весу файл может развернуться в сотни мегабайт памяти: больше 40 мегапикселей не берём.
+IMAGE_MAX_PIXELS = 40 * 1000 * 1000
 THUMB_MAX_SIDE = 480
+EXTENSIONS = {'JPEG': '.jpg', 'MPO': '.jpg', 'PNG': '.png', 'WEBP': '.webp'}
 
 
 def read_image_upload(request):
@@ -30,6 +34,9 @@ def read_image_upload(request):
     try:
         image = Image.open(file_obj)
         image_format = image.format
+        width, height = image.size
+        if width * height > IMAGE_MAX_PIXELS:
+            return None, 'Фото слишком большое по размеру в пикселях. Уменьшите его и попробуйте снова'
         image.verify()
         # verify() у JPEG и WebP почти ничего не проверяет, поэтому файл ещё и честно декодируем.
         file_obj.seek(0)
@@ -39,6 +46,8 @@ def read_image_upload(request):
     if image_format not in IMAGE_FORMATS:
         return None, 'Подходят только PNG, JPG или WebP'
     file_obj.seek(0)
+    # Имя от клиента не храним: файл "x.html" с картинкой внутри отдавался бы как страница.
+    file_obj.name = uuid.uuid4().hex + EXTENSIONS[image_format]
     return file_obj, None
 
 

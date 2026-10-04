@@ -185,9 +185,11 @@ class Command(BaseCommand):
         self.stdout.write("2. Загрузка 17 брендов из brands_seed.csv...")
         csv_path = Path(__file__).resolve().parent.parent.parent / "fixtures" / "brands_seed.csv"
         
-        # Очистим бренды, которых нет в списке 17
-        allowed_names = list(PYRAMID_DRAFT.keys())
-        Brand.objects.exclude(name__in=allowed_names).delete()
+        # Убираем только демо-сорта из команды seed: сорта, добавленные в панели, не трогаем.
+        allowed_names = set(PYRAMID_DRAFT.keys())
+        from .seed import BRAND_SEEDS
+        placeholders = [b["name"] for b in BRAND_SEEDS if b["name"] not in allowed_names]
+        Brand.objects.filter(name__in=placeholders).delete()
 
         brands_count = 0
         profiles_count = 0

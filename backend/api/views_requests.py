@@ -111,12 +111,17 @@ class ChangeRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         req.review_comment = str(request.data.get('review_comment') or '').strip()
         req.save(update_fields=['status', 'reviewer', 'reviewed_at', 'review_comment'])
 
+    @staticmethod
+    def _locked(pk):
+        """Запрос под блокировкой строки: два модератора сразу не примут и не отклонят его оба."""
+        return ChangeRequest.objects.select_for_update().get(pk=pk)
+
     @action(detail=True, methods=['post'], permission_classes=[IsModerator])
     def approve(self, request, pk=None):
-        req = self.get_object()
-        if req.status != ChangeRequest.STATUS_PENDING:
-            return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
         with transaction.atomic():
+            req = self._locked(self.get_object().pk)
+            if req.status != ChangeRequest.STATUS_PENDING:
+                return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
             error = apply_change(req)
             if error:
                 return Response({'detail': error}, status=status.HTTP_400_BAD_REQUEST)
@@ -127,10 +132,11 @@ class ChangeRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     @action(detail=True, methods=['post'], permission_classes=[IsModerator])
     def reject(self, request, pk=None):
-        req = self.get_object()
-        if req.status != ChangeRequest.STATUS_PENDING:
-            return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
-        self._finish(req, request, ChangeRequest.STATUS_REJECTED)
+        with transaction.atomic():
+            req = self._locked(self.get_object().pk)
+            if req.status != ChangeRequest.STATUS_PENDING:
+                return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
+            self._finish(req, request, ChangeRequest.STATUS_REJECTED)
         return Response(self.get_serializer(req).data)
 
     @action(detail=False, methods=['get'], url_path='pending-count', permission_classes=[IsModerator])

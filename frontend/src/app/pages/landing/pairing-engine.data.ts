@@ -12,6 +12,9 @@
       важнее расчёта.
    2. Если готовых пар нет - считаем по правилам сочетания: вес к
       весу, горечь против жира, солод против остроты.
+
+   Если гость назвал блюдо из каталога, первыми идут пары, написанные
+   именно для него, и только потом оба слоя выше.
    */
 
 import { Brand, CuisineType, Dish, FoodPairing, PairingType, TasteType, WeightType, FatType, CookingMethod } from '../../models/flavor-tree.models';
@@ -85,10 +88,12 @@ export interface DishProfile {
   fat: FatType | null;
   /** Что человек вписал руками, если не нашёл свой вариант. */
   freeText: string;
+  /** id блюда каталога, если гость назвал его точно: тогда первыми идут его собственные пары. */
+  dishId?: string | null;
 }
 
 export const emptyProfile = (): DishProfile => ({
-  category: null, cooking: null, taste: null, weight: null, fat: null, freeText: '',
+  category: null, cooking: null, taste: null, weight: null, fat: null, freeText: '', dishId: null,
 });
 
 /** Человеческое название блюда по ответам - для заголовка результата. */
@@ -148,12 +153,24 @@ const NOTE_WEIGHTS: { test: RegExp; field: keyof BeerProfile; k: number }[] = [
   { test: /рисов|лёгк|легк|воздуш|rice/i,         field: 'freshness',  k: 0.6 },
 ];
 
+const PROFILE_KEYS: (keyof BeerProfile)[] = ['body', 'bitterness', 'freshness', 'sweetness', 'roast', 'strength'];
+
 /**
  * Профиль сорта: основа от стиля, поправка от крепости, уточнение - от
  * вкусовой пирамиды, если сомелье её уже заполнил.
  */
 export function beerProfile(brand: Brand): BeerProfile {
-  const style = `${brand.style ?? ''} ${brand.name ?? ''} ${brand.density ?? ''}`;
+  // Сервер уже свёл стиль, крепость и пирамиду в шесть шкал. В списке сортов
+  // пирамиды нет, поэтому без готового профиля лагеры выходили одинаковыми.
+  const ready = brand.taste_profile;
+  if (ready && PROFILE_KEYS.every(k => Number.isFinite(ready[k]))) {
+    const p = { ...NEUTRAL };
+    for (const k of PROFILE_KEYS) p[k] = clamp10(ready[k]);
+    return p;
+  }
+
+  // Плотность в строку стиля не берём: "10.0%" совпадало с правилом безалкогольного "0.0"
+  const style = `${brand.style ?? ''} ${brand.name ?? ''}`;
   const rule = STYLE_RULES.find(r => r.test.test(style));
   const p: BeerProfile = { ...(rule ? rule.base : NEUTRAL) };
 
@@ -228,6 +245,12 @@ const WEIGHT_TARGET: Record<WeightType, number> = { LIGHT: 3, MEDIUM: 5.5, HEAVY
 const FAT_LOAD: Record<FatType, number> = { LOW: 0, MEDIUM: 1, HIGH: 2 };
 
 /**
+ * До такой разницы тело сорта и вес блюда считаем совпавшими. Порог один
+ * для объяснения в карточке и для подписи под шкалами, иначе они спорят.
+ */
+export const BODY_MATCH_GAP = 1.5;
+
+/**
  * Совместимость сорта с профилем блюда.
  * Каждое правило даёт баллы и фразу-объяснение. В карточке показываем
  * одну-две самые весомые фразы, чтобы ответ читался, а не считался.
@@ -248,13 +271,13 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
     const gap = Math.abs(b.body - target);
     score += (2.5 - gap) * 9;
 
-    if (gap <= 1.5 && p.weight === 'HEAVY') {
+    if (gap <= BODY_MATCH_GAP && p.weight === 'HEAVY') {
       reasons.push({ weight: 9, text: 'Плотное тело сорта держит вес сытного блюда и не теряется рядом с ним' });
       setType('COMPLEMENT', 5);
-    } else if (gap <= 1.5 && p.weight === 'LIGHT') {
+    } else if (gap <= BODY_MATCH_GAP && p.weight === 'LIGHT') {
       reasons.push({ weight: 9, text: 'Лёгкое тело не перебивает деликатный вкус - блюдо остаётся главным' });
       setType('COMPLEMENT', 5);
-    } else if (gap <= 1.5) {
+    } else if (gap <= BODY_MATCH_GAP) {
       reasons.push({ weight: 7, text: 'Тело сорта совпадает по весу с блюдом - ни один не перетягивает внимание' });
       setType('COMPLEMENT', 4);
     } else if (gap > 3.5) {
@@ -301,7 +324,11 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
   }
 
   // 5. Мясо, гриль и копчение: у корочки и тёмного солода общая нота.
-  if (p.taste === 'UMAMI' || p.category === 'MEAT' || p.cooking === 'GRILLED' || p.cooking === 'CURED') {
+  // Деликатное умами (суши, блюда на пару, лёгкие закуски) сюда не относится: ему плотный сорт только мешает.
+  // То же правило стоит в backend/api/pairing_rules.py: подбор на сайте и на сервере должен совпадать.
+  const delicate = p.cooking === 'RAW' || p.cooking === 'STEAMED' || p.category === 'SALAD' || p.category === 'SEAFOOD'
+    || p.weight === 'LIGHT';
+  if ((p.taste === 'UMAMI' && !delicate) || p.category === 'MEAT' || p.cooking === 'GRILLED' || p.cooking === 'CURED') {
     score += (b.body - 4) * 2.4 + (b.roast - 1) * 2.0 + (b.sweetness - 3) * 1.4;
     if (b.roast >= 3 || b.sweetness >= 5) {
       reasons.push({ weight: 8, text: 'Поджаренный солод повторяет карамельную корочку с огня - вкусы сходятся в одной ноте' });
@@ -378,18 +405,42 @@ export interface Recommendation {
   explanation: string;
   /** Дополнительная фраза, если правил сработало несколько. */
   extra?: string;
-  /** true - оценку поставил человек, а не алгоритм. */
+  /** true - оценку поставил сомелье, а не алгоритм. */
   bySommelier: boolean;
-  /** Блюдо из базы, на котором основан совет сомелье. */
+  /** true - пару предложил ИИ, сомелье её ещё не подтвердил: оценкой сомелье её называть нельзя. */
+  byAi: boolean;
+  /** Блюдо из базы, для которого написана пара. */
   basedOn?: string;
 }
 
 const round5 = (score: number) => Math.max(1, Math.min(5, Math.round(score / 20)));
 
+/** Пару предложил ИИ; без пометки источника считаем её парой сомелье. */
+const isAi = (p: FoodPairing) => p.source === 'AI';
+
+/** Какая из двух пар одного сорта важнее: пара сомелье раньше пары ИИ, при равном источнике решает вес. */
+const beats = (a: FoodPairing, aRank: number, b: FoodPairing, bRank: number) =>
+  isAi(a) === isAi(b) ? aRank > bRank : !isAi(a);
+
+/** Собственная пара блюда слабее этой оценки первой не встаёт: тройка - уже рабочая пара. */
+const OWN_MIN_RATING = 3;
+
+interface Scored {
+  rec: Recommendation;
+  /** Сырые баллы расчёта 0-100: порядок среди карточек с одинаковым числом делений. */
+  score: number;
+  /** 0 - пара сомелье для этого блюда, 1 - пара ИИ для него же, 2 - всё остальное. */
+  tier: number;
+}
+
 /**
  * Подбор сортов под ответы мастера.
- * Пары сомелье для похожих блюд дают весомую прибавку и забирают текст
- * объяснения: живая формулировка всегда лучше собранной из правил.
+ *
+ * Если гость назвал блюдо из каталога, первыми идут его собственные пары:
+ * оценка и слова как в базе, пары сомелье раньше пар ИИ. Остальные места
+ * заполняет расчёт. Пары сомелье для похожих блюд дают в нём весомую
+ * прибавку и забирают текст объяснения: живая формулировка лучше собранной
+ * из правил.
  */
 export function recommend(
   profile: DishProfile,
@@ -406,22 +457,58 @@ export function recommend(
 
   const byDish = new Map(similar.map(s => [s.dish.id, s]));
 
-  // Лучшая авторская пара для каждого сорта среди похожих блюд.
+  const ownId = profile.dishId || null;
+  const ownName = ownId ? dishes.find(d => d.id === ownId)?.name ?? profile.freeText : '';
+
+  // Собственные пары блюда и лучшая авторская пара для каждого сорта среди похожих блюд.
+  const own = new Map<string, FoodPairing>();
   const expert = new Map<string, { pairing: FoodPairing; affinity: number; dishName: string }>();
   for (const p of pairings) {
+    if (ownId && p.dish === ownId) {
+      const prev = own.get(p.brand);
+      if (!prev || beats(p, p.compatibility_score, prev, prev.compatibility_score)) own.set(p.brand, p);
+      continue;
+    }
     const match = byDish.get(p.dish);
     if (!match) continue;
     const prev = expert.get(p.brand);
     const rank = p.compatibility_score * match.affinity;
-    if (!prev || rank > prev.pairing.compatibility_score * prev.affinity) {
+    if (!prev || beats(p, rank, prev.pairing, prev.pairing.compatibility_score * prev.affinity)) {
       expert.set(p.brand, { pairing: p, affinity: match.affinity, dishName: match.dish.name });
     }
   }
 
+  const targetBody = profile.weight ? WEIGHT_TARGET[profile.weight] : null;
+
   const scored = brands
     .filter(b => b.is_active !== false)
-    .map(brand => {
+    .map((brand): Scored => {
       const verdict = scoreBeer(brand, profile);
+      const sorted = [...verdict.reasons].sort((a, b) => b.weight - a.weight);
+      const body = beerProfile(brand).body;
+
+      // Собственная пара блюда: оценка и слова как в базе, пара другого блюда её не подменяет.
+      const mine = own.get(brand.id);
+      if (mine) {
+        const ai = isAi(mine);
+        const rating = Math.max(1, Math.min(5, Math.round(mine.compatibility_score)));
+        // Расчётную фразу добавляем, только когда она в пользу пары: спорить с оценкой блюда ей нельзя
+        const support = sorted[0].weight >= 6 ? sorted[0].text : undefined;
+        const rec: Recommendation = {
+          brand,
+          body,
+          targetBody,
+          rating,
+          type: mine.pairing_type,
+          explanation: mine.explanation || sorted[0].text,
+          extra: mine.explanation ? support : sorted[1]?.text,
+          bySommelier: !ai,
+          byAi: ai,
+          basedOn: ownName,
+        };
+        return { rec, score: verdict.score, tier: rating < OWN_MIN_RATING ? 2 : ai ? 1 : 0 };
+      }
+
       const hit = expert.get(brand.id);
 
       let score = verdict.score;
@@ -430,22 +517,33 @@ export function recommend(
         score = score * 0.55 + (hit.pairing.compatibility_score * 20) * 0.45 + hit.affinity * 10;
       }
 
-      const sorted = [...verdict.reasons].sort((a, b) => b.weight - a.weight);
-
+      const ai = !!hit && isAi(hit.pairing);
       const rec: Recommendation = {
         brand,
-        body: beerProfile(brand).body,
-        targetBody: profile.weight ? WEIGHT_TARGET[profile.weight] : null,
+        body,
+        targetBody,
         rating: hit ? Math.max(round5(score), hit.pairing.compatibility_score - 1) : round5(score),
         type: hit ? hit.pairing.pairing_type : verdict.type,
         explanation: hit?.pairing.explanation || sorted[0].text,
         extra: hit ? sorted[0].text : sorted[1]?.text,
-        bySommelier: !!hit,
+        bySommelier: !!hit && !ai,
+        byAi: ai,
         basedOn: hit?.dishName,
       };
-      return { rec, score };
-    })
-    .sort((a, b) => b.score - a.score);
+      return { rec, score, tier: 2 };
+    });
+
+  // Сначала собственные пары блюда, дальше по числу делений в карточке и только потом по сырым
+  // баллам: при сортировке по баллам "лучший выбор" мог показать меньше делений, чем альтернатива.
+  const order = (a: Scored, b: Scored) => a.tier - b.tier || b.rec.rating - a.rec.rating || b.score - a.score;
+  scored.sort(order);
+
+  // Первой стоит пара самого блюда: остальным карточкам делений больше, чем у неё, не показываем.
+  const lead = scored[0];
+  if (lead && lead.tier < 2) {
+    for (const x of scored) x.rec.rating = Math.min(x.rec.rating, lead.rec.rating);
+    scored.sort(order);
+  }
 
   return scored.slice(0, limit).map(x => x.rec);
 }
@@ -457,6 +555,21 @@ export function findDish(dishes: Dish[], text: string): Dish | null {
   return dishes.find(d => d.name.toLowerCase() === q)
     ?? dishes.find(d => d.name.toLowerCase().includes(q))
     ?? null;
+}
+
+/* Числа в карточке сорта */
+
+/** Число по-русски: дробная часть через запятую, без хвоста нулей ("4,5", "5"). */
+export function decimal(n: number): string {
+  return String(Math.round(n * 100) / 100).replace('.', ',');
+}
+
+/**
+ * Крепость как "4,5 %" (пробел неразрывный). null - крепость не указана;
+ * ноль - тоже значение: так записано безалкогольное.
+ */
+export function abvText(abv: number | null | undefined): string | null {
+  return typeof abv === 'number' && Number.isFinite(abv) ? `${decimal(abv)} %` : null;
 }
 
 /* Картинки сорта */

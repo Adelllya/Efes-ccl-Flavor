@@ -1,4 +1,7 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  Component, ElementRef, EventEmitter, Injector, OnDestroy, OnInit, Output, WritableSignal, afterNextRender, computed, effect,
+  inject, signal, untracked
+} from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { PanelTab } from '../../models/navigation';
@@ -14,6 +17,9 @@ import { PanelMenuComponent } from './panel-menu.component';
 import { PanelOrdersComponent } from './panel-orders.component';
 import { PanelUsersComponent } from './panel-users.component';
 import { PanelSettingsComponent } from './panel-settings.component';
+import { PanelQuizComponent } from './panel-quiz.component';
+import { PanelAnalyticsComponent } from './panel-analytics.component';
+import { PanelRewardsComponent } from './panel-rewards.component';
 
 interface PanelTabDef {
   id: PanelTab;
@@ -44,9 +50,14 @@ interface StatCard {
   sub?: string;
   accent?: boolean;
   loaded: boolean;
+  /** Счётчик не прочитался: вместо числа пометка, ноль был бы неправдой. */
+  failed?: boolean;
 }
 
 type DataSource = 'brands' | 'notes' | 'pairings' | 'dishes';
+
+/** Счётчик обзора: ждём первый ответ, число пришло или запрос не удался. */
+type CountState = 'loading' | 'ready' | 'failed';
 
 const SOURCE_LABELS: Record<DataSource, string> = {
   brands: 'сорта',
@@ -67,6 +78,9 @@ const ORDERS_POLL_MS = 20000;
 /**
  * Панель: рейл слева, справа вкладка. Каждая вкладка сама рисует
  * свои колонки "список" и "детали" классами .wa-* из panel.css.
+ *
+ * Вкладку, которую уже открывали, не уничтожаем, а прячем через [hidden]: несохранённые правки
+ * и идущие запросы переживают переход на соседнюю вкладку.
  */
 @Component({
   selector: 'app-sommelier-admin',
@@ -74,7 +88,8 @@ const ORDERS_POLL_MS = 20000;
   imports: [
     PanelIconComponent,
     PanelBrandsComponent, PanelRequestsComponent, PanelPairingsComponent, PanelNotesComponent,
-    PanelDishesComponent, PanelMenuComponent, PanelOrdersComponent, PanelUsersComponent, PanelSettingsComponent
+    PanelDishesComponent, PanelMenuComponent, PanelOrdersComponent, PanelUsersComponent, PanelSettingsComponent,
+    PanelQuizComponent, PanelAnalyticsComponent, PanelRewardsComponent
   ],
   template: `
     <div class="wa-shell">
@@ -89,7 +104,9 @@ const ORDERS_POLL_MS = 20000;
 
         <nav class="wa-nav">
           @for (t of visibleTabs(); track t.id) {
-            <button type="button" class="wa-nav-row" [class.active]="activeTab() === t.id" [title]="t.label" (click)="setTab(t.id)">
+            <!-- На узком рейле подпись спрятана и от кнопки остался бы один счётчик: имя задаём явно -->
+            <button type="button" class="wa-nav-row" [class.active]="activeTab() === t.id" [title]="t.label"
+                    [attr.aria-label]="t.badge !== null && t.loaded ? t.label + ': ' + t.badge : t.label" (click)="setTab(t.id)">
               <panel-icon [name]="t.icon" />
               <span class="wa-nav-label">{{ t.label }}</span>
               @if (t.badge !== null && t.loaded) {
@@ -101,7 +118,7 @@ const ORDERS_POLL_MS = 20000;
 
         <div class="wa-rail-foot">
           @if (auth.role() === 'moderator') {
-            <a class="wa-rail-link" [href]="adminUrl" target="_blank" rel="noopener" title="Django admin">
+            <a class="wa-rail-link" [href]="adminUrl" target="_blank" rel="noopener" title="Django admin" aria-label="Django admin">
               <panel-icon name="external" /><span class="wa-nav-label">Django admin</span>
             </a>
           }
@@ -112,7 +129,7 @@ const ORDERS_POLL_MS = 20000;
                 <span class="wa-user-name">{{ u.first_name || u.username }}</span>
                 <span class="wa-user-role">{{ u.role_display }}</span>
               </span>
-              <button type="button" class="wa-iconbtn" title="Выйти" (click)="auth.logout()">
+              <button type="button" class="wa-iconbtn" title="Выйти" aria-label="Выйти" (click)="auth.logout()">
                 <panel-icon name="logout" />
               </button>
             </div>
@@ -122,99 +139,125 @@ const ORDERS_POLL_MS = 20000;
 
       <section class="wa-main">
         @if (loadErrorText(); as text) {
-          <div class="wa-loadbar">
+          <div class="wa-loadbar" role="alert">
             <panel-icon name="alert" />
             <span>{{ text }}</span>
             <button type="button" class="btn-outline" (click)="loadData()"><panel-icon name="refresh" /> Обновить</button>
           </div>
         }
 
-        @switch (activeTab()) {
-
-          @case ('overview') {
-            <div class="wa-page wa-page-single">
-              <div class="wa-overview">
-                <div class="wa-card wa-hero">
-                  <div>
-                    <span class="wa-chip wa-chip-approved">{{ auth.user()?.role_display || 'Панель' }}</span>
-                    <h2 class="wa-hero-title">Панель Flavor Tree</h2>
-                    <p class="wa-hero-text">{{ overviewText() }}</p>
-                  </div>
-                  <button type="button" class="btn-outline" (click)="loadData()">
-                    <panel-icon name="refresh" /> Обновить данные
-                  </button>
+        <!-- Обзору хранить нечего: он рисуется заново. Остальные вкладки после первого открытия живут спрятанными -->
+        @if (activeTab() === 'overview') {
+          <div class="wa-page wa-page-single">
+            <div class="wa-overview">
+              <div class="wa-card wa-hero">
+                <div>
+                  <span class="wa-chip wa-chip-approved">{{ auth.user()?.role_display || 'Панель' }}</span>
+                  <h2 class="wa-hero-title">Панель Flavor Tree</h2>
+                  <p class="wa-hero-text">{{ overviewText() }}</p>
                 </div>
+                <button type="button" class="btn-outline" (click)="loadData()">
+                  <panel-icon name="refresh" /> Обновить данные
+                </button>
+              </div>
 
-                @if (statCards().length) {
-                  <div class="wa-stats">
-                    @for (s of statCards(); track s.id) {
-                      <button type="button" class="wa-stat" [class.wa-stat-accent]="s.accent" (click)="setTab(s.tab)">
-                        <panel-icon [name]="s.icon" size="lg" />
-                        <strong>{{ s.loaded ? s.value : '...' }}</strong>
-                        <span>{{ s.label }}</span>
-                        @if (s.sub) { <small>{{ s.sub }}</small> }
-                      </button>
-                    }
-                  </div>
-                }
+              @if (countsErrorText(); as text) {
+                <div class="wa-loadbar" role="alert">
+                  <panel-icon name="alert" />
+                  <span>{{ text }}</span>
+                  <button type="button" class="btn-outline" (click)="retryCounts()"><panel-icon name="refresh" /> Обновить</button>
+                </div>
+              }
 
-                <div class="wa-card">
-                  <h3 class="wa-card-title">Разделы</h3>
-                  <div class="wa-quick">
-                    @for (t of quickTabs(); track t.id) {
-                      <button type="button" class="wa-quick-row" (click)="setTab(t.id)">
-                        <panel-icon [name]="t.icon" />
-                        <span class="wa-quick-text">
-                          <strong>{{ t.label }}</strong>
-                          <small>{{ t.description }}</small>
-                        </span>
-                        <panel-icon name="chevronRight" />
-                      </button>
-                    }
-                  </div>
+              @if (statCards().length) {
+                <div class="wa-stats">
+                  @for (s of statCards(); track s.id) {
+                    <button type="button" class="wa-stat" [class.wa-stat-accent]="s.accent" (click)="setTab(s.tab)">
+                      <panel-icon [name]="s.icon" size="lg" />
+                      <strong>{{ s.failed ? '?' : (s.loaded ? s.value : '...') }}</strong>
+                      <span>{{ s.label }}</span>
+                      @if (s.failed) { <small class="wa-stat-failed">не удалось загрузить</small> }
+                      @else if (s.sub) { <small>{{ s.sub }}</small> }
+                    </button>
+                  }
+                </div>
+              }
+
+              <div class="wa-card">
+                <h3 class="wa-card-title">Разделы</h3>
+                <div class="wa-quick">
+                  @for (t of quickTabs(); track t.id) {
+                    <button type="button" class="wa-quick-row" (click)="setTab(t.id)">
+                      <panel-icon [name]="t.icon" />
+                      <span class="wa-quick-text">
+                        <strong>{{ t.label }}</strong>
+                        <small>{{ t.description }}</small>
+                      </span>
+                      <panel-icon name="chevronRight" />
+                    </button>
+                  }
                 </div>
               </div>
             </div>
-          }
+          </div>
+        }
 
-          @case ('brands') {
-            <panel-brands [brands]="brands()" [notes]="notes()" [loaded]="loaded().brands"
-                          (brandsChanged)="brands.set($event)" (requestsChanged)="refreshRequestCounts()" />
-          }
+        @if (kept('brands')) {
+          <panel-brands [hidden]="activeTab() !== 'brands'" [active]="activeTab() === 'brands'"
+                        [brands]="brands()" [notes]="notes()" [loaded]="loaded().brands"
+                        (brandsChanged)="brands.set($event)" (requestsChanged)="refreshRequestCounts()" />
+        }
 
-          @case ('requests') {
-            <panel-requests (reviewed)="onReviewed()" />
-          }
+        @if (kept('requests')) {
+          <panel-requests [hidden]="activeTab() !== 'requests'" [active]="activeTab() === 'requests'"
+                          (reviewed)="onReviewed()" (pendingChanged)="onPendingCount($event)" />
+        }
 
-          @case ('pairings') {
-            <panel-pairings [pairings]="pairings()" [brands]="brands()" [dishes]="dishes()" [loaded]="loaded().pairings"
-                            (changed)="pairings.set($event)" />
-          }
+        @if (kept('pairings')) {
+          <panel-pairings [hidden]="activeTab() !== 'pairings'"
+                          [pairings]="pairings()" [brands]="brands()" [dishes]="dishes()" [loaded]="loaded().pairings"
+                          (changed)="pairings.set($event)" />
+        }
 
-          @case ('notes') {
-            <panel-notes [notes]="notes()" [loaded]="loaded().notes" />
-          }
+        @if (kept('notes')) {
+          <panel-notes [hidden]="activeTab() !== 'notes'" [notes]="notes()" [loaded]="loaded().notes" />
+        }
 
-          @case ('dishes') {
-            <panel-dishes [dishes]="dishes()" [loaded]="loaded().dishes" (changed)="dishes.set($event)" (deleted)="onDishDeleted($event)" />
-          }
+        @if (kept('dishes')) {
+          <panel-dishes [hidden]="activeTab() !== 'dishes'"
+                        [dishes]="dishes()" [loaded]="loaded().dishes" (changed)="dishes.set($event)" (deleted)="onDishDeleted($event)"
+                        (pairingsChanged)="reloadPairings()" (menuChanged)="menuVersion.update(bump)" />
+        }
 
-          @case ('menu') {
-            <panel-menu [dishes]="dishes()" [loaded]="loaded().dishes" [brands]="brands()" [brandsLoaded]="loaded().brands"
-                        (openMenu)="openMenu.emit($event)" />
-          }
+        @if (kept('menu')) {
+          <panel-menu [hidden]="activeTab() !== 'menu'"
+                      [dishes]="dishes()" [loaded]="loaded().dishes" [brands]="brands()" [brandsLoaded]="loaded().brands"
+                      [reload]="menuVersion()" (openMenu)="openMenu.emit($event)" />
+        }
 
-          @case ('orders') {
-            <panel-orders [venue]="ordersVenue()" (venueChanged)="onOrdersVenue($event)" (changed)="refreshOrderCount()" />
-          }
+        @if (kept('orders')) {
+          <panel-orders [hidden]="activeTab() !== 'orders'" [active]="activeTab() === 'orders'"
+                        [venue]="ordersVenue()" (venueChanged)="onOrdersVenue($event)" (changed)="refreshOrderCount()" />
+        }
 
-          @case ('users') {
-            <panel-users />
-          }
+        @if (kept('analytics')) {
+          <panel-analytics [hidden]="activeTab() !== 'analytics'" [active]="activeTab() === 'analytics'" (openTab)="setTab($event)" />
+        }
 
-          @case ('settings') {
-            <panel-settings />
-          }
+        @if (kept('rewards')) {
+          <panel-rewards [hidden]="activeTab() !== 'rewards'" [active]="activeTab() === 'rewards'" />
+        }
+
+        @if (kept('quiz')) {
+          <panel-quiz [hidden]="activeTab() !== 'quiz'" />
+        }
+
+        @if (kept('users')) {
+          <panel-users [hidden]="activeTab() !== 'users'" [active]="activeTab() === 'users'" />
+        }
+
+        @if (kept('settings')) {
+          <panel-settings [hidden]="activeTab() !== 'settings'" />
         }
       </section>
     </div>
@@ -222,6 +265,8 @@ const ORDERS_POLL_MS = 20000;
 })
 export class SommelierAdminComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private host = inject(ElementRef<HTMLElement>);
+  private injector = inject(Injector);
   readonly auth = inject(AuthService);
   readonly adminUrl = environment.adminUrl;
 
@@ -249,6 +294,9 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     },
     { id: 'menu', label: 'Меню', icon: 'menu', description: 'Карточка заведения, позиции меню с ценами и карта напитков' },
     { id: 'orders', label: 'Заказы', icon: 'orders', description: 'Заказы гостей: стол, позиции, статус', count: () => this.newOrdersCount() || null },
+    { id: 'analytics', label: 'Аналитика', icon: 'chart', description: 'Что дают рекомендации и что гости слышат в сортах' },
+    { id: 'rewards', label: 'Награды', icon: 'gift', description: 'На что гости меняют баллы знаний и выдача по коду' },
+    { id: 'quiz', label: 'Тесты', icon: 'quiz', description: 'Вопросы тестов Академии по ступеням' },
     { id: 'users', label: 'Пользователи', icon: 'users', description: 'Роли и заведения пользователей' },
     { id: 'settings', label: 'Настройки', icon: 'settings', description: 'Витрина: сколько сортов показывать, вступительный текст' }
   ];
@@ -264,12 +312,14 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
   );
   readonly quickTabs = computed(() => this.visibleTabs().filter(t => t.id !== 'overview'));
   readonly activeTab = signal<PanelTab>('overview');
+  /** Вкладки, которые уже открывали: их компоненты остаются жить, неактивные спрятаны. */
+  private readonly visited = signal<ReadonlySet<PanelTab>>(new Set<PanelTab>());
 
   readonly overviewText = computed(() => {
     switch (this.auth.role()) {
-      case 'moderator': return 'Сорта, запросы сомелье, сочетания, блюда, меню и заказы заведений, пользователи';
-      case 'sommelier': return 'Сочетания блюд и сортов, предложения по пирамидам и подаче';
-      case 'restaurant_admin': return 'Меню и заказы вашего заведения, справочник блюд';
+      case 'moderator': return 'Сорта, запросы сомелье, сочетания, блюда, меню и заказы заведений, аналитика, награды, пользователи';
+      case 'sommelier': return 'Сочетания блюд и сортов, предложения по пирамидам и подаче, что гости слышат в сортах';
+      case 'restaurant_admin': return 'Меню и заказы вашего заведения, что дают рекомендации, награды для гостей';
       default: return '';
     }
   });
@@ -293,15 +343,33 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     return `Не удалось загрузить: ${what}.` + (detail ? ` ${detail}` : '');
   });
 
+  /** Растёт, когда импорт по фото добавил позиции в меню: вкладка "Меню" перечитывает свои строки. */
+  readonly menuVersion = signal(0);
+  readonly bump = (v: number) => v + 1;
+
   /** Модератор: сколько запросов ждут решения. Сомелье: сколько запросов он отправил. */
   pendingCount = signal(0);
   myRequestsCount = signal(0);
   myPendingCount = signal(0);
+  /** Пока счётчик запросов не пришёл или не прочитался, карточка обзора не показывает ноль. */
+  requestCountState = signal<CountState>('loading');
 
   /** Заказы: заведение вкладки заказов (владельцу по нему же считаем бейдж) и число новых заказов. */
   ordersVenue = signal<string | null>(null);
   newOrdersCount = signal(0);
+  orderCountState = signal<CountState>('loading');
+  private countsErrorDetail = signal<string | null>(null);
   private ordersTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** Счётчики обзора не прочитались: строка держится до удачного ответа, рядом кнопка "Обновить". */
+  readonly countsErrorText = computed(() => {
+    const failed: string[] = [];
+    if (this.showsRequestCard() && this.requestCountState() === 'failed') failed.push('запросы');
+    if (this.showsOrderCard() && this.orderCountState() === 'failed') failed.push('новые заказы');
+    if (!failed.length) return null;
+    const detail = this.countsErrorDetail();
+    return `Не удалось загрузить счётчики: ${failed.join(', ')}.` + (detail ? ` ${detail}` : '');
+  });
 
   readonly statCards = computed<StatCard[]>(() => {
     const visible = this.visibleTabs();
@@ -310,20 +378,30 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
       .map(t => ({ id: t.id, tab: t.id, icon: t.icon, value: t.badge ?? 0, label: t.label, loaded: t.loaded }));
     const role = this.auth.role();
     const first: StatCard[] = [];
+    const requests = this.requestCountState();
     if (role === 'moderator') {
       const n = this.pendingCount();
-      first.push({ id: 'pending', tab: 'requests', icon: 'inbox', value: n, label: 'Ожидают подтверждения', accent: n > 0, loaded: true });
+      first.push({
+        id: 'pending', tab: 'requests', icon: 'inbox', value: n, label: 'Ожидают подтверждения',
+        accent: requests === 'ready' && n > 0, loaded: requests === 'ready', failed: requests === 'failed'
+      });
     } else if (role === 'sommelier') {
       first.push({
         id: 'mine', tab: 'brands', icon: 'send', value: this.myRequestsCount(), label: 'Мои запросы',
-        sub: this.myPendingCount() ? `ожидают: ${this.myPendingCount()}` : undefined, loaded: true
+        sub: this.myPendingCount() ? `ожидают: ${this.myPendingCount()}` : undefined,
+        loaded: requests === 'ready', failed: requests === 'failed'
       });
     }
-    if (visible.some(t => t.id === 'orders')) {
+    if (this.showsOrderCard()) {
       const n = this.newOrdersCount();
+      const orders = this.orderCountState();
+      // Без своего заведения читать нечего: это настоящий ноль, а не ожидание ответа
+      const noVenue = role !== 'moderator' && !this.ordersVenue();
       first.push({
-        id: 'orders', tab: 'orders', icon: 'orders', value: n, label: 'Новые заказы', accent: n > 0, loaded: true,
-        sub: role === 'moderator' ? 'по всем заведениям' : (this.ordersVenue() ? undefined : 'заведение не выбрано')
+        id: 'orders', tab: 'orders', icon: 'orders', value: n, label: 'Новые заказы',
+        accent: !noVenue && orders === 'ready' && n > 0,
+        loaded: noVenue || orders === 'ready', failed: !noVenue && orders === 'failed',
+        sub: role === 'moderator' ? 'по всем заведениям' : (noVenue ? 'заведение не выбрано' : undefined)
       });
     }
     return [...first, ...cards];
@@ -334,7 +412,7 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     effect(() => {
       const visible = this.visibleTabs();
       const current = untracked(this.activeTab);
-      if (visible.length && !visible.some(t => t.id === current)) this.activeTab.set(visible[0].id);
+      if (visible.length && !visible.some(t => t.id === current)) untracked(() => this.open(visible[0].id));
     }, { allowSignalWrites: true });
 
     // Своё заведение могло появиться уже в панели (создали на вкладке меню): бейдж заказов подхватывает его сразу
@@ -342,6 +420,22 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
       const own = this.auth.user()?.venue?.slug ?? null;
       if (own && this.auth.role() !== 'moderator') untracked(() => this.onOrdersVenue(own));
     }, { allowSignalWrites: true });
+
+    // На телефоне вкладки идут одной листающейся строкой: активную подкручиваем в видимую часть
+    effect(() => {
+      this.activeTab();
+      untracked(() => afterNextRender(() => this.revealActiveTab(), { injector: this.injector }));
+    });
+  }
+
+  /** Двигает только строку вкладок по горизонтали, страницу не прокручивает. */
+  private revealActiveTab() {
+    const nav = this.host.nativeElement.querySelector('.wa-nav') as HTMLElement | null;
+    const row = nav?.querySelector('.wa-nav-row.active') as HTMLElement | null;
+    if (!nav || !row || nav.scrollWidth <= nav.clientWidth) return;
+    const shift = row.getBoundingClientRect().left - nav.getBoundingClientRect().left - (nav.clientWidth - row.offsetWidth) / 2;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    nav.scrollBy({ left: shift, behavior: reduce ? 'auto' : 'smooth' });
   }
 
   ngOnInit() {
@@ -356,7 +450,18 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
   }
 
   setTab(id: PanelTab) {
-    if (this.visibleTabs().some(t => t.id === id)) this.activeTab.set(id);
+    if (this.visibleTabs().some(t => t.id === id)) this.open(id);
+  }
+
+  /** Вкладку уже открывали и роль её по-прежнему разрешает: её компонент остаётся в DOM. */
+  kept(id: PanelTab): boolean {
+    return this.visited().has(id) && this.auth.can(id);
+  }
+
+  /** Делает вкладку активной и запоминает её: с этого момента её компонент живёт, пока открыта панель. */
+  private open(id: PanelTab) {
+    this.activeTab.set(id);
+    if (!this.visited().has(id)) this.visited.update(set => new Set(set).add(id));
   }
 
   private pickDefaultTab() {
@@ -365,7 +470,16 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     const visible = this.visibleTabs();
     const preferred = DEFAULT_TAB[role];
     const pick = visible.find(t => t.id === preferred) ?? visible.find(t => t.id !== 'overview');
-    if (pick) this.activeTab.set(pick.id);
+    if (pick) this.open(pick.id);
+  }
+
+  private showsRequestCard(): boolean {
+    const role = this.auth.role();
+    return role === 'moderator' || role === 'sommelier';
+  }
+
+  private showsOrderCard(): boolean {
+    return this.auth.can('orders');
   }
 
   /** Читаем только то, что нужно роли; без заглушек: ошибка попадает в строку над вкладкой. */
@@ -394,19 +508,27 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
       });
     }
     if (needs.pairings) {
-      this.api.getPairings().subscribe({
+      this.api.getPairingsStrict().subscribe({
         next: list => this.received('pairings', () => this.pairings.set(list)),
         error: err => this.failed('pairings', err)
       });
     }
     if (needs.dishes) {
-      this.api.getDishes().subscribe({
+      this.api.getDishesStrict().subscribe({
         next: list => this.received('dishes', () => this.dishes.set(list)),
         error: err => this.failed('dishes', err)
       });
     }
-    this.refreshRequestCounts();
-    this.refreshOrderCount();
+    this.retryCounts();
+  }
+
+  /** ИИ записал новые сочетания во вкладке блюд: список сочетаний перечитываем, если роль его видит. */
+  reloadPairings() {
+    if (!this.auth.can('pairings')) return;
+    this.api.getPairingsStrict().subscribe({
+      next: list => this.received('pairings', () => this.pairings.set(list)),
+      error: err => this.failed('pairings', err)
+    });
   }
 
   private received(source: DataSource, apply: () => void) {
@@ -420,26 +542,47 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     this.loadErrorDetail.set(AuthService.errorText(err));
   }
 
-  /** Счётчики запросов: бейдж в рейле и карточки обзора. Ошибки не показываем, это фон. */
+  /** Счётчики обзора читаем заново и до ответа показываем "...", а не прежнее число. */
+  retryCounts() {
+    this.requestCountState.set('loading');
+    this.orderCountState.set('loading');
+    this.countsErrorDetail.set(null);
+    this.refreshRequestCounts();
+    this.refreshOrderCount();
+  }
+
+  /** Счётчики запросов: бейдж в рейле и карточки обзора. При ошибке прежнее число остаётся, карточка помечается. */
   refreshRequestCounts() {
     const role = this.auth.role();
     if (role === 'moderator') {
       this.api.getPendingRequestCount().subscribe({
-        next: n => this.pendingCount.set(n),
-        error: () => this.pendingCount.set(0)
+        next: n => {
+          this.pendingCount.set(n);
+          this.requestCountState.set('ready');
+        },
+        error: err => this.countFailed(this.requestCountState, err)
       });
     } else if (role === 'sommelier') {
       this.api.getChangeRequests().subscribe({
         next: list => {
           this.myRequestsCount.set(list.length);
           this.myPendingCount.set(list.filter(r => r.status === 'PENDING').length);
+          this.requestCountState.set('ready');
         },
-        error: () => {
-          this.myRequestsCount.set(0);
-          this.myPendingCount.set(0);
-        }
+        error: err => this.countFailed(this.requestCountState, err)
       });
     }
+  }
+
+  private countFailed(state: WritableSignal<CountState>, err: unknown) {
+    state.set('failed');
+    this.countsErrorDetail.set(AuthService.errorText(err));
+  }
+
+  /** Вкладка запросов перечитала список: бейдж берём из него, отдельный запрос не нужен. */
+  onPendingCount(n: number) {
+    this.pendingCount.set(n);
+    this.requestCountState.set('ready');
   }
 
   /** После решения модератора пирамида или подача сорта изменилась: обновляем список сортов. */
@@ -454,7 +597,8 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
   /** Вместе с блюдом сервер удалил его сочетания: убираем их сразу и перечитываем список. */
   onDishDeleted(dishId: string) {
     this.pairings.update(list => list.filter(p => p.dish !== dishId));
-    this.api.getPairings().subscribe({
+    // Без заглушек: при ошибке остаётся список, из которого сочетания блюда уже убраны
+    this.api.getPairingsStrict().subscribe({
       next: list => this.pairings.set(list),
       error: () => {}
     });
@@ -474,11 +618,12 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     // Модератору бейдж считается по всем заведениям, выбор в списке на него не влияет
     if (this.auth.role() === 'moderator') return;
     this.newOrdersCount.set(0);
+    this.orderCountState.set('loading');
     this.refreshOrderCount();
   }
 
   /** Число новых заказов для бейджа и карточки обзора: владельцу по своему заведению, модератору по всем.
-   *  Ошибки не показываем: это фоновый опрос. */
+   *  Это фоновый опрос: ошибку видно только на обзоре, следующий удачный ответ её снимает. */
   refreshOrderCount() {
     if (!this.auth.can('orders')) return;
     const all = this.auth.role() === 'moderator';
@@ -486,9 +631,14 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     if (!all && !slug) return;
     this.api.getNewOrderCount(slug ?? undefined).subscribe({
       next: n => {
-        if (all || this.ordersVenue() === slug) this.newOrdersCount.set(n);
+        if (!all && this.ordersVenue() !== slug) return;
+        this.newOrdersCount.set(n);
+        this.orderCountState.set('ready');
       },
-      error: () => {}
+      error: err => {
+        if (!all && this.ordersVenue() !== slug) return;
+        this.countFailed(this.orderCountState, err);
+      }
     });
   }
 }

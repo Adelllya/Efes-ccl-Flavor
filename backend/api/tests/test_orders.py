@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.test import TestCase
 
 from api.models import MenuDrink, MenuItem, Order
@@ -6,6 +7,7 @@ from .helpers import make_user, client_for, make_brand, make_dish, make_venue, m
 
 class OrderTestsBase(TestCase):
     def setUp(self):
+        cache.clear()  # счётчики лимита заказов живут в кэше
         self.rest = make_user('rest', role='restaurant_admin')
         self.other = make_user('other', role='restaurant_admin')
         self.mod = make_user('mod', role='moderator')
@@ -83,8 +85,28 @@ class OrderGuestTests(OrderTestsBase):
         MenuItem.objects.filter(pk=self.besh.pk).update(price='-100')
         resp = client_for().post(self.url, self.body(), format='json')
         self.assertEqual(resp.status_code, 400, resp.content)
-        self.assertEqual(resp.data['items'], ['У позиции «Бешбармак» неверная цена'])
+        self.assertEqual(resp.data['items'], ['У позиции «Бешбармак» не указана цена'])
         self.assertEqual(Order.objects.count(), 0)
+
+    def test_item_without_price_cannot_be_ordered(self):
+        # Позицию добавили в меню и ещё не указали цену: бесплатно её заказать нельзя.
+        MenuItem.objects.filter(pk=self.besh.pk).update(price='0')
+        resp = client_for().post(self.url, self.body(), format='json')
+        self.assertEqual(resp.status_code, 400, resp.content)
+        self.assertEqual(resp.data['items'], ['У позиции «Бешбармак» не указана цена'])
+        MenuItem.objects.filter(pk=self.besh.pk).update(price='4500')
+        MenuDrink.objects.filter(pk=self.kozel.pk).update(price='0')
+        resp = client_for().post(self.url, self.body(), format='json')
+        self.assertEqual(resp.data['items'], ['У позиции «Velkopopovický Kozel» не указана цена'])
+
+    def test_long_comment_rejected_and_create_is_throttled(self):
+        resp = client_for().post(self.url, self.body(comment='x' * 501), format='json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('comment', resp.data)
+        client = client_for()
+        codes = [client.post(self.url, self.body(), format='json').status_code for _ in range(30)]
+        self.assertEqual(codes[-1], 429)
+        self.assertIn(201, codes)
 
     def test_takeaway_table_zero(self):
         order = self.place(table_number=0)

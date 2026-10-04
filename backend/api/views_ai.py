@@ -1,22 +1,42 @@
 """
-ИИ-сомелье: статус и чат. Оба эндпоинта открыты без входа, чат ограничен по частоте.
+ИИ-сомелье: статус, чат и фото блюда для гостя; распознавание блюд по фото
+и подбор сортов для панели. Чат и фото гостя открыты без входа и ограничены по частоте.
 """
-from rest_framework import serializers
+import json
+
+from django.db import transaction
+from django.db.models import F
+from django.utils import timezone
+from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
-from . import ai_sommelier
-from .models import Venue
-from .permissions import ROLE_MODERATOR, has_role
-from .serializers import parse_uuid
+from . import ai_sommelier, ai_vision
+from .images import read_image_upload
+from .models import AiUsage, Brand, Dish, FoodPairing, Venue
+from .permissions import (
+    ROLE_MODERATOR, ROLE_RESTAURANT, ROLE_SOMMELIER, IsRestaurantOrModerator, has_role, roles_required,
+)
+from .serializers import FoodPairingSerializer, parse_uuid
 
 MAX_TURNS = 12
 MAX_MESSAGE_CHARS = 1500
 MAX_CART_ITEMS = 50
+
+AI_DISABLED = {
+    'detail': 'ИИ выключен: на сервере не задан ключ ANTHROPIC_API_KEY',
+    'code': 'ai_disabled',
+}
+AI_BUDGET = {
+    'detail': 'Дневной лимит обращений к ИИ исчерпан. Попробуйте завтра',
+    'code': 'ai_budget',
+}
+IsPanelUser = roles_required(ROLE_SOMMELIER, ROLE_RESTAURANT)
 
 
 class AiAnonThrottle(AnonRateThrottle):
@@ -25,6 +45,35 @@ class AiAnonThrottle(AnonRateThrottle):
 
 class AiUserThrottle(UserRateThrottle):
     scope = 'ai_user'
+
+
+class AiVisionThrottle(UserRateThrottle):
+    scope = 'ai_vision'
+
+
+class AiPhotoAnonThrottle(AnonRateThrottle):
+    scope = 'ai_photo'
+
+
+class AiPhotoUserThrottle(UserRateThrottle):
+    scope = 'ai_photo_user'
+
+
+def charge_ai(kind):
+    """
+    Занимает одно обращение в дневном лимите ИИ. False: лимит на сегодня исчерпан.
+    Счётчик лежит в базе: лимиты по частоте у каждого экземпляра сервера свои.
+    """
+    limit = ai_sommelier.daily_limit(kind)
+    if limit <= 0:
+        return True
+    today = timezone.localdate()
+    with transaction.atomic():
+        usage, _ = AiUsage.objects.select_for_update().get_or_create(day=today, kind=kind)
+        if usage.count >= limit:
+            return False
+        AiUsage.objects.filter(pk=usage.pk).update(count=F('count') + 1)
+    return True
 
 
 class AiMessageSerializer(serializers.Serializer):
@@ -83,6 +132,14 @@ def resolve_venue(request, raw):
     return venue
 
 
+def ai_error_response(exc):
+    """AiFailed -> ответ с понятным текстом. Плохой файл это ошибка запроса, остальное сбой сервиса."""
+    code = status.HTTP_400_BAD_REQUEST if exc.code == 'bad_image' else status.HTTP_502_BAD_GATEWAY
+    if exc.code in ('busy', 'timeout', 'network', 'auth'):
+        code = status.HTTP_503_SERVICE_UNAVAILABLE
+    return Response({'detail': exc.message, 'code': exc.code}, status=code)
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def ai_status(request):
@@ -113,3 +170,203 @@ class SommelierView(APIView):
         cart = [dict(item, id=str(item['id'])) for item in data['cart']]
         result = ai_sommelier.answer(ctx, data['messages'], cart=cart, prefs=data['prefs'], table=data['table'])
         return Response(result)
+
+
+class SommelierPhotoView(APIView):
+    """
+    POST /api/ai/sommelier/photo/ (multipart: image, venue?, prefs?) - гость прислал фото блюда.
+    Сомелье узнаёт блюдо и советует напиток: из карты бара заведения или из каталога.
+    Ответ в формате чата: {reply, suggestions, mode, note, dish}.
+    """
+    permission_classes = [AllowAny]
+    throttle_classes = [AiPhotoAnonThrottle, AiPhotoUserThrottle]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        file_obj, error = read_image_upload(request)
+        if error:
+            return Response({'detail': error}, status=status.HTTP_400_BAD_REQUEST)
+        raw_venue = (request.data.get('venue') or '').strip()
+        venue = resolve_venue(request, raw_venue) if raw_venue else None
+        prefs = self._prefs(request.data.get('prefs'))
+
+        if not ai_sommelier.ai_enabled():
+            return Response(self._photo_off())
+        if not charge_ai(AiUsage.KIND_GUEST):
+            return Response(AI_BUDGET, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        ctx = ai_sommelier.build_context(venue=venue)
+        drinks = [d for d in ctx['drinks'] if d['is_available'] and ai_sommelier.fits_prefs(d, prefs)]
+        brand_ids = [d['brand_id'] for d in drinks]
+        try:
+            result = ai_vision.recognize(file_obj, brand_ids=brand_ids)
+        except ai_vision.AiUnavailable:
+            return Response(self._photo_off())
+        except ai_vision.AiFailed as exc:
+            return ai_error_response(exc)
+        return Response(ai_sommelier.photo_reply(result, ctx, prefs))
+
+    @staticmethod
+    def _photo_off():
+        """Без ключа фото не разобрать: чат получает обычный ответ с просьбой написать название."""
+        return {'reply': ai_sommelier.PHOTO_OFF_REPLY, 'suggestions': [], 'mode': 'local', 'note': '', 'dish': None}
+
+    @staticmethod
+    def _prefs(raw):
+        """Пожелания приходят строкой JSON в multipart; мусор молча считаем пустым набором."""
+        try:
+            data = json.loads(raw) if isinstance(raw, str) and raw.strip() else {}
+        except ValueError:
+            data = {}
+        serializer = AiPrefsSerializer(data=data if isinstance(data, dict) else {})
+        return serializer.validated_data if serializer.is_valid() else {}
+
+
+class DishRecognizeView(APIView):
+    """
+    POST /api/ai/dishes/recognize/ (multipart: image, hint?) - блюда с фото тарелки или страницы меню.
+    Ничего не сохраняет: возвращает черновики, которые администратор проверяет и отправляет
+    в POST /api/dishes/import/. Доступно администратору заведения и модератору.
+    """
+    permission_classes = [IsRestaurantOrModerator]
+    throttle_classes = [AiVisionThrottle]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        file_obj, error = read_image_upload(request)
+        if error:
+            return Response({'detail': error}, status=status.HTTP_400_BAD_REQUEST)
+        if not ai_sommelier.ai_enabled():
+            return Response(AI_DISABLED, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        if not charge_ai(AiUsage.KIND_PANEL):
+            return Response(AI_BUDGET, status=status.HTTP_429_TOO_MANY_REQUESTS)
+        try:
+            result = ai_vision.recognize(file_obj, hint=request.data.get('hint') or '')
+        except ai_vision.AiUnavailable:
+            return Response(AI_DISABLED, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except ai_vision.AiFailed as exc:
+            return ai_error_response(exc)
+        return Response(result)
+
+
+class PairingSuggestSerializer(serializers.Serializer):
+    dishes = serializers.ListField(child=serializers.UUIDField(), allow_empty=False,
+                                   max_length=ai_vision.MAX_SUGGEST_DISHES)
+    save = serializers.BooleanField(required=False, default=False)
+
+
+def can_save_pairings(user, dish):
+    """
+    Кто может записать пары ИИ к блюду: сомелье и модератор к любому; администратор заведения
+    к блюду из своего меню, которого нет в чужих меню (то же правило, что и для правки блюда).
+    """
+    if has_role(user, ROLE_SOMMELIER):
+        return True
+    own = dish.menu_items.filter(venue__owner=user).exists()
+    foreign = dish.menu_items.exclude(venue__owner=user).exists()
+    return own and not foreign
+
+
+class PairingSuggestView(APIView):
+    """
+    POST /api/ai/pairings/suggest/ {dishes: [uuid], save?} - сорта к блюдам каталога.
+    С ключом отвечает Claude, без ключа и при сбое считает локальный расчёт по правилам.
+    save=true сразу записывает новые пары с пометкой "ИИ-подбор" там, где это разрешено роли;
+    пары, которые уже есть, не трогает.
+    """
+    permission_classes = [IsPanelUser]
+    throttle_classes = [AiVisionThrottle]
+
+    def post(self, request):
+        serializer = PairingSuggestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ids = list(dict.fromkeys(serializer.validated_data['dishes']))
+        found = {dish.id: dish for dish in Dish.objects.filter(pk__in=ids)}
+        dishes = [found[i] for i in ids if i in found]
+        if not dishes:
+            raise NotFound('Блюда не найдены')
+
+        if ai_sommelier.ai_enabled() and not charge_ai(AiUsage.KIND_PANEL):
+            return Response(AI_BUDGET, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        results, mode, note = ai_vision.suggest_pairings(
+            [(str(dish.id), ai_vision.dish_fields(dish)) for dish in dishes])
+
+        existing = set(
+            (str(dish_id), str(brand_id)) for dish_id, brand_id in
+            FoodPairing.objects.filter(dish__in=dishes).values_list('dish_id', 'brand_id'))
+        save = serializer.validated_data['save']
+        saved = 0
+        by_id = {str(dish.id): dish for dish in dishes}
+        with transaction.atomic():
+            for result in results:
+                dish = by_id[result['dish']]
+                result['can_save'] = can_save_pairings(request.user, dish)
+                allowed = save and result['can_save']
+                for pairing in result['pairings']:
+                    key = (result['dish'], pairing['brand'])
+                    pairing['exists'] = key in existing
+                    pairing['saved'] = False
+                    if allowed and not pairing['exists']:
+                        FoodPairing.objects.create(
+                            brand_id=pairing['brand'], dish=dish,
+                            compatibility_score=pairing['compatibility_score'],
+                            pairing_type=pairing['pairing_type'],
+                            explanation=pairing['explanation'] or 'Подбор ИИ по вкусовому профилю блюда и сорта',
+                            source=FoodPairing.SOURCE_AI,
+                        )
+                        existing.add(key)
+                        pairing['exists'] = True
+                        pairing['saved'] = True
+                        saved += 1
+        return Response({'results': results, 'mode': mode, 'note': note, 'saved': saved})
+
+
+class PairingSaveItemSerializer(serializers.Serializer):
+    dish = serializers.PrimaryKeyRelatedField(queryset=Dish.objects.all())
+    brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.filter(is_active=True))
+    compatibility_score = serializers.IntegerField(min_value=1, max_value=5)
+    pairing_type = serializers.ChoiceField(choices=FoodPairing.PAIRING_TYPE_CHOICES)
+    explanation = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
+
+
+class PairingSaveSerializer(serializers.Serializer):
+    items = PairingSaveItemSerializer(many=True, allow_empty=False, max_length=60)
+
+
+class PairingSaveView(APIView):
+    """
+    POST /api/ai/pairings/save/ {items: [{dish, brand, compatibility_score, pairing_type, explanation}]}
+    Записывает пары, которые ИИ предложил в /suggest/, без повторного обращения к модели.
+    Сомелье и модератор принимают совет сами, поэтому их пары считаются парами сомелье;
+    у администратора заведения пара остаётся "ИИ-подбором" до подтверждения сомелье.
+    Готовые пары не трогает, чужие блюда пропускает.
+    """
+    permission_classes = [IsPanelUser]
+
+    def post(self, request):
+        serializer = PairingSaveSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        source = FoodPairing.SOURCE_SOMMELIER if has_role(request.user, ROLE_SOMMELIER) else FoodPairing.SOURCE_AI
+        saved = []
+        skipped = 0
+        allowed = {}
+        with transaction.atomic():
+            for item in serializer.validated_data['items']:
+                dish = item['dish']
+                if dish.id not in allowed:
+                    allowed[dish.id] = can_save_pairings(request.user, dish)
+                if not allowed[dish.id] or FoodPairing.objects.filter(brand=item['brand'], dish=dish).exists():
+                    skipped += 1
+                    continue
+                saved.append(FoodPairing.objects.create(
+                    brand=item['brand'], dish=dish,
+                    compatibility_score=item['compatibility_score'],
+                    pairing_type=item['pairing_type'],
+                    explanation=item['explanation'].strip() or 'Подбор ИИ по вкусовому профилю блюда и сорта',
+                    source=source,
+                ))
+        return Response({
+            'saved': len(saved), 'skipped': skipped,
+            'pairings': FoodPairingSerializer(saved, many=True).data,
+        }, status=status.HTTP_201_CREATED if saved else status.HTTP_200_OK)

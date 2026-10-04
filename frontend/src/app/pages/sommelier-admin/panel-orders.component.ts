@@ -8,13 +8,19 @@ import {
 import { FtSelectComponent, SelectOption } from '../../ui/ft-select.component';
 import { PanelIconComponent } from './panel-icons';
 import {
-  ORDER_NEXT_LABELS, ORDER_STATUS_CHIP, confirmTwice, countOf, flash, formatAgo, formatMoney, formatWhen, isErrorText
+  ORDER_NEXT_LABELS, ORDER_STATUS_CHIP, confirmTwice, countOf, flash, formatAgo, formatMoney, formatWhen, isErrorText,
+  onTabReturn
 } from './panel-shared';
 
 type OrderFilter = 'new' | 'active' | 'closed' | 'all';
 
 const ACTIVE_STATUSES: readonly OrderStatus[] = ['ACCEPTED', 'COOKING', 'SERVED'];
-/** Как часто перечитываем список, пока вкладка открыта. */
+/** Незакрытые заказы: только их перечитываем по таймеру. */
+const OPEN_STATUSES: OrderStatus[] = ['NEW', 'ACCEPTED', 'COOKING', 'SERVED'];
+/** Закрытые читаем по запросу, когда открыт их фильтр, и не всю историю. */
+const CLOSED_STATUSES: OrderStatus[] = ['DONE', 'CANCELLED'];
+const CLOSED_LIMIT = 50;
+/** Как часто перечитываем незакрытые заказы, пока вкладка на экране. */
 const POLL_MS = 20000;
 
 function matchesFilter(o: Order, f: OrderFilter): boolean {
@@ -26,6 +32,11 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
   }
 }
 
+/** Новые сверху: номер заказа растёт внутри заведения вместе со временем создания. */
+function sortOrders(list: Order[]): Order[] {
+  return [...list].sort((a, b) => b.number - a.number);
+}
+
 /**
  * Вкладка "Заказы": заказы гостей выбранного заведения. Владелец видит своё заведение,
  * модератор выбирает из списка. Слева строки со статусом, справа позиции и кнопки перехода.
@@ -35,55 +46,73 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
   standalone: true,
   imports: [FormsModule, PanelIconComponent, FtSelectComponent],
   template: `
-    <div class="wa-page" [class.has-selection]="!!selectedId()">
+    <div class="wa-page" [class.has-selection]="selectedOne().length > 0">
       <aside class="wa-list">
         <div class="wa-list-head">
           <h2 class="wa-list-title">Заказы
             @if (counts().new > 0) { <span class="wa-count wa-count-accent">{{ counts().new }}</span> }
           </h2>
-          <button type="button" class="wa-iconbtn" title="Обновить" [disabled]="loading() || !slug()" (click)="load(false)">
+          <button type="button" class="wa-iconbtn" title="Обновить" aria-label="Обновить" [disabled]="loading() || !slug()" (click)="refresh()">
             <panel-icon name="refresh" />
           </button>
         </div>
         @if (isModerator()) {
           <div class="wa-venue-pick">
-            <ft-select [options]="venueOptions()" [searchable]="true"
-                       [placeholder]="venuesLoading() ? 'Загружаем заведения...' : 'Выберите заведение'"
+            <ft-select [options]="venueOptions()" [searchable]="true" ariaLabel="Заведение"
+                       [placeholder]="venuesLoading() ? 'Загружаем заведения...' : (venuesError() ? 'Заведения не загружены' : 'Выберите заведение')"
                        searchPlaceholder="Название заведения" emptyText="Заведений пока нет"
-                       [disabled]="venuesLoading()"
+                       [disabled]="venuesLoading() || (!!venuesError() && !venues().length)"
                        [ngModel]="slug() || ''" (ngModelChange)="pickVenue($event)" />
           </div>
         }
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Номер заказа, стол или имя гостя" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Номер заказа, стол или имя гостя" aria-label="Поиск: номер заказа, стол или имя гостя"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         <div class="wa-pills">
           @for (p of pills; track p.value) {
-            <button type="button" class="wa-pill" [class.active]="filter() === p.value" (click)="filter.set(p.value)">
-              {{ p.label }}@if (p.value !== 'all' && counts()[p.value] > 0) { <span class="wa-pill-count">{{ counts()[p.value] }}</span> }
+            <button type="button" class="wa-pill" [class.active]="filter() === p.value" (click)="setFilter(p.value)">
+              {{ p.label }}@if (pillCount(p.value); as n) { <span class="wa-pill-count">{{ n }}</span> }
             </button>
           }
         </div>
         @if (msg()) {
-          <p class="wa-msg" [class.error]="isError(msg())">{{ msg() }}</p>
+          <p class="wa-msg" [class.error]="isError(msg())" [attr.role]="isError(msg()) ? 'alert' : 'status'">{{ msg() }}</p>
         }
         <div class="wa-rows">
+          @if (venuesError()) {
+            <!-- Не "Выберите заведение": список заведений не прочитан, выбирать не из чего -->
+            <div class="wa-loadbar" role="alert">
+              <panel-icon name="alert" />
+              <span>{{ venuesError() }}</span>
+              <button type="button" class="btn-outline" (click)="loadVenues()"><panel-icon name="refresh" /> Обновить</button>
+            </div>
+          }
           @if (!slug()) {
-            <p class="wa-empty">{{ venuesError() || (isModerator() ? 'Выберите заведение' : 'У вас пока нет заведения: заполните карточку на вкладке "Меню"') }}</p>
+            @if (!venuesError()) {
+              <p class="wa-empty">{{ emptyVenueText() }}</p>
+            }
           } @else if (!loaded()) {
             @if (loadError()) {
-              <div class="wa-loadbar">
+              <div class="wa-loadbar" role="alert">
                 <panel-icon name="alert" />
                 <span>{{ loadError() }}</span>
-                <button type="button" class="btn-outline" (click)="load(false)"><panel-icon name="refresh" /> Обновить</button>
+                <button type="button" class="btn-outline" (click)="refresh()"><panel-icon name="refresh" /> Обновить</button>
               </div>
             } @else {
               <p class="wa-empty">Загрузка...</p>
             }
           } @else {
             @if (loadError()) {
-              <p class="wa-error wa-error-inline">{{ loadError() }}</p>
+              <p class="wa-error wa-error-inline" role="alert">{{ loadError() }}</p>
+            }
+            @if (showsClosed() && closedError()) {
+              <div class="wa-loadbar" role="alert">
+                <panel-icon name="alert" />
+                <span>{{ closedError() }}</span>
+                <button type="button" class="btn-outline" (click)="loadClosed()"><panel-icon name="refresh" /> Обновить</button>
+              </div>
             }
             @for (o of filtered(); track o.id) {
               <button type="button" class="wa-row" [class.active]="selectedId() === o.id" (click)="select(o.id)">
@@ -97,7 +126,16 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
                 </span>
               </button>
             } @empty {
-              <p class="wa-empty">{{ orders().length ? 'В этом фильтре пусто' : 'Заказов пока нет' }}</p>
+              <!-- Пока закрытые заказы не прочитаны (или не прочитались), "пусто" писать рано -->
+              @if (!closedPending()) {
+                <p class="wa-empty">{{ emptyText() }}</p>
+              }
+            }
+            @if (closedPending() && !closedError()) {
+              <p class="wa-empty">Загрузка закрытых заказов...</p>
+            }
+            @if (showsClosed() && closedLoaded() && closedCount() >= closedLimit) {
+              <p class="wa-empty">Показаны последние {{ closedLimit }} закрытых заказов</p>
             }
           }
         </div>
@@ -159,7 +197,7 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
               }
 
               @if (actionError()) {
-                <p class="wa-error">{{ actionError() }}</p>
+                <p class="wa-error" role="alert">{{ actionError() }}</p>
               }
               <div class="wa-actions">
                 @if (nextOf(o.status); as n) {
@@ -188,11 +226,17 @@ export class PanelOrdersComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private destroyRef = inject(DestroyRef);
-  /** Номер последнего запроса списка: ответ более старого запроса не применяем. */
+  /** Номер последнего запроса незакрытых заказов: ответ более старого запроса не применяем. */
   private loadSeq = 0;
+  /** То же для списка закрытых. */
+  private closedSeq = 0;
+  /** Заказы, пропавшие из незакрытых: ждут списка закрытых, чтобы показать настоящий статус. */
+  private vanished = new Set<string>();
 
   /** Slug заведения, за которым следит панель: владелец получает своё, модератор последнее выбранное. */
   venue = input<string | null>(null);
+  /** Вкладка на экране. Панель держит её живой и прячет: спрятанная вкладка сервер не опрашивает. */
+  active = input(true);
   /** Модератор выбрал другое заведение: родитель считает бейдж по нему. */
   venueChanged = output<string>();
   /** Статус заказа изменился: родитель пересчитывает бейдж новых заказов. */
@@ -207,6 +251,7 @@ export class PanelOrdersComponent implements OnInit {
   readonly countOf = countOf;
   readonly closed = isOrderClosed;
   readonly nextOf = nextOrderStatus;
+  readonly closedLimit = CLOSED_LIMIT;
   readonly pills: { value: OrderFilter; label: string }[] = [
     { value: 'new', label: 'Новые' },
     { value: 'active', label: 'В работе' },
@@ -222,10 +267,15 @@ export class PanelOrdersComponent implements OnInit {
   venuesError = signal<string | null>(null);
   slug = signal<string | null>(null);
 
+  /** Незакрытые заказы (их приносит опрос) и те закрытые, что уже прочитаны или закрыты здесь же. */
   orders = signal<Order[]>([]);
   loading = signal(false);
   loaded = signal(false);
   loadError = signal<string | null>(null);
+  /** Закрытые заказы: читаются, когда открыт фильтр "Закрытые" или "Все". */
+  closedLoaded = signal(false);
+  closedLoading = signal(false);
+  closedError = signal<string | null>(null);
   search = signal('');
   filter = signal<OrderFilter>('new');
   selectedId = signal<string | null>(null);
@@ -238,15 +288,22 @@ export class PanelOrdersComponent implements OnInit {
     this.venues().map(v => ({ value: v.slug, label: v.name, hint: [v.city, v.is_published ? '' : 'скрыто'].filter(Boolean).join(', ') }))
   );
 
-  counts = computed<Record<OrderFilter, number>>(() => {
+  /** Счётчики на кнопках фильтра: только по незакрытым, история закрытых читается не целиком. */
+  counts = computed(() => {
     const list = this.orders();
     return {
       new: list.filter(o => matchesFilter(o, 'new')).length,
-      active: list.filter(o => matchesFilter(o, 'active')).length,
-      closed: list.filter(o => matchesFilter(o, 'closed')).length,
-      all: list.length
+      active: list.filter(o => matchesFilter(o, 'active')).length
     };
   });
+
+  closedCount = computed(() => this.orders().filter(o => isOrderClosed(o.status)).length);
+
+  /** Открыт фильтр, которому нужны закрытые заказы. */
+  showsClosed = computed(() => this.filter() === 'closed' || this.filter() === 'all');
+
+  /** Фильтру нужны закрытые заказы, а их ещё нет: вместо "пусто" показываем загрузку или ошибку. */
+  closedPending = computed(() => this.showsClosed() && !this.closedLoaded());
 
   filtered = computed(() => {
     const q = this.search().toLowerCase().replace(/№/g, '').trim();
@@ -256,6 +313,22 @@ export class PanelOrdersComponent implements OnInit {
       (!q || String(o.number) === q || String(o.number).startsWith(q)
         || String(o.table_number) === q || (o.guest_name || '').toLowerCase().includes(q))
     );
+  });
+
+  emptyText = computed(() => {
+    if (this.search().trim()) return 'Ничего не найдено';
+    switch (this.filter()) {
+      case 'new': return 'Новых заказов нет';
+      case 'active': return 'В работе заказов нет';
+      case 'closed': return 'Закрытых заказов пока нет';
+      default: return 'Заказов пока нет';
+    }
+  });
+
+  emptyVenueText = computed(() => {
+    if (!this.isModerator()) return 'У вас пока нет заведения: заполните карточку на вкладке "Меню"';
+    if (this.venuesLoading()) return 'Загрузка...';
+    return this.venues().length ? 'Выберите заведение' : 'Заведений пока нет';
   });
 
   selectedOne = computed(() => {
@@ -270,8 +343,18 @@ export class PanelOrdersComponent implements OnInit {
       if (v && untracked(this.slug) !== v) untracked(() => this.applyVenue(v));
     }, { allowSignalWrites: true });
 
-    const timer = setInterval(() => this.load(true), POLL_MS);
+    // Спрятанная вкладка сервер не опрашивает: бейдж новых заказов считает родитель
+    const timer = setInterval(() => {
+      if (this.active()) this.load(true);
+    }, POLL_MS);
     this.destroyRef.onDestroy(() => clearInterval(timer));
+
+    // Вкладку открыли снова: пока она была спрятана, заказы и список заведений могли измениться
+    onTabReturn(this.active, () => {
+      if (this.isModerator()) this.loadVenues(this.venues().length > 0);
+      this.load(true);
+      if (this.showsClosed()) this.loadClosed();
+    });
   }
 
   ngOnInit() {
@@ -309,18 +392,27 @@ export class PanelOrdersComponent implements OnInit {
     return ORDER_NEXT_LABELS[status] || 'Дальше';
   }
 
-  loadVenues() {
-    this.venuesLoading.set(true);
-    this.venuesError.set(null);
+  pillCount(f: OrderFilter): number {
+    return f === 'new' ? this.counts().new : f === 'active' ? this.counts().active : 0;
+  }
+
+  /** silent: фоновое обновление уже показанного списка, без блокировки выбора и без ошибки поверх него. */
+  loadVenues(silent = false) {
+    if (!silent) {
+      this.venuesLoading.set(true);
+      this.venuesError.set(null);
+    }
     this.api.getVenues().subscribe({
       next: list => {
         this.venues.set(list);
         this.venuesLoading.set(false);
+        this.venuesError.set(null);
         const wanted = this.venue();
         const pick = list.find(v => v.slug === wanted) ?? list[0];
         if (pick && !this.slug()) this.pickVenue(pick.slug);
       },
       error: err => {
+        if (silent) return;
         this.venuesLoading.set(false);
         this.venuesError.set('Не удалось загрузить заведения: ' + AuthService.errorText(err));
       }
@@ -337,24 +429,46 @@ export class PanelOrdersComponent implements OnInit {
   private applyVenue(slug: string) {
     this.slug.set(slug);
     this.orders.set([]);
+    this.vanished.clear();
     this.loaded.set(false);
     this.loadError.set(null);
+    // Ответ по закрытым заказам прошлого заведения больше не нужен
+    this.closedSeq++;
+    this.closedLoaded.set(false);
+    this.closedLoading.set(false);
+    this.closedError.set(null);
     this.selectedId.set(null);
     this.actionError.set(null);
     this.load(false);
+    if (this.showsClosed()) this.loadClosed();
   }
 
-  /** silent: фоновое обновление по таймеру, без индикатора и поверх уже показанного списка. */
+  /** Фильтры "Закрытые" и "Все" читают закрытые заказы в момент открытия: опрос их не трогает. */
+  setFilter(f: OrderFilter) {
+    this.filter.set(f);
+    if (this.slug() && this.showsClosed()) this.loadClosed();
+  }
+
+  /** Кнопка "Обновить": незакрытые заказы и, если открыт их фильтр, закрытые. */
+  refresh() {
+    this.load(false);
+    if (this.showsClosed()) this.loadClosed();
+  }
+
+  /**
+   * Читает только незакрытые заказы: всю историю каждые 20 секунд тянуть незачем.
+   * silent: фоновое обновление по таймеру, без индикатора и поверх уже показанного списка.
+   */
   load(silent: boolean) {
     const slug = this.slug();
     if (!slug || (silent && this.loading())) return;
     const seq = ++this.loadSeq;
     this.loading.set(true);
     if (!silent) this.loadError.set(null);
-    this.api.getOrders(slug).subscribe({
+    this.api.getOrders(slug, OPEN_STATUSES).subscribe({
       next: list => {
         if (seq !== this.loadSeq || this.slug() !== slug) return;
-        this.orders.set(list);
+        this.applyOpen(list);
         this.loaded.set(true);
         this.loading.set(false);
         this.loadError.set(null);
@@ -363,6 +477,59 @@ export class PanelOrdersComponent implements OnInit {
         if (seq !== this.loadSeq || this.slug() !== slug) return;
         this.loading.set(false);
         this.loadError.set('Не удалось загрузить заказы: ' + AuthService.errorText(err));
+      }
+    });
+  }
+
+  /**
+   * Новый список незакрытых заказов встаёт рядом с уже известными закрытыми.
+   * Заказ, который был открыт и пропал из ответа, закрыли с другого устройства: если он выбран
+   * или закрытые уже показаны, держим его старую копию до списка закрытых и читаем этот список.
+   */
+  private applyOpen(list: Order[]) {
+    const fresh = new Set(list.map(o => o.id));
+    const selected = this.selectedId();
+    const keep: Order[] = [];
+    let missing = false;
+    for (const o of this.orders()) {
+      if (fresh.has(o.id)) continue;
+      if (isOrderClosed(o.status)) {
+        keep.push(o);
+      } else if (this.closedLoaded() || this.showsClosed() || o.id === selected) {
+        keep.push(o);
+        this.vanished.add(o.id);
+        missing = true;
+      }
+    }
+    this.orders.set(sortOrders([...list, ...keep]));
+    if (missing) this.loadClosed();
+  }
+
+  /** Последние закрытые заказы заведения: не больше CLOSED_LIMIT. */
+  loadClosed() {
+    const slug = this.slug();
+    if (!slug) return;
+    const seq = ++this.closedSeq;
+    this.closedLoading.set(true);
+    this.closedError.set(null);
+    this.api.getOrders(slug, CLOSED_STATUSES, CLOSED_LIMIT).subscribe({
+      next: list => {
+        if (seq !== this.closedSeq || this.slug() !== slug) return;
+        const closedIds = new Set(list.map(o => o.id));
+        const selected = this.selectedId();
+        // Старые копии пропавших заказов больше не нужны: их настоящий статус в списке закрытых.
+        // Открытый в карточке закрытый заказ оставляем, даже если он старше последних CLOSED_LIMIT
+        const rest = this.orders().filter(o =>
+          !closedIds.has(o.id) && !this.vanished.has(o.id) && (!isOrderClosed(o.status) || o.id === selected));
+        this.vanished.clear();
+        this.orders.set(sortOrders([...rest, ...list]));
+        this.closedLoaded.set(true);
+        this.closedLoading.set(false);
+      },
+      error: err => {
+        if (seq !== this.closedSeq || this.slug() !== slug) return;
+        this.closedLoading.set(false);
+        this.closedError.set('Не удалось загрузить закрытые заказы: ' + AuthService.errorText(err));
       }
     });
   }
@@ -382,14 +549,20 @@ export class PanelOrdersComponent implements OnInit {
         // Опрос, ушедший до этого PATCH, вернул бы старый статус: его ответ отбрасываем и перечитываем список
         this.loadSeq++;
         this.loading.set(false);
+        this.vanished.delete(saved.id);
         this.orders.update(list => list.map(x => x.id === saved.id ? saved : x));
         flash(this.msg, `Заказ №${saved.number}: ${ORDER_STATUS_LABELS[saved.status].toLowerCase()}`);
         this.changed.emit();
         this.load(true);
+        // Список закрытых, запрошенный до этого PATCH, пришёл бы без только что закрытого заказа
+        if (isOrderClosed(saved.status) && this.closedLoading()) this.loadClosed();
       },
       error: err => {
         this.acting.set(false);
-        this.actionError.set('Ошибка: ' + AuthService.errorText(err));
+        const reason = AuthService.errorText(err);
+        // Ошибку показываем в карточке, только если в ней тот же заказ; иначе строкой над списком с номером
+        if (this.selectedId() === o.id) this.actionError.set('Ошибка: ' + reason);
+        else flash(this.msg, `Ошибка: заказ №${o.number} не изменён. ${reason}`, 6000);
         // Скорее всего, статус уже поменяли с другого устройства: перечитываем список
         this.load(true);
       }

@@ -4,6 +4,8 @@ from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
     FoodIcon, SiteSettings, MenuItem, MenuDrink, Order, OrderItem, ChangeRequest,
+    UserPreferences, QuizQuestion, QuizAttempt,
+    Lesson, LessonProgress, Tasting, PairingFeedback, Reward, Redemption,
 )
 
 
@@ -105,7 +107,7 @@ class FoodIconAdmin(admin.ModelAdmin):
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'alternatives_count', 'min_score_to_show', 'show_wheat_decor']
+    list_display = ['__str__', 'alternatives_count', 'min_score_to_show', 'show_wheat_decor', 'show_team']
 
     def has_add_permission(self, request):
         # Запись одна: добавить вторую нельзя, только править существующую.
@@ -270,4 +272,74 @@ class QRCodeAdmin(admin.ModelAdmin):
 class AnonymousSessionAdmin(admin.ModelAdmin):
     list_display = ['id', 'qr_code', 'completed_levels', 'score', 'created_at']
     list_filter = ['completed_levels']
+    ordering = ['-created_at']
+
+
+@admin.register(UserPreferences)
+class UserPreferencesAdmin(admin.ModelAdmin):
+    list_display = ['user', 'sommelier_level', 'updated_at']
+    search_fields = ['user__username']
+    filter_horizontal = ['favorite_brands']
+
+
+@admin.register(QuizQuestion)
+class QuizQuestionAdmin(admin.ModelAdmin):
+    list_display = ['text', 'level', 'correct_index', 'sort_order', 'is_active']
+    list_filter = ['level', 'is_active']
+    search_fields = ['text']
+    ordering = ['level', 'sort_order']
+
+
+@admin.register(QuizAttempt)
+class QuizAttemptAdmin(admin.ModelAdmin):
+    list_display = ['user', 'level', 'correct', 'total', 'passed', 'created_at']
+    list_filter = ['level', 'passed']
+    ordering = ['-created_at']
+
+
+@admin.register(Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ['title', 'level', 'minutes', 'sort_order', 'is_active']
+    list_filter = ['level', 'is_active']
+    search_fields = ['title', 'summary']
+    prepopulated_fields = {'slug': ('title',)}
+    ordering = ['level', 'sort_order']
+
+
+@admin.register(LessonProgress)
+class LessonProgressAdmin(admin.ModelAdmin):
+    list_display = ['user', 'lesson', 'completed_at']
+    list_filter = ['lesson__level']
+    ordering = ['-completed_at']
+
+
+@admin.register(Tasting)
+class TastingAdmin(admin.ModelAdmin):
+    list_display = ['user', 'brand', 'rating', 'matched', 'venue', 'created_at']
+    list_filter = ['brand', 'rating']
+    search_fields = ['user__username', 'brand__name']
+    autocomplete_fields = ['brand', 'notes']
+    ordering = ['-created_at']
+
+
+@admin.register(PairingFeedback)
+class PairingFeedbackAdmin(admin.ModelAdmin):
+    list_display = ['pairing', 'liked', 'user', 'venue', 'created_at']
+    list_filter = ['liked', 'venue']
+    ordering = ['-created_at']
+
+
+@admin.register(Reward)
+class RewardAdmin(admin.ModelAdmin):
+    list_display = ['title', 'venue', 'kind', 'cost', 'stock', 'is_active']
+    list_filter = ['kind', 'is_active', 'venue']
+    search_fields = ['title']
+
+
+@admin.register(Redemption)
+class RedemptionAdmin(admin.ModelAdmin):
+    list_display = ['code', 'title', 'user', 'venue', 'cost', 'status', 'created_at', 'used_at']
+    list_filter = ['status', 'venue']
+    search_fields = ['code', 'user__username', 'title']
+    readonly_fields = ['code', 'cost', 'title', 'created_at', 'used_at', 'used_by']
     ordering = ['-created_at']

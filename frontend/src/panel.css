@@ -211,6 +211,9 @@
   min-height: 0;
 }
 
+/* Открытые раньше вкладки остаются в DOM спрятанными: правило выше иначе перебило бы [hidden] */
+.wa-main > [hidden] { display: none !important; }
+
 .wa-page {
   flex: 1;
   width: 100%;
@@ -228,6 +231,8 @@
   padding-right: 2px;
 }
 
+/* Сам список ничего не обрезает: выпадающий выбор заведения на вкладке заказов выходит за его нижний край.
+   Строки обрезает .wa-rows, у неё же скруглены нижние углы */
 .wa-list {
   display: flex;
   flex-direction: column;
@@ -236,8 +241,10 @@
   border: 1px solid var(--line);
   border-radius: 16px;
   box-shadow: var(--shadow-warm);
-  overflow: hidden;
 }
+
+/* Сообщение над строками списка: с теми же полями, что у поиска и фильтров */
+.wa-list > .wa-msg { padding: 0 14px 8px; }
 
 .wa-list-head {
   display: flex;
@@ -340,11 +347,14 @@
   min-height: 0;
   overflow-y: auto;
   border-top: 1px solid var(--line-subtle);
+  border-radius: 0 0 15px 15px;
 }
 
+/* Правая колонка занимает не больше 40% строки: длинный чип роли или название заведения
+   обрезаются многоточием и не выдавливают название с логином */
 .wa-row {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) fit-content(40%);
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -419,9 +429,19 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+  min-width: 0;
   font-size: 0.74rem;
   color: var(--muted);
 }
+
+.wa-row-meta > * {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* У inline-flex многоточие не рисуется: в строке списка чип становится обычным блоком */
+.wa-row-meta > .wa-chip { display: block; }
 
 .wa-time { white-space: nowrap; }
 
@@ -712,9 +732,11 @@
   font-weight: 600;
 }
 
+/* Ширина не жёсткая: с иконкой кнопка квадратная, а подтверждение "Точно?" раздвигает её, а не вылезает за край */
 .wa-iconbtn {
-  width: 34px;
+  min-width: 34px;
   height: 34px;
+  padding: 0 6px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: transparent;
@@ -738,8 +760,9 @@
 }
 
 .wa-iconbtn-sm {
-  width: 28px;
+  min-width: 28px;
   height: 28px;
+  padding: 0 4px;
   border-radius: 8px;
 }
 
@@ -758,6 +781,7 @@
 .wa-confirm {
   font-size: 0.68rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .wa-link-btn {
@@ -1142,6 +1166,9 @@
   background: var(--beer-glow);
 }
 
+/* Счётчик не прочитался: вместо числа пометка, красная */
+.wa-stat small.wa-stat-failed { color: var(--error); }
+
 .wa-quick {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1280,6 +1307,16 @@
     flex-direction: row;
     padding: 0;
   }
+  /* Место в строке отдаём вкладкам: на телефоне остаётся только кнопка выхода.
+     Правый край полосы гаснет, чтобы было видно, что вкладки листаются дальше */
+  .wa-user-avatar { display: none; }
+  .wa-nav {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    padding-right: 20px;
+  }
+  .wa-card-head { flex-wrap: wrap; }
+  .wa-card-head .wa-chips { width: 100%; }
   .wa-main { display: block; }
   .wa-page {
     display: flex;
@@ -1291,8 +1328,6 @@
   .wa-page:not(.has-selection) .wa-detail { display: none; }
   .wa-page-single { display: block; }
   .wa-back { display: inline-flex; }
-  .wa-diff,
-  .wa-photo { grid-template-columns: 1fr; }
   .wa-detail { padding: 12px; }
 }
 
@@ -1385,8 +1420,21 @@
   font-size: 0.8rem;
 }
 
-/* Ширина колонки деталей задаёт раскладку таблицы, а не ширина окна */
+/* Ширина колонки деталей задаёт раскладку таблицы, блока фото и "было / станет", а не ширина окна */
 .wa-detail { container-type: inline-size; }
+
+/* На планшете колонка деталей уже телефонной: фото и сравнение складываем в одну колонку по её ширине */
+@container (max-width: 420px) {
+  .wa-diff,
+  .wa-photo { grid-template-columns: 1fr; }
+}
+
+/* То же для шапки карточки: в узкой колонке чипы уходят под заголовок, как на телефоне,
+   иначе они сжимают название до нуля */
+@container (max-width: 520px) {
+  .wa-card-head { flex-wrap: wrap; }
+  .wa-card-head .wa-chips { width: 100%; }
+}
 
 .wa-table {
   display: flex;
@@ -1430,6 +1478,9 @@
 
 .wa-table-row.off { opacity: 0.6; }
 
+/* В строке есть правки, которых ещё нет на сервере */
+.wa-table-row.dirty { border-color: var(--beer-light); }
+
 .wa-table-row .input {
   padding: 7px 10px;
   font-size: 0.86rem;
@@ -1437,18 +1488,63 @@
 
 .wa-table-dish { min-width: 0; }
 
+/* Поле строки с подписью. Пока видна шапка таблицы, подпись спрятана; у поля во всю ширину шапки нет, подпись видна всегда */
+.wa-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.wa-cell-cap {
+  display: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.wa-cell-wide { grid-column: 1 / -1; }
+
+.wa-cell-wide .wa-cell-cap { display: block; }
+
+/* Кнопки стоят в конце первой строки, хотя в разметке идут после поля во всю ширину */
 .wa-table-actions {
   display: flex;
   gap: 6px;
   justify-content: flex-end;
+  grid-column: -2 / -1;
+  grid-row: 1;
 }
+
+/* Статус строки: "не сохранено", "Сохраняем...", "Сохранено" или текст ошибки */
+.wa-row-status {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.wa-row-status .dirty { color: var(--beer-deep); }
+
+.wa-row-status .ok { color: var(--success); }
+
+.wa-row-status .error { color: var(--error); }
 
 @container (max-width: 640px) {
   .wa-table-head { display: none; }
   .wa-table-row { grid-template-columns: 1fr 1fr; }
   .wa-table-dish,
   .wa-table-actions { grid-column: 1 / -1; }
-  .wa-table-actions { justify-content: flex-start; }
+  .wa-table-actions {
+    grid-row: auto;
+    justify-content: flex-start;
+  }
+  /* Шапки нет: каждое поле подписано само */
+  .wa-cell-cap { display: block; }
 }
 
 @container (max-width: 360px) {
@@ -1493,6 +1589,12 @@
 
 .wa-rows .wa-loadbar { margin: 12px; }
 
+/* В карточке: отступ от кнопок формы сверху и от того, что идёт следом */
+.wa-actions + .wa-loadbar { margin-top: 14px; }
+
+.wa-card > .wa-loadbar + .wa-requests,
+.wa-card > .wa-loadbar + .wa-muted { margin-top: 12px; }
+
 .wa-error-inline {
   display: flex;
   align-items: center;
@@ -1529,6 +1631,16 @@
 .wa-table-drinks .wa-table-head,
 .wa-table-drinks .wa-table-row {
   grid-template-columns: minmax(170px, 1.8fr) 96px 90px 72px auto;
+}
+
+/* Правило выше весит два класса и перебивало общую свёртку таблицы: карта напитков вылезала
+   за экран телефона. Повторяем свёртку для неё, после него и с тем же весом */
+@container (max-width: 640px) {
+  .wa-table-drinks .wa-table-row { grid-template-columns: 1fr 1fr; }
+}
+
+@container (max-width: 360px) {
+  .wa-table-drinks .wa-table-row { grid-template-columns: 1fr; }
 }
 
 .wa-table-brand {
@@ -1652,4 +1764,18 @@
 
 @media (max-width: 768px) {
   .wa-main > .wa-loadbar { margin-bottom: 12px; }
+}
+
+/* Сенсорные экраны: цели касания крупнее, чем нужно мыши */
+@media (pointer: coarse) {
+  .wa-iconbtn,
+  .wa-iconbtn-sm {
+    min-width: 44px;
+    height: 44px;
+  }
+  .wa-pill {
+    height: 36px;
+    padding: 0 14px;
+  }
+  .wa-check-sm { min-height: 40px; }
 }

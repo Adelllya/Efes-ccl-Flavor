@@ -10,7 +10,7 @@
   display: grid;
   place-items: center;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--beer-accent), var(--beer-mid));
+  background: var(--grad-cta);
   color: #fff;
   font-family: var(--font-heading);
   font-weight: 800;
@@ -31,16 +31,17 @@
 .vm-venue-name { font-size: 1.25rem; line-height: 1.2; margin: 4px 0 2px; }
 .vm-venue-btn { align-self: flex-start; margin-top: auto; }
 
-/* Липкая полоса: назад, название, текущий заказ, стол, корзина */
+/* Липкая полоса: назад, название, текущий заказ, стол, корзина.
+   Кнопки и чипы в ней по 44px (удобно попасть пальцем), высота полосы прежняя: 44 + 4 + 4 */
 .vm-strip {
   position: sticky;
-  top: 88px;
+  top: var(--nav-offset);
   z-index: 6;
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   min-height: 52px;
-  padding: 6px 8px 6px 4px;
+  padding: 4px 8px 4px 4px;
   margin-bottom: var(--space-lg);
   border-radius: var(--radius-full);
 }
@@ -48,8 +49,8 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: none;
   border-radius: var(--radius-full);
   background: transparent;
@@ -76,7 +77,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
+  min-width: 0;
+  min-height: 44px;
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-full);
@@ -91,14 +93,19 @@
 }
 .vm-chip:hover { border-color: var(--beer-light); background: var(--beer-glow); }
 .vm-chip-empty {
-  background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+  background: var(--grad-cta);
   color: #fff;
   border-color: transparent;
   box-shadow: 0 4px 14px rgba(180, 83, 9, 0.3);
 }
 .vm-chip-empty:hover { background: linear-gradient(155deg, var(--beer-light), var(--beer-deep)); }
 .vm-chip-order { color: var(--foam-dim); }
+/* В полосе чипы сжимаются с многоточием: с активным заказом на экране 320-360px она не вылезает за край */
+.vm-strip .vm-chip { flex-shrink: 1; }
+.vm-chip svg { flex-shrink: 0; }
+.vm-chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .vm-chip-dot {
+  flex-shrink: 0;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -110,8 +117,8 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: none;
   border-radius: var(--radius-full);
   background: var(--beer-glow);
@@ -177,7 +184,8 @@
 /* Разделы: липкая полоса под верхней, на телефоне листается пальцем */
 .vm-pills {
   position: sticky;
-  top: 144px;
+  /* Под полосой заведения: её высота 52px и 4px зазора */
+  top: calc(var(--nav-offset) + 56px);
   z-index: 5;
   display: flex;
   gap: var(--space-sm);
@@ -214,7 +222,7 @@
 }
 .vm-pill:hover { color: var(--beer-deep); border-color: var(--beer-light); }
 .vm-pill.active {
-  background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+  background: var(--grad-cta);
   color: #fff;
   border-color: transparent;
   box-shadow: 0 4px 16px rgba(180, 83, 9, 0.3);
@@ -261,6 +269,8 @@
   color: var(--beer-deep);
   white-space: nowrap;
 }
+/* Цена не задана: вместо суммы тихая подпись "цена уточняется", заказать такую позицию нельзя */
+.vm-price-ask { font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; color: var(--muted); }
 .vm-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); }
 .vm-badge-off {
   background: rgba(120, 113, 108, 0.12);
@@ -303,7 +313,7 @@
   transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
 }
 .vm-stepper-on {
-  background: linear-gradient(135deg, var(--beer-light), var(--beer-mid));
+  background: var(--grad-cta);
   color: #fff;
   box-shadow: 0 6px 18px -8px rgba(180, 83, 9, 0.55);
 }
@@ -329,8 +339,9 @@
 .vm-step:disabled { opacity: 0.45; cursor: default; }
 .vm-step-add { padding: 0 16px; font-size: 0.86rem; white-space: nowrap; }
 .vm-step-n { min-width: 26px; text-align: center; font-size: 0.95rem; font-weight: 700; }
-.vm-stepper-sm { min-height: 34px; }
-.vm-stepper-sm .vm-step { min-width: 34px; height: 34px; font-size: 1rem; }
+/* Степпер в корзине: знаки мельче, но кнопки по 44px */
+.vm-stepper-sm { min-height: 44px; }
+.vm-stepper-sm .vm-step { min-width: 44px; height: 44px; font-size: 1rem; }
 
 /* Кнопка «Подобрать напиток» */
 .vm-rec-toggle {
@@ -393,6 +404,14 @@
 .vm-score-num { margin-left: var(--space-xs); font-size: 0.8rem; font-weight: 700; color: var(--beer-mid); }
 .vm-rec-text { line-height: 1.5; }
 .vm-rec-buy { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); margin-top: 4px; }
+/* Главный совет к блюду: кнопка добавления здесь основная, поэтому она залита */
+.vm-rec > .vm-rec-body > .vm-rec-buy .vm-stepper:not(.vm-stepper-on) { background: var(--grad-cta); color: #fff; box-shadow: var(--shadow-cta); }
+.vm-rec > .vm-rec-body > .vm-rec-buy .vm-step-add { min-height: 44px; font-weight: 700; }
+@media (max-width: 480px) {
+  /* На телефоне кнопка идёт отдельной строкой во всю ширину: её не закрывает кнопка чата */
+  .vm-rec > .vm-rec-body > .vm-rec-buy .vm-stepper { flex: 1 1 100%; justify-content: center; }
+  .vm-rec > .vm-rec-body > .vm-rec-buy .vm-step-add { flex: 1; }
+}
 .vm-rec-missing { margin: 4px 0 0; color: var(--muted); }
 .vm-rec-none { padding: var(--space-md) var(--space-lg); margin: 0; }
 .vm-link {
@@ -514,6 +533,7 @@
   max-width: 100%;
   height: auto;
   max-height: 88vh;
+  max-height: 88dvh;
   margin: 0;
   overflow-y: auto;
   padding: 0;
@@ -548,7 +568,7 @@
 }
 .vm-sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); }
 .vm-sheet-title { font-size: 1.3rem; margin: 0 0 2px; }
-.vm-sheet-close { flex-shrink: 0; }
+.vm-sheet-close { flex-shrink: 0; min-width: 44px; min-height: 44px; }
 .vm-sheet-empty { margin: var(--space-md) 0; }
 
 /* Сетка столов */
@@ -575,7 +595,7 @@
 }
 .vm-table-cell:hover, .vm-table-takeaway:hover { border-color: var(--beer-light); background: var(--beer-glow); }
 .vm-table-cell.active, .vm-table-takeaway.active {
-  background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+  background: var(--grad-cta);
   color: #fff;
   border-color: transparent;
   box-shadow: 0 4px 16px rgba(180, 83, 9, 0.3);
@@ -594,7 +614,7 @@
 .vm-cart-line-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .vm-cart-line-title { font-weight: 600; font-size: 0.95rem; line-height: 1.25; }
 .vm-cart-line-sum { min-width: 72px; text-align: right; font-family: var(--font-heading); font-weight: 700; font-size: 0.92rem; white-space: nowrap; }
-.vm-cart-remove { color: var(--muted); }
+.vm-cart-remove { flex-shrink: 0; min-width: 44px; min-height: 44px; color: var(--muted); }
 .vm-cart-remove:hover { color: var(--error); }
 .vm-cart-table { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); }
 .vm-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.86rem; font-weight: 600; color: var(--foam-dim); }
@@ -620,7 +640,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
 }
-.vm-note-close { flex-shrink: 0; }
+.vm-note-close { flex-shrink: 0; min-width: 44px; min-height: 44px; }
 
 /* Экран заказа */
 .vm-order-card { display: flex; flex-direction: column; gap: var(--space-lg); padding: var(--space-2xl) var(--space-xl); }
@@ -673,6 +693,21 @@
 .vm-order-facts dt { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .vm-order-facts dd { margin: 0; font-weight: 700; font-size: 1.02rem; }
 .vm-order-comment { margin: 0; padding: var(--space-sm) var(--space-md); border-left: 3px solid var(--beer-light); background: var(--beer-glow); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.vm-staff-link { justify-self: start; margin: 0 0 var(--space-sm); }
+/* Строка ответственного потребления в корзине */
+.vm-care { display: flex; align-items: flex-start; gap: var(--space-md); margin: 0; padding: var(--space-md); border-radius: var(--radius-md); background: var(--bg-0); border: 1px solid var(--line); font-size: 0.8125rem; line-height: 1.5; color: var(--muted); }
+.vm-care-age { flex-shrink: 0; padding: 2px 8px; border: 2px solid var(--beer-mid); border-radius: var(--radius-full); color: var(--beer-deep); font-weight: 800; font-size: 0.75rem; }
+
+/* Оценка сочетаний после заказа */
+.vm-vote { display: grid; gap: var(--space-sm); padding: var(--space-lg); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-0); }
+.vm-vote-title { margin: 0; font-weight: 700; color: var(--foam); }
+.vm-vote-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm) var(--space-md); }
+.vm-vote-pair { flex: 1 1 180px; min-width: 0; font-size: 0.9rem; color: var(--foam-dim); overflow-wrap: anywhere; }
+.vm-vote-btns { display: flex; gap: var(--space-sm); }
+.vm-vote-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: var(--radius-full); background: var(--bg-1); color: var(--foam); font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease; }
+.vm-vote-btn:hover { border-color: var(--beer-light); background: var(--beer-glow); }
+.vm-vote-btn:focus-visible { outline: 3px solid var(--beer-light); outline-offset: 2px; }
+.vm-vote-done { font-size: 0.875rem; font-weight: 600; color: #166534; }
 .vm-order-actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
 .vm-order-actions .btn-amber, .vm-order-actions .btn-outline { flex: 1 1 160px; justify-content: center; }
 
@@ -723,9 +758,22 @@
   to { transform: none; opacity: 1; }
 }
 
+/* Узкий телефон: в чипе заказа остаётся номер, статус виден на экране заказа;
+   строка корзины делится на две: название сверху, количество, сумма и удаление под ним */
+@media (max-width: 420px) {
+  .vm-strip { gap: 4px; }
+  .vm-strip .vm-chip { padding: 0 10px; }
+  .vm-chip-status { display: none; }
+  .vm-cart-line { flex-wrap: wrap; }
+  .vm-cart-line-body { flex-basis: 100%; }
+  .vm-cart-line-sum { margin-left: auto; }
+}
+/* На самом узком экране рядом с чипом заказа от названия остаётся одна буква: прячем его, оно есть в шапке заведения ниже */
+@media (max-width: 340px) {
+  .vm-strip:has(.vm-chip-order) .vm-strip-name { visibility: hidden; }
+}
+
 @media (min-width: 769px) {
-  .vm-strip { top: 96px; }
-  .vm-pills { top: 152px; }
   .vm-hero { flex-direction: row; align-items: flex-start; gap: var(--space-2xl); padding: var(--space-2xl) var(--space-3xl); }
   .vm-hero-logo { width: 96px; height: 96px; font-size: 2.4rem; }
   .vm-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); align-items: start; }

@@ -5,11 +5,12 @@ from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.db.models import Count, Q, Prefetch
+from django.core.cache import cache
+from django.db import IntegrityError, transaction
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
 
 from .images import (  # noqa: F401 - имена нужны и другим модулям
     IMAGE_TYPES, IMAGE_FORMATS, IMAGE_MAX_BYTES,
@@ -35,7 +36,22 @@ from .serializers import (
     FlavorProfileBulkSerializer, ServingRecommendationUpsertSerializer,
     ServingRecommendationSerializer,
     VenueSerializer, MenuItemSerializer, MenuDrinkSerializer, build_venue_menu, parse_uuid,
+    DishImportSerializer,
 )
+
+
+class CatalogPagination(PageNumberPagination):
+    """
+    Каталог нужен сайту целиком: при 20 записях на страницу он ходил за блюдами и парами
+    по три раза подряд. 100 на страницу закрывают каталог одним запросом, формат ответа прежний.
+    """
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 500
+
+
+LANDING_CACHE_KEY = 'ft_landing_data'
+LANDING_CACHE_SECONDS = 60 * 5
 
 
 def pyramid_payload(brand, request=None):
@@ -66,6 +82,7 @@ class BrandViewSet(viewsets.ModelViewSet):
         'serving_recommendation',
     ).all()
     permission_classes = [ReadOnlyOrModerator]
+    pagination_class = CatalogPagination
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -116,13 +133,24 @@ class BrandViewSet(viewsets.ModelViewSet):
         # Вложенный servingRecommendation при PATCH
         sr_data = self.request.data.get('serving_recommendation')
         if sr_data and isinstance(sr_data, dict):
+            # Сырые значения в базу не кладём: строка вместо числа давала 500.
+            nested = ServingRecommendationUpsertSerializer(data={
+                'brand_id': str(instance.id),
+                'serving_temp_min': sr_data.get('serving_temp_min', 4),
+                'serving_temp_max': sr_data.get('serving_temp_max', 8),
+                'glass_type': sr_data.get('glass_type') or 'Standard',
+                'seasonality': sr_data.get('seasonality') or '',
+            })
+            if not nested.is_valid():
+                raise ValidationError({'serving_recommendation': nested.errors})
+            values = nested.validated_data
             ServingRecommendation.objects.update_or_create(
                 brand=instance,
                 defaults={
-                    'serving_temp_min': sr_data.get('serving_temp_min', 4),
-                    'serving_temp_max': sr_data.get('serving_temp_max', 8),
-                    'glass_type': sr_data.get('glass_type', 'Standard'),
-                    'seasonality': sr_data.get('seasonality', ''),
+                    'serving_temp_min': values['serving_temp_min'],
+                    'serving_temp_max': values['serving_temp_max'],
+                    'glass_type': values['glass_type'],
+                    'seasonality': values.get('seasonality', ''),
                 },
             )
 
@@ -182,6 +210,9 @@ class FlavorNoteViewSet(viewsets.ModelViewSet):
         """GET /api/flavor-notes/{id}/brands/ - бренды, содержащие эту ноту."""
         note = self.get_object()
         profiles = FlavorProfile.objects.filter(flavor_note=note).select_related('brand')
+        # Снятые с публикации сорта гостю не называем.
+        if not has_role(request.user, ROLE_SOMMELIER):
+            profiles = profiles.filter(brand__is_active=True)
         brands_data = []
         for p in profiles:
             brands_data.append({
@@ -226,6 +257,7 @@ class DishViewSet(viewsets.ModelViewSet):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
     permission_classes = [ReadOnlyOrRestaurant]
+    pagination_class = CatalogPagination
 
     def get_permissions(self):
         # Блюдо общее для всех заведений: удалять его может только модератор.
@@ -286,6 +318,18 @@ class DishViewSet(viewsets.ModelViewSet):
         self._check_can_edit(serializer.instance)
         serializer.save()
 
+    @action(detail=False, methods=['post'], url_path='import')
+    def bulk_import(self, request):
+        """
+        POST /api/dishes/import/ {venue?, items: [...]} - блюда пачкой после распознавания по фото.
+        Новые блюда попадают в каталог, с venue ещё и в меню заведения; пары сохраняются как ИИ-подбор.
+        """
+        serializer = DishImportSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        result['dishes'] = DishSerializer(result['dishes'], many=True, context={'request': request}).data
+        return Response(result, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=['post', 'delete'], url_path='upload-image',
             parser_classes=[MultiPartParser, FormParser])
     def upload_image(self, request, pk=None):
@@ -317,10 +361,23 @@ class FoodPairingViewSet(viewsets.ModelViewSet):
     queryset = FoodPairing.objects.select_related('brand', 'dish').all()
     serializer_class = FoodPairingSerializer
     permission_classes = [ReadOnlyOrSommelier]
+    pagination_class = CatalogPagination
+
+    def perform_update(self, serializer):
+        # Правка или подтверждение человеком: пара ИИ становится парой сомелье.
+        serializer.save(source=FoodPairing.SOURCE_SOMMELIER)
 
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
+
+        # Пары снятых с публикации сортов гостю не показываем, как и сами сорта.
+        if not has_role(self.request.user, ROLE_SOMMELIER):
+            queryset = queryset.filter(brand__is_active=True)
+
+        source = params.get('source')
+        if source:
+            queryset = queryset.filter(source=source.upper())
 
         brand_id = params.get('brand_id')
         if brand_id:
@@ -402,7 +459,12 @@ class VenueViewSet(viewsets.ModelViewSet):
             return
         if Venue.objects.filter(owner=user).exists():
             raise ValidationError({'detail': 'У вас уже есть заведение'})
-        serializer.save(owner=user)
+        try:
+            # Два запроса сразу проходят проверку выше оба: второй останавливает ограничение базы.
+            with transaction.atomic():
+                serializer.save(owner=user)
+        except IntegrityError:
+            raise ValidationError({'detail': 'У вас уже есть заведение'})
 
     @action(detail=True, methods=['post', 'delete'], url_path='upload-logo',
             parser_classes=[MultiPartParser, FormParser])
@@ -484,19 +546,28 @@ class MenuDrinkViewSet(VenueScopedViewSet):
 
 
 @api_view(['GET'])
-@cache_page(60 * 5)  # Кеширование на 5 минут
 def landing_data(request):
     """
     GET /api/landing/ - агрегирующий эндпоинт: project info, team, courses, stats, quote.
-    Один запрос вместо четырёх.
+    Один запрос вместо четырёх. Данные кэшируются на 5 минут; кэшируем сами данные,
+    а не готовый ответ, иначе страница API из браузера попадала в кэш вместо JSON.
     """
+    cached = cache.get(LANDING_CACHE_KEY)
+    if cached is not None:
+        return Response(cached)
+    payload = _landing_payload()
+    cache.set(LANDING_CACHE_KEY, payload, LANDING_CACHE_SECONDS)
+    return Response(payload)
+
+
+def _landing_payload():
     brands_count = Brand.objects.filter(is_active=True).count()
     notes_count = FlavorNote.objects.count()
     profiles_count = FlavorProfile.objects.count()
     courses_qs = Course.objects.all()
     team_qs = TeamMember.objects.all()
 
-    return Response({
+    return {
         'project': {
             'name': 'Flavor Tree',
             'tagline': "Don't just drink - listen to the flavor",
@@ -529,7 +600,7 @@ def landing_data(request):
             {'key': 'HEART', 'label': 'Heart Notes', 'time': '3-15 сек', 'color': '#b45309'},
             {'key': 'BASE', 'label': 'Base Notes', 'time': '15+ сек', 'color': '#451a03'},
         ],
-    })
+    }
 
 
 @api_view(['GET'])
@@ -541,8 +612,17 @@ def health_check(request):
 @api_view(['POST'])
 @permission_classes([IsModerator])
 def seed_data(request):
-    """POST /api/seed/ - загрузка демо-данных и 17 сортов (идемпотентно). Только модератор."""
+    """
+    POST /api/seed/ - первичная загрузка 17 сортов, блюд и пар. Только модератор и только
+    в пустой каталог: на заполненном загрузка стёрла бы сорта и пары, добавленные в панели.
+    """
     from django.core.management import call_command
+    if Brand.objects.exists():
+        return Response(
+            {'ok': False, 'detail': 'Каталог уже заполнен. Повторная загрузка удалила бы ваши сорта и пары, '
+                                    'поэтому она отключена: запустите команду load_flavor_data вручную, если это нужно'},
+            status=status.HTTP_409_CONFLICT,
+        )
     try:
         call_command('load_flavor_data')
         return Response({'ok': True, 'message': '17 brands and flavor pyramid data loaded successfully'})
@@ -563,7 +643,10 @@ def admin_brands(request):
     POST /api/admin/brands/ - создать бренд из админки (модератор)
     """
     if request.method == 'GET':
-        brands = Brand.objects.prefetch_related('flavor_profiles').all()
+        brands = Brand.objects.prefetch_related('flavor_profiles__flavor_note').select_related('serving_recommendation')
+        # Список открыт на чтение всем, поэтому снятые сорта видят только сомелье и модератор.
+        if not has_role(request.user, ROLE_SOMMELIER):
+            brands = brands.filter(is_active=True)
         serializer = BrandListSerializer(brands, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -707,10 +790,10 @@ def admin_flavor_notes(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     if request.method == 'PATCH':
-        note_id = request.data.get('id')
+        note_id = request.data.get('id') if isinstance(request.data, dict) else None
         if not note_id:
             return Response({'error': 'id is required'}, status=status.HTTP_400_BAD_REQUEST)
-        note = get_object_or_404(FlavorNote, id=note_id)
+        note = get_object_or_404(FlavorNote, id=_uuid_or_400(note_id, 'id'))
         serializer = FlavorNoteSerializer(note, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -720,7 +803,7 @@ def admin_flavor_notes(request):
         note_id = request.query_params.get('id')
         if not note_id:
             return Response({'error': 'id query param is required'}, status=status.HTTP_400_BAD_REQUEST)
-        note = get_object_or_404(FlavorNote, id=note_id)
+        note = get_object_or_404(FlavorNote, id=_uuid_or_400(note_id, 'id'))
         note.delete()
         return Response({'ok': True, 'deleted': str(note_id)})
 

@@ -81,6 +81,21 @@ export interface Brand {
   profile?: BrandProfileStatus;
   serving_recommendation?: ServingRecommendation;
   pyramid?: PyramidData;
+  /**
+   * Вкус сорта в шести шкалах 0-10, посчитан на сервере из стиля, крепости и пирамиды.
+   * Есть и в списке сортов, где самой пирамиды нет: подбор берёт профиль отсюда.
+   */
+  taste_profile?: TasteProfile;
+}
+
+/** Те же шесть шкал, что у вкуса пользователя и у профиля сорта в подборе. */
+export interface TasteProfile {
+  body: number;
+  bitterness: number;
+  freshness: number;
+  sweetness: number;
+  roast: number;
+  strength: number;
 }
 
 export type TasteType = 'SALTY' | 'SWEET' | 'SOUR' | 'BITTER' | 'UMAMI' | 'SPICY' | 'MIXED';
@@ -122,6 +137,9 @@ export const PAIRING_LABELS: Record<PairingType, string> = {
   BRIDGE: 'Мостик'
 };
 
+/** Кто поставил пару: сомелье или ИИ-подбор, который сомелье ещё не подтвердил. */
+export type PairingSource = 'SOMMELIER' | 'AI';
+
 export interface FoodPairing {
   id: string;
   brand: string;
@@ -132,6 +150,9 @@ export interface FoodPairing {
   pairing_type: PairingType;
   pairing_type_display?: string;
   explanation: string;
+  /** Только чтение: задаёт сервер. После правки сомелье пара ИИ становится парой сомелье. */
+  source?: PairingSource;
+  source_display?: string;
 }
 
 export interface Course {
@@ -180,6 +201,8 @@ export interface SiteSettings {
   min_score_to_show: number;
   show_wheat_decor: boolean;
   pairing_intro: string;
+  /** Блок команды в Академии: включают, когда в нём записаны настоящие люди. */
+  show_team?: boolean;
 }
 
 /** Роли совпадают с группами Django; is_superuser считается модератором. */
@@ -236,6 +259,8 @@ export interface Venue {
 
 /** Лучшее сочетание для блюда в меню: пара с самым высоким баллом. */
 export interface MenuPairing {
+  /** id пары в каталоге: по нему гость оценивает сочетание. */
+  id?: string;
   brand: string;
   brand_name: string;
   brand_image: string | null;
@@ -245,6 +270,8 @@ export interface MenuPairing {
   pairing_type: PairingType;
   pairing_type_display?: string;
   explanation: string;
+  /** Кто поставил пару: сомелье или ИИ-подбор. */
+  source?: PairingSource;
   /** Позиция карты бара, если этот сорт там есть; null - сорта в карте нет. */
   menu_drink?: MenuDrinkRef | null;
 }
@@ -398,11 +425,15 @@ export function isOrderClosed(status: OrderStatus): boolean {
 export type OrderItemKind = 'DISH' | 'DRINK';
 
 /** Строка корзины для POST /orders/: id позиции меню (MenuItem) или напитка (MenuDrink). */
+/** Откуда гость добавил позицию: из меню, из совета пары или из чата ИИ. По этому считается аналитика. */
+export type OrderVia = 'MENU' | 'PAIRING' | 'AI';
+
 export interface OrderItemInput {
   kind: OrderItemKind;
   id: string;
   qty: number;
   note?: string;
+  via?: OrderVia;
 }
 
 export interface OrderInput {
@@ -424,6 +455,7 @@ export interface OrderItem {
   price: string;
   qty: number;
   note: string;
+  via?: OrderVia;
 }
 
 export interface Order {
@@ -505,4 +537,456 @@ export interface AiReply {
   mode: AiMode;
   /** Пусто или "ИИ недоступен, отвечает локальный подбор". */
   note: string;
+}
+
+/* Предпочтения пользователя и тест Школы сомелье */
+
+/** Те же шесть шкал 0-10, что у профиля сорта в подборе. */
+export type TasteKey = 'body' | 'bitterness' | 'freshness' | 'sweetness' | 'roast' | 'strength';
+
+export interface UserPreferences {
+  /** Нет ключа - шкала пользователю не важна. */
+  taste: Partial<Record<TasteKey, number>>;
+  cuisines: CuisineType[];
+  favorite_brands: string[];
+  /** Сколько ступеней Школы сдано подряд с первой. */
+  sommelier_level: number;
+  passed_levels: number[];
+  updated_at?: string;
+}
+
+export interface QuizPublicQuestion {
+  id: string;
+  text: string;
+  options: string[];
+}
+
+export interface Quiz {
+  level: number;
+  title: string;
+  pass_percent: number;
+  questions: QuizPublicQuestion[];
+}
+
+export interface QuizAnswerResult {
+  id: string;
+  chosen: number | null;
+  correct_index: number;
+  is_correct: boolean;
+  explanation: string;
+}
+
+export interface QuizResult {
+  level: number;
+  correct: number;
+  total: number;
+  percent: number;
+  passed: boolean;
+  pass_percent: number;
+  results: QuizAnswerResult[];
+  /** false у гостя без входа: результат не записан. */
+  saved: boolean;
+  sommelier_level?: number;
+  /** Баллы знаний после теста: только у вошедших. */
+  points?: PointsBalance;
+}
+
+/** Вопрос целиком, с верным ответом: только для панели. */
+export interface QuizQuestion {
+  id: string;
+  level: number;
+  level_display?: string;
+  text: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
+
+/* ИИ в панели: блюда по фото и подбор сортов */
+
+export type AiConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
+/** Что на фото: блюдо, страница меню или ничего подходящего. */
+export type AiPhotoKind = 'DISH' | 'MENU' | 'OTHER';
+
+/** Сорт, предложенный к блюду: ИИ или расчёт по правилам. */
+export interface AiPairing {
+  brand: string;
+  brand_name: string;
+  brand_style: string;
+  compatibility_score: number;
+  pairing_type: PairingType;
+  explanation: string;
+  /** В ответе подбора: такая пара уже есть в базе. */
+  exists?: boolean;
+  /** В ответе подбора с save: пара записана этим запросом. */
+  saved?: boolean;
+}
+
+/** Черновик блюда с фото. Ничего не сохранено, пока администратор не подтвердит. */
+export interface AiDishDraft {
+  name: string;
+  category: string;
+  cuisine: CuisineType;
+  dominant_taste: TasteType;
+  weight: WeightType;
+  fat_level: FatType;
+  cooking_method: CookingMethod;
+  description: string;
+  confidence: AiConfidence;
+  /** Для страницы меню: раздел, порция и цена в тенге; у фото блюда пусто. */
+  section: string;
+  portion: string;
+  price: number | null;
+  /** Блюдо каталога с таким же или почти таким же названием. */
+  duplicate_of: { id: string; name: string } | null;
+  pairings: AiPairing[];
+}
+
+export interface AiRecognition {
+  kind: AiPhotoKind;
+  summary: string;
+  dishes: AiDishDraft[];
+  mode: AiMode;
+  model: string;
+}
+
+export interface DishImportItem {
+  /** id блюда каталога, если берём существующее; иначе поля нового блюда. */
+  dish?: string | null;
+  name?: string;
+  category?: string;
+  cuisine?: CuisineType;
+  dominant_taste?: TasteType;
+  weight?: WeightType;
+  fat_level?: FatType;
+  cooking_method?: CookingMethod;
+  description?: string;
+  /** Цена и раздел для меню заведения; null - в меню не ставить. */
+  menu?: { price: string | number; section: string; portion: string } | null;
+  pairings?: { brand: string; compatibility_score: number; pairing_type: PairingType; explanation: string }[];
+}
+
+export interface DishImportRequest {
+  /** slug или uuid заведения, в чьё меню встают блюда; null - только каталог. */
+  venue: string | null;
+  items: DishImportItem[];
+}
+
+export interface DishImportResult {
+  dishes: Dish[];
+  created: number;
+  reused: number;
+  menu_items: number;
+  pairings: number;
+  warnings: string[];
+}
+
+export interface AiPairingResult {
+  dish: string;
+  dish_name: string;
+  /** 1-2 предложения о блюде; пусто, если считали по правилам. */
+  analysis: string;
+  pairings: AiPairing[];
+  by_rules: boolean;
+  /** Может ли текущий пользователь записать пары к этому блюду. */
+  can_save?: boolean;
+}
+
+export interface AiPairingSaveItem {
+  dish: string;
+  brand: string;
+  compatibility_score: number;
+  pairing_type: PairingType;
+  explanation: string;
+}
+
+export interface AiPairingSaveResult {
+  saved: number;
+  skipped: number;
+  pairings: FoodPairing[];
+}
+
+export interface AiPairingSuggestions {
+  results: AiPairingResult[];
+  mode: AiMode;
+  note: string;
+  /** Сколько пар записано (при save). */
+  saved: number;
+}
+
+
+/* Академия: путь из ступеней и уроки */
+
+export type LessonAction = 'explorer' | 'pairing' | 'landing' | 'menu';
+
+export type LessonBlock =
+  | { type: 'text'; title?: string; text: string }
+  | { type: 'facts'; title?: string; items: string[] }
+  | { type: 'steps'; title?: string; items: { title: string; text: string }[] }
+  | { type: 'tip'; text: string }
+  | { type: 'check'; question: string; options: string[]; correct_index: number; explanation: string }
+  | { type: 'practice'; text: string; action: LessonAction; label: string };
+
+export interface LessonCard {
+  id: string;
+  slug: string;
+  level: number;
+  title: string;
+  summary: string;
+  minutes: number;
+  done: boolean;
+}
+
+export interface Lesson extends LessonCard {
+  level_display: string;
+  blocks: LessonBlock[];
+  next: { slug: string; title: string; level: number } | null;
+}
+
+export interface AcademyLevel {
+  level: number;
+  name: string;
+  description: string;
+  color: string;
+  lessons: LessonCard[];
+  /** Сколько вопросов в банке ступени и сколько из них в одном тесте. */
+  questions: number;
+  quiz_size: number;
+  passed: boolean;
+  best_percent: number | null;
+}
+
+export interface PassportRank {
+  index: number;
+  title: string;
+  from: number;
+  next_title: string | null;
+  next_at: number | null;
+  to_next: number;
+}
+
+export interface PointsBalance {
+  earned: number;
+  spent: number;
+  balance: number;
+  rank: PassportRank;
+}
+
+export interface Academy {
+  pass_percent: number;
+  points: { lesson: number; level: number };
+  show_team: boolean;
+  levels: AcademyLevel[];
+  progress: {
+    authenticated: boolean;
+    lessons_done: number;
+    lessons_total: number;
+    passed_levels: number[];
+    points: PointsBalance | null;
+  };
+}
+
+export interface LessonCompleteResult {
+  done: boolean;
+  awarded: number;
+  points: PointsBalance;
+}
+
+
+/* Паспорт вкуса: отметки сортов, баллы знаний, награды */
+
+export interface NoteChip {
+  id: string;
+  name: string;
+  icon: string;
+  image?: string | null;
+  category: PyramidLayer;
+}
+
+export interface BrandCard {
+  id: string;
+  name: string;
+  style: string;
+  image: string | null;
+  accent_color: string;
+  packaging_type: string;
+}
+
+export interface Tasting {
+  id: string;
+  brand: BrandCard;
+  venue: { slug: string; name: string } | null;
+  notes: NoteChip[];
+  rating: number;
+  comment: string;
+  /** Сколько выбранных нот есть в пирамиде сомелье. */
+  matched: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TastingRevealNote extends NoteChip {
+  layer: PyramidLayer;
+  intensity: number;
+  heard: boolean;
+}
+
+export interface TastingReveal {
+  pyramid: TastingRevealNote[];
+  matched: number;
+  total: number;
+}
+
+export interface TastingSheet {
+  brand: BrandCard;
+  palette: NoteChip[];
+  max_notes: number;
+  mine: Tasting | null;
+  reveal: TastingReveal | null;
+}
+
+export interface TastingInput {
+  rating: number;
+  notes: string[];
+  comment?: string;
+  venue?: string;
+}
+
+export interface TastingSaved {
+  tasting: Tasting;
+  reveal: TastingReveal;
+  awarded: number;
+  points: PointsBalance;
+}
+
+export interface GuestsHeard {
+  count: number;
+  min: number;
+  /** false, пока отметок меньше min: сводка не показывается. */
+  enough: boolean;
+  rating_avg: number | null;
+  notes: (NoteChip & { share: number; in_pyramid: boolean })[];
+}
+
+export interface PassportBadge {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  target: number;
+  earned: boolean;
+}
+
+export type RewardKind = 'FOOD' | 'SOFT' | 'MERCH' | 'EVENT';
+
+export interface Reward {
+  id: string;
+  /** slug заведения или null для общей награды платформы. */
+  venue: string | null;
+  venue_name: string;
+  title: string;
+  description: string;
+  kind: RewardKind;
+  kind_display: string;
+  cost: number;
+  stock: number | null;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export type RedemptionStatus = 'ISSUED' | 'USED' | 'CANCELLED';
+
+export interface Redemption {
+  id: string;
+  title: string;
+  cost: number;
+  code: string;
+  status: RedemptionStatus;
+  status_display: string;
+  venue: { slug: string; name: string } | null;
+  kind: RewardKind | '';
+  created_at: string;
+  used_at: string | null;
+  /** Только в выдаче для сотрудника. */
+  guest?: string;
+}
+
+export interface Passport {
+  points: { earned: number; spent: number; balance: number };
+  rank: PassportRank;
+  ranks: { title: string; from: number }[];
+  breakdown: { kind: string; label: string; count: number; each: number; points: number }[];
+  badges: PassportBadge[];
+  tastings: Tasting[];
+  brands_total: number;
+  rules: {
+    lesson: number; level: number; tasting: number; notes: number; feedback: number;
+    notes_from: number; feedback_cap: number;
+  };
+  redemptions: Redemption[];
+}
+
+export interface PairingVotes {
+  likes: number;
+  dislikes: number;
+  mine: boolean | null;
+  awarded?: number;
+  points?: PointsBalance;
+}
+
+
+/* Аналитика */
+
+export interface VenueAnalytics {
+  venue: { slug: string; name: string };
+  period: { days: number; from: string; to: string };
+  demo: { included: boolean; orders: number };
+  totals: { orders: number; revenue: number; avg_check: number | null };
+  pairing: {
+    dish_orders: number;
+    with_drink: number;
+    with_pair: number;
+    drink_rate: number | null;
+    pair_rate: number | null;
+    avg_food_only: number | null;
+    avg_with_drink: number | null;
+    avg_with_pair: number | null;
+  };
+  advice: { pairing: { qty: number; revenue: number }; ai: { qty: number; revenue: number } };
+  drinks: {
+    qty: number;
+    draught_qty: number;
+    draught_rate: number | null;
+    top: { title: string; qty: number; revenue: number; draught: boolean }[];
+  };
+  dishes: { top: { title: string; qty: number; revenue: number }[]; unpaired: string[] };
+  top_pairs: { dish: string; drink: string; orders: number; recommended: boolean; source: PairingSource | '' }[];
+  feedback: { likes: number; dislikes: number };
+  by_day: { day: string; orders: number; revenue: number; with_pair: number }[];
+}
+
+export interface BrandInsight extends BrandCard {
+  tastings: number;
+  rating_avg: number | null;
+  matched_avg: number | null;
+  favorites: number;
+  ordered: number;
+  pairings: number;
+  ai_pairings: number;
+  votes: number;
+  liked_rate: number | null;
+  heard: (NoteChip & { share: number; in_pyramid: boolean })[];
+}
+
+export interface BrandsAnalytics {
+  min_guests: number;
+  totals: {
+    users: number; tasters: number; tastings: number; lessons_done: number; levels_passed: number;
+    votes: number; pairings: number; ai_pairings: number;
+  };
+  brands: BrandInsight[];
 }

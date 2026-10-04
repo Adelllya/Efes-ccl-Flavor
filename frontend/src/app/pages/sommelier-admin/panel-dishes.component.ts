@@ -1,13 +1,17 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { ApiService } from '../../services/api.service';
+import { of, timeout } from 'rxjs';
+import { AI_VISION_TIMEOUT_MS, ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { CookingMethod, CuisineType, Dish, FatType, TasteType, WeightType } from '../../models/flavor-tree.models';
+import {
+  AiPairing, AiPairingResult, CookingMethod, CuisineType, Dish, DishImportResult, FatType, PAIRING_LABELS,
+  TasteType, WeightType
+} from '../../models/flavor-tree.models';
 import { FtSelectComponent, SelectOption } from '../../ui/ft-select.component';
 import { PanelIconComponent } from './panel-icons';
 import { PanelPhotoComponent } from './panel-photo.component';
+import { ImportVenue, PanelDishImportComponent } from './panel-dish-import.component';
 import {
   COOKING_CHOICES, CUISINE_CHOICES, FAT_CHOICES, TASTE_CHOICES, WEIGHT_CHOICES,
   confirmTwice, flash, initialOf, isErrorText, labelOf
@@ -30,23 +34,42 @@ interface DishForm {
 
 type DishFilter = 'all' | CuisineType;
 
-/** Вкладка "Блюда": список слева, форма и фото выбранного блюда справа, "+" создаёт новое. */
+/** Разбор блюда от ИИ: текст, сорта и то, чем он считался. */
+interface DishAnalysis {
+  dishId: string;
+  result: AiPairingResult;
+  mode: 'claude' | 'local';
+  note: string;
+}
+
+/**
+ * Вкладка "Блюда": список слева, форма и фото выбранного блюда справа, "+" создаёт новое.
+ * "ИИ по фото" открывает распознавание блюд с фото, в карточке блюда есть ИИ-анализ с подбором сортов.
+ */
 @Component({
   selector: 'panel-dishes',
   standalone: true,
-  imports: [FormsModule, PanelIconComponent, FtSelectComponent, PanelPhotoComponent],
+  imports: [FormsModule, PanelIconComponent, FtSelectComponent, PanelPhotoComponent, PanelDishImportComponent],
   template: `
     <div class="wa-page" [class.has-selection]="!!form()">
       <aside class="wa-list">
         <div class="wa-list-head">
           <h2 class="wa-list-title">Блюда @if (loaded()) { <span class="wa-count">{{ dishes().length }}</span> }</h2>
-          <button type="button" class="wa-iconbtn" title="Новое блюдо" (click)="openCreate()">
-            <panel-icon name="plus" />
-          </button>
+          <span class="wa-list-tools">
+            <button type="button" class="wa-ai-btn" title="Добавить блюда по фото с помощью ИИ"
+                    aria-label="Добавить блюда по фото с помощью ИИ" (click)="openImport()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              <span>ИИ по фото</span>
+            </button>
+            <button type="button" class="wa-iconbtn" title="Новое блюдо" aria-label="Новое блюдо" (click)="openCreate()">
+              <panel-icon name="plus" />
+            </button>
+          </span>
         </div>
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Название или категория" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Название или категория" aria-label="Поиск блюда"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         <div class="wa-pills">
           @for (p of pills; track p.value) {
@@ -56,7 +79,7 @@ type DishFilter = 'all' | CuisineType;
           }
         </div>
         @if (msg() && !form()) {
-          <p class="wa-msg" [class.error]="isError(msg())">{{ msg() }}</p>
+          <p class="wa-msg" [class.error]="isError(msg())" role="status">{{ msg() }}</p>
         }
         <div class="wa-rows">
           @if (!loaded()) {
@@ -115,23 +138,23 @@ type DishFilter = 'all' | CuisineType;
                 </label>
                 <div class="wa-field">
                   <span class="wa-label">Кухня</span>
-                  <ft-select [options]="cuisineOptions" [(ngModel)]="f.cuisine" />
+                  <ft-select [options]="cuisineOptions" [(ngModel)]="f.cuisine" ariaLabel="Кухня" />
                 </div>
                 <div class="wa-field">
                   <span class="wa-label">Доминирующий вкус</span>
-                  <ft-select [options]="tasteOptions" [(ngModel)]="f.dominant_taste" />
+                  <ft-select [options]="tasteOptions" [(ngModel)]="f.dominant_taste" ariaLabel="Доминирующий вкус" />
                 </div>
                 <div class="wa-field">
                   <span class="wa-label">Вес блюда</span>
-                  <ft-select [options]="weightOptions" [(ngModel)]="f.weight" />
+                  <ft-select [options]="weightOptions" [(ngModel)]="f.weight" ariaLabel="Вес блюда" />
                 </div>
                 <div class="wa-field">
                   <span class="wa-label">Жирность</span>
-                  <ft-select [options]="fatOptions" [(ngModel)]="f.fat_level" />
+                  <ft-select [options]="fatOptions" [(ngModel)]="f.fat_level" ariaLabel="Жирность" />
                 </div>
                 <div class="wa-field">
                   <span class="wa-label">Способ приготовления</span>
-                  <ft-select [options]="cookingOptions" [(ngModel)]="f.cooking_method" />
+                  <ft-select [options]="cookingOptions" [(ngModel)]="f.cooking_method" ariaLabel="Способ приготовления" />
                 </div>
                 <label class="wa-field wa-field-wide">
                   <span class="wa-label">Описание</span>
@@ -143,7 +166,7 @@ type DishFilter = 'all' | CuisineType;
                 <p class="wa-info"><panel-icon name="alert" /> {{ hint }}</p>
               }
               @if (formError()) {
-                <p class="wa-error">{{ formError() }}</p>
+                <p class="wa-error" role="alert">{{ formError() }}</p>
               }
               <div class="wa-actions">
                 <button type="button" class="btn-amber" [disabled]="saving()" (click)="save()">
@@ -159,10 +182,63 @@ type DishFilter = 'all' | CuisineType;
                   <button type="button" class="btn-outline" (click)="close()">Отмена</button>
                 }
                 @if (msg()) {
-                  <p class="wa-msg" [class.error]="isError(msg())">{{ msg() }}</p>
+                  <p class="wa-msg" [class.error]="isError(msg())" role="status">{{ msg() }}</p>
                 }
               </div>
             </div>
+
+            @if (f.id) {
+              <div class="wa-card">
+                <div class="wa-card-head">
+                  <div class="wa-card-head-text">
+                    <h3 class="wa-card-title">ИИ-анализ и сорта</h3>
+                    <p class="wa-card-sub">ИИ разберёт вкус блюда и предложит сорта из каталога. Вы решаете, какие сохранить</p>
+                  </div>
+                  <button type="button" class="wa-ai-btn" [disabled]="analysisBusy()" (click)="analyze(f.id)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9L12 3Z"/></svg>
+                    <span>{{ analysisBusy() ? 'Думает...' : (analysisFor(f.id) ? 'Разобрать заново' : 'Разобрать блюдо') }}</span>
+                  </button>
+                </div>
+                @if (analysisError()) {
+                  <p class="wa-error" role="alert">{{ analysisError() }}</p>
+                }
+                @if (analysisFor(f.id); as a) {
+                  <div class="aia">
+                    @if (a.result.analysis) { <p class="aia-text">{{ a.result.analysis }}</p> }
+                    @if (a.note || a.result.by_rules) {
+                      <p class="wa-muted">{{ a.note || 'Сорта подобраны по правилам сочетания: вес к весу, горечь против жира, солод против остроты.' }}</p>
+                    }
+                    @for (p of a.result.pairings; track p.brand) {
+                      <div class="aia-pair">
+                        <span class="aia-pair-title">
+                          {{ p.brand_name }} <small>{{ p.brand_style }} · {{ pairingLabels[p.pairing_type] }}</small>
+                        </span>
+                        <span class="aia-score" role="img" [attr.aria-label]="'Оценка ' + p.compatibility_score + ' из 5'">
+                          @for (n of pips; track n) { <span [class.on]="n <= p.compatibility_score"></span> }
+                          <b>{{ p.compatibility_score }}/5</b>
+                        </span>
+                        <p class="aia-pair-text">{{ p.explanation }}</p>
+                        @if (p.exists) { <span class="wa-chip wa-chip-approved">{{ p.saved ? 'Сохранено' : 'Уже есть в сочетаниях' }}</span> }
+                      </div>
+                    } @empty {
+                      <p class="wa-muted">В каталоге нет сортов, к которым можно подобрать пару.</p>
+                    }
+                    @if (newPairings(a).length) {
+                      <div class="wa-actions">
+                        @if (a.result.can_save) {
+                          <button type="button" class="btn-amber" [disabled]="analysisSaving()" (click)="saveAnalysis(a)">
+                            <panel-icon name="save" /> {{ analysisSaving() ? 'Сохраняем...' : saveAnalysisLabel(a) }}
+                          </button>
+                          <span class="wa-hint">{{ saveAnalysisHint() }}</span>
+                        } @else {
+                          <span class="wa-hint">Блюдо есть в меню другого заведения: сочетания к нему добавляет сомелье.</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
 
             <div class="wa-card">
               <div class="wa-card-head">
@@ -196,6 +272,11 @@ type DishFilter = 'all' | CuisineType;
         }
       </section>
     </div>
+
+    @if (importOpen()) {
+      <panel-dish-import [venues]="importVenues()" (closed)="importOpen.set(false)"
+                         (imported)="onImported($event)" (pairingsSaved)="pairingsChanged.emit()" />
+    }
   `
 })
 export class PanelDishesComponent {
@@ -209,7 +290,13 @@ export class PanelDishesComponent {
   changed = output<Dish[]>();
   /** id удалённого блюда: вместе с ним сервер удалил и его сочетания, родитель их перечитывает. */
   deleted = output<string>();
+  /** ИИ записал новые сочетания: родитель перечитывает их список. */
+  pairingsChanged = output<void>();
+  /** Импорт по фото добавил позиции в меню заведения: вкладке "Меню" пора их перечитать. */
+  menuChanged = output<void>();
 
+  readonly pairingLabels = PAIRING_LABELS;
+  readonly pips = [1, 2, 3, 4, 5];
   readonly initial = initialOf;
   readonly cuisineOptions: SelectOption[] = CUISINE_CHOICES;
   readonly tasteOptions: SelectOption[] = TASTE_CHOICES;
@@ -234,6 +321,14 @@ export class PanelDishesComponent {
   photoError = signal<string | null>(null);
   /** Файл, выбранный для нового блюда: уйдёт на сервер после создания. */
   pendingFile: File | null = null;
+
+  // ИИ: блюда по фото и разбор блюда
+  importOpen = signal(false);
+  importVenues = signal<ImportVenue[]>([]);
+  analysis = signal<DishAnalysis | null>(null);
+  analysisBusy = signal(false);
+  analysisSaving = signal(false);
+  analysisError = signal<string | null>(null);
 
   isError = isErrorText;
 
@@ -324,20 +419,25 @@ export class PanelDishesComponent {
     this.saving.set(true);
     this.formError.set(null);
     const isNew = !f.id;
+    const key = f.key;
+    // Файл, выбранный до создания, отправляем сразу после него
+    const file = isNew ? this.pendingFile : null;
     const req = f.id ? this.api.updateDish(f.id, payload) : this.api.createDish(payload);
     req.subscribe({
       next: saved => {
         this.saving.set(false);
         this.publish(saved, isNew);
-        // Файл, выбранный до создания, отправляем сразу после него
-        const file = this.pendingFile;
-        this.openEdit(saved);
-        flash(this.msg, isNew ? 'Блюдо добавлено' : 'Блюдо обновлено');
-        if (isNew && file) this.uploadPhoto(saved.id, file);
+        // Пока шёл запрос, могли открыть другое блюдо: его форму не трогаем
+        if (this.form()?.key === key) {
+          this.openEdit(saved);
+          flash(this.msg, isNew ? 'Блюдо добавлено' : 'Блюдо обновлено');
+        }
+        if (file) this.uploadPhoto(saved.id, file);
       },
       error: err => {
         this.saving.set(false);
-        this.formError.set('Ошибка: ' + AuthService.errorText(err));
+        if (this.form()?.key === key) this.formError.set('Ошибка: ' + AuthService.errorText(err));
+        else flash(this.msg, 'Ошибка: ' + name + ': ' + AuthService.errorText(err), 6000);
       }
     });
   }
@@ -348,11 +448,124 @@ export class PanelDishesComponent {
         next: () => {
           this.changed.emit(this.dishes().filter(x => x.id !== id));
           this.deleted.emit(id);
-          this.close();
+          // Закрываем форму только если в ней всё ещё удалённое блюдо
+          if (this.form()?.id === id) this.close();
           flash(this.msg, 'Блюдо удалено');
         },
-        error: err => this.formError.set('Ошибка: ' + AuthService.errorText(err))
+        error: err => {
+          if (this.form()?.id === id) this.formError.set('Ошибка: ' + AuthService.errorText(err));
+        }
       });
+    });
+  }
+
+  // ИИ: блюда по фото
+
+  openImport() {
+    const role = this.auth.role();
+    const own = this.auth.user()?.venue;
+    if (role === 'moderator') {
+      // Модератор может поставить блюда в меню любого заведения; без списка остаётся каталог
+      this.api.getVenues().subscribe({
+        next: list => this.importVenues.set(list.map(v => ({ slug: v.slug, name: v.name }))),
+        error: () => this.importVenues.set([])
+      });
+    } else {
+      this.importVenues.set(own ? [{ slug: own.slug, name: own.name }] : []);
+    }
+    this.importOpen.set(true);
+  }
+
+  /** Новые и обновлённые блюда встают в начало списка; счётчики меню и пар берём из ответа. */
+  onImported(res: DishImportResult) {
+    const fresh = new Map(res.dishes.map(d => [d.id, d]));
+    this.changed.emit([...res.dishes, ...this.dishes().filter(d => !fresh.has(d.id))]);
+    if (res.menu_items) this.menuChanged.emit();
+    flash(this.msg, 'Добавлено блюд: ' + res.created + (res.menu_items ? ', в меню: ' + res.menu_items : ''));
+  }
+
+  // ИИ: разбор блюда и сорта к нему
+
+  analysisFor(id: string | null): DishAnalysis | null {
+    const a = this.analysis();
+    return a && a.dishId === id ? a : null;
+  }
+
+  newPairings(a: DishAnalysis): AiPairing[] {
+    return a.result.pairings.filter(p => !p.exists);
+  }
+
+  /** Сомелье и модератор принимают совет сами: у них пара сразу становится парой сомелье. */
+  private acceptsAsSommelier(): boolean {
+    const role = this.auth.role();
+    return role === 'moderator' || role === 'sommelier';
+  }
+
+  saveAnalysisLabel(a: DishAnalysis): string {
+    const n = this.newPairings(a).length;
+    return (this.acceptsAsSommelier() ? 'Принять ' : 'Сохранить ') + this.plural(n, 'сорт', 'сорта', 'сортов');
+  }
+
+  saveAnalysisHint(): string {
+    return this.acceptsAsSommelier()
+      ? 'Сохранятся как сочетания сомелье: вы их проверили'
+      : 'Сохранятся с пометкой «ИИ-подбор», сомелье сможет подтвердить или поправить';
+  }
+
+  analyze(id: string | null) {
+    if (!id || this.analysisBusy()) return;
+    this.analysisBusy.set(true);
+    this.analysisError.set(null);
+    this.api.suggestPairings([id]).pipe(timeout(AI_VISION_TIMEOUT_MS)).subscribe({
+      next: res => {
+        this.analysisBusy.set(false);
+        const result = res.results[0];
+        if (!result) {
+          this.analysisError.set('Ошибка: ИИ не вернул разбор. Попробуйте ещё раз.');
+          return;
+        }
+        this.analysis.set({ dishId: id, result, mode: res.mode, note: res.note });
+      },
+      error: err => {
+        this.analysisBusy.set(false);
+        this.analysisError.set('Ошибка: ' + AuthService.errorText(err));
+      }
+    });
+  }
+
+  saveAnalysis(a: DishAnalysis) {
+    const items = this.newPairings(a).map(p => ({
+      dish: a.dishId, brand: p.brand, compatibility_score: p.compatibility_score,
+      pairing_type: p.pairing_type, explanation: p.explanation
+    }));
+    if (!items.length || this.analysisSaving()) return;
+    this.analysisSaving.set(true);
+    this.analysisError.set(null);
+    this.api.saveAiPairings(items).subscribe({
+      next: res => {
+        this.analysisSaving.set(false);
+        const savedBrands = new Set(res.pairings.map(p => p.brand));
+        this.analysis.update(cur => cur && cur.dishId === a.dishId ? {
+          ...cur,
+          result: {
+            ...cur.result,
+            pairings: cur.result.pairings.map(p => savedBrands.has(p.brand) ? { ...p, exists: true, saved: true } : p)
+          }
+        } : cur);
+        if (res.saved) {
+          // Счётчик сочетаний в карточке и список во вкладке "Сочетания"
+          this.changed.emit(this.dishes().map(d => d.id === a.dishId
+            ? { ...d, pairings_count: (d.pairings_count ?? 0) + res.saved } : d));
+          this.pairingsChanged.emit();
+          flash(this.msg, 'Сохранено сочетаний: ' + res.saved);
+        } else {
+          this.analysisError.set('Ошибка: сохранить не удалось, такие сочетания уже есть или блюдо вам не принадлежит');
+        }
+      },
+      error: err => {
+        this.analysisSaving.set(false);
+        this.analysisError.set('Ошибка: ' + AuthService.errorText(err));
+      }
     });
   }
 
@@ -406,5 +619,6 @@ export class PanelDishesComponent {
     this.photoError.set(null);
     this.pendingDelete.set(null);
     this.pendingFile = null;
+    this.analysisError.set(null);
   }
 }

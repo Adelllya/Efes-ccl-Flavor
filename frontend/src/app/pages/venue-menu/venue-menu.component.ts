@@ -9,11 +9,15 @@ import { AuthService } from '../../services/auth.service';
 import { SelectionService } from '../../services/selection.service';
 import {
   Brand, Dish, FoodPairing, MenuDrink, MenuEntry, MenuPairing, ORDER_FLOW, ORDER_STATUS_LABELS, Order, OrderInput,
-  OrderItem, OrderItemKind, OrderStatus, PAIRING_LABELS, PairingType, Venue, VenueMenu, VenueType, isOrderClosed
+  OrderItem, OrderItemKind, OrderStatus, OrderVia, PAIRING_LABELS, PairingType, Venue, VenueMenu, VenueType, isOrderClosed
 } from '../../models/flavor-tree.models';
 import { DishProfile, Recommendation, recommend, smallImage } from '../landing/pairing-engine.data';
 import { countOf, plural } from './plural';
-import { CART_CHANGED_EVENT, CartLine, MAX_QTY, cartKey, orderKey, readCart, readJson, writeJson } from './cart-storage';
+import { WaiterSheetComponent } from './waiter-sheet.component';
+import {
+  CART_CHANGED_EVENT, CartLine, MAX_QTY, cartKey, deviceId, notifyCartChanged, orderKey, readCart, readJson, writeCart,
+  writeJson
+} from './cart-storage';
 
 const VENUE_LABEL: Record<VenueType, string> = {
   BAR: 'Бар', RESTAURANT: 'Ресторан', PUB: 'Паб', CAFE: 'Кафе', OTHER: 'Заведение',
@@ -31,11 +35,14 @@ const ORDER_HINT: Record<OrderStatus, string> = {
 };
 
 const POLL_MS = 15000;
+/** Поданный заказ гость видит ещё три часа, любой другой - сутки: дальше страница открывает меню, а не старый заказ. */
+const SERVED_TTL_MS = 3 * 60 * 60 * 1000;
+const ORDER_TTL_MS = 24 * 60 * 60 * 1000;
 /** Псевдораздел в полосе разделов: только карта напитков. */
 const DRINKS_SECTION = '__drinks__';
 
-/** Напиток к позиции: выбор сомелье с сервера или подбор движка. */
-interface MenuRec {
+/** Напиток к позиции: выбор сомелье или подбор ИИ с сервера либо расчёт движка. */
+export interface MenuRec {
   brandId: string;
   name: string;
   style: string;
@@ -45,17 +52,28 @@ interface MenuRec {
   type: PairingType;
   explanation: string;
   bySommelier: boolean;
+  /** Пару предложил ИИ, сомелье её ещё не подтвердил. */
+  byAi: boolean;
   basedOn?: string;
   /** Позиция карты бара с этим сортом; null - сорта в карте нет. */
   drink: MenuDrink | null;
+  /** id пары в каталоге; у расчёта движка его нет. */
+  pairingId?: string;
 }
 
-interface MenuRow extends MenuEntry {
+/** Сочетание из заказа гостя, которое можно оценить: блюдо и напиток из пары каталога. */
+interface OrderPair {
+  pairingId: string;
+  dish: string;
+  drink: string;
+}
+
+export interface MenuRow extends MenuEntry {
   rec: MenuRec | null;
   alts: MenuRec[];
 }
 
-interface MenuSection {
+export interface MenuSection {
   name: string;
   items: MenuRow[];
 }
@@ -63,6 +81,8 @@ interface MenuSection {
 interface StoredOrder {
   id: string;
   token: string;
+  /** Когда заказ отправлен, мс по часам гостя. У записей старого формата поля нет. */
+  at?: number;
 }
 
 interface TimelineStep {
@@ -82,7 +102,7 @@ interface TimelineStep {
 @Component({
   selector: 'app-venue-menu',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, WaiterSheetComponent],
   template: `
     <!-- Кружка пива: lucide beer -->
     <ng-template #mug let-size>
@@ -90,29 +110,29 @@ interface TimelineStep {
     </ng-template>
 
     <!-- Степпер напитка: "+ В заказ" или "- n +" -->
-    <ng-template #drinkStep let-d>
-      @if (d.is_available) {
+    <ng-template #drinkStep let-d let-via="via">
+      @if (d.is_available && hasPrice(d.price)) {
         <div class="vm-stepper" [class.vm-stepper-on]="qtyOf('DRINK', d.id) > 0">
           @if (qtyOf('DRINK', d.id) > 0) {
             <button type="button" class="vm-step" (click)="dec('DRINK', d.id)" aria-label="Убрать одну">-</button>
             <span class="vm-step-n" aria-live="polite">{{ qtyOf('DRINK', d.id) }}</span>
-            <button type="button" class="vm-step" (click)="addDrink(d)" [disabled]="qtyOf('DRINK', d.id) >= maxQty" aria-label="Добавить ещё">+</button>
+            <button type="button" class="vm-step" (click)="addDrink(d, via)" [disabled]="qtyOf('DRINK', d.id) >= maxQty" aria-label="Добавить ещё">+</button>
           } @else {
-            <button type="button" class="vm-step vm-step-add" (click)="addDrink(d)">Добавить в заказ</button>
+            <button type="button" class="vm-step vm-step-add" (click)="addDrink(d, via)">Добавить в заказ</button>
           }
         </div>
-      } @else {
+      } @else if (!d.is_available) {
         <span class="badge vm-badge-off">Нет в наличии</span>
       }
     </ng-template>
 
     @if (slug()) {
       @if (!menuLoaded()) {
-        <div class="vm-strip glass-panel-strong" aria-hidden="true">
+        <div class="vm-strip glass-panel-strong">
           <button type="button" class="vm-strip-back" (click)="backToList()" aria-label="Все заведения">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </button>
-          <div class="skeleton-line short"></div>
+          <div class="skeleton-line short" aria-hidden="true"></div>
         </div>
         <div class="vm-skeleton" aria-busy="true" aria-label="Загружаем меню">
           <div class="skeleton-card">
@@ -140,7 +160,9 @@ interface TimelineStep {
         </div>
       } @else {
         @if (menu(); as m) {
-        @if (step() === 'order') {
+        @if (staff()) {
+          <app-waiter-sheet [venue]="m.venue.name" [sections]="sections()" [priceLabel]="priceText" (exit)="closeStaff()" />
+        } @else if (step() === 'order') {
           <!-- Экран заказа -->
           <section class="vm-order">
             @if (!orderLoaded()) {
@@ -188,6 +210,32 @@ interface TimelineStep {
                 @if (o.comment) { <p class="vm-order-comment text-sm text-dim">{{ o.comment }}</p> }
                 @if (orderError()) { <p class="vm-form-error">{{ orderError() }}</p> }
 
+                @if (orderPairs().length && o.status !== 'CANCELLED') {
+                  <div class="vm-vote" role="group" aria-label="Оценка сочетаний">
+                    <p class="vm-vote-title">Как вам сочетание?</p>
+                    @for (pair of orderPairs(); track pair.pairingId) {
+                      <div class="vm-vote-row">
+                        <span class="vm-vote-pair">{{ pair.dish }} + {{ pair.drink }}</span>
+                        @if (votes()[pair.pairingId] === undefined) {
+                          <span class="vm-vote-btns">
+                            <button type="button" class="vm-vote-btn" (click)="vote(pair, true)">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                              Подошло
+                            </button>
+                            <button type="button" class="vm-vote-btn" (click)="vote(pair, false)">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>
+                              Не подошло
+                            </button>
+                          </span>
+                        } @else {
+                          <span class="vm-vote-done" role="status">Спасибо, {{ votes()[pair.pairingId] ? 'записали: подошло' : 'учтём: не подошло' }}</span>
+                        }
+                      </div>
+                    }
+                    <p class="text-xs text-muted">Оценки видит сомелье: так пары в меню становятся точнее.</p>
+                  </div>
+                }
+
                 <div class="vm-order-actions">
                   <button type="button" class="btn-amber" (click)="backToMenu()">Вернуться к меню</button>
                   <button type="button" class="btn-outline" (click)="repeatOrder()">Повторить заказ</button>
@@ -217,13 +265,13 @@ interface TimelineStep {
               @if (!closed(o)) {
                 <button type="button" class="vm-chip vm-chip-order" (click)="openOrder()" [attr.aria-label]="'Заказ ' + o.number + ', ' + statusLabel(o.status)">
                   <span class="vm-chip-dot" aria-hidden="true"></span>
-                  №{{ o.number }} · {{ statusLabel(o.status) }}
+                  <span class="vm-chip-text">№{{ o.number }}<span class="vm-chip-status"> · {{ statusLabel(o.status) }}</span></span>
                 </button>
               }
             }
             <button type="button" class="vm-chip" [class.vm-chip-empty]="tableNumber() === null" (click)="openTable()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h18"/><path d="M5 10v8"/><path d="M19 10v8"/><path d="M8 10V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4"/></svg>
-              {{ tableLabel() }}
+              <span class="vm-chip-text">{{ tableLabel() }}</span>
             </button>
             <button type="button" class="vm-cart-btn" (click)="openCart()" [attr.aria-label]="'Корзина: ' + countOf(cartCount(), 'позиция', 'позиции', 'позиций')">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -252,6 +300,10 @@ interface TimelineStep {
               <span class="badge">{{ venueType(m.venue) }}</span>
               <h1 class="vm-title">{{ m.venue.name }}</h1>
               @if (m.venue.description) { <p class="vm-desc text-dim">{{ m.venue.description }}</p> }
+              <button type="button" class="vm-link vm-staff-link" (click)="openStaff()">
+                Шпаргалка официанта
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
               <ul class="vm-facts">
                 @if (m.venue.address) {
                   <li>
@@ -309,7 +361,7 @@ interface TimelineStep {
                       <div class="vm-dish-body">
                         <div class="vm-item-head">
                           <h3 class="vm-dish-name">{{ it.dish.name }}</h3>
-                          <span class="vm-price">{{ price(it.price) }}</span>
+                          <span class="vm-price" [class.vm-price-ask]="!hasPrice(it.price)">{{ priceLabel(it.price) }}</span>
                         </div>
                         @if (it.portion || it.dish.cuisine_display) {
                           <div class="vm-item-meta">
@@ -325,7 +377,7 @@ interface TimelineStep {
                           </p>
                         }
                         <div class="vm-actions">
-                          @if (it.is_available) {
+                          @if (it.is_available && hasPrice(it.price)) {
                             <div class="vm-stepper" [class.vm-stepper-on]="qtyOf('DISH', it.id) > 0">
                               @if (qtyOf('DISH', it.id) > 0) {
                                 <button type="button" class="vm-step" (click)="dec('DISH', it.id)" aria-label="Убрать одну">-</button>
@@ -335,7 +387,7 @@ interface TimelineStep {
                                 <button type="button" class="vm-step vm-step-add" (click)="addDish(it)">+ В заказ</button>
                               }
                             </div>
-                          } @else {
+                          } @else if (!it.is_available) {
                             <span class="text-xs text-muted">Сегодня не готовим</span>
                           }
                           <button type="button" class="vm-rec-toggle" [class.active]="isOpen(it.id)" (click)="toggleRec(it.id)" [attr.aria-expanded]="isOpen(it.id)">
@@ -359,7 +411,7 @@ interface TimelineStep {
                               </div>
                               <div class="vm-rec-body">
                                 <div class="vm-rec-top">
-                                  <span class="vm-rec-kind" [class.vm-rec-engine]="!r.bySommelier">{{ r.bySommelier ? 'Выбор сомелье' : 'Подбор движка' }}</span>
+                                  <span class="vm-rec-kind" [class.vm-rec-engine]="!r.bySommelier">{{ recKind(r) }}</span>
                                   <span class="badge">{{ label(r.type) }}</span>
                                 </div>
                                 <p class="vm-rec-name">
@@ -378,9 +430,9 @@ interface TimelineStep {
                                 }
                                 @if (r.drink; as d) {
                                   <div class="vm-rec-buy">
-                                    <span class="vm-price">{{ price(d.price) }}</span>
+                                    <span class="vm-price" [class.vm-price-ask]="!hasPrice(d.price)">{{ priceLabel(d.price) }}</span>
                                     @if (d.volume) { <span class="text-xs text-muted">{{ d.volume }}</span> }
-                                    <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d }" />
+                                    <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d, via: 'PAIRING' }" />
                                   </div>
                                 } @else {
                                   <p class="vm-rec-missing text-sm">Этого сорта нет в карте бара.</p>
@@ -408,9 +460,9 @@ interface TimelineStep {
                                       <span class="text-xs text-muted">{{ a.style }}@if (a.abv) { · {{ a.abv }}% } · {{ label(a.type) }} · {{ a.rating }}/5</span>
                                       @if (a.drink; as d) {
                                         <div class="vm-rec-buy">
-                                          <span class="vm-price">{{ price(d.price) }}</span>
+                                          <span class="vm-price" [class.vm-price-ask]="!hasPrice(d.price)">{{ priceLabel(d.price) }}</span>
                                           @if (d.volume) { <span class="text-xs text-muted">{{ d.volume }}</span> }
-                                          <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d }" />
+                                          <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d, via: 'PAIRING' }" />
                                         </div>
                                       }
                                     </div>
@@ -448,7 +500,7 @@ interface TimelineStep {
                         <button type="button" class="vm-drink-name" (click)="openDrink(d.brand)" title="О напитке">{{ d.brand_name }}</button>
                         <p class="text-xs text-muted vm-drink-meta">{{ d.brand_style }}@if (d.abv) { · {{ d.abv }}% }@if (d.volume) { · {{ d.volume }} }</p>
                         <div class="vm-drink-foot">
-                          <span class="vm-price">{{ price(d.price) }}</span>
+                          <span class="vm-price" [class.vm-price-ask]="!hasPrice(d.price)">{{ priceLabel(d.price) }}</span>
                           <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d }" />
                         </div>
                       </div>
@@ -570,6 +622,14 @@ interface TimelineStep {
                 </label>
                 @if (sendError()) { <p class="vm-form-error" role="alert">{{ sendError() }}</p> }
 
+                @if (cartHasDrinks()) {
+                  <!-- Ответственное потребление: в заказе есть алкоголь -->
+                  <p class="vm-care">
+                    <span class="vm-care-age" aria-hidden="true">21+</span>
+                    <span>Официант может попросить документ. За руль после алкоголя не садитесь: вызовите такси или услугу «Трезвый водитель».</span>
+                  </p>
+                }
+
                 <div class="vm-sheet-foot">
                   <div class="vm-total">
                     <span class="text-sm text-dim">Итого</span>
@@ -654,6 +714,10 @@ export class VenueMenuComponent implements OnDestroy {
   @Output() openBrand = new EventEmitter<string>();
 
   readonly slug = this.selection.venueSlug;
+  /** Режим официанта: вместо меню гостя шпаргалка «блюдо, сорт, фраза». */
+  readonly staff = this.selection.staffMode;
+  /** Цена для шпаргалки: та же запись, что в меню гостя. */
+  readonly priceText = (value: string | number) => this.priceLabel(value);
   /** null - стол не выбран, 0 - с собой. Хранится в SelectionService. */
   readonly tableNumber = this.selection.tableNumber;
 
@@ -698,6 +762,8 @@ export class VenueMenuComponent implements OnDestroy {
   sendError = signal('');
 
   order = signal<Order | null>(null);
+  /** Оценки сочетаний из текущего заказа: id пары -> подошло или нет. */
+  votes = signal<Record<string, boolean>>({});
   orderLoaded = signal(true);
   orderError = signal('');
   /** Короткая заметка над меню: прошлый заказ больше не найден. */
@@ -705,6 +771,8 @@ export class VenueMenuComponent implements OnDestroy {
   private stored: StoredOrder | null = null;
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private autoTableTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Прокрутку страницы сейчас держит эта страница (открыт лист снизу). */
+  private scrollLocked = false;
 
   /** Листы снизу: native dialog, showModal кладёт их в top layer поверх всего. */
   private readonly tableDlg = viewChild<ElementRef<HTMLDialogElement>>('tableDlg');
@@ -722,10 +790,7 @@ export class VenueMenuComponent implements OnDestroy {
     effect(() => this.syncDialog(this.cartDlg()?.nativeElement, this.cartOpen()));
 
     // Пока открыт лист снизу, страница под ним не листается
-    effect(() => {
-      const open = this.tableOpen() || this.cartOpen();
-      document.body.style.overflow = open ? 'hidden' : '';
-    });
+    effect(() => this.lockScroll(this.tableOpen() || this.cartOpen()));
 
     // ИИ-сомелье кладёт позиции в ту же запись корзины и шлёт это событие
     window.addEventListener(CART_CHANGED_EVENT, this.onCartChanged);
@@ -739,7 +804,20 @@ export class VenueMenuComponent implements OnDestroy {
     this.cart.set(readCart(slug));
     const m = this.menu();
     if (m) this.reconcileCart(m);
+    // Ответ на заказ, отправленный до ухода со страницы, мог прийти только сейчас
+    if (!this.stored) this.restoreOrder(slug);
   };
+
+  /**
+   * Блокировка прокрутки страницы: класс на html, потому что overflow на body
+   * не срабатывает при overflow-x: clip у html. Тем же классом управляет мобильное
+   * меню в AppComponent, поэтому трогаем его только при смене своего состояния.
+   */
+  private lockScroll(on: boolean): void {
+    if (on === this.scrollLocked) return;
+    this.scrollLocked = on;
+    document.documentElement.classList.toggle('ft-no-scroll', on);
+  }
 
   /**
    * Клик по подложке приходит в сам dialog; клики по содержимому не закрывают лист.
@@ -769,7 +847,7 @@ export class VenueMenuComponent implements OnDestroy {
     this.stopPolling();
     if (this.autoTableTimer) clearTimeout(this.autoTableTimer);
     window.removeEventListener(CART_CHANGED_EVENT, this.onCartChanged);
-    document.body.style.overflow = '';
+    this.lockScroll(false);
   }
 
   readonly drinks = computed<MenuDrink[]>(() => this.menu()?.drinks ?? []);
@@ -823,7 +901,8 @@ export class VenueMenuComponent implements OnDestroy {
   readonly orderTitle = computed(() => {
     const o = this.order();
     if (!o) return '';
-    const tail = o.status === 'CANCELLED' ? 'отменён' : o.status === 'DONE' ? 'закрыт' : 'принят';
+    // Новый заказ заведение ещё не приняло: гостю говорим только, что он отправлен
+    const tail = o.status === 'CANCELLED' ? 'отменён' : o.status === 'DONE' ? 'закрыт' : o.status === 'NEW' ? 'отправлен' : 'принят';
     return `Заказ №${o.number} ${tail}`;
   });
   readonly orderHint = computed(() => {
@@ -873,6 +952,18 @@ export class VenueMenuComponent implements OnDestroy {
     else this.loadVenues();
   }
 
+  /** Шпаргалке нужны пары ко всем блюдам, в том числе расчёт движка для блюд без пары сомелье. */
+  openStaff(): void {
+    this.ensureEngineData();
+    this.selection.staffMode.set(true);
+    window.scrollTo({ top: 0 });
+  }
+
+  closeStaff(): void {
+    this.selection.staffMode.set(false);
+    window.scrollTo({ top: 0 });
+  }
+
   toggleRec(id: string): void {
     this.expanded.update(e => ({ ...e, [id]: !e[id] }));
     this.ensureEngineData();
@@ -912,17 +1003,29 @@ export class VenueMenuComponent implements OnDestroy {
   }
 
   addDish(it: MenuEntry): void {
-    if (!it.is_available) return;
+    if (!it.is_available || !this.hasPrice(it.price)) return;
+    const first = this.qtyOf('DISH', it.id) === 0;
     this.inc('DISH', it.id, { title: it.dish.name, sub: it.portion || '', price: it.price });
+    // Блюдо только что выбрано: это лучший момент показать, что к нему взять из карты бара
+    if (first && !this.isOpen(it.id)) this.suggestPair(it.id);
   }
 
-  addDrink(d: MenuDrink): void {
-    if (!d.is_available) return;
-    this.inc('DRINK', d.id, { title: d.brand_name, sub: d.volume || '', price: d.price });
+  /** Раскрывает совет к блюду, если пара к нему есть в карте бара и её ещё нет в корзине. */
+  private suggestPair(itemId: string): void {
+    const row = this.sections().flatMap(sec => sec.items).find(i => i.id === itemId);
+    const drink = row?.rec?.drink;
+    if (!drink || !drink.is_available || !this.hasPrice(drink.price) || this.qtyOf('DRINK', drink.id) > 0) return;
+    this.expanded.update(e => ({ ...e, [itemId]: true }));
+  }
+
+  /** via: откуда нажали кнопку. Запоминается при первом добавлении и уходит в заказ для аналитики. */
+  addDrink(d: MenuDrink, via: OrderVia = 'MENU'): void {
+    if (!d.is_available || !this.hasPrice(d.price)) return;
+    this.inc('DRINK', d.id, { title: d.brand_name, sub: d.volume || '', price: d.price, via: via || 'MENU' });
   }
 
   /** Плюс один; новая строка появляется только если переданы её данные. */
-  inc(kind: OrderItemKind, id: string, line?: Pick<CartLine, 'title' | 'sub' | 'price'>): void {
+  inc(kind: OrderItemKind, id: string, line?: Pick<CartLine, 'title' | 'sub' | 'price' | 'via'>): void {
     const lines = [...this.cart()];
     const i = lines.findIndex(l => l.kind === kind && l.id === id);
     if (i < 0) {
@@ -945,6 +1048,9 @@ export class VenueMenuComponent implements OnDestroy {
   remove(line: CartLine): void {
     this.setCart(this.cart().filter(l => !(l.kind === line.kind && l.id === line.id)));
   }
+
+  /** В корзине есть напиток из карты бара: показываем строку про возраст и руль. */
+  readonly cartHasDrinks = computed(() => this.cart().some(l => l.kind === 'DRINK'));
 
   /** "0,5 л · 1 800 ₸" или просто цена, если объёма нет. */
   lineMeta(l: CartLine): string {
@@ -985,29 +1091,36 @@ export class VenueMenuComponent implements OnDestroy {
     const body: OrderInput = {
       venue: slug,
       table_number: table,
-      items: this.cart().map(l => ({ kind: l.kind, id: l.id, qty: l.qty })),
+      items: this.cart().map(l => ({ kind: l.kind, id: l.id, qty: l.qty, ...(l.via && l.via !== 'MENU' ? { via: l.via } : {}) })),
     };
     const name = this.guestName().trim();
     if (name) body.guest_name = name;
     const comment = this.comment().trim();
     if (comment) body.comment = comment;
 
-    this.api.createOrder(body).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    // Запрос не привязан к жизни страницы: сервер мог уже создать заказ, и без ответа
+    // гость остался бы с полной корзиной и без номера заказа
+    this.api.createOrder(body).subscribe({
       next: o => {
-        this.sending.set(false);
-        // Заказ создан: запоминаем его под исходным slug, даже если гость уже открыл другое заведение
-        const stored: StoredOrder = { id: o.id, token: o.guest_token ?? '' };
+        // Заказ создан: запоминаем его и чистим корзину под исходным slug, что бы ни было сейчас на экране
+        const stored: StoredOrder = { id: o.id, token: o.guest_token ?? '', at: Date.now() };
         writeJson(orderKey(slug), stored);
-        if (this.slug() !== slug) return;
+        writeCart(slug, []);
+        if (this.destroyed || this.slug() !== slug) {
+          // Страницу закрыли или открыли другое заведение: если меню этого заведения снова на экране, оно подхватит заказ
+          notifyCartChanged(slug);
+          return;
+        }
+        this.sending.set(false);
         this.stored = stored;
-        this.setCart([]);
+        this.cart.set([]);
         this.comment.set('');
         this.cartOpen.set(false);
         this.showOrder(o);
       },
       error: (err: unknown) => {
+        if (this.destroyed || this.slug() !== slug) return;
         this.sending.set(false);
-        if (this.slug() !== slug) return;
         const itemsRejected = err instanceof HttpErrorResponse && err.status === 400 && !!err.error?.items;
         if (itemsRejected) this.refreshCartAfterReject(slug);
         else this.sendError.set(AuthService.errorText(err));
@@ -1033,12 +1146,51 @@ export class VenueMenuComponent implements OnDestroy {
 
   // Заказ
 
+  /**
+   * Сочетания из заказа, которые можно оценить: блюдо и напиток, которые в меню стоят парой.
+   * Берём пары сомелье и подбор ИИ (у них есть id в каталоге), расчёт движка не оцениваем.
+   */
+  readonly orderPairs = computed<OrderPair[]>(() => {
+    const o = this.order();
+    if (!o) return [];
+    const rows = new Map(this.sections().flatMap(sec => sec.items).map(i => [i.id, i]));
+    const ordered = new Set(o.items.filter(i => i.kind === 'DRINK' && i.menu_drink).map(i => i.menu_drink as string));
+    const pairs: OrderPair[] = [];
+    for (const item of o.items) {
+      const row = item.kind === 'DISH' && item.menu_item ? rows.get(item.menu_item) : undefined;
+      if (!row) continue;
+      for (const rec of [row.rec, ...row.alts]) {
+        if (!rec?.pairingId || !rec.drink || !ordered.has(rec.drink.id)) continue;
+        if (!pairs.some(p => p.pairingId === rec.pairingId)) pairs.push({ pairingId: rec.pairingId, dish: row.dish.name, drink: rec.name });
+      }
+    }
+    return pairs;
+  });
+
+  /** Один голос гостя за пару. Ошибку не показываем: оценка не должна мешать заказу. */
+  vote(pair: OrderPair, liked: boolean): void {
+    this.votes.update(v => ({ ...v, [pair.pairingId]: liked }));
+    this.api.votePairing(pair.pairingId, liked, deviceId(), this.slug()).subscribe({ error: () => undefined });
+  }
+
   statusLabel(status: OrderStatus): string {
     return ORDER_STATUS_LABELS[status] ?? status;
   }
 
   closed(o: Order): boolean {
     return isOrderClosed(o.status);
+  }
+
+  /**
+   * Заказ для гостя завершён: закрыт, отменён, подан больше трёх часов назад
+   * или просто старше суток. Такой заказ не опрашиваем и после перезагрузки
+   * не показываем. Возраст считаем по часам гостя, если запись их помнит.
+   */
+  private finished(o: Order): boolean {
+    if (isOrderClosed(o.status)) return true;
+    const since = this.stored?.at ?? Date.parse(o.created_at);
+    const age = Number.isFinite(since) ? Date.now() - since : 0;
+    return age > ORDER_TTL_MS || (o.status === 'SERVED' && age > SERVED_TTL_MS);
   }
 
   openOrder(): void {
@@ -1053,27 +1205,45 @@ export class VenueMenuComponent implements OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /** Те же позиции снова в корзину: только те, что ещё есть в меню и в наличии. */
+  /**
+   * Те же позиции снова в корзину. То, что гость уже успел набрать, остаётся:
+   * количество складывается. Позиции, которых больше нет в меню или в наличии,
+   * перечисляем в сообщении, чтобы пропажа не была молчаливой.
+   */
   repeatOrder(): void {
     const o = this.order();
     const m = this.menu();
     if (!o || !m) return;
     const entries = new Map(m.sections.flatMap(s => s.items).map(i => [i.id, i]));
     const drinks = new Map(m.drinks.map(d => [d.id, d]));
-    const lines: CartLine[] = [];
+    const lines = [...this.cart()];
+    const missing: string[] = [];
+    let added = 0;
+    const put = (line: Omit<CartLine, 'qty'>, qty: number) => {
+      const at = lines.findIndex(l => l.kind === line.kind && l.id === line.id);
+      if (at < 0) lines.push({ ...line, qty });
+      else lines[at] = { ...line, qty: Math.min(MAX_QTY, lines[at].qty + qty) };
+      added++;
+    };
     for (const i of o.items) {
       const qty = Math.min(MAX_QTY, Math.max(1, i.qty));
-      if (i.kind === 'DISH' && i.menu_item) {
-        const e = entries.get(i.menu_item);
-        if (e?.is_available) lines.push({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price, qty });
-      } else if (i.kind === 'DRINK' && i.menu_drink) {
-        const d = drinks.get(i.menu_drink);
-        if (d?.is_available) lines.push({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price, qty });
+      const e = i.kind === 'DISH' && i.menu_item ? entries.get(i.menu_item) : undefined;
+      const d = i.kind === 'DRINK' && i.menu_drink ? drinks.get(i.menu_drink) : undefined;
+      if (e?.is_available && this.hasPrice(e.price)) {
+        put({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price }, qty);
+      } else if (d?.is_available && this.hasPrice(d.price)) {
+        put({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price }, qty);
+      } else if (!missing.includes(i.title)) {
+        missing.push(i.title);
       }
     }
     this.setCart(lines);
     this.step.set('menu');
-    this.cartOpen.set(lines.length > 0);
+    this.sendError.set(missing.length
+      ? `Сейчас нет в меню: ${missing.map(t => `«${t}»`).join(', ')}.${added ? ' Остальное добавили в корзину.' : ''}`
+      : '');
+    // Корзину открываем и тогда, когда добавить было нечего: в ней видно, чего не хватило
+    this.cartOpen.set(lines.length > 0 || missing.length > 0);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1084,16 +1254,28 @@ export class VenueMenuComponent implements OnDestroy {
     this.api.getGuestOrder(s.id, s.token).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: o => {
         if (this.stored?.id !== o.id) return;
-        this.order.set(o);
         this.orderLoaded.set(true);
         this.orderError.set('');
-        if (isOrderClosed(o.status)) {
-          // Закрытый заказ показываем ещё раз, но после перезагрузки гость попадёт в меню
-          this.stopPolling();
-          this.stored = null;
-          writeJson(orderKey(slug), null);
-        } else if (!this.pollTimer) {
-          this.startPolling();
+        if (!this.finished(o)) {
+          this.order.set(o);
+          if (!this.pollTimer) this.startPolling();
+          return;
+        }
+        // Заказ для гостя завершён: опрос не нужен, после перезагрузки откроется меню
+        const seen = this.order()?.id === o.id;
+        this.stopPolling();
+        this.stored = null;
+        writeJson(orderKey(slug), null);
+        if (seen && isOrderClosed(o.status)) {
+          // Заказ закрыли или отменили на глазах у гостя: итог показываем
+          this.order.set(o);
+          return;
+        }
+        // Давний заказ или заказ, закрытый до захода на страницу: вместо его экрана показываем меню
+        this.order.set(null);
+        this.step.set('menu');
+        if (o.status === 'CANCELLED') {
+          this.orderNote.set(`Заказ №${o.number} отменён. Если это ошибка, позовите официанта.`);
         }
       },
       error: (err: unknown) => {
@@ -1127,6 +1309,22 @@ export class VenueMenuComponent implements OnDestroy {
     } else {
       this.copyFallback(url, done);
     }
+  }
+
+  /** Подпись над рекомендацией: кто её дал. */
+  recKind(r: MenuRec): string {
+    return r.byAi ? 'Подбор ИИ' : r.bySommelier ? 'Выбор сомелье' : 'Подбор движка';
+  }
+
+  /** Цена задана и больше нуля: только такую позицию можно заказать. */
+  hasPrice(value: string | number): boolean {
+    const n = typeof value === 'number' ? value : parseFloat(value);
+    return isFinite(n) && n > 0;
+  }
+
+  /** Цена для карточки; у позиции без цены вместо "0 ₸" честное "цена уточняется". */
+  priceLabel(value: string | number): string {
+    return this.hasPrice(value) ? this.price(value) : 'цена уточняется';
   }
 
   /** Цена из DRF приходит строкой "2400.00", показываем "2 400 ₸". */
@@ -1202,14 +1400,7 @@ export class VenueMenuComponent implements OnDestroy {
     }
 
     this.cart.set(readCart(slug));
-    this.stored = readJson<StoredOrder>(orderKey(slug));
-    if (this.stored?.id) {
-      this.step.set('order');
-      this.orderLoaded.set(false);
-      this.refreshOrder();
-    } else {
-      this.stored = null;
-    }
+    this.restoreOrder(slug);
 
     this.api.getVenueMenu(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: m => {
@@ -1221,13 +1412,21 @@ export class VenueMenuComponent implements OnDestroy {
         // Стол из QR или из хранилища может быть больше, чем столов у заведения: сбрасываем, ниже откроется выбор
         const table = this.tableNumber();
         if (table !== null && table > this.tablesCount()) this.selection.setTable(slug, null);
-        if (m.sections.some(s => s.items.some(i => !i.pairing))) this.ensureEngineData();
+        // Движок нужен блюдам без пары и блюдам, чья пара не продаётся в этом баре
+        const needsEngine = (i: MenuEntry) => !i.pairing
+          || (!i.pairing.menu_drink && !(i.alternatives ?? []).some(a => a.menu_drink));
+        if (m.sections.some(s => s.items.some(needsEngine))) this.ensureEngineData();
         // Стол ещё не выбран: предлагаем выбрать, когда меню уже на экране
-        if (this.tableNumber() === null && this.step() === 'menu') {
+        // Официанту в режиме шпаргалки стол не нужен
+        if (this.tableNumber() === null && this.step() === 'menu' && !this.staff()) {
           this.autoTableTimer = setTimeout(() => {
-            if (this.selection.venueSlug() === slug && this.tableNumber() === null && this.step() === 'menu') this.tableOpen.set(true);
+            if (this.selection.venueSlug() === slug && this.tableNumber() === null && this.step() === 'menu' && !this.staff()) {
+              this.tableOpen.set(true);
+            }
           }, 350);
         }
+        // Шпаргалку открыли прямой ссылкой: ей нужны пары и для блюд без пары сомелье
+        if (this.staff()) this.ensureEngineData();
       },
       error: (err: unknown) => {
         if (this.selection.venueSlug() !== slug) return;
@@ -1236,6 +1435,22 @@ export class VenueMenuComponent implements OnDestroy {
         this.menuLoaded.set(true);
       },
     });
+  }
+
+  /** Незакрытый заказ из хранилища: открываем его экран и сверяем статус с сервером. */
+  private restoreOrder(slug: string): void {
+    const saved = readJson<StoredOrder>(orderKey(slug));
+    // Запись старше суток на сервере не проверяем: такой заказ гостю уже не нужен
+    const stale = !!saved?.at && Date.now() - saved.at > ORDER_TTL_MS;
+    if (!saved?.id || stale) {
+      if (saved) writeJson(orderKey(slug), null);
+      this.stored = null;
+      return;
+    }
+    this.stored = saved;
+    this.step.set('order');
+    this.orderLoaded.set(false);
+    this.refreshOrder();
   }
 
   /** Сброс всего, что относится к одному заведению. */
@@ -1269,7 +1484,7 @@ export class VenueMenuComponent implements OnDestroy {
     if (slug) writeJson(cartKey(slug), lines.length ? lines : null);
   }
 
-  /** Корзина из хранилища против свежего меню: цены обновляем, пропавшее и недоступное убираем. */
+  /** Корзина из хранилища против свежего меню: цены обновляем, пропавшее, недоступное и без цены убираем. */
   private reconcileCart(m: VenueMenu): void {
     const entries = new Map(m.sections.flatMap(s => s.items).map(i => [i.id, i]));
     const drinks = new Map(m.drinks.map(d => [d.id, d]));
@@ -1278,16 +1493,22 @@ export class VenueMenuComponent implements OnDestroy {
       const qty = Math.min(MAX_QTY, Math.max(1, Math.trunc(Number(l.qty) || 0)));
       if (l.kind === 'DISH') {
         const e = entries.get(l.id);
-        if (e?.is_available) lines.push({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price, qty });
+        if (e?.is_available && this.hasPrice(e.price)) {
+          lines.push({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price, qty });
+        }
       } else if (l.kind === 'DRINK') {
         const d = drinks.get(l.id);
-        if (d?.is_available) lines.push({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price, qty });
+        if (d?.is_available && this.hasPrice(d.price)) {
+          lines.push({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price, qty });
+        }
       }
     }
     this.setCart(lines);
   }
 
   private showOrder(o: Order): void {
+    // Новый заказ: оценки сочетаний прошлого заказа к нему не относятся
+    if (this.order()?.id !== o.id) this.votes.set({});
     this.order.set(o);
     this.orderLoaded.set(true);
     this.orderError.set('');
@@ -1299,7 +1520,7 @@ export class VenueMenuComponent implements OnDestroy {
   private startPolling(): void {
     this.stopPolling();
     const o = this.order();
-    if (this.destroyed || !o || isOrderClosed(o.status) || !this.stored) return;
+    if (this.destroyed || !o || this.finished(o) || !this.stored) return;
     this.pollTimer = setInterval(() => this.refreshOrder(), POLL_MS);
   }
 
@@ -1320,7 +1541,11 @@ export class VenueMenuComponent implements OnDestroy {
       },
       error: () => this.engineLoaded.set(true),
     });
-    this.api.getPairings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(p => this.pairings.set(p));
+    // Без сочетаний движок считает по правилам: ошибку этого запроса гостю не показываем
+    this.api.getPairings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: p => this.pairings.set(p),
+      error: () => undefined,
+    });
   }
 
   private recsFor(
@@ -1331,17 +1556,6 @@ export class VenueMenuComponent implements OnDestroy {
     brandById: Map<string, Brand>,
     drinkByBrand: Map<string, MenuDrink>,
   ): { rec: MenuRec | null; alts: MenuRec[] } {
-    const p = entry.pairing;
-    if (p) {
-      const rec = this.fromPairing(p, brandById, drinkByBrand);
-      const alts = (entry.alternatives ?? [])
-        .filter(a => a.brand !== p.brand)
-        .slice(0, 2)
-        .map(a => this.fromPairing(a, brandById, drinkByBrand));
-      return { rec, alts };
-    }
-    if (!brands.length) return { rec: null, alts: [] };
-
     const d = entry.dish;
     const profile: DishProfile = {
       category: null,
@@ -1351,6 +1565,24 @@ export class VenueMenuComponent implements OnDestroy {
       fat: d.fat_level,
       freeText: d.name,
     };
+
+    const p = entry.pairing;
+    if (p) {
+      const rec = this.fromPairing(p, brandById, drinkByBrand);
+      let alts = (entry.alternatives ?? [])
+        .filter(a => a.brand !== p.brand)
+        .slice(0, 2)
+        .map(a => this.fromPairing(a, brandById, drinkByBrand));
+      // Сорта из пары нет в карте бара и запасных с сервера тоже нет: совет не должен кончаться тупиком.
+      // Считаем движком лучшее из того, что в этом баре есть в наличии.
+      if (!rec.drink && !alts.some(a => a.drink) && brands.length) {
+        const inBar = brands.filter(b => b.id !== p.brand && drinkByBrand.get(b.id)?.is_available);
+        alts = recommend(profile, inBar, dishes, pairings, 2).map(r => this.fromEngine(r, drinkByBrand)).filter(r => r.drink);
+      }
+      return { rec, alts };
+    }
+    if (!brands.length) return { rec: null, alts: [] };
+
     const [first, ...rest] = recommend(profile, brands, dishes, pairings, 4);
     if (!first) return { rec: null, alts: [] };
     // Альтернативы движка показываем только из того, что есть в карте бара
@@ -1369,8 +1601,11 @@ export class VenueMenuComponent implements OnDestroy {
       rating: p.compatibility_score,
       type: p.pairing_type,
       explanation: p.explanation,
-      bySommelier: true,
+      // Пара без пометки источника - пара сомелье
+      bySommelier: p.source !== 'AI',
+      byAi: p.source === 'AI',
       drink: drinkByBrand.get(p.brand) ?? null,
+      pairingId: p.id,
     };
   }
 
@@ -1385,6 +1620,7 @@ export class VenueMenuComponent implements OnDestroy {
       type: r.type,
       explanation: r.explanation,
       bySommelier: false,
+      byAi: false,
       basedOn: r.basedOn,
       drink: drinkByBrand.get(r.brand.id) ?? null,
     };

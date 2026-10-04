@@ -1,4 +1,4 @@
-import { WritableSignal } from '@angular/core';
+import { Signal, WritableSignal, effect, untracked } from '@angular/core';
 import {
   CookingMethod, CuisineType, FatType, OrderStatus, PAIRING_LABELS, PairingType, PyramidLayer,
   REQUEST_STATUS_LABELS, RequestStatus, TasteType, UserRole, VenueType, WeightType
@@ -165,6 +165,20 @@ export function flash(target: WritableSignal<string | null>, text: string, ms = 
 /** Сообщения об ошибках начинаются с "Ошибка", по этому признаку красим текст. */
 export function isErrorText(msg: string | null | undefined): boolean {
   return !!msg && msg.startsWith('Ошибка');
+}
+
+/**
+ * Вкладки панели при переходе не уничтожаются, а прячутся. Вызывает fn, когда спрятанную
+ * вкладку открыли снова (active: false -> true). Первое открытие не считается: тогда данные
+ * читает сама вкладка. Вызывать из конструктора компонента.
+ */
+export function onTabReturn(active: Signal<boolean>, fn: () => void): void {
+  let was = true;
+  effect(() => {
+    const now = active();
+    if (now && !was) untracked(fn);
+    was = now;
+  }, { allowSignalWrites: true });
 }
 
 /**

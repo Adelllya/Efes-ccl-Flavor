@@ -12,15 +12,31 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from .models import Venue
 from .permissions import ALL_ROLES, GROUP_ROLES, ROLE_MODERATOR, ROLE_USER, IsModerator
 from .serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer
 
 LOGIN_ERROR = 'Неверный логин или пароль'
+
+
+class AuthAnonThrottle(AnonRateThrottle):
+    """Вход и регистрация: перебор паролей и массовое создание аккаунтов с одного адреса."""
+    scope = 'auth'
+
+
+class AuthUserThrottle(UserRateThrottle):
+    scope = 'auth'
+
+
+def body_of(request):
+    """Тело запроса словарём. Массив или строка вместо объекта раньше давали 500."""
+    return request.data if isinstance(request.data, dict) else {}
 
 
 def auth_payload(user, token):
@@ -34,12 +50,17 @@ def _user_queryset():
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([AuthAnonThrottle])
 def register(request):
     """POST /api/auth/register/ {username, email, password, first_name?} -> 201 {token, user}."""
-    serializer = RegisterSerializer(data=request.data)
+    serializer = RegisterSerializer(data=body_of(request))
     if not serializer.is_valid():
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    user = serializer.save()
+    try:
+        user = serializer.save()
+    except ValidationError as exc:
+        # Логин заняли между проверкой и записью: отвечаем в том же виде, что и на обычную ошибку.
+        return Response({'errors': exc.detail}, status=status.HTTP_400_BAD_REQUEST)
     token, _ = Token.objects.get_or_create(user=user)
     return Response(auth_payload(user, token), status=status.HTTP_201_CREATED)
 
@@ -47,10 +68,12 @@ def register(request):
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([AuthAnonThrottle])
 def login(request):
     """POST /api/auth/login/ {username, password} -> {token, user}. В username можно передать почту."""
-    username = str(request.data.get('username') or '').strip()
-    password = str(request.data.get('password') or '')
+    data = body_of(request)
+    username = str(data.get('username') or '').strip()
+    password = str(data.get('password') or '')
     if not username or not password:
         return Response({'detail': LOGIN_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -91,11 +114,13 @@ def me(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([AuthUserThrottle])
 def change_password(request):
     """POST /api/auth/change-password/ {old_password, new_password} -> {token} (новый токен)."""
     user = request.user
-    old_password = str(request.data.get('old_password') or '')
-    new_password = str(request.data.get('new_password') or '')
+    data = body_of(request)
+    old_password = str(data.get('old_password') or '')
+    new_password = str(data.get('new_password') or '')
 
     errors = {}
     if not user.check_password(old_password):
@@ -173,7 +198,7 @@ def user_update(request, id):
     Сначала проверяем всё, потом пишем одной транзакцией: при ошибке ничего не меняется.
     """
     user = get_object_or_404(User, pk=id)
-    data = request.data
+    data = body_of(request)
     is_self = user.pk == request.user.pk
 
     if user.is_superuser and not request.user.is_superuser:

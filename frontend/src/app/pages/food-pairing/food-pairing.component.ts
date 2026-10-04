@@ -34,7 +34,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
 
     <!-- Режимы: Сочетания или Каталог блюд + Поиск -->
     <div class="flex justify-between items-center mb-2xl flex-wrap gap-lg">
-      <div class="flex gap-md flex-wrap items-center">
+      <div class="flex gap-md flex-wrap items-center fp-modes">
         <button
           class="btn-outline"
           [class.active]="viewMode() === 'pairings'"
@@ -53,20 +53,23 @@ const CUISINES: { id: CuisineType; label: string }[] = [
         </button>
       </div>
 
-      <div style="position: relative; min-width: 260px; max-width: 360px; width: 100%;">
+      <div style="position: relative; min-width: min(260px, 100%); max-width: 360px; width: 100%;">
         <input
           type="text"
           class="input"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
           [placeholder]="viewMode() === 'pairings' ? 'Поиск по блюду или пиву...' : 'Поиск блюда...'"
-          style="width: 100%; padding-right: 36px;"
+          [attr.aria-label]="viewMode() === 'pairings' ? 'Поиск по блюду или пиву' : 'Поиск блюда'"
+          style="width: 100%; padding-right: 44px;"
         />
         @if (searchQuery()) {
           <button
+            type="button"
             (click)="searchQuery.set('')"
-            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px;"
+            style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px;"
             title="Очистить"
+            aria-label="Очистить поиск"
           >&#x2715;</button>
         }
       </div>
@@ -81,7 +84,12 @@ const CUISINES: { id: CuisineType; label: string }[] = [
         }
       </div>
 
-      @if (!pairingsLoaded()) {
+      @if (pairingsFailed()) {
+        <div class="glass-panel text-center p-4xl" role="alert">
+          <p class="text-muted mb-lg">Не удалось загрузить сочетания. Проверьте интернет и попробуйте ещё раз.</p>
+          <button type="button" class="btn-amber btn-sm" (click)="loadPairings()">Обновить</button>
+        </div>
+      } @else if (!pairingsLoaded()) {
         <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сочетания">
           @for (i of skeletonCards; track i) {
             <div class="skeleton-card">
@@ -96,11 +104,11 @@ const CUISINES: { id: CuisineType; label: string }[] = [
         <div class="grid grid-cards-lg">
           @for (pair of filteredPairings(); track pair.id) {
             <div class="glass-card p-2xl stagger-item">
-              <div class="flex justify-between items-center mb-lg">
+              <div class="flex justify-between items-center flex-wrap gap-sm mb-lg">
                 <span class="badge badge-type" [ngClass]="'badge-' + pair.pairing_type.toLowerCase()">
                   {{ getBadgeLabel(pair.pairing_type) }}
                 </span>
-                <span class="badge">{{ pair.compatibility_score }} / 5</span>
+                <span class="badge fp-score">{{ pair.compatibility_score }} / 5</span>
               </div>
 
               <div class="pairing-versus mb-lg">
@@ -118,7 +126,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
               </div>
 
               <p class="text-dim text-sm" style="line-height: 1.45;">
-                <strong style="color: var(--foam);">Вердикт сомелье:</strong> {{ pair.explanation }}
+                <strong style="color: var(--foam);">{{ pair.source === 'AI' ? 'Подбор ИИ:' : 'Вердикт сомелье:' }}</strong> {{ pair.explanation }}
               </p>
             </div>
           } @empty {
@@ -137,7 +145,12 @@ const CUISINES: { id: CuisineType; label: string }[] = [
         }
       </div>
 
-      @if (!dishesLoaded()) {
+      @if (dishesFailed()) {
+        <div class="glass-panel text-center p-4xl" role="alert">
+          <p class="text-muted mb-lg">Не удалось загрузить блюда. Проверьте интернет и попробуйте ещё раз.</p>
+          <button type="button" class="btn-amber btn-sm" (click)="loadDishes()">Обновить</button>
+        </div>
+      } @else if (!dishesLoaded()) {
         <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем блюда">
           @for (i of skeletonCards; track i) {
             <div class="skeleton-card">
@@ -174,6 +187,13 @@ const CUISINES: { id: CuisineType; label: string }[] = [
     .badge-cleanse { background: rgba(37, 99, 235, 0.1); color: #2563EB; }
     .badge-bridge { background: rgba(147, 51, 234, 0.1); color: #9333EA; }
     .pairing-connector svg { display: block; margin: 0 auto; color: var(--beer-mid); }
+    /* Оценка держится справа, даже когда длинный тип сочетания уводит её на вторую строку */
+    .fp-score { margin-left: auto; }
+    /* Телефон: обе кнопки режима в одну строку */
+    @media (max-width: 480px) {
+      .fp-modes { gap: var(--space-sm); }
+      .fp-modes .btn-outline { padding: 9px 12px; }
+    }
   `]
 })
 export class FoodPairingComponent implements OnInit {
@@ -183,6 +203,9 @@ export class FoodPairingComponent implements OnInit {
   /** Пока false - скелет; "не найдено" показываем только после загрузки. */
   pairingsLoaded = signal(false);
   dishesLoaded = signal(false);
+  /** Список не загрузился: вместо "не найдено" ошибка с кнопкой "Обновить". */
+  pairingsFailed = signal(false);
+  dishesFailed = signal(false);
   viewMode = signal<'pairings' | 'dishes'>('pairings');
   activeFilter = signal<string>('');
   cuisineFilter = signal<string>('');
@@ -223,13 +246,25 @@ export class FoodPairingComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.loadPairings();
+    this.loadDishes();
+  }
+
+  loadPairings() {
+    this.pairingsLoaded.set(false);
+    this.pairingsFailed.set(false);
     this.api.getPairings().subscribe({
       next: data => { this.pairings.set(data); this.pairingsLoaded.set(true); },
-      error: () => this.pairingsLoaded.set(true),
+      error: () => this.pairingsFailed.set(true),
     });
+  }
+
+  loadDishes() {
+    this.dishesLoaded.set(false);
+    this.dishesFailed.set(false);
     this.api.getDishes().subscribe({
       next: data => { this.dishes.set(data); this.dishesLoaded.set(true); },
-      error: () => this.dishesLoaded.set(true),
+      error: () => this.dishesFailed.set(true),
     });
   }
 

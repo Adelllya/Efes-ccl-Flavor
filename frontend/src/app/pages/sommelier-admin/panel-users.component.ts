@@ -1,11 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AuthUser, UserRole, Venue } from '../../models/flavor-tree.models';
 import { FtSelectComponent, SelectOption } from '../../ui/ft-select.component';
 import { PanelIconComponent } from './panel-icons';
-import { ROLE_CHOICES, flash, formatDate, initialOf, isErrorText } from './panel-shared';
+import { ROLE_CHOICES, flash, formatDate, initialOf, isErrorText, onTabReturn } from './panel-shared';
 
 /** Черновик формы: venue '' значит "без заведения". */
 interface UserDraft {
@@ -27,13 +27,14 @@ type RoleFilter = 'all' | UserRole;
       <aside class="wa-list">
         <div class="wa-list-head">
           <h2 class="wa-list-title">Пользователи <span class="wa-count">{{ users().length }}</span></h2>
-          <button type="button" class="wa-iconbtn" title="Обновить" [disabled]="loading()" (click)="load()">
+          <button type="button" class="wa-iconbtn" title="Обновить" aria-label="Обновить" [disabled]="loading()" (click)="load()">
             <panel-icon name="refresh" />
           </button>
         </div>
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Логин, имя или email" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Логин, имя или email" aria-label="Поиск: логин, имя или email"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         <div class="wa-pills">
           @for (p of pills; track p.value) {
@@ -42,11 +43,14 @@ type RoleFilter = 'all' | UserRole;
             </button>
           }
         </div>
+        @if (msg() && !draft()) {
+          <p class="wa-msg" [class.error]="isError(msg())" [attr.role]="isError(msg()) ? 'alert' : 'status'">{{ msg() }}</p>
+        }
         <div class="wa-rows">
           @if (loading() && !users().length) {
             <p class="wa-empty">Загрузка...</p>
           } @else if (loadError()) {
-            <p class="wa-error">{{ loadError() }}</p>
+            <p class="wa-error" role="alert">{{ loadError() }}</p>
           } @else {
             @for (u of filtered(); track u.id) {
               <button type="button" class="wa-row" [class.active]="selectedId() === u.id" (click)="select(u.id)">
@@ -106,15 +110,24 @@ type RoleFilter = 'all' | UserRole;
                 <div class="wa-fields">
                   <div class="wa-field">
                     <span class="wa-label">Роль</span>
-                    <ft-select [options]="roleOptions" [ngModel]="d.role" (ngModelChange)="d.role = $event"
+                    <ft-select [options]="roleOptions" ariaLabel="Роль" [ngModel]="d.role" (ngModelChange)="d.role = $event"
                                [disabled]="locked(u) || isSelf(u) || u.is_superuser" />
                   </div>
                   <div class="wa-field">
                     <span class="wa-label">Заведение</span>
-                    <ft-select [options]="venueOptions()" [searchable]="true" placeholder="Без заведения"
+                    <!-- Пока список заведений не пришёл, выбор закрыт: пустой список выглядел бы как "заведений нет" -->
+                    <ft-select [options]="venueOptions()" [searchable]="true" ariaLabel="Заведение"
+                               [placeholder]="venuesLoaded() ? 'Без заведения' : (venuesError() ? 'Заведения не загружены' : 'Загружаем заведения...')"
                                searchPlaceholder="Название заведения"
-                               [ngModel]="d.venue" (ngModelChange)="d.venue = $event" [disabled]="locked(u)" />
+                               [ngModel]="d.venue" (ngModelChange)="d.venue = $event" [disabled]="locked(u) || !venuesLoaded()" />
                   </div>
+                  @if (venuesError()) {
+                    <div class="wa-loadbar wa-field-wide" role="alert">
+                      <panel-icon name="alert" />
+                      <span>{{ venuesError() }}</span>
+                      <button type="button" class="btn-outline" (click)="loadVenues()"><panel-icon name="refresh" /> Обновить</button>
+                    </div>
+                  }
                   <label class="wa-check wa-field-wide">
                     <input type="checkbox" [ngModel]="d.is_active" (ngModelChange)="d.is_active = $event"
                            [disabled]="locked(u) || isSelf(u)" /> Аккаунт активен
@@ -131,7 +144,7 @@ type RoleFilter = 'all' | UserRole;
                     </button>
                   }
                   @if (msg()) {
-                    <p class="wa-msg" [class.error]="isError(msg())">{{ msg() }}</p>
+                    <p class="wa-msg" [class.error]="isError(msg())" [attr.role]="isError(msg()) ? 'alert' : 'status'">{{ msg() }}</p>
                   }
                 </div>
               </div>
@@ -160,8 +173,15 @@ export class PanelUsersComponent implements OnInit {
   isError = isErrorText;
   formatDate = formatDate;
 
+  /** Вкладка на экране. Панель держит её живой и прячет: при возврате перечитываем пользователей и заведения. */
+  active = input(true);
+
   users = signal<AuthUser[]>([]);
   venues = signal<Venue[]>([]);
+  /** false, пока список заведений ни разу не пришёл: выбор заведения закрыт. */
+  venuesLoaded = signal(false);
+  /** Заведения не прочитались: текст с кнопкой "Обновить" держится до удачной попытки. */
+  venuesError = signal<string | null>(null);
   loading = signal(true);
   loadError = signal<string | null>(null);
   search = signal('');
@@ -197,6 +217,11 @@ export class PanelUsersComponent implements OnInit {
     }))
   ]);
 
+  constructor() {
+    // Заведение могли создать на вкладке "Меню", пока эта была спрятана: без перечитывания его не было бы в списке
+    onTabReturn(this.active, () => this.load());
+  }
+
   ngOnInit() {
     this.load();
   }
@@ -217,10 +242,15 @@ export class PanelUsersComponent implements OnInit {
     this.loadVenues();
   }
 
-  private loadVenues() {
+  /** При ошибке прежний список остаётся: пустой выглядел бы как "заведений нет". */
+  loadVenues() {
+    this.venuesError.set(null);
     this.api.getVenues().subscribe({
-      next: list => this.venues.set(list),
-      error: () => this.venues.set([])
+      next: list => {
+        this.venues.set(list);
+        this.venuesLoaded.set(true);
+      },
+      error: err => this.venuesError.set('Не удалось загрузить заведения: ' + AuthService.errorText(err))
     });
   }
 
@@ -269,15 +299,20 @@ export class PanelUsersComponent implements OnInit {
       next: saved => {
         this.saving.set(false);
         this.users.update(list => list.map(x => x.id === saved.id ? saved : x));
-        this.draft.set(this.toDraft(saved));
-        flash(this.msg, 'Сохранено');
+        // Пока шёл запрос, могли открыть другого пользователя: его черновик и сообщение не трогаем
+        if (this.selectedId() === saved.id) {
+          this.draft.set(this.toDraft(saved));
+          flash(this.msg, 'Сохранено');
+        }
         if (this.isSelf(saved)) this.auth.loadMe();
         // Заведение сменило владельца: у прежнего оно пропало, перечитываем список и заведения
         if ('venue' in patch) this.load();
       },
       error: err => {
         this.saving.set(false);
-        flash(this.msg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        const text = AuthService.errorText(err);
+        // Ошибка чужой карточки называет пользователя, чтобы её не приняли за ошибку открытой
+        flash(this.msg, this.selectedId() === u.id ? 'Ошибка: ' + text : `Ошибка: ${u.username} не сохранён. ${text}`, 6000);
       }
     });
   }

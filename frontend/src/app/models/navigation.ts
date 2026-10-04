@@ -12,7 +12,8 @@ export type ActiveTab =
   | 'menu'
   | 'login'
   | 'register'
-  | 'profile';
+  | 'profile'
+  | 'passport';
 
 /**
  * Вкладки панели. Какие видит пользователь, решает AuthService.can().
@@ -28,12 +29,15 @@ export type PanelTab =
   | 'dishes'
   | 'menu'
   | 'orders'
+  | 'analytics'
+  | 'rewards'
   | 'users'
   | 'settings'
+  | 'quiz'
   | 'pyramid'
   | 'serving';
 
 /** Порядок вкладок в панели. */
 export const PANEL_TABS: readonly PanelTab[] = [
-  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'users', 'settings'
+  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'analytics', 'rewards', 'quiz', 'users', 'settings'
 ];

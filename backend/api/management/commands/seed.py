@@ -1,9 +1,13 @@
 """
 Django management command: python manage.py seed
-Загружает все демо-данные (идемпотентно - сначала удаляет, потом вставляет).
-Данные по стандарту FlavorActiV «Beer Flavour Language».
+Загружает демо-данные по стандарту FlavorActiV «Beer Flavour Language».
+
+Команда сначала удаляет сорта, ноты, курсы и команду, потом вставляет демо-набор,
+поэтому на базе, где уже есть сорта, она требует --force: иначе стёрла бы всё,
+что добавили в панели. Всё идёт одной транзакцией.
 """
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from api.models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember,
@@ -89,10 +93,10 @@ SERVING_REC_SEEDS = [
 ]
 
 COURSE_SEEDS = [
-    {'level': 1, 'title': 'Новичок', 'description': 'Базовое знакомство с пивом: стили, крепость, плотность, первые ощущения от вкуса', 'color': '#f59e0b'},
-    {'level': 2, 'title': 'Исследователь', 'description': 'Глубже в пирамиду: распознавание TOP/HEART/BASE нот, хмель vs солод', 'color': '#84cc16'},
-    {'level': 3, 'title': 'Знаток', 'description': 'Food pairing, сезонность, температура подачи, анализ полного профиля', 'color': '#0ea5e9'},
-    {'level': 4, 'title': 'Сомелье', 'description': 'Профессиональный уровень: дегустация вслепую, описание по лексикону FlavorActiV, подбор пива для гостей', 'color': '#8b5cf6'},
+    {'level': 1, 'title': 'Новичок', 'description': 'Из чего состоит пиво, чем лагер отличается от эля и как читать этикетку.', 'color': '#f59e0b'},
+    {'level': 2, 'title': 'Исследователь', 'description': 'Пирамида вкуса, дегустация по шагам и откуда берутся ноты.', 'color': '#84cc16'},
+    {'level': 3, 'title': 'Знаток', 'description': 'Четыре принципа пары, казахская кухня и правильная подача.', 'color': '#0ea5e9'},
+    {'level': 4, 'title': 'Сомелье', 'description': 'Разговор с гостем, формула официанта и что делать, если с пивом что-то не так.', 'color': '#8b5cf6'},
 ]
 
 TEAM_MEMBER_SEEDS = [
@@ -104,9 +108,21 @@ TEAM_MEMBER_SEEDS = [
 
 
 class Command(BaseCommand):
-    help = 'Загрузить демо-данные Flavor Tree (идемпотентно)'
+    help = 'Загрузить демо-данные Flavor Tree (на непустой базе нужен --force)'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--force', action='store_true',
+                            help='Стереть существующие сорта, ноты, курсы и команду и залить демо-набор заново')
 
     def handle(self, *args, **options):
+        if Brand.objects.exists() and not options.get('force'):
+            raise CommandError(
+                'В базе уже есть сорта. Команда seed удаляет их вместе с пирамидами и парами. '
+                'Если это и нужно, запустите с --force.')
+        with transaction.atomic():
+            self._seed()
+
+    def _seed(self):
         self.stdout.write('Очистка старых данных...')
         TeamMember.objects.all().delete()
         Course.objects.all().delete()

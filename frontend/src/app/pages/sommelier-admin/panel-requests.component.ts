@@ -1,10 +1,10 @@
-import { Component, OnInit, computed, inject, output, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ChangeRequest, PyramidLayer, REQUEST_STATUS_LABELS, RequestStatus } from '../../models/flavor-tree.models';
 import { PanelIconComponent } from './panel-icons';
-import { LAYER_SHORT, flash, formatWhen, initialOf, isErrorText, statusChipClass } from './panel-shared';
+import { LAYER_SHORT, flash, formatWhen, initialOf, isErrorText, onTabReturn, statusChipClass } from './panel-shared';
 
 type RequestFilter = RequestStatus | 'all';
 
@@ -43,13 +43,14 @@ function tempText(min: unknown, max: unknown): string {
           <h2 class="wa-list-title">Запросы
             @if (pendingTotal() > 0) { <span class="wa-count wa-count-accent">{{ pendingTotal() }}</span> }
           </h2>
-          <button type="button" class="wa-iconbtn" title="Обновить" [disabled]="loading()" (click)="load()">
+          <button type="button" class="wa-iconbtn" title="Обновить" aria-label="Обновить" [disabled]="loading()" (click)="load()">
             <panel-icon name="refresh" />
           </button>
         </div>
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Сорт, нота или автор" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Сорт, нота или автор" aria-label="Поиск: сорт, нота или автор"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         <div class="wa-pills">
           @for (p of pills; track p.value) {
@@ -59,13 +60,13 @@ function tempText(min: unknown, max: unknown): string {
           }
         </div>
         @if (msg()) {
-          <p class="wa-msg" [class.error]="isError(msg())">{{ msg() }}</p>
+          <p class="wa-msg" [class.error]="isError(msg())" [attr.role]="isError(msg()) ? 'alert' : 'status'">{{ msg() }}</p>
         }
         <div class="wa-rows">
           @if (loading() && !requests().length) {
             <p class="wa-empty">Загрузка...</p>
           } @else if (loadError()) {
-            <p class="wa-error">{{ loadError() }}</p>
+            <p class="wa-error" role="alert">{{ loadError() }}</p>
           } @else {
             @for (g of grouped(); track g.brand) {
               <div class="wa-group">{{ g.brand_name }}</div>
@@ -142,7 +143,7 @@ function tempText(min: unknown, max: unknown): string {
                             placeholder="Обязателен при отклонении: сомелье увидит причину"></textarea>
                 </label>
                 @if (actionError()) {
-                  <p class="wa-error">{{ actionError() }}</p>
+                  <p class="wa-error" role="alert">{{ actionError() }}</p>
                 }
                 <div class="wa-actions">
                   <button type="button" class="btn-amber" [disabled]="acting()" (click)="approve(r)">
@@ -172,8 +173,12 @@ function tempText(min: unknown, max: unknown): string {
 export class PanelRequestsComponent implements OnInit {
   private api = inject(ApiService);
 
+  /** Вкладка на экране. Панель держит её живой и прячет: при возврате список перечитывается. */
+  active = input(true);
   /** Запрос принят или отклонён: родитель обновляет бейдж и список сортов. */
   reviewed = output<ChangeRequest>();
+  /** Список перечитан: сколько запросов в нём ждут решения. Родитель ставит это число в бейдж. */
+  pendingChanged = output<number>();
 
   readonly statusLabels = REQUEST_STATUS_LABELS;
   readonly initial = initialOf;
@@ -262,6 +267,11 @@ export class PanelRequestsComponent implements OnInit {
     ];
   });
 
+  constructor() {
+    // Новые запросы приходят, пока вкладка спрятана: при возврате список и бейдж должны быть свежими
+    onTabReturn(this.active, () => this.load());
+  }
+
   ngOnInit() {
     this.load();
   }
@@ -273,6 +283,7 @@ export class PanelRequestsComponent implements OnInit {
       next: list => {
         this.requests.set(list);
         this.loading.set(false);
+        this.pendingChanged.emit(this.pendingTotal());
       },
       error: err => {
         this.loading.set(false);
@@ -299,18 +310,8 @@ export class PanelRequestsComponent implements OnInit {
     this.actionError.set(null);
     const comment = this.reviewComment().trim();
     this.api.approveChangeRequest(r.id, comment || undefined).subscribe({
-      next: res => {
-        this.acting.set(false);
-        this.replace(res);
-        flash(this.msg, 'Принято: изменение уже на сайте');
-        this.reviewed.emit(res);
-        // Колонка "Сейчас" у соседних запросов по той же ноте устарела: перечитываем список
-        this.load();
-      },
-      error: err => {
-        this.acting.set(false);
-        this.actionError.set('Ошибка: ' + AuthService.errorText(err));
-      }
+      next: res => this.afterReview(r, res, 'Принято: изменение уже на сайте'),
+      error: err => this.reviewFailed(r, err)
     });
   }
 
@@ -323,22 +324,27 @@ export class PanelRequestsComponent implements OnInit {
     this.acting.set(true);
     this.actionError.set(null);
     this.api.rejectChangeRequest(r.id, comment).subscribe({
-      next: res => {
-        this.acting.set(false);
-        this.replace(res);
-        flash(this.msg, 'Запрос отклонён');
-        this.reviewed.emit(res);
-        this.load();
-      },
-      error: err => {
-        this.acting.set(false);
-        this.actionError.set('Ошибка: ' + AuthService.errorText(err));
-      }
+      next: res => this.afterReview(r, res, 'Запрос отклонён'),
+      error: err => this.reviewFailed(r, err)
     });
   }
 
-  private replace(updated: ChangeRequest) {
-    this.requests.update(list => list.map(x => x.id === updated.id ? { ...x, ...updated } : x));
-    this.reviewComment.set('');
+  /** Ответ мог прийти, когда открыт уже другой запрос: набранный для него комментарий не трогаем. */
+  private afterReview(r: ChangeRequest, res: ChangeRequest, text: string) {
+    this.acting.set(false);
+    this.requests.update(list => list.map(x => x.id === res.id ? { ...x, ...res } : x));
+    if (this.selectedId() === r.id) this.reviewComment.set('');
+    flash(this.msg, text);
+    this.reviewed.emit(res);
+    // Колонка "Сейчас" у соседних запросов по той же ноте устарела: перечитываем список
+    this.load();
+  }
+
+  /** Ошибку показываем в карточке, только если в ней тот же запрос; иначе строкой над списком с названием сорта. */
+  private reviewFailed(r: ChangeRequest, err: unknown) {
+    this.acting.set(false);
+    const reason = AuthService.errorText(err);
+    if (this.selectedId() === r.id) this.actionError.set('Ошибка: ' + reason);
+    else flash(this.msg, `Ошибка: запрос по сорту "${r.brand_name}" не обработан. ${reason}`, 6000);
   }
 }

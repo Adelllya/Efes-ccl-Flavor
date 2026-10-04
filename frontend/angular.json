@@ -54,6 +54,8 @@
             "styles": [
               "src/styles.css",
               "src/panel.css",
+              "src/panel-ai.css",
+              "src/panel-insights.css",
               "src/menu.css"
             ],
             "scripts": []
@@ -69,13 +71,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "600kB",
                   "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kB",
-                  "maximumError": "10kB"
+                  "maximumWarning": "16kB",
+                  "maximumError": "22kB"
                 }
               ],
               "outputHashing": "all"

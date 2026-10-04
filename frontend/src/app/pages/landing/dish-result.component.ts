@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, computed, input } from '@angular/core';
 import { Brand, Dish, FoodIcon, FoodPairing, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import {
-  CATEGORIES, COOKING, TASTES, WEIGHTS, FATS,
+  BODY_MATCH_GAP, CATEGORIES, COOKING, TASTES, WEIGHTS, FATS,
   DishProfile, Recommendation, bigImage, smallImage, bodyLabel, profileTitle, recommend,
 } from './pairing-engine.data';
 
@@ -44,7 +44,12 @@ const PAIRING_HINT: Record<string, string> = {
         </div>
       }
 
-      @if (!loaded()) {
+      @if (failed()) {
+        <div class="dr-none" role="alert">
+          <p class="text-dim mb-lg">Не удалось загрузить сорта и сочетания. Проверьте интернет и попробуйте ещё раз.</p>
+          <button type="button" class="btn-amber btn-sm" (click)="retry.emit()">Обновить</button>
+        </div>
+      } @else if (!loaded()) {
         <div class="skeleton-grid" aria-busy="true" aria-label="Подбираем сорта">
           @for (i of skeletonCards; track i) {
             <div class="skeleton-card">
@@ -85,13 +90,7 @@ const PAIRING_HINT: Record<string, string> = {
                 <span class="badge">{{ label(best.type) }}</span>
                 <p class="dr-why-text">«{{ best.explanation }}»</p>
                 @if (best.extra) { <p class="text-sm text-dim">{{ best.extra }}</p> }
-                <p class="text-xs text-muted">
-                  @if (best.bySommelier) {
-                    Оценка сомелье по блюду «{{ best.basedOn }}»
-                  } @else {
-                    {{ hint(best.type) }}
-                  }
-                </p>
+                <p class="text-xs text-muted">{{ source(best) || hint(best.type) }}</p>
               </div>
 
               @if (best.targetBody !== null) {
@@ -153,8 +152,8 @@ const PAIRING_HINT: Record<string, string> = {
                   <span class="text-xs text-muted">{{ alt.brand.style }}@if (alt.brand.abv) { · {{ alt.brand.abv }}% }</span>
                   <span class="badge">{{ label(alt.type) }}</span>
                   <span class="text-sm text-dim">{{ alt.explanation }}</span>
-                  @if (alt.bySommelier) {
-                    <span class="text-xs text-muted">Оценка сомелье по блюду «{{ alt.basedOn }}»</span>
+                  @if (source(alt); as from) {
+                    <span class="text-xs text-muted">{{ from }}</span>
                   }
                 </span>
               </button>
@@ -224,7 +223,7 @@ const PAIRING_HINT: Record<string, string> = {
     .dr-best-visual img { position: absolute; inset: 6px; width: auto; height: auto; max-width: calc(100% - 12px); max-height: calc(100% - 12px); margin: auto; object-fit: contain; }
     .dr-fallback { font-size: 3.4rem; line-height: 1; }
 
-    .dr-best-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-md); }
+    .dr-best-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-md); min-width: 0; }
     .dr-best-name { font-size: clamp(1.8rem, 3.4vw, 2.6rem); }
 
     .dr-score { display: flex; align-items: center; gap: 5px; }
@@ -307,10 +306,20 @@ const PAIRING_HINT: Record<string, string> = {
     .dr-none { padding: var(--space-5xl); text-align: center; border: 1.5px dashed var(--line); border-radius: var(--radius-xl); }
 
     @media (max-width: 760px) {
-      .dr-best { grid-template-columns: 1fr; gap: var(--space-xl); padding: var(--space-xl); }
+      .dr-best { grid-template-columns: minmax(0, 1fr); gap: var(--space-xl); padding: var(--space-xl); }
       .dr-best-visual { height: 220px; }
-      .dr-alt { grid-template-columns: 1fr; }
+      .dr-alt { grid-template-columns: minmax(0, 1fr); }
       .dr-alt-visual { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .dr-head { margin-bottom: var(--space-md); }
+      .dr-back { padding: 0 10px; }
+      .dr-best { padding: var(--space-lg); }
+      .dr-scale { grid-template-columns: 48px 1fr auto; gap: var(--space-sm); }
+      /* Длинное название сорта и шкала оценки не влезают в одну строку на узком экране */
+      .dr-alt-top { flex-wrap: wrap; row-gap: var(--space-xs); }
+      .dr-pip { width: 20px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -327,12 +336,16 @@ export class DishResultComponent {
   icons = input<FoodIcon[]>([]);
   /** false, пока родитель грузит каталог: показываем скелет, а не промежуточный подбор без оценок сомелье. */
   loaded = input(true);
+  /** Каталог не загрузился: вместо "пусто" показываем ошибку с кнопкой "Обновить". */
+  failed = input(false);
   /** Сколько сортов показывать кроме лучшего - из настроек витрины. */
   alternatives = input(3);
 
   @Output() openBrand = new EventEmitter<string>();
   @Output() back = new EventEmitter<void>();
   @Output() restart = new EventEmitter<void>();
+  /** Гость нажал "Обновить" после ошибки загрузки. */
+  @Output() retry = new EventEmitter<void>();
 
   readonly big = bigImage;
   readonly small = smallImage;
@@ -372,7 +385,7 @@ export class DishResultComponent {
   matchNote(rec: Recommendation): string {
     if (rec.targetBody === null) return '';
     const gap = Math.abs(rec.body - rec.targetBody);
-    if (gap <= 1.2) return 'Тело сорта совпало с весом блюда - ни один не перетягивает внимание.';
+    if (gap <= BODY_MATCH_GAP) return 'Тело сорта совпало с весом блюда - ни один не перетягивает внимание.';
     if (gap <= 2.5) return 'Небольшая разница в плотности: сорт чуть ' + (rec.body > rec.targetBody ? 'плотнее' : 'легче') + ' блюда.';
     return rec.body > rec.targetBody
       ? 'Сорт заметно плотнее блюда - держите его на второй глоток, после еды.'
@@ -383,4 +396,11 @@ export class DishResultComponent {
 
   label(type: string): string { return PAIRING_LABELS[type as PairingType] ?? type; }
   hint(type: string): string { return PAIRING_HINT[type] ?? ''; }
+
+  /** Чья это оценка: пару ИИ, которую сомелье ещё не подтвердил, оценкой сомелье не называем. */
+  source(rec: Recommendation): string {
+    if (!rec.bySommelier && !rec.byAi) return '';
+    const who = rec.byAi ? 'Подбор ИИ' : 'Оценка сомелье';
+    return rec.basedOn ? `${who} по блюду «${rec.basedOn}»` : who;
+  }
 }

@@ -24,10 +24,15 @@ except ImportError:  # без SDK остаётся только локальны
 
 log = logging.getLogger(__name__)
 
-DEFAULT_MODEL = 'claude-opus-5'
+DEFAULT_MODEL = 'claude-opus-5-5'
 MAX_TOKENS = 4000  # мысли модели тоже считаются в лимит, поэтому запас
-REQUEST_TIMEOUT = 25
+# Таймаут вместе с одним повтором укладывается в 45 секунд, которые чат ждёт на сайте.
+REQUEST_TIMEOUT = 20
 MAX_RETRIES = 1
+# Если модель откажется отвечать, сервер сам повторит запрос на запасной модели.
+FALLBACK_BETA = 'server-side-fallback-2026-07-01'
+# Дневные лимиты платных обращений: распознавание и подбор в панели, фото от гостей. 0 - без лимита.
+DAILY_LIMITS = {'panel': ('FT_AI_DAILY_LIMIT', 400), 'guest': ('FT_AI_GUEST_DAILY_LIMIT', 150)}
 CONTEXT_MAX_CHARS = 12000
 CATALOG_DISHES_LIMIT = 60
 MAX_SUGGESTIONS = 6
@@ -35,6 +40,11 @@ REASON_MAX_CHARS = 300
 REPLY_MAX_CHARS = 4000
 EXPLANATION_MAX_CHARS = 120
 LOCAL_NOTE = 'ИИ недоступен, отвечает локальный подбор'
+PHOTO_OFF_REPLY = ('Распознавание фото сейчас выключено. Напишите название блюда, '
+                   'и я подберу к нему напиток.')
+PHOTO_UNCLEAR_REPLY = ('Не получилось разобрать блюдо на фото. Снимите его крупнее при хорошем свете '
+                       'или напишите название, и я подберу напиток.')
+SOURCE_SOMMELIER = FoodPairing.SOURCE_SOMMELIER
 
 KIND_DISH = 'DISH'
 KIND_DRINK = 'DRINK'
@@ -56,12 +66,13 @@ SYSTEM_PROMPT = """Ты ИИ-сомелье Flavor Tree: помогаешь го
 
 Правила:
 1. Предлагай только то, что есть в переданном меню и карте бара (или в каталоге, если заведение не выбрано). Никогда не выдумывай цены, объёмы, крепость и наличие: бери их из списка или не называй вовсе.
-2. В первую очередь опирайся на сочетания сомелье с оценкой 4-5 и одним коротким предложением объясняй, почему пара работает. Если сорт из сочетания отсутствует в карте бара, скажи об этом и предложи ближайший по стилю из карты.
+2. В первую очередь опирайся на сочетания сомелье с оценкой 4-5 и одним коротким предложением объясняй, почему пара работает. Сочетания с пометкой [подбор ИИ] предложил алгоритм: они слабее слова сомелье, не называй их выбором сомелье. Если сорт из сочетания отсутствует в карте бара, скажи об этом и предложи ближайший по стилю из карты.
 3. Если желание гостя непонятно, задай один уточняющий вопрос вместо длинного списка.
 4. Учитывай пожелания гостя: no_bitter означает избегать выраженной горечи (IPA, хмелевые пилснеры) и выбирать мягкие лагеры или пшеничное; light означает лёгкие лагеры и пшеничное, поменьше крепости; no_alcohol означает только безалкогольные сорта (0.0), а если их нет в списке, честно скажи, что у бара их нет; spicy_ok означает, что гость не против острого.
 5. Если в заказе гостя уже есть блюда, подбирай напиток к ним и упоминай их (например, "к вашему бешбармаку").
 6. Позиции, которых нет в наличии, не предлагай.
 7. Стиль: коротко и тепло, 2-6 предложений, без эмодзи и без markdown-заголовков; списки допустимы. Отвечай на языке гостя, по умолчанию на русском.
+8. Ты помогаешь выбрать, а не выпить больше: не советуй количество, не подталкивай к добавке и к более крепкому без просьбы гостя. Если гость пишет, что ему нет 21 года, за рулём или ему нельзя алкоголь, предлагай только еду и безалкогольное.
 
 Формат ответа: строго один JSON-объект и ничего вокруг него:
 {"reply": "текст ответа гостю", "suggestions": [{"kind": "DISH" или "DRINK", "id": "id из списка", "reason": "почему подходит, одно предложение", "pairs_with": "id блюда, к которому подобран напиток, или null"}]}
@@ -77,6 +88,16 @@ def ai_enabled():
 
 def ai_model():
     return os.environ.get('FT_AI_MODEL', '').strip() or getattr(settings, 'FT_AI_MODEL', DEFAULT_MODEL)
+
+
+def daily_limit(kind):
+    """Сколько платных обращений к ИИ разрешено за день для этого типа. 0 - без лимита."""
+    env_name, default = DAILY_LIMITS.get(kind, ('', 0))
+    raw = os.environ.get(env_name, '').strip() if env_name else ''
+    try:
+        return max(0, int(raw)) if raw else default
+    except ValueError:
+        return default
 
 
 # Форматирование
@@ -173,7 +194,13 @@ def pairing_entry(pairing):
         'score': pairing.compatibility_score,
         'type': pairing.pairing_type,
         'explanation': (pairing.explanation or '').strip(),
+        'source': pairing.source,
     }
+
+
+def pairing_rank(pairing):
+    """Слово сомелье важнее подбора ИИ, дальше по оценке и названию сорта."""
+    return (pairing.get('source', SOURCE_SOMMELIER) != SOURCE_SOMMELIER, -pairing['score'], pairing['brand_name'])
 
 
 def dish_attributes(dish):
@@ -245,11 +272,14 @@ def render_context(venue_info, dishes, drinks, pairings, drink_by_brand):
             brand = pairing['brand_name']
             if venue_info and pairing['brand_id'] not in drink_by_brand:
                 brand += ' [нет в карте бара]'
-            lines.append(' | '.join([
+            line = ' | '.join([
                 '{} -> {}'.format(pairing['dish_name'], brand), str(pairing['score']),
                 PAIRING_LABELS.get(pairing['type'], pairing['type'].lower()),
                 pairing['explanation'][:EXPLANATION_MAX_CHARS],
-            ]))
+            ])
+            if pairing.get('source', SOURCE_SOMMELIER) != SOURCE_SOMMELIER:
+                line += ' [подбор ИИ]'
+            lines.append(line)
     else:
         lines.append('Сочетания сомелье: пока нет, подбирай по стилю и характеру блюда.')
     return '\n'.join(lines)
@@ -378,10 +408,10 @@ def guest_state_text(ctx, cart, prefs, table):
         parts.append('Стол: {}'.format(table))
     lines = []
     for item in cart or []:
+        # Название берём только из базы: текст от клиента в системный промпт не попадает.
         entry = lookup(ctx, item.get('kind'), item.get('id'))
-        title = entry['name'] if entry else clean_text(item.get('title'), 200)
-        if title:
-            lines.append('{} x{}'.format(title, item.get('qty') or 1))
+        if entry:
+            lines.append('{} x{}'.format(entry['name'], item.get('qty') or 1))
     if lines:
         parts.append('В заказе гостя: ' + ', '.join(lines))
     wishes = [label for key, label in PREF_LABELS if (prefs or {}).get(key)]
@@ -415,14 +445,23 @@ def api_messages(messages):
 def call_claude(system_blocks, messages, model=None):
     """Один запрос к модели. Возвращает текст ответа; ошибки SDK уходят вызывающему."""
     client = anthropic.Anthropic(timeout=REQUEST_TIMEOUT, max_retries=MAX_RETRIES)
-    response = client.messages.create(
-        model=model or ai_model(),
-        max_tokens=MAX_TOKENS,
-        system=system_blocks,
-        messages=messages,
+    params = {
+        'model': model or ai_model(),
+        'max_tokens': MAX_TOKENS,
+        'system': system_blocks,
+        'messages': messages,
         # Для чата хватает низкого уровня усилий: ответ быстрее и дешевле
-        extra_body={'output_config': {'effort': 'low'}},
-    )
+        'output_config': {'effort': 'low'},
+    }
+    try:
+        response = client.beta.messages.create(betas=[FALLBACK_BETA], fallbacks='default', **params)
+    except anthropic.BadRequestError as exc:
+        # Запасная модель включается бета-параметром; если сервер его не принял, повторяем без него.
+        log.warning('ИИ-сомелье: запрос с fallbacks отклонён (%s), повторяем без него', exc.__class__.__name__)
+        response = client.messages.create(**params)
+    if response.stop_reason == 'refusal':
+        # Отказ модели: текста нет или он оборван, пусть ответит локальный подбор.
+        return ''
     return ''.join(block.text for block in response.content if getattr(block, 'type', '') == 'text').strip()
 
 
@@ -589,11 +628,13 @@ def drink_for_dish(dish, ctx, prefs):
         drink = ctx['drink_by_brand'].get(pairing['brand_id'])
         if drink is not None and drink['is_available'] and fits_prefs(drink, prefs):
             listed.append((pairing, drink))
-    listed.sort(key=lambda pd: (-pd[0]['score'], pd[1]['name']))
+    listed.sort(key=lambda pd: pairing_rank(pd[0]))
     if listed:
         pairing, drink = listed[0]
-        reason = pairing['explanation'] or 'Сочетание из подборки нашего сомелье'
-        return drink, reason, pairing['score'], 'pairing'
+        by_sommelier = pairing.get('source', SOURCE_SOMMELIER) == SOURCE_SOMMELIER
+        reason = pairing['explanation'] or ('Сочетание из подборки нашего сомелье' if by_sommelier
+                                            else 'Подбор ИИ по вкусу блюда и сорта')
+        return drink, reason, pairing['score'], 'pairing' if by_sommelier else 'ai_pairing'
 
     pool = drink_candidates(ctx, prefs)
     if not pool:
@@ -659,6 +700,8 @@ def reply_for_dishes(targets, ctx, prefs, from_cart):
         sentence = '{} советую {}: {}.'.format(lead, describe(drink), lower_first(reason).rstrip('.'))
         if source == 'pairing':
             sentence += ' Это пара от нашего сомелье, оценка {} из 5.'.format(score)
+        elif source == 'ai_pairing':
+            sentence += ' Это подбор ИИ, оценка {} из 5.'.format(score)
         if not dish['is_available'] and not from_cart:
             sentence += ' Учтите: этого блюда сегодня нет в наличии.'
         sentences.append(sentence)
@@ -871,6 +914,80 @@ def mood_reply(intent, ctx, prefs, pool, suggestions):
             parts[-1] += '.'
     parts.append('Сколько вас за столом? Подберу на компанию.')
     return {'reply': ' '.join(parts), 'suggestions': suggestions}
+
+
+# Фото блюда от гостя
+
+def photo_reply(result, ctx, prefs=None):
+    """
+    Ответ чата на фото: что на фото и какой напиток к этому взять.
+    result - разбор фото из ai_vision.recognize, каталог которого уже ограничен доступными напитками.
+    Если блюдо есть в каталоге, сначала идут пары сомелье к нему, потом подбор ИИ.
+    """
+    prefs = prefs or {}
+    dishes = result.get('dishes') or []
+    base = {'suggestions': [], 'mode': 'claude', 'note': '', 'dish': None}
+    if result.get('kind') == 'MENU' and dishes:
+        names = ', '.join(d['name'] for d in dishes[:4])
+        base['reply'] = ('Это похоже на страницу меню: {}. Напишите, какое блюдо берёте, '
+                         'и я подберу к нему напиток.'.format(names))
+        return base
+    if not dishes:
+        base['reply'] = PHOTO_UNCLEAR_REPLY
+        return base
+
+    drink_by_brand = ctx['drink_by_brand']
+    sentences = []
+    suggestions = []
+    seen = set()
+    for dish in dishes[:2]:
+        picks = []
+        duplicate = dish.get('duplicate_of')
+        menu_dish = None
+        if duplicate:
+            menu_dish = next((d for d in ctx['dishes'] if d['dish_id'] == duplicate['id']), None)
+            known = FoodPairing.objects.filter(dish_id=duplicate['id'], brand__is_active=True).select_related('brand', 'dish')
+            for pairing in sorted((pairing_entry(p) for p in known), key=pairing_rank):
+                drink = drink_by_brand.get(pairing['brand_id'])
+                if drink is not None and drink['is_available'] and fits_prefs(drink, prefs):
+                    by_sommelier = pairing['source'] == SOURCE_SOMMELIER
+                    picks.append((drink, pairing['explanation'], pairing['score'], by_sommelier))
+        for pairing in dish.get('pairings') or []:
+            drink = drink_by_brand.get(pairing['brand'])
+            if drink is not None and drink['is_available'] and fits_prefs(drink, prefs):
+                picks.append((drink, pairing['explanation'], pairing['compatibility_score'], False))
+
+        sure = dish.get('confidence') == 'HIGH'
+        lead = 'На фото {}.'.format(dish['name']) if sure else 'Не уверен, но на фото похоже на «{}».'.format(dish['name'])
+        chosen = []
+        for drink, reason, score, by_sommelier in picks:
+            if drink['id'] in seen:
+                continue
+            seen.add(drink['id'])
+            chosen.append((drink, reason, score, by_sommelier))
+            if len(chosen) >= 2:
+                break
+        if not chosen:
+            sentences.append(lead + ' Подходящего напитка к нему в карте сейчас нет.')
+            continue
+        drink, reason, score, by_sommelier = chosen[0]
+        sentence = '{} К нему советую {}'.format(lead, describe(drink))
+        if reason:
+            sentence += ': ' + lower_first(reason).rstrip('.')
+        sentence += '.'
+        if by_sommelier:
+            sentence += ' Это пара от нашего сомелье, оценка {} из 5.'.format(score)
+        sentences.append(sentence)
+        for drink, reason, score, _ in chosen:
+            suggestions.append(make_suggestion(drink, ctx, reason, menu_dish['id'] if menu_dish else None, score))
+
+    first = dishes[0]
+    base.update({
+        'reply': ' '.join(sentences)[:REPLY_MAX_CHARS],
+        'suggestions': suggestions[:MAX_SUGGESTIONS],
+        'dish': {'name': first['name'], 'confidence': first.get('confidence', 'MEDIUM')},
+    })
+    return base
 
 
 # Точка входа

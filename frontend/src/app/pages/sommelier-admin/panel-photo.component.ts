@@ -59,7 +59,7 @@ export const DEFAULT_PHOTO_HINT =
           <p class="wa-photo-file">{{ f.name }} <span class="text-muted">({{ sizeText(f) }})</span></p>
         }
         @if (localError() || error) {
-          <p class="wa-error">{{ localError() || error }}</p>
+          <p class="wa-error" role="alert">{{ localError() || error }}</p>
         }
 
         <div class="wa-actions">
@@ -79,11 +79,16 @@ export const DEFAULT_PHOTO_HINT =
         </div>
 
         @if (showUrl) {
-          <button type="button" class="wa-link-btn" (click)="urlOpen.set(!urlOpen())">
+          <button type="button" class="wa-link-btn" [attr.aria-expanded]="urlOpen()" (click)="urlOpen.set(!urlOpen())">
             <panel-icon [name]="urlOpen() ? 'chevron' : 'chevronRight'" /> или укажите ссылку
           </button>
           @if (urlOpen()) {
-            <input class="input" type="url" placeholder="https://..." [ngModel]="url" (ngModelChange)="urlChange.emit($event)" />
+            <input class="input" type="url" placeholder="https://..." [attr.aria-label]="'Ссылка: ' + title"
+                   [ngModel]="url" (ngModelChange)="urlChange.emit($event)" />
+            @if (!deferred) {
+              <!-- У поля нет своей кнопки: ссылку записывает форма карточки, в которую встроен блок -->
+              <p class="wa-photo-hint">Ссылка сохраняется кнопкой "Сохранить" в карточке выше, вместе с остальными полями.</p>
+            }
           }
         }
       </div>
@@ -193,8 +198,13 @@ export class PanelPhotoComponent {
     }
     this.localError.set(null);
     this.file.set(f);
+    // Превью прошлого файла убираем сразу, а не когда прочитается новый
+    this.preview.set(null);
     const reader = new FileReader();
-    reader.onload = () => this.preview.set(reader.result as string);
+    // Чтение идёт не мгновенно: за это время могли выбрать другой файл или нажать "Отмена"
+    reader.onload = () => {
+      if (this.file() === f) this.preview.set(reader.result as string);
+    };
     reader.readAsDataURL(f);
     this.fileSelected.emit(f);
   }

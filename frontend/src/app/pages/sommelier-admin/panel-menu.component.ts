@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -39,11 +39,47 @@ interface MenuSection {
 
 type VenueFilter = 'all' | 'published' | 'hidden';
 
+/** Значение числового поля: ngModel отдаёт число или null (пусто), с сервера цена приходит строкой. */
+type NumField = string | number | null;
+
+/**
+ * Несохранённые правки строки меню. Сохранённые значения лежат в items: разделы и порядок строк
+ * считаются только по ним, поэтому строка не прыгает, пока её правят.
+ */
+interface ItemDraft {
+  price: NumField;
+  section: string;
+  portion: string;
+  sort_order: NumField;
+  chef_note: string;
+}
+
+interface DrinkDraft {
+  price: NumField;
+  volume: string;
+  sort_order: NumField;
+}
+
+/** Действие со строкой таблицы: сохранение полей, галочка "В наличии", удаление. */
+type RowOp = 'save' | 'toggle' | 'delete';
+
+/**
+ * Статус строки таблицы. Ошибка держится до следующей правки строки или до нового такого же действия;
+ * удачный ответ одного действия не стирает ошибку другого.
+ */
+interface RowState {
+  kind: 'saving' | 'saved' | 'error';
+  op: RowOp;
+  text: string;
+}
+
 const DEFAULT_SECTION = 'Основное';
 const DEFAULT_TABLES = 20;
 const DEFAULT_VOLUME = '0,5 л';
 
 const LOGO_HINT = 'PNG, JPG или WebP, до 5 МБ. Квадратный логотип 400×400 на светлом или прозрачном фоне.';
+
+const PRICE_ERROR = 'Ошибка: укажите цену больше 0';
 
 function emptyVenue(): VenueForm {
   return {
@@ -68,18 +104,53 @@ function sortDrinks(list: MenuDrink[]): MenuDrink[] {
   );
 }
 
-/** Следующий порядок для новой строки: после последней, чтобы она не прыгала наверх. */
-const PRICE_ERROR = 'Ошибка: укажите цену не меньше 0';
-
-/** Цена из поля таблицы: число не меньше нуля, иначе null (пустое, нечисловое или отрицательное). */
+/** Цена из поля: число больше нуля, иначе null (пустое, нечисловое, ноль или отрицательное). */
 function priceOf(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
-  return Number.isFinite(n) && n >= 0 ? n : null;
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+/** Число из поля для сравнения: пустое поле не равно ничему, даже нулю. */
+function numOf(value: NumField): number {
+  return value === null || value === '' ? NaN : Number(value);
+}
+
+/** Порядок для сервера: целое, пустое поле считается нулём. */
+function orderOf(value: NumField): number {
+  return Math.trunc(numOf(value)) || 0;
+}
+
+/** Следующий порядок для новой строки: после последней, чтобы она не прыгала наверх. */
 function nextOrder(list: { sort_order: number }[]): number {
   return list.length ? Math.max(...list.map(x => Number(x.sort_order) || 0)) + 1 : 0;
+}
+
+function itemDraftOf(row: MenuItem): ItemDraft {
+  return {
+    price: row.price, section: row.section || '', portion: row.portion || '',
+    sort_order: row.sort_order, chef_note: row.chef_note || ''
+  };
+}
+
+function drinkDraftOf(row: MenuDrink): DrinkDraft {
+  return { price: row.price, volume: row.volume || '', sort_order: row.sort_order };
+}
+
+function sameItem(d: ItemDraft, row: MenuItem): boolean {
+  return numOf(d.price) === numOf(row.price) && numOf(d.sort_order) === numOf(row.sort_order)
+    && d.section === (row.section || '') && d.portion === (row.portion || '') && d.chef_note === (row.chef_note || '');
+}
+
+function sameDrink(d: DrinkDraft, row: MenuDrink): boolean {
+  return numOf(d.price) === numOf(row.price) && numOf(d.sort_order) === numOf(row.sort_order)
+    && d.volume === (row.volume || '');
+}
+
+function without<T>(map: Record<string, T>, id: string): Record<string, T> {
+  const next = { ...map };
+  delete next[id];
+  return next;
 }
 
 /** Вкладка "Меню": заведения слева, справа карточка, логотип, позиции меню и карта напитков выбранного. */
@@ -93,14 +164,15 @@ function nextOrder(list: { sort_order: number }[]): number {
         <div class="wa-list-head">
           <h2 class="wa-list-title">Заведения @if (!loadingVenues()) { <span class="wa-count">{{ venues().length }}</span> }</h2>
           @if (canCreate()) {
-            <button type="button" class="wa-iconbtn" title="Новое заведение" (click)="startCreate()">
+            <button type="button" class="wa-iconbtn" title="Новое заведение" aria-label="Новое заведение" (click)="startCreate()">
               <panel-icon name="plus" />
             </button>
           }
         </div>
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Название или город" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Название или город" aria-label="Поиск: название или город"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         @if (isModerator()) {
           <div class="wa-pills">
@@ -115,7 +187,7 @@ function nextOrder(list: { sort_order: number }[]): number {
           @if (loadingVenues()) {
             <p class="wa-empty">Загрузка...</p>
           } @else if (loadError()) {
-            <div class="wa-loadbar">
+            <div class="wa-loadbar" role="alert">
               <panel-icon name="alert" />
               <span>{{ loadError() }}</span>
               <button type="button" class="btn-outline" (click)="loadVenues()"><panel-icon name="refresh" /> Обновить</button>
@@ -190,7 +262,7 @@ function nextOrder(list: { sort_order: number }[]): number {
                 </label>
                 <div class="wa-field">
                   <span class="wa-label">Тип</span>
-                  <ft-select [options]="venueTypes" [(ngModel)]="form.venue_type" />
+                  <ft-select [options]="venueTypes" ariaLabel="Тип заведения" [(ngModel)]="form.venue_type" />
                 </div>
                 <label class="wa-field">
                   <span class="wa-label">Город</span>
@@ -234,7 +306,7 @@ function nextOrder(list: { sort_order: number }[]): number {
                   <button type="button" class="btn-outline" (click)="cancelCreate()">Отмена</button>
                 }
                 @if (venueMsg()) {
-                  <p class="wa-msg" [class.error]="isError(venueMsg())">{{ venueMsg() }}</p>
+                  <p class="wa-msg" [class.error]="isError(venueMsg())" [attr.role]="isError(venueMsg()) ? 'alert' : 'status'">{{ venueMsg() }}</p>
                 }
               </div>
             </div>
@@ -262,13 +334,16 @@ function nextOrder(list: { sort_order: number }[]): number {
                 (fileSelected)="pendingLogo = $event"
                 (removeRequested)="removeLogo(d.venue)"
               />
+              @if (form.logo_url && !d.venue) {
+                <p class="wa-muted">Ссылка сохранится вместе с заведением.</p>
+              }
             </div>
 
             @if (d.venue; as v) {
               <div class="wa-card">
                 <div class="wa-card-head">
                   <div class="wa-card-head-text">
-                    <h3 class="wa-card-title">Позиции меню <span class="wa-count">{{ items().length }}</span></h3>
+                    <h3 class="wa-card-title">Позиции меню @if (itemsReady()) { <span class="wa-count">{{ items().length }}</span> }</h3>
                     <p class="wa-card-sub">Цена в тенге, порция как в меню. Порядок задаёт место в разделе, а раздел с наименьшим порядком гость видит первым</p>
                   </div>
                 </div>
@@ -276,31 +351,47 @@ function nextOrder(list: { sort_order: number }[]): number {
                 <div class="wa-fields">
                   <div class="wa-field">
                     <span class="wa-label">Добавить блюдо из справочника</span>
-                    <ft-select [options]="pickOptions()" [searchable]="true"
+                    <ft-select [options]="pickOptions()" [searchable]="true" ariaLabel="Добавить блюдо из справочника"
                                [placeholder]="loaded() ? 'Выберите блюдо' : 'Загружаем справочник блюд...'"
                                searchPlaceholder="Название блюда" emptyText="Все блюда из справочника уже в меню"
-                               [disabled]="!loaded()"
-                               [ngModel]="pickDish()" (ngModelChange)="pickDish.set($event)" />
+                               [disabled]="!loaded() || !itemsReady()"
+                               [ngModel]="pickDish()" (ngModelChange)="pickDish.set($event); addItemError.set(null)" />
                   </div>
                   <label class="wa-field">
                     <span class="wa-label">Раздел меню</span>
-                    <input class="input" type="text" [ngModel]="pickSection()" (ngModelChange)="pickSection.set($event)" placeholder="Основное" list="wa-section-names" />
+                    <input class="input" type="text" maxlength="80" [ngModel]="pickSection()" (ngModelChange)="pickSection.set($event)"
+                           placeholder="Основное" list="wa-section-names" />
                     <datalist id="wa-section-names">
                       @for (s of sections(); track s.name) { <option [value]="s.name"></option> }
                     </datalist>
                   </label>
+                  <label class="wa-field">
+                    <span class="wa-label">Цена, тг</span>
+                    <input class="input" type="number" min="0" step="50" inputmode="decimal" placeholder="Например, 2500"
+                           [ngModel]="pickItemPrice()" (ngModelChange)="pickItemPrice.set($event); addItemError.set(null)" />
+                  </label>
                 </div>
                 <div class="wa-actions">
-                  <button type="button" class="btn-amber" [disabled]="!pickDish() || adding()" (click)="addDish(v)">
+                  <button type="button" class="btn-amber" [disabled]="!pickDish() || adding() || !itemsReady()" (click)="addDish(v)">
                     <panel-icon name="plus" /> {{ adding() ? 'Добавляем...' : 'Добавить в меню' }}
                   </button>
+                  <!-- Ошибка формы держится до следующей попытки и живёт отдельно: удачное сообщение её не затирает -->
+                  @if (addItemError()) {
+                    <p class="wa-msg error" role="alert">{{ addItemError() }}</p>
+                  }
                   @if (itemsMsg()) {
-                    <p class="wa-msg" [class.error]="isError(itemsMsg())">{{ itemsMsg() }}</p>
+                    <p class="wa-msg" role="status">{{ itemsMsg() }}</p>
                   }
                 </div>
 
                 @if (loadingItems()) {
                   <p class="wa-muted">Загрузка позиций...</p>
+                } @else if (itemsError()) {
+                  <div class="wa-loadbar" role="alert">
+                    <panel-icon name="alert" />
+                    <span>{{ itemsError() }}</span>
+                    <button type="button" class="btn-outline" (click)="loadItems(v.id)"><panel-icon name="refresh" /> Обновить</button>
+                  </div>
                 } @else if (!items().length) {
                   <p class="wa-muted">В меню пока нет блюд. Выберите блюдо выше</p>
                 } @else {
@@ -311,26 +402,63 @@ function nextOrder(list: { sort_order: number }[]): number {
                     @for (s of sections(); track s.name; let i = $index) {
                       <div class="wa-table-group">{{ i + 1 }}. {{ s.name }}</div>
                       @for (row of s.items; track row.id) {
-                        <div class="wa-table-row" [class.off]="!row.is_available">
-                          <div class="wa-table-dish">
-                            <div class="wa-row-title">{{ row.dish_name }}</div>
-                            <label class="wa-check wa-check-sm">
-                              <input type="checkbox" [checked]="row.is_available" (change)="toggleAvailable(row, $event)" /> В наличии
+                        @if (itemDraft(row); as f) {
+                          <div class="wa-table-row" [class.off]="!row.is_available" [class.dirty]="itemDirty(row)">
+                            <div class="wa-table-dish">
+                              <div class="wa-row-title">{{ row.dish_name }}</div>
+                              <label class="wa-check wa-check-sm">
+                                <input type="checkbox" [checked]="row.is_available" (change)="toggleAvailable(row, $event)" /> В наличии
+                              </label>
+                            </div>
+                            <!-- Подписи над полями видны, когда шапка таблицы спрятана (узкая колонка); aria-label есть всегда -->
+                            <label class="wa-cell">
+                              <span class="wa-cell-cap" aria-hidden="true">Цена, тг</span>
+                              <input class="input" type="number" min="0" step="50" inputmode="decimal" aria-label="Цена, тг"
+                                     [ngModel]="f.price" (ngModelChange)="editItem(row, { price: $event })" />
                             </label>
+                            <label class="wa-cell">
+                              <span class="wa-cell-cap" aria-hidden="true">Раздел</span>
+                              <input class="input" type="text" maxlength="80" aria-label="Раздел"
+                                     [ngModel]="f.section" (ngModelChange)="editItem(row, { section: $event })" />
+                            </label>
+                            <label class="wa-cell">
+                              <span class="wa-cell-cap" aria-hidden="true">Порция</span>
+                              <input class="input" type="text" maxlength="60" placeholder="350 г" aria-label="Порция"
+                                     [ngModel]="f.portion" (ngModelChange)="editItem(row, { portion: $event })" />
+                            </label>
+                            <label class="wa-cell">
+                              <span class="wa-cell-cap" aria-hidden="true">Порядок</span>
+                              <input class="input" type="number" aria-label="Порядок"
+                                     [ngModel]="f.sort_order" (ngModelChange)="editItem(row, { sort_order: $event })" />
+                            </label>
+                            <label class="wa-cell wa-cell-wide">
+                              <span class="wa-cell-cap" aria-hidden="true">Комментарий повара</span>
+                              <input class="input" type="text" maxlength="200" aria-label="Комментарий повара"
+                                     placeholder="Гость увидит его под блюдом"
+                                     [ngModel]="f.chef_note" (ngModelChange)="editItem(row, { chef_note: $event })" />
+                            </label>
+                            <div class="wa-table-actions">
+                              <button type="button" class="wa-iconbtn" title="Сохранить" [attr.aria-label]="'Сохранить: ' + (row.dish_name || 'позиция')"
+                                      [disabled]="!itemDirty(row) || rowState(row.id)?.kind === 'saving'" (click)="saveItem(row)">
+                                <panel-icon name="save" />
+                              </button>
+                              <button type="button" class="wa-iconbtn wa-danger" title="Убрать из меню"
+                                      [attr.aria-label]="(pendingDelete() === row.id ? 'Точно убрать из меню? Нажмите ещё раз: ' : 'Убрать из меню: ') + (row.dish_name || 'позиция')"
+                                      (click)="askDeleteItem(row)">
+                                @if (pendingDelete() === row.id) { <span class="wa-confirm">Точно?</span> } @else { <panel-icon name="trash" /> }
+                              </button>
+                            </div>
+                            @if (rowState(row.id) || itemDirty(row)) {
+                              <p class="wa-row-status">
+                                @if (itemDirty(row) && rowState(row.id)?.kind !== 'saving') { <span class="dirty">не сохранено</span> }
+                                @if (rowState(row.id); as st) {
+                                  <span [class.error]="st.kind === 'error'" [class.ok]="st.kind === 'saved'"
+                                        [attr.role]="st.kind === 'error' ? 'alert' : 'status'">{{ st.text }}</span>
+                                }
+                              </p>
+                            }
                           </div>
-                          <input class="input" type="number" min="0" step="50" [(ngModel)]="row.price" />
-                          <input class="input" type="text" [(ngModel)]="row.section" />
-                          <input class="input" type="text" [(ngModel)]="row.portion" placeholder="350 г" />
-                          <input class="input" type="number" [(ngModel)]="row.sort_order" />
-                          <div class="wa-table-actions">
-                            <button type="button" class="wa-iconbtn" title="Сохранить" (click)="saveItem(row)">
-                              <panel-icon name="save" />
-                            </button>
-                            <button type="button" class="wa-iconbtn wa-danger" title="Убрать из меню" (click)="askDeleteItem(row)">
-                              @if (pendingDelete() === row.id) { <span class="wa-confirm">Точно?</span> } @else { <panel-icon name="trash" /> }
-                            </button>
-                          </div>
-                        </div>
+                        }
                       }
                     }
                   </div>
@@ -340,7 +468,7 @@ function nextOrder(list: { sort_order: number }[]): number {
               <div class="wa-card">
                 <div class="wa-card-head">
                   <div class="wa-card-head-text">
-                    <h3 class="wa-card-title"><panel-icon name="beer" /> Напитки бара <span class="wa-count">{{ drinks().length }}</span></h3>
+                    <h3 class="wa-card-title"><panel-icon name="beer" /> Напитки бара @if (drinksReady()) { <span class="wa-count">{{ drinks().length }}</span> }</h3>
                     <p class="wa-card-sub">Сорта из каталога с ценой и объёмом. Гость видит их внизу меню и в подборе к блюду, если сорт есть в этой карте</p>
                   </div>
                 </div>
@@ -348,32 +476,42 @@ function nextOrder(list: { sort_order: number }[]): number {
                 <div class="wa-fields">
                   <div class="wa-field">
                     <span class="wa-label">Добавить сорт из каталога</span>
-                    <ft-select [options]="drinkOptions()" [searchable]="true"
+                    <ft-select [options]="drinkOptions()" [searchable]="true" ariaLabel="Добавить сорт из каталога"
                                [placeholder]="brandsLoaded() ? 'Выберите сорт' : 'Загружаем каталог сортов...'"
                                searchPlaceholder="Название или стиль" emptyText="Все сорта каталога уже в карте"
-                               [disabled]="!brandsLoaded()"
-                               [ngModel]="pickBrand()" (ngModelChange)="pickBrand.set($event)" />
+                               [disabled]="!brandsLoaded() || !drinksReady()"
+                               [ngModel]="pickBrand()" (ngModelChange)="pickBrand.set($event); addDrinkError.set(null)" />
                   </div>
                   <label class="wa-field">
                     <span class="wa-label">Цена, тг</span>
-                    <input class="input" type="number" min="0" step="50" [ngModel]="pickPrice()" (ngModelChange)="pickPrice.set($event)" />
+                    <input class="input" type="number" min="0" step="50" inputmode="decimal" placeholder="Например, 1800"
+                           [ngModel]="pickPrice()" (ngModelChange)="pickPrice.set($event); addDrinkError.set(null)" />
                   </label>
                   <label class="wa-field">
                     <span class="wa-label">Объём</span>
-                    <input class="input" type="text" [ngModel]="pickVolume()" (ngModelChange)="pickVolume.set($event)" placeholder="0,5 л" />
+                    <input class="input" type="text" maxlength="40" [ngModel]="pickVolume()" (ngModelChange)="pickVolume.set($event)" placeholder="0,5 л" />
                   </label>
                 </div>
                 <div class="wa-actions">
-                  <button type="button" class="btn-amber" [disabled]="!pickBrand() || addingDrink()" (click)="addDrink(v)">
+                  <button type="button" class="btn-amber" [disabled]="!pickBrand() || addingDrink() || !drinksReady()" (click)="addDrink(v)">
                     <panel-icon name="plus" /> {{ addingDrink() ? 'Добавляем...' : 'Добавить в карту' }}
                   </button>
+                  @if (addDrinkError()) {
+                    <p class="wa-msg error" role="alert">{{ addDrinkError() }}</p>
+                  }
                   @if (drinksMsg()) {
-                    <p class="wa-msg" [class.error]="isError(drinksMsg())">{{ drinksMsg() }}</p>
+                    <p class="wa-msg" role="status">{{ drinksMsg() }}</p>
                   }
                 </div>
 
                 @if (loadingDrinks()) {
                   <p class="wa-muted">Загрузка карты напитков...</p>
+                } @else if (drinksError()) {
+                  <div class="wa-loadbar" role="alert">
+                    <panel-icon name="alert" />
+                    <span>{{ drinksError() }}</span>
+                    <button type="button" class="btn-outline" (click)="loadDrinks(v.id)"><panel-icon name="refresh" /> Обновить</button>
+                  </div>
                 } @else if (!drinks().length) {
                   <p class="wa-muted">В карте пока нет напитков. Выберите сорт выше</p>
                 } @else {
@@ -382,31 +520,57 @@ function nextOrder(list: { sort_order: number }[]): number {
                       <span>Сорт</span><span>Цена, тг</span><span>Объём</span><span>Порядок</span><span></span>
                     </div>
                     @for (row of drinks(); track row.id) {
-                      <div class="wa-table-row" [class.off]="!row.is_available">
-                        <div class="wa-table-dish wa-table-brand">
-                          <span class="wa-avatar wa-avatar-sm">
-                            @if (row.brand_image) { <img [src]="row.brand_image" [alt]="row.brand_name" /> } @else { {{ initial(row.brand_name) }} }
-                          </span>
-                          <div class="wa-table-brand-text">
-                            <div class="wa-row-title">{{ row.brand_name }}</div>
-                            <div class="wa-row-sub">{{ row.brand_style }}@if (row.abv !== null && row.abv !== undefined) {<span class="wa-dot"></span>{{ row.abv }}%}</div>
-                            <label class="wa-check wa-check-sm">
-                              <input type="checkbox" [checked]="row.is_available" (change)="toggleDrinkAvailable(row, $event)" /> В наличии
-                            </label>
+                      @if (drinkDraft(row); as f) {
+                        <div class="wa-table-row" [class.off]="!row.is_available" [class.dirty]="drinkDirty(row)">
+                          <div class="wa-table-dish wa-table-brand">
+                            <span class="wa-avatar wa-avatar-sm">
+                              @if (row.brand_image) { <img [src]="row.brand_image" [alt]="row.brand_name" /> } @else { {{ initial(row.brand_name) }} }
+                            </span>
+                            <div class="wa-table-brand-text">
+                              <div class="wa-row-title">{{ row.brand_name }}</div>
+                              <div class="wa-row-sub">{{ row.brand_style }}@if (row.abv !== null && row.abv !== undefined) {<span class="wa-dot"></span>{{ row.abv }}%}</div>
+                              <label class="wa-check wa-check-sm">
+                                <input type="checkbox" [checked]="row.is_available" (change)="toggleDrinkAvailable(row, $event)" /> В наличии
+                              </label>
+                            </div>
                           </div>
+                          <label class="wa-cell">
+                            <span class="wa-cell-cap" aria-hidden="true">Цена, тг</span>
+                            <input class="input" type="number" min="0" step="50" inputmode="decimal" aria-label="Цена, тг"
+                                   [ngModel]="f.price" (ngModelChange)="editDrink(row, { price: $event })" />
+                          </label>
+                          <label class="wa-cell">
+                            <span class="wa-cell-cap" aria-hidden="true">Объём</span>
+                            <input class="input" type="text" maxlength="40" placeholder="0,5 л" aria-label="Объём"
+                                   [ngModel]="f.volume" (ngModelChange)="editDrink(row, { volume: $event })" />
+                          </label>
+                          <label class="wa-cell">
+                            <span class="wa-cell-cap" aria-hidden="true">Порядок</span>
+                            <input class="input" type="number" aria-label="Порядок"
+                                   [ngModel]="f.sort_order" (ngModelChange)="editDrink(row, { sort_order: $event })" />
+                          </label>
+                          <div class="wa-table-actions">
+                            <button type="button" class="wa-iconbtn" title="Сохранить" [attr.aria-label]="'Сохранить: ' + (row.brand_name || 'напиток')"
+                                    [disabled]="!drinkDirty(row) || rowState(row.id)?.kind === 'saving'" (click)="saveDrink(row)">
+                              <panel-icon name="save" />
+                            </button>
+                            <button type="button" class="wa-iconbtn wa-danger" title="Убрать из карты"
+                                    [attr.aria-label]="(pendingDeleteDrink() === row.id ? 'Точно убрать из карты? Нажмите ещё раз: ' : 'Убрать из карты: ') + (row.brand_name || 'напиток')"
+                                    (click)="askDeleteDrink(row)">
+                              @if (pendingDeleteDrink() === row.id) { <span class="wa-confirm">Точно?</span> } @else { <panel-icon name="trash" /> }
+                            </button>
+                          </div>
+                          @if (rowState(row.id) || drinkDirty(row)) {
+                            <p class="wa-row-status">
+                              @if (drinkDirty(row) && rowState(row.id)?.kind !== 'saving') { <span class="dirty">не сохранено</span> }
+                              @if (rowState(row.id); as st) {
+                                <span [class.error]="st.kind === 'error'" [class.ok]="st.kind === 'saved'"
+                                      [attr.role]="st.kind === 'error' ? 'alert' : 'status'">{{ st.text }}</span>
+                              }
+                            </p>
+                          }
                         </div>
-                        <input class="input" type="number" min="0" step="50" [(ngModel)]="row.price" />
-                        <input class="input" type="text" [(ngModel)]="row.volume" placeholder="0,5 л" />
-                        <input class="input" type="number" [(ngModel)]="row.sort_order" />
-                        <div class="wa-table-actions">
-                          <button type="button" class="wa-iconbtn" title="Сохранить" (click)="saveDrink(row)">
-                            <panel-icon name="save" />
-                          </button>
-                          <button type="button" class="wa-iconbtn wa-danger" title="Убрать из карты" (click)="askDeleteDrink(row)">
-                            @if (pendingDeleteDrink() === row.id) { <span class="wa-confirm">Точно?</span> } @else { <panel-icon name="trash" /> }
-                          </button>
-                        </div>
-                      </div>
+                      }
                     }
                   </div>
                 }
@@ -429,6 +593,8 @@ export class PanelMenuComponent implements OnInit {
   loaded = input(false);
   brands = input<Brand[]>([]);
   brandsLoaded = input(false);
+  /** Растёт, когда позиции меню добавили вне этой вкладки (импорт блюд по фото): перечитываем строки. */
+  reload = input(0);
   /** Slug заведения, чьё гостевое меню нужно открыть. */
   openMenu = output<string>();
 
@@ -454,6 +620,7 @@ export class PanelMenuComponent implements OnInit {
   venue = computed(() => this.venues().find(v => v.slug === this.selectedSlug()) ?? null);
 
   creating = signal(false);
+  /** Новый объект на каждое открытие карточки: по нему ответы запросов узнают, та же ли форма на экране. */
   form: VenueForm = emptyVenue();
   venueSaving = signal(false);
   venueMsg = signal<string | null>(null);
@@ -467,26 +634,43 @@ export class PanelMenuComponent implements OnInit {
   // Позиции
   items = signal<MenuItem[]>([]);
   loadingItems = signal(false);
+  /** Позиции не прочитались: текст с кнопкой "Обновить" держится до удачной попытки, таблицы и "нет блюд" при этом нет. */
+  itemsError = signal<string | null>(null);
+  /** Удачные действия с позициями: "добавлено", "убрано". Ошибки сюда не попадают. */
   itemsMsg = signal<string | null>(null);
+  addItemError = signal<string | null>(null);
   pendingDelete = signal<string | null>(null);
   pickDish = signal('');
   pickSection = signal(DEFAULT_SECTION);
+  pickItemPrice = signal<NumField>(null);
   adding = signal(false);
+  /** Несохранённые правки строк меню по id строки. */
+  itemDrafts = signal<Record<string, ItemDraft>>({});
 
   // Карта напитков
   drinks = signal<MenuDrink[]>([]);
   loadingDrinks = signal(false);
+  drinksError = signal<string | null>(null);
   drinksMsg = signal<string | null>(null);
+  addDrinkError = signal<string | null>(null);
   pendingDeleteDrink = signal<string | null>(null);
   pickBrand = signal('');
-  pickPrice = signal<number | string>(0);
+  pickPrice = signal<NumField>(null);
   pickVolume = signal(DEFAULT_VOLUME);
   addingDrink = signal(false);
+  drinkDrafts = signal<Record<string, DrinkDraft>>({});
+
+  /** Статусы строк обеих таблиц по id строки. */
+  rowStates = signal<Record<string, RowState>>({});
 
   /** Модератор создаёт сколько угодно, администратор заведения только первое. */
   canCreate = computed(() => this.isModerator() || (!this.loadingVenues() && !this.venues().length));
 
   hasSelection = computed(() => this.creating() || !!this.venue());
+
+  /** Позиции выбранного заведения прочитаны: только тогда известно, каких блюд в меню ещё нет. */
+  itemsReady = computed(() => !this.loadingItems() && !this.itemsError());
+  drinksReady = computed(() => !this.loadingDrinks() && !this.drinksError());
 
   detailList = computed<DetailEntry[]>(() => {
     if (this.creating()) return [{ key: 'new', venue: null }];
@@ -503,7 +687,8 @@ export class PanelMenuComponent implements OnInit {
     );
   });
 
-  /** Разделы в том же порядке, что видит гость: по наименьшему порядку внутри раздела, затем по названию. */
+  /** Разделы в том же порядке, что видит гость: по наименьшему порядку внутри раздела, затем по названию.
+   *  Считаются по сохранённым значениям: правка в строке ничего не двигает, пока её не сохранили. */
   sections = computed<MenuSection[]>(() => {
     const groups: MenuSection[] = [];
     for (const item of this.items()) {
@@ -540,6 +725,19 @@ export class PanelMenuComponent implements OnInit {
         hint: [b.style, b.abv !== null && b.abv !== undefined ? b.abv + '%' : ''].filter(Boolean).join(', ')
       }));
   });
+
+  constructor() {
+    let seen = 0;
+    effect(() => {
+      const version = this.reload();
+      if (version === seen) return;
+      seen = version;
+      untracked(() => {
+        const v = this.venue();
+        if (v) this.loadItems(v.id);
+      });
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit() {
     this.loadVenues();
@@ -585,6 +783,9 @@ export class PanelMenuComponent implements OnInit {
 
   selectVenue(slug: string) {
     this.resetState();
+    // Строки прошлого заведения убираем сразу: если новые не прочитаются, правки не уйдут в чужое меню
+    this.items.set([]);
+    this.drinks.set([]);
     this.selectedSlug.set(slug);
     this.creating.set(false);
     const v = this.venue();
@@ -632,39 +833,44 @@ export class PanelMenuComponent implements OnInit {
       flash(this.venueMsg, 'Ошибка: количество столов от 1 до 500', 6000);
       return;
     }
-    this.venueSaving.set(true);
+    // Ответ может прийти, когда справа уже другая карточка: её форму, выбор и сообщения не трогаем
+    const form = this.form;
     if (this.creating()) {
+      this.venueSaving.set(true);
       this.api.createVenue(payload).subscribe({
         next: v => {
           this.venueSaving.set(false);
           this.venues.update(list => [...list, v]);
+          // У пользователя появилось заведение: профиль и ссылки должны это увидеть
+          this.auth.loadMe();
+          if (this.form !== form) return;
           // Файл логотипа, выбранный до создания, отправляем сразу после него
           const file = this.pendingLogo;
           this.selectVenue(v.slug);
-          // У пользователя появилось заведение: профиль и ссылки должны это увидеть
-          this.auth.loadMe();
           flash(this.venueMsg, 'Заведение создано');
           if (file) this.uploadLogo(v, file);
         },
         error: err => {
           this.venueSaving.set(false);
-          flash(this.venueMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+          if (this.form === form) flash(this.venueMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
         }
       });
       return;
     }
     const current = this.venue();
     if (!current) return;
+    this.venueSaving.set(true);
     this.api.updateVenue(current.slug, payload).subscribe({
       next: saved => {
         this.venueSaving.set(false);
         this.replaceVenue(saved);
-        if (saved.slug !== current.slug) this.selectedSlug.set(saved.slug);
-        flash(this.venueMsg, 'Сохранено');
+        // Slug мог смениться: выбор остаётся на том же заведении, если его не сменили руками
+        if (saved.slug !== current.slug && this.selectedSlug() === current.slug) this.selectedSlug.set(saved.slug);
+        if (this.form === form) flash(this.venueMsg, 'Сохранено');
       },
       error: err => {
         this.venueSaving.set(false);
-        flash(this.venueMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        if (this.form === form) flash(this.venueMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
       }
     });
   }
@@ -679,10 +885,11 @@ export class PanelMenuComponent implements OnInit {
       next: saved => {
         this.replaceVenue(saved);
         this.logoBusy.set(false);
-        flash(this.venueMsg, 'Логотип загружен');
+        // Сообщение относится к заведению, чей логотип грузили: под другим его не показываем
+        if (this.venue()?.id === v.id) flash(this.venueMsg, 'Логотип загружен');
       },
       error: err => {
-        this.logoError.set('Ошибка: ' + AuthService.errorText(err));
+        if (this.venue()?.id === v.id) this.logoError.set('Ошибка: ' + AuthService.errorText(err));
         this.logoBusy.set(false);
       }
     });
@@ -698,21 +905,98 @@ export class PanelMenuComponent implements OnInit {
     ).subscribe({
       next: saved => {
         this.replaceVenue(saved);
-        this.form.logo_url = '';
         this.logoBusy.set(false);
+        // Поле ссылки чистим только в форме того же заведения: в чужой форме оно своё
+        if (this.venue()?.id !== v.id) return;
+        this.form.logo_url = '';
         flash(this.venueMsg, 'Логотип удалён');
       },
       error: err => {
-        this.logoError.set('Ошибка: ' + AuthService.errorText(err));
+        if (this.venue()?.id === v.id) this.logoError.set('Ошибка: ' + AuthService.errorText(err));
         this.logoBusy.set(false);
       }
     });
+  }
+
+  // Строки таблиц: правки и статусы
+
+  /** Значения полей строки: правка, если она есть, иначе сохранённое. */
+  itemDraft(row: MenuItem): ItemDraft {
+    return this.itemDrafts()[row.id] ?? itemDraftOf(row);
+  }
+
+  drinkDraft(row: MenuDrink): DrinkDraft {
+    return this.drinkDrafts()[row.id] ?? drinkDraftOf(row);
+  }
+
+  /** В строке есть правки, которых нет на сервере. */
+  itemDirty(row: MenuItem): boolean {
+    const d = this.itemDrafts()[row.id];
+    return !!d && !sameItem(d, row);
+  }
+
+  drinkDirty(row: MenuDrink): boolean {
+    const d = this.drinkDrafts()[row.id];
+    return !!d && !sameDrink(d, row);
+  }
+
+  editItem(row: MenuItem, patch: Partial<ItemDraft>) {
+    this.itemDrafts.update(m => ({ ...m, [row.id]: { ...(m[row.id] ?? itemDraftOf(row)), ...patch } }));
+    this.rowEdited(row.id);
+  }
+
+  editDrink(row: MenuDrink, patch: Partial<DrinkDraft>) {
+    this.drinkDrafts.update(m => ({ ...m, [row.id]: { ...(m[row.id] ?? drinkDraftOf(row)), ...patch } }));
+    this.rowEdited(row.id);
+  }
+
+  rowState(id: string): RowState | null {
+    return this.rowStates()[id] ?? null;
+  }
+
+  private setRow(id: string, state: RowState | null) {
+    this.rowStates.update(m => state ? { ...m, [id]: state } : without(m, id));
+  }
+
+  /** Правка строки снимает её прежнюю ошибку и "Сохранено"; идущее сохранение не трогает. */
+  private rowEdited(id: string) {
+    const cur = this.rowStates()[id];
+    if (cur && cur.kind !== 'saving') this.setRow(id, null);
+  }
+
+  /** Новое действие снимает ошибку прошлого такого же действия; ошибка другого действия остаётся. */
+  private rowBegin(id: string, op: RowOp) {
+    const cur = this.rowStates()[id];
+    if (cur && cur.op === op && cur.kind === 'error') this.setRow(id, null);
+  }
+
+  private rowFailed(id: string, op: RowOp, err: unknown) {
+    this.setRow(id, { kind: 'error', op, text: 'Ошибка: ' + AuthService.errorText(err) });
+  }
+
+  /**
+   * Сохранение строки удалось. "Сохранено" гаснет само и не перекрывает ошибку галочки или удаления,
+   * появившуюся за время запроса. clean: за это время строку не правили дальше; иначе она снова "не сохранено".
+   */
+  private rowSaved(id: string, clean: boolean) {
+    const cur = this.rowStates()[id];
+    if (cur && cur.kind === 'error' && cur.op !== 'save') return;
+    if (!clean) {
+      this.setRow(id, null);
+      return;
+    }
+    const state: RowState = { kind: 'saved', op: 'save', text: 'Сохранено' };
+    this.setRow(id, state);
+    setTimeout(() => {
+      if (this.rowStates()[id] === state) this.setRow(id, null);
+    }, 4000);
   }
 
   // Позиции меню
 
   loadItems(venueId: string) {
     this.loadingItems.set(true);
+    this.itemsError.set(null);
     this.api.getMenuItems(venueId).subscribe({
       next: list => {
         if (this.venue()?.id !== venueId) return;
@@ -722,28 +1006,37 @@ export class PanelMenuComponent implements OnInit {
       error: err => {
         if (this.venue()?.id !== venueId) return;
         this.loadingItems.set(false);
-        flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        this.itemsError.set('Не удалось загрузить позиции меню: ' + AuthService.errorText(err));
       }
     });
   }
 
   saveItem(row: MenuItem) {
-    const price = priceOf(row.price);
+    if (this.rowState(row.id)?.kind === 'saving') return;
+    // Отправляем черновик, какой он сейчас; правки, сделанные пока идёт запрос, останутся черновиком
+    const sent = this.itemDrafts()[row.id];
+    const d = sent ?? itemDraftOf(row);
+    const price = priceOf(d.price);
     if (price === null) {
-      flash(this.itemsMsg, PRICE_ERROR, 6000);
+      this.setRow(row.id, { kind: 'error', op: 'save', text: PRICE_ERROR });
       return;
     }
+    this.setRow(row.id, { kind: 'saving', op: 'save', text: 'Сохраняем...' });
     this.api.updateMenuItem(row.id, {
       price: price.toFixed(2),
-      section: (row.section || '').trim() || DEFAULT_SECTION,
-      portion: row.portion || '',
-      sort_order: Number(row.sort_order) || 0
+      section: d.section.trim() || DEFAULT_SECTION,
+      portion: d.portion.trim(),
+      sort_order: orderOf(d.sort_order),
+      chef_note: d.chef_note.trim()
     }).subscribe({
       next: saved => {
-        this.items.update(list => list.map(i => i.id === saved.id ? saved : i));
-        flash(this.itemsMsg, (saved.dish_name || 'Позиция') + ': сохранено');
+        // Галочку "В наличии" этот запрос не менял: берём её из строки, а не из ответа
+        this.items.update(list => list.map(i => i.id === saved.id ? { ...saved, is_available: i.is_available } : i));
+        const clean = this.itemDrafts()[row.id] === sent;
+        if (clean) this.itemDrafts.update(m => without(m, row.id));
+        this.rowSaved(row.id, clean);
       },
-      error: err => flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+      error: err => this.rowFailed(row.id, 'save', err)
     });
   }
 
@@ -751,25 +1044,29 @@ export class PanelMenuComponent implements OnInit {
   toggleAvailable(row: MenuItem, event: Event) {
     const input = event.target as HTMLInputElement;
     const next = input.checked;
+    this.rowBegin(row.id, 'toggle');
     this.api.updateMenuItem(row.id, { is_available: next }).subscribe({
-      // Несохранённые правки цены и порции в строке не трогаем
+      // Из ответа берём только галочку: остальные поля строки меняет "Сохранить"
       next: saved => this.items.update(list => list.map(i => i.id === saved.id ? { ...i, is_available: saved.is_available } : i)),
       error: err => {
         input.checked = row.is_available;
-        flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        this.rowFailed(row.id, 'toggle', err);
       }
     });
   }
 
   askDeleteItem(row: MenuItem) {
     confirmTwice(this.pendingDelete, row.id, () => {
+      this.rowBegin(row.id, 'delete');
       this.api.deleteMenuItem(row.id).subscribe({
         next: () => {
           this.items.update(list => list.filter(i => i.id !== row.id));
+          this.itemDrafts.update(m => without(m, row.id));
+          this.setRow(row.id, null);
           this.bumpCount(row.venue, -1);
-          flash(this.itemsMsg, (row.dish_name || 'Позиция') + ': убрано из меню');
+          if (this.venue()?.id === row.venue) flash(this.itemsMsg, (row.dish_name || 'Позиция') + ': убрано из меню');
         },
-        error: err => flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+        error: err => this.rowFailed(row.id, 'delete', err)
       });
     });
   }
@@ -777,22 +1074,32 @@ export class PanelMenuComponent implements OnInit {
   addDish(v: Venue) {
     const d = this.dishes().find(x => x.id === this.pickDish());
     if (!d) return;
+    // Без цены позиция сразу стала бы видна гостю за 0 тенге
+    const price = priceOf(this.pickItemPrice());
+    if (price === null) {
+      this.addItemError.set(PRICE_ERROR);
+      return;
+    }
     const section = this.pickSection().trim() || DEFAULT_SECTION;
     // Новая позиция встаёт в конец раздела; новый раздел - в конец меню, а не наверх
     const inSection = this.items().filter(i => (i.section || DEFAULT_SECTION) === section);
     const sortOrder = nextOrder(inSection.length ? inSection : this.items());
     this.adding.set(true);
-    this.api.createMenuItem({ venue: v.id, dish: d.id, price: '0.00', section, sort_order: sortOrder }).subscribe({
+    this.addItemError.set(null);
+    this.api.createMenuItem({ venue: v.id, dish: d.id, price: price.toFixed(2), section, sort_order: sortOrder }).subscribe({
       next: item => {
         this.adding.set(false);
-        this.items.update(list => [...list, item]);
         this.bumpCount(v.id, 1);
+        // Пока шёл запрос, могли открыть другое заведение: его таблицу, форму и сообщения не трогаем
+        if (this.venue()?.id !== v.id) return;
+        this.items.update(list => [...list, item]);
         this.pickDish.set('');
-        flash(this.itemsMsg, d.name + ': добавлено, осталось указать цену');
+        this.pickItemPrice.set(null);
+        flash(this.itemsMsg, d.name + ': добавлено в меню');
       },
       error: err => {
         this.adding.set(false);
-        flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        if (this.venue()?.id === v.id) this.addItemError.set('Ошибка: ' + AuthService.errorText(err));
       }
     });
   }
@@ -801,6 +1108,7 @@ export class PanelMenuComponent implements OnInit {
 
   loadDrinks(venueId: string) {
     this.loadingDrinks.set(true);
+    this.drinksError.set(null);
     this.api.getMenuDrinks(venueId).subscribe({
       next: list => {
         if (this.venue()?.id !== venueId) return;
@@ -810,7 +1118,7 @@ export class PanelMenuComponent implements OnInit {
       error: err => {
         if (this.venue()?.id !== venueId) return;
         this.loadingDrinks.set(false);
-        flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        this.drinksError.set('Не удалось загрузить карту напитков: ' + AuthService.errorText(err));
       }
     });
   }
@@ -818,69 +1126,82 @@ export class PanelMenuComponent implements OnInit {
   addDrink(v: Venue) {
     const b = this.brands().find(x => x.id === this.pickBrand());
     if (!b) return;
-    const price = Number(this.pickPrice()) || 0;
-    if (price < 0) {
-      flash(this.drinksMsg, PRICE_ERROR, 6000);
+    const price = priceOf(this.pickPrice());
+    if (price === null) {
+      this.addDrinkError.set(PRICE_ERROR);
       return;
     }
     this.addingDrink.set(true);
+    this.addDrinkError.set(null);
     this.api.createMenuDrink({
       venue: v.id, brand: b.id, price: price.toFixed(2),
       volume: this.pickVolume().trim() || DEFAULT_VOLUME, sort_order: nextOrder(this.drinks())
     }).subscribe({
       next: drink => {
         this.addingDrink.set(false);
+        // Пока шёл запрос, могли открыть другое заведение: его карту, форму и сообщения не трогаем
+        if (this.venue()?.id !== v.id) return;
         this.drinks.update(list => sortDrinks([...list, drink]));
         this.pickBrand.set('');
-        this.pickPrice.set(0);
-        flash(this.drinksMsg, b.name + ': добавлено в карту' + (price ? '' : ', осталось указать цену'));
+        this.pickPrice.set(null);
+        flash(this.drinksMsg, b.name + ': добавлено в карту');
       },
       error: err => {
         this.addingDrink.set(false);
-        flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        if (this.venue()?.id === v.id) this.addDrinkError.set('Ошибка: ' + AuthService.errorText(err));
       }
     });
   }
 
   saveDrink(row: MenuDrink) {
-    const price = priceOf(row.price);
+    if (this.rowState(row.id)?.kind === 'saving') return;
+    const sent = this.drinkDrafts()[row.id];
+    const d = sent ?? drinkDraftOf(row);
+    const price = priceOf(d.price);
     if (price === null) {
-      flash(this.drinksMsg, PRICE_ERROR, 6000);
+      this.setRow(row.id, { kind: 'error', op: 'save', text: PRICE_ERROR });
       return;
     }
+    this.setRow(row.id, { kind: 'saving', op: 'save', text: 'Сохраняем...' });
     this.api.updateMenuDrink(row.id, {
       price: price.toFixed(2),
-      volume: (row.volume || '').trim(),
-      sort_order: Number(row.sort_order) || 0
+      volume: d.volume.trim(),
+      sort_order: orderOf(d.sort_order)
     }).subscribe({
       next: saved => {
-        this.drinks.update(list => sortDrinks(list.map(d => d.id === saved.id ? saved : d)));
-        flash(this.drinksMsg, (saved.brand_name || 'Напиток') + ': сохранено');
+        this.drinks.update(list => sortDrinks(list.map(x => x.id === saved.id ? { ...saved, is_available: x.is_available } : x)));
+        const clean = this.drinkDrafts()[row.id] === sent;
+        if (clean) this.drinkDrafts.update(m => without(m, row.id));
+        this.rowSaved(row.id, clean);
       },
-      error: err => flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+      error: err => this.rowFailed(row.id, 'save', err)
     });
   }
 
   toggleDrinkAvailable(row: MenuDrink, event: Event) {
     const input = event.target as HTMLInputElement;
     const next = input.checked;
+    this.rowBegin(row.id, 'toggle');
     this.api.updateMenuDrink(row.id, { is_available: next }).subscribe({
       next: saved => this.drinks.update(list => list.map(d => d.id === saved.id ? { ...d, is_available: saved.is_available } : d)),
       error: err => {
         input.checked = row.is_available;
-        flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        this.rowFailed(row.id, 'toggle', err);
       }
     });
   }
 
   askDeleteDrink(row: MenuDrink) {
     confirmTwice(this.pendingDeleteDrink, row.id, () => {
+      this.rowBegin(row.id, 'delete');
       this.api.deleteMenuDrink(row.id).subscribe({
         next: () => {
           this.drinks.update(list => list.filter(d => d.id !== row.id));
-          flash(this.drinksMsg, (row.brand_name || 'Напиток') + ': убрано из карты');
+          this.drinkDrafts.update(m => without(m, row.id));
+          this.setRow(row.id, null);
+          if (this.venue()?.id === row.venue) flash(this.drinksMsg, (row.brand_name || 'Напиток') + ': убрано из карты');
         },
-        error: err => flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+        error: err => this.rowFailed(row.id, 'delete', err)
       });
     });
   }
@@ -899,14 +1220,23 @@ export class PanelMenuComponent implements OnInit {
     this.venueMsg.set(null);
     this.itemsMsg.set(null);
     this.drinksMsg.set(null);
+    this.itemsError.set(null);
+    this.drinksError.set(null);
+    this.addItemError.set(null);
+    this.addDrinkError.set(null);
     this.logoError.set(null);
     this.pendingDelete.set(null);
     this.pendingDeleteDrink.set(null);
     this.pendingLogo = null;
     this.pickDish.set('');
     this.pickSection.set(DEFAULT_SECTION);
+    this.pickItemPrice.set(null);
     this.pickBrand.set('');
-    this.pickPrice.set(0);
+    this.pickPrice.set(null);
     this.pickVolume.set(DEFAULT_VOLUME);
+    // Правки и статусы строк относятся к строкам прошлого заведения
+    this.itemDrafts.set({});
+    this.drinkDrafts.set({});
+    this.rowStates.set({});
   }
 }

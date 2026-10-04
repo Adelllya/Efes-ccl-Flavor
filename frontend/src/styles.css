@@ -2,9 +2,8 @@
    FLAVOR TREE - Design System (UI/UX Pro Max v2.13.0)
    Style: Liquid Glass / Glassmorphism
    Typography: Outfit (headings) + Plus Jakarta Sans (body)
+   Шрифты подключает index.html: второй раз через @import они грузились бы повторно и задерживали отрисовку.
    */
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 /* ── Design Tokens */
 :root {
@@ -19,7 +18,12 @@
   --beer-glow: rgba(245, 158, 11, 0.15);
   --foam: #1C1917;
   --foam-dim: #44403C;
-  --muted: #78716C;
+  /* Вторичный текст: контраст не ниже 4.5:1 и на янтарном верху страницы */
+  --muted: #6B645F;
+  /* Заливка кнопок с белым текстом: самый светлый край даёт контраст 4.5:1, янтарный --beer-accent для текста слишком светлый */
+  --cta-from: #C2570A;
+  --grad-cta: linear-gradient(135deg, var(--cta-from) 0%, var(--beer-mid) 55%, var(--beer-deep) 100%);
+  --shadow-cta: 0 8px 22px -8px rgba(146, 64, 14, 0.55);
   --line: rgba(180, 83, 9, 0.15);
   --line-subtle: rgba(180, 83, 9, 0.08);
   --glass: rgba(255, 255, 255, 0.72);
@@ -67,6 +71,9 @@
   /* Layout */
   --container-max: 1280px;
   --container-padding: 20px;
+  /* Липкая шапка: отступ сверху и где она заканчивается. Под ней встают липкие полосы меню */
+  --nav-top: var(--space-lg);
+  --nav-offset: 96px;
 }
 
 /* ── Reset */
@@ -82,6 +89,10 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS не увеличивает шрифт сам при повороте телефона */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(245, 158, 11, 0.14);
 }
 
 body {
@@ -96,6 +107,35 @@ body {
     radial-gradient(ellipse 900px 500px at 50% -8%, rgba(245, 158, 11, 0.18), transparent 60%),
     radial-gradient(ellipse 600px 400px at 85% 15%, rgba(180, 83, 9, 0.08), transparent 55%),
     linear-gradient(180deg, #FAFAF9 0%, #F5F0E8 100%);
+}
+
+/* Страница не должна листаться вбок на телефоне, даже если что-то вылезло за край.
+   clip, а не hidden: так body не становится контейнером прокрутки и липкая шапка работает */
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* Пока открыто мобильное меню, лист корзины или окно панели, страница под ними не прокручивается.
+   Класс ставит код; :has ловит любое открытое модальное окно. */
+html.ft-no-scroll,
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* Текст только для экранных читалок */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── Typography */
@@ -222,7 +262,7 @@ h4 { font-size: 1.1rem; font-weight: 600; }
 
 /* ── Кнопки */
 .btn-amber {
-  background: linear-gradient(135deg, var(--beer-light) 0%, var(--beer-mid) 100%);
+  background: var(--grad-cta);
   color: #fff;
   border: none;
   padding: var(--space-md) var(--space-2xl);
@@ -370,6 +410,7 @@ h4 { font-size: 1.1rem; font-weight: 600; }
 }
 
 .progress-fill {
+  display: block;
   height: 100%;
   background: linear-gradient(90deg, var(--beer-accent), var(--beer-mid));
   border-radius: var(--radius-full);
@@ -382,12 +423,13 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   gap: var(--space-2xl);
 }
 
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-.grid-cards { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
-.grid-cards-sm { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
-.grid-cards-lg { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+/* min(..., 100%): на узком телефоне колонка не шире экрана */
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); }
+.grid-cards { grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr)); }
+.grid-cards-sm { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.grid-cards-lg { grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr)); }
 
 /* ── Flexbox утилиты */
 .flex { display: flex; }
@@ -490,13 +532,23 @@ h4 { font-size: 1.1rem; font-weight: 600; }
 }
 
 /* ── Навигация */
+/* z-index выше мобильного меню (105) и его подложки (104): крестик гамбургера остаётся сверху */
 .nav-container {
   position: sticky;
-  top: var(--space-lg);
-  z-index: 100;
+  top: var(--nav-top);
+  z-index: 106;
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 var(--container-padding);
+}
+
+/* Основная колонка страницы */
+.app-main {
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-max);
+  margin: 32px auto;
+  padding: 0 var(--container-padding) 80px;
 }
 
 .nav-bar {
@@ -563,16 +615,27 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   flex-wrap: wrap;
 }
 
-/* Гамбургер */
+/* Гамбургер: квадрат 44px, чтобы попадать пальцем */
 .nav-hamburger {
   display: none;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  padding: var(--space-sm);
+  padding: 0;
   flex-direction: column;
   gap: 5px;
   z-index: 110;
+}
+
+.nav-hamburger:focus-visible {
+  outline: 2px solid var(--beer-light);
+  outline-offset: 2px;
 }
 
 .nav-hamburger span {
@@ -594,37 +657,49 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Мобильное меню */
+/* Мобильное меню. Закрытое уезжает вправо и прячется совсем (visibility),
+   иначе его кнопки ловили бы фокус с клавиатуры */
 .nav-mobile-menu {
   display: none;
   position: fixed;
   top: 0;
-  right: -100%;
-  width: 300px;
+  right: 0;
+  width: min(300px, 86vw);
   height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--glass-strong);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-left: 1px solid var(--line);
-  padding: 80px var(--space-2xl) var(--space-2xl);
+  padding: calc(var(--nav-offset) + var(--space-sm)) var(--space-2xl) calc(var(--space-2xl) + env(safe-area-inset-bottom));
   flex-direction: column;
   gap: var(--space-sm);
   z-index: 105;
-  transition: right var(--duration-slow) var(--ease-out);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform var(--duration-slow) var(--ease-out), visibility 0s linear var(--duration-slow);
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
 }
 
 .nav-mobile-menu.open {
-  right: 0;
+  transform: none;
+  visibility: visible;
+  transition: transform var(--duration-slow) var(--ease-out), visibility 0s;
 }
 
 .nav-mobile-menu .btn-outline,
 .nav-mobile-menu .btn-amber {
   width: 100%;
+  min-height: 48px;
+  flex-shrink: 0;
   justify-content: flex-start;
   padding: var(--space-md) var(--space-lg);
 }
 
+/* Подложка под меню. Закрытая не должна ловить нажатия: раньше она невидимо
+   лежала поверх всей страницы на телефоне, и ничего нельзя было нажать */
 .nav-mobile-backdrop {
   display: none;
   position: fixed;
@@ -632,11 +707,16 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   background: rgba(0, 0, 0, 0.3);
   z-index: 104;
   opacity: 0;
-  transition: opacity var(--duration-normal) ease;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) ease, visibility 0s linear var(--duration-normal);
 }
 
 .nav-mobile-backdrop.open {
   opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity var(--duration-normal) ease, visibility 0s;
 }
 
 /* ── Паттерны секций */
@@ -940,7 +1020,7 @@ h4 { font-size: 1.1rem; font-weight: 600; }
 .skeleton-grid {
   display: grid;
   gap: var(--space-2xl);
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
 }
 
 .skeleton-card {
@@ -1052,14 +1132,8 @@ h4 { font-size: 1.1rem; font-weight: 600; }
 }
 
 /* ── Responsive */
-@media (max-width: 768px) {
-  :root {
-    --container-padding: 16px;
-  }
-
-  h1, .section-header { font-size: 1.8rem; }
-  h2 { font-size: 1.5rem; }
-
+/* Планшеты и телефоны: разделы уходят в меню-гамбургер, в строке шапки они не помещаются */
+@media (max-width: 1024px) {
   .nav-tabs {
     display: none;
   }
@@ -1075,9 +1149,37 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   .nav-mobile-backdrop {
     display: block;
   }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --container-padding: 16px;
+    /* Шапка на телефоне ниже: 10px сверху + 62px высоты, и 4px зазора до липких полос */
+    --nav-top: 10px;
+    --nav-offset: 76px;
+  }
+
+  h1, .section-header { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
 
   .nav-bar {
-    padding: var(--space-md) var(--space-lg);
+    padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+    border-radius: var(--radius-lg);
+  }
+
+  .nav-logo-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .app-main {
+    margin-top: var(--space-xl);
+  }
+
+  /* Длинная подпись переносится внутри кнопки, а не распирает карточку за край экрана */
+  .btn-amber,
+  .btn-outline {
+    white-space: normal;
   }
 
   .beer-card {
@@ -1133,13 +1235,89 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   }
 }
 
+/* Телефон: меньше воздуха вокруг панелей, чтобы тексту оставалась ширина */
+@media (max-width: 640px) {
+  .p-4xl,
+  .p-3xl {
+    padding: var(--space-xl);
+  }
+
+  .mb-4xl { margin-bottom: var(--space-3xl); }
+  .mb-5xl { margin-bottom: var(--space-4xl); }
+
+  .page-section {
+    margin-bottom: var(--space-4xl);
+  }
+
+  .section-subtitle {
+    margin-bottom: var(--space-2xl);
+  }
+}
+
 @media (max-width: 480px) {
+  h1, .section-header { font-size: 1.65rem; }
+
+  .p-2xl {
+    padding: var(--space-xl);
+  }
+
+  /* Карточка сорта остаётся в две колонки: фото слева, текст справа. Так список короче в два раза */
   .beer-card {
-    grid-template-columns: 1fr;
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .beer-card.p-xl {
+    padding: var(--space-lg);
   }
 
   .beer-card-image {
-    min-height: 200px;
+    min-height: 150px;
+    padding: 6px;
+  }
+
+  .beer-card-image img {
+    max-height: 130px;
+  }
+
+  .beer-card-desc {
+    -webkit-line-clamp: 2;
+  }
+
+  /* Экспресс-сценарии главной: эмодзи слева, текст справа, карточка заметно ниже */
+  .mood-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    column-gap: var(--space-md);
+    padding: var(--space-lg) var(--space-xl);
+  }
+
+  .mood-card > * {
+    grid-column: 2;
+  }
+
+  .mood-card > .mood-icon {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    margin: 2px 0 0;
+    font-size: 1.9rem;
+  }
+
+  .mood-card > p {
+    margin-bottom: var(--space-md);
+  }
+
+  /* Бейдж и "Выбрать" на самом узком экране встают друг под другом, а не ломаются по буквам */
+  .mood-card > .flex {
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
+  }
+
+  .mood-card > .flex > span:last-child {
+    white-space: nowrap;
+  }
+
+  .badge {
+    white-space: normal;
   }
 
   .nav-brand-name {
@@ -1148,6 +1326,23 @@ h4 { font-size: 1.1rem; font-weight: 600; }
 
   .nav-brand-sub {
     display: none;
+  }
+}
+
+/* iOS Safari увеличивает страницу при фокусе на поле мельче 16px. На телефонах и планшетах держим 16px */
+@media (max-width: 768px), (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* На сенсорном экране :hover залипает после нажатия: карточки и кнопки не подпрыгивают */
+@media (hover: none) {
+  .glass-card:hover,
+  .btn-amber:hover {
+    transform: none;
   }
 }
 
@@ -1636,7 +1831,7 @@ ft-select { display: block; position: relative; width: 100%; }
   padding: 0 20px 0 14px;
   border: none;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--beer-light), var(--beer-deep));
+  background: var(--grad-cta);
   color: #fff;
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -1873,6 +2068,34 @@ ft-select { display: block; position: relative; width: 100%; }
 .ai-pref:hover { border-color: var(--beer-light); }
 .ai-pref.on { background: var(--beer-deep); border-color: var(--beer-deep); color: #fff; }
 .ai-input-row { display: flex; align-items: center; gap: 8px; }
+/* Фото блюда: кнопка слева от поля и снимок в ленте */
+.ai-photo-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--bg-1);
+  color: var(--beer-mid);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+.ai-photo-btn:hover { background: var(--beer-glow); border-color: var(--beer-light); }
+.ai-photo-btn:focus-visible { outline: 3px solid var(--beer-light); outline-offset: 2px; }
+.ai-photo-btn:disabled { opacity: 0.45; cursor: default; }
+.ai-photo-msg {
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 16px 16px 6px 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+}
 .ai-input {
   flex: 1;
   min-width: 0;
@@ -1924,4 +2147,12 @@ ft-select { display: block; position: relative; width: 100%; }
   .ai-sheet { animation: none; }
   .ai-typing span { animation: none; opacity: 0.7; }
   .ai-fab, .ai-fab:hover, .ai-card-btn:hover, .ai-send:hover { transform: none; }
+}
+
+/* Печать (шпаргалка официанта, урок Академии): на листе только содержимое страницы */
+@media print {
+  .nav-container, .nav-mobile-menu, .nav-mobile-backdrop, .bubbles-container, app-wheat-decor, app-site-footer,
+  app-sommelier-chat, .vm-strip { display: none !important; }
+  body { background: #fff !important; }
+  .app-main { padding: 0 !important; }
 }

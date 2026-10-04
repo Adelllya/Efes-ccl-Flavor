@@ -1,56 +1,51 @@
-import { Component, DestroyRef, NgZone, OnInit, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, NgZone, QueryList, ViewChildren, inject, signal } from '@angular/core';
 
 interface Stalk {
   src: string;
   side: 'left' | 'right';
-  /** Якорь по высоте страницы, % - считается от низа для anchor: 'bottom'. */
-  at: number;
-  anchor: 'top' | 'bottom';
-  /** Сдвиг центра картинки за край экрана, % её ширины. */
-  hide: number;
+  /** Верх картинки внутри одного «экрана» узора, px. */
+  y: number;
   width: number;
-  /** Наклон от вертикали. Около 75° колос почти лежит. */
+  /** Отступ от края: минус прячет часть картинки за экран, плюс - заводит внутрь. */
+  edge: number;
+  /** Лёгкий наклон, градусы. */
   tilt: number;
-  /** Насколько сильно колос отстаёт при прокрутке. */
-  lag: number;
-  opacity: number;
+  /** Параллакс: насколько колос отстаёт от страницы при прокрутке. */
+  speed: number;
 }
 
-/** Дальше этого колос не уедет - иначе он выйдет за слой и обрежется. */
-const MAX_SHIFT = 50;
+/** Высота одного «экрана» узора - дальше колосья повторяются. */
+const TILE = 1300;
+/** С этого места начинается первый экран: выше стоит навбар. */
+const START = 60;
 
 /**
- * Пшеница по краям страницы.
+ * Колосья по краям страницы, как на сайте Efes.
  *
- * Колосья лежат почти горизонтально и растут из-за боковых краёв.
+ * Картинки стоят как есть, без поворота на бок: у пучков стебли уходят
+ * в правый нижний угол файла, поэтому справа край экрана их и срезает.
+ * Слева стоят одиночные колосья, они целые и помещаются полностью.
  *
- * Наклон здесь главное. У исходных картинок стебли обрезаны по нижней
- * границе файла, и пока колос стоит вертикально, этот срез виден прямо
- * посреди страницы. При наклоне около 75° стебли смотрят вбок и уходят
- * за край экрана - наружу остаётся только метёлка. Поворот считается от
- * центра картинки, поэтому половина длины прячется за краем, половина
- * входит в кадр.
- *
- * Прокрутка качает колосья в пределах ±70px. Раньше сдвиг рос вместе со
- * скроллом, и нижние колосья уезжали за слой, где их срезало ровной
- * линией; теперь диапазон ограничен и такого не бывает.
+ * Слой фиксирован на экране, а колосья привязаны к местам на странице
+ * и едут вместе с ней, только чуть медленнее (параллакс). У каждого
+ * своя скорость, поэтому при прокрутке они немного расходятся и
+ * получается глубина. Сдвиг считается от центра экрана: пока колос
+ * виден, он смещается не больше чем на speed * пол-экрана.
  */
 @Component({
   selector: 'app-wheat-decor',
   standalone: true,
   template: `
     <div class="wheat" aria-hidden="true">
-      @for (s of stalks; track $index) {
+      @for (s of stalks(); track $index) {
         <img
+          #stalk
           [src]="s.src"
           alt=""
-          [class.right]="s.side === 'right'"
-          [class.from-bottom]="s.anchor === 'bottom'"
-          [style.top]="s.anchor === 'top' ? s.at + '%' : null"
-          [style.bottom]="s.anchor === 'bottom' ? s.at + '%' : null"
+          loading="lazy"
           [style.width.px]="s.width"
-          [style.opacity]="s.opacity"
-          [style.transform]="transform(s)"
+          [style.left.px]="s.side === 'left' ? s.edge : null"
+          [style.right.px]="s.side === 'right' ? s.edge : null"
         />
       }
     </div>
@@ -59,89 +54,136 @@ const MAX_SHIFT = 50;
     :host { display: contents; }
 
     .wheat {
-      position: absolute;
+      position: fixed;
       inset: 0;
       z-index: 0;
       overflow: hidden;
       pointer-events: none;
     }
 
-    /* Лежачий колос занимает по высоте свою ширину, а не длину, поэтому
-       у краёв слоя хватает небольшого запаса. */
-    .wheat img.from-bottom { margin-bottom: 20px; }
-
     .wheat img {
       position: absolute;
-      left: 0;
+      top: 0;
       height: auto;
-      /* Поворот вокруг центра: половина колоса уходит за край, половина
-         остаётся в кадре. */
-      transform-origin: 50% 50%;
       will-change: transform;
-      filter: drop-shadow(0 12px 26px rgba(180, 83, 9, 0.16));
+      filter: drop-shadow(0 10px 18px rgba(180, 83, 9, 0.12));
     }
-    .wheat img.right { left: auto; right: 0; }
 
     /* На узком экране колосья лезут на текст - там их нет. */
     @media (max-width: 1180px) { .wheat { display: none; } }
   `],
 })
-export class WheatDecorComponent implements OnInit {
+export class WheatDecorComponent implements AfterViewInit {
   private zone = inject(NgZone);
   private destroyRef = inject(DestroyRef);
 
-  private scrollY = signal(0);
+  @ViewChildren('stalk') private imgs!: QueryList<ElementRef<HTMLImageElement>>;
 
-  /**
-   * Колосья расставлены по всей высоте страницы: верхние отмеряются от
-   * верха, нижние - от низа, поэтому на короткой странице они не
-   * слипаются, а на длинной не собираются в начале.
-   */
-  readonly stalks: Stalk[] = [
-    { src: 'decor/corn6.png', side: 'right', at: 8,  anchor: 'top',    hide: 52, width: 300, tilt: 76, lag: 0.16, opacity: 0.85 },
-    { src: 'decor/corn2.png', side: 'left',  at: 16, anchor: 'top',    hide: 50, width: 260, tilt: 72, lag: 0.10, opacity: 0.75 },
-    { src: 'decor/corn4.png', side: 'left',  at: 44, anchor: 'top',    hide: 48, width: 210, tilt: 78, lag: 0.18, opacity: 0.6 },
-    { src: 'decor/corn6.png', side: 'right', at: 40, anchor: 'top',    hide: 54, width: 280, tilt: 74, lag: 0.13, opacity: 0.7 },
-    { src: 'decor/corn3.png', side: 'left',  at: 34, anchor: 'bottom', hide: 46, width: 200, tilt: 80, lag: 0.09, opacity: 0.6 },
-    { src: 'decor/corn5.png', side: 'right', at: 28, anchor: 'bottom', hide: 46, width: 175, tilt: 72, lag: 0.17, opacity: 0.55 },
-    { src: 'decor/corn2.png', side: 'left',  at: 16, anchor: 'bottom', hide: 50, width: 240, tilt: 75, lag: 0.12, opacity: 0.55 },
-    { src: 'decor/corn6.png', side: 'right', at: 12, anchor: 'bottom', hide: 52, width: 260, tilt: 77, lag: 0.15, opacity: 0.5 },
+  /** Один экран узора, повторяется по всей высоте страницы. */
+  private readonly pattern: Stalk[] = [
+    // Справа вверху пучок заглядывает из-за края.
+    { src: 'decor/corn2.png', side: 'right', y: 0,    width: 250, edge: -70,  tilt: 0,   speed: 0.10 },
+    // Слева тонкий колос по диагонали.
+    { src: 'decor/corn4.png', side: 'left',  y: 190,  width: 190, edge: -30,  tilt: -6,  speed: 0.28 },
+    // Большой пучок справа, стебли срезаны краем.
+    { src: 'decor/corn6.png', side: 'right', y: 330,  width: 320, edge: -110, tilt: 0,   speed: 0.16 },
+    // Слева ниже ещё один колос, почти стоит.
+    { src: 'decor/corn5.png', side: 'left',  y: 560,  width: 120, edge: 70,   tilt: -10, speed: 0.34 },
+    // Справа одиночный колос, отстоит от края.
+    { src: 'decor/corn4.png', side: 'right', y: 860,  width: 180, edge: 150,  tilt: 4,   speed: 0.24 },
+    // Слева колос с остями.
+    { src: 'decor/corn3.png', side: 'left',  y: 1000, width: 170, edge: -20,  tilt: 8,   speed: 0.20 },
   ];
+
+  readonly stalks = signal<(Stalk & { pageY: number })[]>([]);
 
   private animate = true;
 
-  ngOnInit(): void {
+  constructor() {
+    this.layout();
+  }
+
+  ngAfterViewInit(): void {
     this.animate = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (!this.animate) return;
 
     let ticking = false;
-    const onScroll = () => {
+    const schedule = () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        this.zone.run(() => this.scrollY.set(window.scrollY));
         ticking = false;
+        this.paint();
       });
     };
 
-    // Слушаем вне зоны Angular: иначе каждый пиксель прокрутки запускал бы
+    // Высота страницы меняется при переходах между разделами:
+    // пересчитываем, сколько экранов узора нужно.
+    const relayout = () => {
+      if (this.layout()) this.zone.run(() => {});
+      schedule();
+    };
+
+    // Всё вне зоны Angular: иначе каждый пиксель прокрутки запускал бы
     // проверку изменений во всём приложении.
-    this.zone.runOutsideAngular(() => window.addEventListener('scroll', onScroll, { passive: true }));
-    this.destroyRef.onDestroy(() => window.removeEventListener('scroll', onScroll));
-    this.scrollY.set(window.scrollY);
+    this.zone.runOutsideAngular(() => {
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule, { passive: true });
+      const ro = new ResizeObserver(relayout);
+      ro.observe(document.body);
+      this.destroyRef.onDestroy(() => {
+        window.removeEventListener('scroll', schedule);
+        window.removeEventListener('resize', schedule);
+        ro.disconnect();
+      });
+    });
+
+    this.imgs.changes.subscribe(schedule);
+    schedule();
   }
 
-  transform(s: Stalk): string {
-    // Поворот по часовой уводит низ картинки (стебли) влево, против -
-    // вправо. Значит левому колосу нужен плюс, правому минус: тогда
-    // срез у обоих прячется за своим краем, а метёлка входит в кадр.
-    const angle = s.side === 'left' ? s.tilt : -s.tilt;
-    const x = s.side === 'left' ? -s.hide : s.hide;
+  /** Раскладывает узор по высоте страницы. Возвращает true, если число колосьев изменилось. */
+  private layout(): boolean {
+    const pageH = typeof document !== 'undefined' ? document.documentElement.scrollHeight : TILE;
+    const tiles = Math.max(1, Math.ceil((pageH - START) / TILE));
+    if (this.stalks().length === tiles * this.pattern.length) return false;
 
-    // Синус вместо линейного сдвига: колос плавно качается в пределах
-    // ±MAX_SHIFT и никогда не уезжает за слой, где его срезало бы краем.
-    const y = this.animate ? MAX_SHIFT * Math.sin(this.scrollY() * s.lag / 90) : 0;
+    const next: (Stalk & { pageY: number })[] = [];
+    for (let t = 0; t < tiles; t++) {
+      for (const s of this.pattern) {
+        next.push({ ...s, pageY: START + t * TILE + s.y });
+      }
+    }
+    this.stalks.set(next);
+    return true;
+  }
 
-    return `translate(${x}%, ${y.toFixed(1)}px) rotate(${angle}deg)`;
+  /** Ставит колосья на места с учётом прокрутки. Пишем прямо в DOM, без Angular. */
+  private paint(): void {
+    const scroll = window.scrollY;
+    const vh = window.innerHeight;
+    const imgs = this.imgs.toArray();
+
+    imgs.forEach((ref, i) => {
+      const s = this.stalks()[i];
+      if (!s) return;
+      const el = ref.nativeElement;
+      const h = el.offsetHeight || s.width;
+      const onScreen = s.pageY - scroll;
+
+      // Далеко за экраном - не двигаем, браузеру меньше работы.
+      if (onScreen > vh + 400 || onScreen + h < -400) {
+        el.style.visibility = 'hidden';
+        return;
+      }
+      el.style.visibility = '';
+
+      // Отставание от центра экрана: колос у центра стоит на своём месте,
+      // выше и ниже - чуть сдвинут навстречу. Разные скорости дают глубину.
+      const fromCenter = onScreen + h / 2 - vh / 2;
+      const lag = this.animate ? -fromCenter * s.speed : 0;
+      const y = onScreen + lag;
+
+      el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0) rotate(${s.tilt}deg)`;
+    });
   }
 }

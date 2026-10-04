@@ -19,7 +19,8 @@ type NoteFilter = 'all' | PyramidLayer;
         </div>
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Название или термин" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Название или термин" aria-label="Поиск: название или термин"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         <div class="wa-pills">
           @for (p of pills; track p.value) {

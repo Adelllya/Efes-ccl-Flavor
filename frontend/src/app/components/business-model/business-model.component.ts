@@ -17,7 +17,7 @@ export class BusinessModelComponent {
   ];
 
   stats = [
-    { value: '$1.8B', label: 'рынок пива KZ' },
+    { value: '690 млн л', label: 'пива продано в Казахстане в 2025 году' },
     { value: '15+', label: 'брендов Efes KZ' },
     { value: '∞', label: 'масштаб: кофе, вино, Турция' },
   ];

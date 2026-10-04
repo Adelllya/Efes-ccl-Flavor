@@ -97,6 +97,10 @@ def find_brand(names):
 class Command(BaseCommand):
     help = 'Создаёт группы ролей, демо-пользователей и демо-заведение с меню (идемпотентно)'
 
+    def add_arguments(self, parser):
+        parser.add_argument('--reset-passwords', action='store_true',
+                            help='Вернуть демо-пользователям пароли по умолчанию, даже если они их сменили')
+
     def handle(self, *args, **options):
         groups = {}
         for name in GROUP_ROLES:
@@ -110,7 +114,10 @@ class Command(BaseCommand):
                 username=username,
                 defaults={'email': username + '@flavortree.kz', 'first_name': first_name},
             )
-            user.set_password(password)
+            # Пароль ставим новому пользователю; у существующего не трогаем без явной просьбы,
+            # иначе повторный запуск вернул бы всем известный пароль после его смены.
+            if created or options.get('reset_passwords'):
+                user.set_password(password)
             user.is_staff = is_staff
             user.is_active = True
             user.save()

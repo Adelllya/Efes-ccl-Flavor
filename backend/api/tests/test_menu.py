@@ -30,7 +30,14 @@ class VenueMenuTests(TestCase):
         self.assertEqual(data['venue']['slug'], 'efes-beer-garden')
         self.assertEqual(data['venue']['items_count'], 3)
         self.assertEqual(data['venue']['phone'], '+7 727 000 00 00')
-        self.assertEqual(data['venue']['owner'], {'id': self.owner.id, 'username': 'rest'})
+        # Логин владельца гостю не отдаём; сам владелец и модератор его видят.
+        self.assertIsNone(data['venue']['owner'])
+        own = client_for(self.owner).get('/api/venues/efes-beer-garden/menu/').json()
+        self.assertEqual(own['venue']['owner'], {'id': self.owner.id, 'username': 'rest'})
+        mod = client_for(make_user('mod_owner_view', role='moderator')).get('/api/venues/efes-beer-garden/').json()
+        self.assertEqual(mod['owner'], {'id': self.owner.id, 'username': 'rest'})
+        other = client_for(make_user('other_owner_view', role='restaurant_admin')).get('/api/venues/efes-beer-garden/').json()
+        self.assertIsNone(other['owner'])
         # Разделы упорядочены по минимальному sort_order, затем по имени.
         self.assertEqual([s['name'] for s in data['sections']], ['Горячее', 'Закуски'])
 

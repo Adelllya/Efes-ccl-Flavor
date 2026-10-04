@@ -4,7 +4,9 @@ import {
   HostListener,
   OnDestroy,
   AfterViewInit,
+  computed,
   inject,
+  input,
   output,
   signal,
 } from '@angular/core';
@@ -26,6 +28,15 @@ interface HeroPill {
   id: string;
   label: string;
   icon: 'beer' | 'pyramid' | 'sparkle' | 'book';
+}
+
+/** «14 сортов Efes Kazakhstan»: слово склоняется по числу. */
+function brandsLabel(count: number): string {
+  if (count <= 0) return 'Сорта Efes Kazakhstan';
+  const tens = count % 100;
+  const ones = count % 10;
+  const word = tens >= 11 && tens <= 14 ? 'сортов' : ones === 1 ? 'сорт' : ones >= 2 && ones <= 4 ? 'сорта' : 'сортов';
+  return `${count} ${word} Efes Kazakhstan`;
 }
 
 /**
@@ -61,13 +72,12 @@ interface HeroPill {
       </h1>
 
       <p class="hero-lede">
-        FlavorTree - платформа сенсорного образования для пива. Мы раскладываем вкус
-        каждого бренда на три слоя, как аромат в парфюмерии, и подбираем идеальное
-        сочетание с едой.
+        Подбираем пиво к блюду и блюдо к пиву. Вкус каждого сорта разложен на три слоя,
+        как аромат в парфюмерии: что слышно сразу, что раскрывается и что остаётся.
       </p>
 
       <ul class="hero-pills" aria-label="Что есть на платформе">
-        @for (pill of pills; track pill.id) {
+        @for (pill of pills(); track pill.id) {
           <li class="hero-pill">
             <span class="hero-pill-icon" aria-hidden="true">
               @switch (pill.icon) {
@@ -98,7 +108,7 @@ interface HeroPill {
           name="dish"
           autocomplete="off"
           enterkeyhint="search"
-          placeholder="Введите блюдо (напр. Шашлык, Бешбармак…)"
+          placeholder="Блюдо, например шашлык"
           [ngModel]="query()"
           (ngModelChange)="query.set($event)"
         />
@@ -137,7 +147,7 @@ interface HeroPill {
             </span>
             <span class="choice-title">У меня есть<br><em>блюдо</em></span>
             <span class="choice-desc" id="choice-dish-desc">Подберу пиво к еде по вкусовой пирамиде за 4 шага</span>
-            <span class="choice-cta">Выбрать →</span>
+            <span class="choice-cta">Выбрать <span aria-hidden="true">→</span></span>
           </span>
         </button>
 
@@ -169,7 +179,7 @@ interface HeroPill {
             </span>
             <span class="choice-title">У меня есть<br><em>пиво</em></span>
             <span class="choice-desc" id="choice-beer-desc">Покажу идеальные блюда и вкусовые мосты</span>
-            <span class="choice-cta">Выбрать →</span>
+            <span class="choice-cta">Выбрать <span aria-hidden="true">→</span></span>
           </span>
         </button>
       </div>
@@ -318,7 +328,7 @@ interface HeroPill {
       align-items: center;
       gap: var(--space-sm);
       min-height: 44px;
-      background: linear-gradient(150deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       color: #fff;
       border: none;
       border-radius: var(--radius-md);
@@ -328,12 +338,13 @@ interface HeroPill {
       padding: 0 var(--space-2xl);
       cursor: pointer;
       white-space: nowrap;
-      box-shadow: 0 8px 20px -4px rgba(180, 83, 9, 0.4);
+      box-shadow: var(--shadow-cta);
       transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) ease;
     }
 
     .hero-search-btn svg { width: 16px; height: 16px; }
-    .hero-search-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -4px rgba(180, 83, 9, 0.5); }
+    .hero-search-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -6px rgba(146, 64, 14, 0.6); }
+    .hero-search-btn:focus-visible { outline: 3px solid var(--beer-light); outline-offset: 3px; }
     .hero-search-btn:active { transform: translateY(0); }
 
     /* ── Two choice bubbles */
@@ -515,7 +526,8 @@ interface HeroPill {
     .choice-cta {
       display: inline-flex;
       align-items: center;
-      background: linear-gradient(150deg, var(--beer-accent), var(--beer-mid));
+      gap: 4px;
+      background: var(--grad-cta);
       color: #fff;
       font-size: 0.78rem;
       font-weight: 700;
@@ -588,25 +600,83 @@ interface HeroPill {
       .side-beers { display: none; }
     }
 
+    /* Планшет и телефон: два круга стоят рядом, в один ряд, и идут сразу за текстом */
     @media (max-width: 860px) {
-      .hero { padding: var(--space-4xl) 0 var(--space-3xl); }
-      .choices { flex-direction: column; gap: var(--space-4xl); padding: var(--space-lg) 0; }
-      .choice--left.revealed,
-      .choice--right.revealed { transform: none; animation: none; }
-      .choice--left:hover,
-      .choice--right:hover { transform: scale(1.03) !important; }
+      .hero { display: flex; flex-direction: column; padding: var(--space-4xl) 0 var(--space-3xl); }
+      .hero-title { order: 1; }
+      .hero-lede { order: 2; }
+      .choices { order: 3; }
+      .hero-search { order: 4; }
+      .hero-pills { order: 5; margin-bottom: 0; }
+      .choices {
+        width: 100%;
+        gap: clamp(10px, 3.5vw, 36px);
+        margin-bottom: var(--space-3xl);
+        padding: var(--space-md) 0;
+      }
+      .choice {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: 300px;
+        width: auto;
+        height: auto;
+        aspect-ratio: 1;
+        padding: clamp(10px, 3vw, 28px);
+      }
+      .choice--left.revealed { transform: translateY(-8px); animation: floatLeftSm 4.5s ease-in-out infinite alternate 0.8s; }
+      .choice--right.revealed { transform: translateY(8px); animation: floatRightSm 5s ease-in-out infinite alternate 0.8s; }
+      .choice--left:hover { transform: translateY(-8px) scale(1.03) !important; }
+      .choice--right:hover { transform: translateY(8px) scale(1.03) !important; }
+      .choice:active { filter: brightness(0.97); }
       .hero-search {
+        width: 100%;
         flex-wrap: wrap;
         padding: var(--space-sm);
-        margin-bottom: var(--space-4xl);
+        margin-bottom: var(--space-2xl);
       }
       .hero-search-icon { display: none; }
       .hero-search-input { flex-basis: 100%; padding: 0 var(--space-md); }
       .hero-search-btn { width: 100%; justify-content: center; }
     }
 
-    @media (max-width: 400px) {
-      .choice { width: min(300px, calc(100vw - 32px)); height: min(300px, calc(100vw - 32px)); }
+    @keyframes floatLeftSm {
+      from { transform: translateY(-8px); }
+      to   { transform: translateY(-14px); }
+    }
+
+    @keyframes floatRightSm {
+      from { transform: translateY(8px); }
+      to   { transform: translateY(14px); }
+    }
+
+    /* Телефон: в круге остаются значок, название и кнопка; пояснение читает только скринридер */
+    @media (max-width: 600px) {
+      .hero { padding: var(--space-2xl) 0 var(--space-lg); }
+      .hero-title { margin-bottom: var(--space-lg); }
+      .hero-lede { font-size: 1rem; line-height: 1.6; margin-bottom: var(--space-xl); }
+      .choices { margin-bottom: var(--space-2xl); }
+      .choice { border-width: 1.5px; }
+      .choice-desc { display: none; }
+      .choice-icon { width: clamp(40px, 12vw, 56px); height: clamp(40px, 12vw, 56px); margin-bottom: var(--space-sm); }
+      .choice-icon svg { width: 55%; height: 55%; }
+      .choice-title { font-size: clamp(0.95rem, 4.4vw, 1.2rem); margin-bottom: var(--space-sm); }
+      .choice-cta { font-size: 0.75rem; padding: 6px 14px; }
+      .hero-pill { min-height: 36px; font-size: 0.8rem; padding: 0 var(--space-md); }
+    }
+
+    /* Узкий телефон: содержимое круга ужимается, чтобы круг оставался кругом */
+    @media (max-width: 360px) {
+      .choice { padding: var(--space-sm); }
+      .choice-icon { width: 36px; height: 36px; margin-bottom: 6px; }
+      .choice-title { font-size: 0.9rem; margin-bottom: 6px; }
+      .choice-cta { font-size: 0.7rem; padding: 5px 12px; }
+    }
+
+    @media (max-width: 860px) and (prefers-reduced-motion: reduce) {
+      .choice--left.revealed,
+      .choice--right.revealed { transform: none; animation: none; }
+      .choice--left:hover,
+      .choice--right:hover { transform: none !important; }
     }
   `],
 })
@@ -618,17 +688,20 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   /** Пользователь отправил поисковый запрос по блюду. */
   dishSearch = output<string>();
 
+  /** Сколько сортов в каталоге: число в первой плашке. Пока каталог не загружен, плашка без числа. */
+  brandCount = input(0);
+
   query = signal('');
   revealed = signal(false);
   sideVisible = signal<boolean[]>([false, false, false]);
   sideTransform = signal<string[]>(['', '', '', '', '', '']);
 
-  pills: HeroPill[] = [
-    { id: 'brands', label: '5 брендов Efes KZ', icon: 'beer' },
+  pills = computed<HeroPill[]>(() => [
+    { id: 'brands', label: brandsLabel(this.brandCount()), icon: 'beer' },
     { id: 'pyramid', label: 'Вкусовая пирамида', icon: 'pyramid' },
-    { id: 'ai', label: 'AI-Сомелье', icon: 'sparkle' },
+    { id: 'ai', label: 'ИИ-сомелье', icon: 'sparkle' },
     { id: 'school', label: 'Школа вкуса', icon: 'book' },
-  ];
+  ]);
 
   cardBubblesLeft = this.makeBubbles(16);
   cardBubblesRight = this.makeBubbles(16);

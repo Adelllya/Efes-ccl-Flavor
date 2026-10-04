@@ -1,4 +1,4 @@
-import { OrderItemKind } from '../../models/flavor-tree.models';
+import { OrderItemKind, OrderVia } from '../../models/flavor-tree.models';
 
 /**
  * Корзина гостя в localStorage, отдельно для каждого заведения.
@@ -15,6 +15,8 @@ export interface CartLine {
   sub: string;
   price: string;
   qty: number;
+  /** Откуда позицию добавили первый раз: из меню, из совета пары или из чата ИИ. */
+  via?: OrderVia;
 }
 
 export const MAX_QTY = 20;
@@ -67,4 +69,24 @@ export function addToCart(slug: string, line: Omit<CartLine, 'qty'>): CartLine[]
 /** Сообщает открытой странице меню, что корзину заведения поменяли. */
 export function notifyCartChanged(slug: string): void {
   window.dispatchEvent(new CustomEvent(CART_CHANGED_EVENT, { detail: { slug } }));
+}
+
+const DEVICE_KEY = 'ft_device';
+
+/**
+ * Случайный идентификатор устройства: по нему сервер считает один голос гостя за пару.
+ * К человеку он не привязан и нигде, кроме оценок пар, не используется.
+ */
+export function deviceId(): string {
+  try {
+    const saved = localStorage.getItem(DEVICE_KEY);
+    if (saved && /^[A-Za-z0-9_-]{16,64}$/.test(saved)) return saved;
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    const id = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem(DEVICE_KEY, id);
+    return id;
+  } catch {
+    return '';
+  }
 }

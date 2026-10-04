@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, computed, effect, input, signal } from '@angular/core';
+import { Component, EventEmitter, Injector, Output, afterNextRender, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Brand, Dish, FoodIcon, FoodPairing, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { COOKING, TASTES, CATEGORIES, bigImage, smallImage } from './pairing-engine.data';
@@ -15,6 +15,8 @@ interface PairCard {
   label: string;
   hint: string;
   photo: string | null;
+  /** Значок первой характеристики блюда: стоит в кружке, пока у блюда нет фото. */
+  emoji: string;
   marks: { key: string; label: string; emoji: string; image: string | null }[];
 }
 
@@ -46,6 +48,12 @@ interface PairCard {
         <span class="bp-step">Шаг {{ selected() ? 2 : 1 }} из 2</span>
       </div>
 
+      @if (failed()) {
+        <div class="bp-none" role="alert">
+          <p class="text-dim mb-lg">Не удалось загрузить каталог. Проверьте интернет и попробуйте ещё раз.</p>
+          <button type="button" class="btn-amber btn-sm" (click)="retry.emit()">Обновить</button>
+        </div>
+      } @else {
       <!-- ── Шаг 1: витрина сортов ── -->
       @if (!selected()) {
         <header class="bp-ask">
@@ -169,8 +177,10 @@ interface PairCard {
                       <span class="bp-duo-dish">
                         @if (c.photo) {
                           <img [src]="c.photo" alt="" loading="lazy" />
+                        } @else if (c.emoji) {
+                          <span class="bp-duo-emoji">{{ c.emoji }}</span>
                         } @else {
-                          <span class="bp-duo-emoji">{{ c.marks[0]?.emoji || '🍽️' }}</span>
+                          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
                         }
                       </span>
 
@@ -220,6 +230,7 @@ interface PairCard {
             }
           </div>
         </div>
+      }
       }
     </div>
   `,
@@ -291,7 +302,7 @@ interface PairCard {
     }
     .bp-pack:hover { border-color: rgba(180, 83, 9, 0.3); color: var(--foam); }
     .bp-pack.on {
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       border-color: transparent;
       color: #fff;
       font-weight: 700;
@@ -337,7 +348,7 @@ interface PairCard {
       transition: all var(--duration-normal) ease;
     }
     .bp-card:hover .bp-card-go {
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       color: #fff;
     }
 
@@ -428,6 +439,7 @@ interface PairCard {
       flex: 0 0 auto;
     }
     .bp-duo-dish img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .bp-duo-dish svg { color: var(--beer-mid); }
 
     .bp-duo-beer {
       position: relative;
@@ -497,7 +509,7 @@ interface PairCard {
     }
 
     @media (max-width: 900px) {
-      .bp-layout { grid-template-columns: 1fr; }
+      .bp-layout { grid-template-columns: minmax(0, 1fr); }
       .bp-drink { position: static; }
     }
 
@@ -505,6 +517,12 @@ interface PairCard {
       .bp-pair { grid-template-columns: 1fr; }
       .bp-duo { width: 100%; height: 140px; }
       .bp-back { align-self: center; }
+      /* Витрина на телефоне в две колонки: полка короче вдвое */
+      .bp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+      .bp-card { padding: var(--space-lg) var(--space-sm) var(--space-xl); }
+      .bp-card-visual { height: 120px; }
+      .bp-card-name { font-size: 0.95rem; }
+      .bp-list-title { font-size: 1.6rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -520,8 +538,10 @@ export class BeerPairingsComponent {
   icons = input<FoodIcon[]>([]);
   /** false, пока родитель ещё грузит каталог: тогда вместо "пусто" скелет. */
   loaded = input(true);
+  /** Сорта или сочетания не загрузились: вместо "пусто" ошибка с кнопкой "Обновить". */
+  failed = input(false);
   intro = input('');
-  /** Сорт, с которого открыть сразу второй шаг (экспресс-сценарии главной). */
+  /** Сорт, с которого открыть сразу второй шаг: экспресс-сценарий или возврат на главную после страницы сорта. */
   initial = input<Brand | null>(null);
 
   readonly skeletonCards = [1, 2, 3];
@@ -530,6 +550,12 @@ export class BeerPairingsComponent {
 
   @Output() openBrand = new EventEmitter<string>();
   @Output() exit = new EventEmitter<void>();
+  /** Гость выбрал сорт или вернулся к витрине (null): родитель помнит выбор между заходами на страницу. */
+  @Output() picked = new EventEmitter<Brand | null>();
+  /** Гость нажал "Обновить" после ошибки загрузки. */
+  @Output() retry = new EventEmitter<void>();
+
+  private injector = inject(Injector);
 
   readonly packs = [
     { id: '', label: 'Все' },
@@ -585,23 +611,35 @@ export class BeerPairingsComponent {
       .sort((a, b) => b.compatibility_score - a.compatibility_score)
       .map(p => {
         const dish = byId.get(p.dish) ?? byName.get((p.dish_name ?? '').toLowerCase()) ?? null;
+        const marks = this.marksFor(dish);
         return {
           pairing: p,
           label: PAIRING_LABELS[p.pairing_type] ?? p.pairing_type,
           hint: PAIRING_HINT[p.pairing_type] ?? '',
           photo: dish?.image || null,
-          marks: this.marksFor(dish),
+          emoji: marks.length ? marks[0].emoji : '',
+          marks,
         };
       });
   });
 
   select(brand: Brand): void {
     this.selected.set(brand);
-    window.scrollTo({ top: Math.max(0, window.scrollY - 200), behavior: 'smooth' });
+    this.picked.emit(brand);
+    // Пары рисуются вместо витрины: когда они уже на экране, подводим к началу панели
+    afterNextRender(() => {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      document.getElementById('pairing-selector-section')
+        ?.scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'start' });
+    }, { injector: this.injector });
   }
 
   goBack(): void {
-    if (this.selected()) { this.selected.set(null); return; }
+    if (this.selected()) {
+      this.selected.set(null);
+      this.picked.emit(null);
+      return;
+    }
     this.exit.emit();
   }
 

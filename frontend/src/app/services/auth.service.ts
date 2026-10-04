@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable, of, throwError, timer } from 'rxjs';
+import { catchError, map, retry, tap } from 'rxjs/operators';
 import { API_BASE } from './api.service';
 import { TokenStore } from './token.store';
 import { AuthResponse, AuthUser, UserRole } from '../models/flavor-tree.models';
@@ -20,9 +20,12 @@ export interface RegisterData {
 /** Какие вкладки панели открыты каждой роли. */
 export const PANEL_ACCESS: Record<UserRole, readonly PanelTab[]> = {
   user: [],
-  sommelier: ['overview', 'brands', 'pairings'],
-  restaurant_admin: ['overview', 'dishes', 'menu', 'orders'],
-  moderator: ['overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'users', 'settings', 'requests']
+  sommelier: ['overview', 'brands', 'pairings', 'notes', 'analytics', 'quiz'],
+  restaurant_admin: ['overview', 'dishes', 'menu', 'orders', 'analytics', 'rewards'],
+  moderator: [
+    'overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'analytics', 'rewards', 'users', 'settings',
+    'requests', 'quiz'
+  ]
 };
 
 /** Старые вкладки pyramid и serving стали частями вкладки brands. */
@@ -87,11 +90,25 @@ export const FIELD_LABELS: Record<string, string> = {
   qty: 'Количество',
   note: 'Примечание',
   status: 'Статус',
-  is_available: 'В наличии'
+  is_available: 'В наличии',
+  text: 'Вопрос',
+  options: 'Варианты ответа',
+  correct_index: 'Верный ответ',
+  explanation: 'Почему сочетание работает',
+  is_active: 'Показывать в тесте',
+  level: 'Ступень',
+  taste: 'Вкус',
+  cuisines: 'Кухни',
+  favorite_brands: 'Любимые сорта',
+  answers: 'Ответы'
 };
 
 /** Длиннее этого сервер по-человечески не пишет: скорее всего, это трассировка или HTML. */
 const MAX_MESSAGE_LENGTH = 300;
+
+/** Сколько раз повторить проверку сессии, если сервер не ответил, и пауза перед первым повтором. */
+const ME_RETRIES = 2;
+const ME_RETRY_DELAY_MS = 1500;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -165,7 +182,17 @@ export class AuthService {
       this.ready.set(true);
       return;
     }
-    this.http.get<AuthUser>(`${API_BASE}/auth/me/`).subscribe({
+    const rejected = (err: unknown) => err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403);
+    this.http.get<AuthUser>(`${API_BASE}/auth/me/`).pipe(
+      // Холодный старт сервера или обрыв сети: сессия цела, просто ответа нет. Пробуем ещё пару раз
+      // и до конца попыток держим ready = false, иначе вошедшего пользователя уводило на вход.
+      // Отказ по токену и смену токена повтор не лечит.
+      retry({
+        count: ME_RETRIES,
+        delay: (err: unknown, attempt: number) =>
+          rejected(err) || this.store.token() !== token ? throwError(() => err) : timer(ME_RETRY_DELAY_MS * attempt)
+      })
+    ).subscribe({
       next: user => {
         // пока ждали ответ, токен сменился: этот ответ уже не про нас
         if (this.store.token() !== token) return;
@@ -175,7 +202,7 @@ export class AuthService {
       error: (err: unknown) => {
         if (this.store.token() !== token) return;
         // 401 уже сбросил токен в интерцепторе; сеть недоступна - токен оставляем
-        if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) this.clearSession();
+        if (rejected(err)) this.clearSession();
         this.ready.set(true);
       }
     });
@@ -218,7 +245,7 @@ export class AuthService {
   /** Превращает ответ DRF ({detail} | {field: [..]} | {errors: {...}}) в одну строку. */
   static errorText(err: unknown): string {
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 0) return 'Сервер недоступен. Проверьте, запущен ли бэкенд.';
+      if (err.status === 0) return 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.';
       const text = AuthService.bodyText(err.error);
       if (text) return text;
       if (err.status === 401) return 'Нужно войти в аккаунт';

@@ -1,15 +1,16 @@
 import {
-  Component, DestroyRef, ElementRef, EventEmitter, HostListener, Injector, Input, Output, afterNextRender, computed, effect, inject, signal,
-  untracked, viewChild
+  Component, DestroyRef, ElementRef, EventEmitter, HostListener, Injector, Input, Output, afterNextRender, computed, effect, inject,
+  input, signal, untracked, viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { TimeoutError, timeout } from 'rxjs';
-import { ApiService } from '../services/api.service';
+import { Observable, TimeoutError, timeout } from 'rxjs';
+import { AI_VISION_TIMEOUT_MS, ApiService } from '../services/api.service';
+import { downscalePhoto, photoProblem } from './image-tools';
 import { AuthService } from '../services/auth.service';
 import { SelectionService } from '../services/selection.service';
 import {
-  AiMessage, AiMode, AiPrefs, AiRequest, AiStatus, AiSuggestion, MenuDrink, MenuEntry, VenueMenu
+  AiMessage, AiMode, AiPrefs, AiReply, AiRequest, AiStatus, AiSuggestion, MenuDrink, MenuEntry, VenueMenu
 } from '../models/flavor-tree.models';
 import { CartLine, addToCart, notifyCartChanged, readCart } from '../pages/venue-menu/cart-storage';
 
@@ -29,7 +30,14 @@ interface ChatMessage extends AiMessage {
   note?: string;
   /** slug заведения на момент ответа; по нему решаем, можно ли класть карточку в заказ. */
   venue?: string | null;
+  /** Гость прислал фото: в ленте показываем снимок. Адрес живёт до перезагрузки и в хранилище не пишется. */
+  photo?: string;
 }
+
+/** Подпись реплики с фото: под ней фото уходит в историю, которую видит текстовый чат. */
+const PHOTO_CAPTION = 'Фото блюда';
+/** Длинная сторона фото для чата: блюдо узнаётся и на небольшом снимке, а отправка быстрее. */
+const PHOTO_MAX_SIDE = 1600;
 
 interface StoredChat {
   messages: ChatMessage[];
@@ -57,7 +65,11 @@ function readHistory(key: string): StoredChat | null {
 function writeHistory(key: string, chat: StoredChat | null): void {
   try {
     if (!chat) sessionStorage.removeItem(key);
-    else sessionStorage.setItem(key, JSON.stringify({ ...chat, messages: chat.messages.slice(-STORED_LIMIT) }));
+    else {
+      // Адрес снимка (blob:) после перезагрузки не работает: в хранилище его не кладём
+      const messages = chat.messages.slice(-STORED_LIMIT).map(({ photo, ...rest }) => rest);
+      sessionStorage.setItem(key, JSON.stringify({ ...chat, messages }));
+    }
   } catch {
     // без хранилища история живёт до перезагрузки
   }
@@ -143,7 +155,11 @@ function subFromSubtitle(subtitle: string): string {
           }
           @for (m of messages(); track $index) {
             <div class="ai-msg" [class.ai-msg-me]="m.role === 'user'" [class.ai-msg-bot]="m.role !== 'user'">
-              <div class="ai-bubble">{{ m.content }}</div>
+              @if (m.photo) {
+                <img class="ai-photo-msg" [src]="m.photo" alt="Фото блюда от гостя" />
+              } @else {
+                <div class="ai-bubble">{{ m.content }}</div>
+              }
               @if (m.suggestions?.length) {
                 <div class="ai-cards">
                   @for (s of m.suggestions ?? []; track $index) {
@@ -218,6 +234,11 @@ function subFromSubtitle(subtitle: string): string {
             <button type="button" class="ai-pref" [class.on]="prefs().no_alcohol" [attr.aria-pressed]="!!prefs().no_alcohol" (click)="togglePref('no_alcohol')">Без алкоголя</button>
           </div>
           <form class="ai-input-row" (submit)="onSubmit($event); inputEl.value = ''">
+            <button type="button" class="ai-photo-btn" [disabled]="busy()" (click)="photoInput.click()"
+                    aria-label="Прислать фото блюда" title="Прислать фото блюда">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </button>
+            <input type="file" accept="image/*" hidden #photoInput (change)="onPhoto($event)" />
             <input
               id="ai-input"
               class="ai-input"
@@ -248,10 +269,15 @@ export class SommelierChatComponent {
 
   /** На странице меню кнопку поднимаем над полосой корзины (на узких экранах). */
   @Input() lift = false;
+  /**
+   * Гость сейчас на странице меню заведения. Только тогда чат советует из его карты бара:
+   * на остальных страницах последнее открытое заведение чату не указ, он отвечает по каталогу.
+   */
+  inVenue = input(false);
   /** Гость нажал «Открыть» или «О напитке»: AppComponent показывает страницу сорта. */
   @Output() openBrand = new EventEmitter<string>();
 
-  readonly slug = this.selection.venueSlug;
+  readonly slug = computed(() => this.inVenue() ? this.selection.venueSlug() : null);
   readonly pips = [1, 2, 3, 4, 5];
   readonly maxChars = MAX_CHARS;
 
@@ -268,6 +294,8 @@ export class SommelierChatComponent {
   /** Меню открытого заведения: первая подсказка, цены и наличие для карточек. */
   private venueMenu = signal<VenueMenu | null>(null);
   private menuSlug: string | null = null;
+  /** Фото последнего вопроса: «Повторить» после ошибки отправляет его же, а не текст. */
+  private lastPhoto: File | null = null;
   private statusRequested = false;
   private historyLoaded = false;
   private currentKey = historyKey(null);
@@ -280,14 +308,14 @@ export class SommelierChatComponent {
   constructor() {
     // Сменилось заведение: показываем его историю, а не чужую
     effect(() => {
-      const key = historyKey(this.selection.venueSlug());
+      const key = historyKey(this.slug());
       untracked(() => this.switchHistory(key));
     }, { allowSignalWrites: true });
 
     // Лист открыт для заведения: подтягиваем его меню один раз
     effect(() => {
       const open = this.open();
-      const slug = this.selection.venueSlug();
+      const slug = this.slug();
       untracked(() => {
         if (!open) return;
         if (slug && slug !== this.menuSlug) this.loadMenu(slug);
@@ -343,8 +371,8 @@ export class SommelierChatComponent {
   });
 
   readonly greeting = computed(() => this.slug()
-    ? 'Здравствуйте! Подскажу, что взять из меню и какой напиток к этому подойдёт. Спросите или выберите подсказку ниже.'
-    : 'Здравствуйте! Помогу выбрать сорт под блюдо или настроение. Спросите или выберите подсказку ниже.');
+    ? 'Здравствуйте! Подскажу, что взять из меню и какой напиток к этому подойдёт. Спросите, выберите подсказку ниже или пришлите фото блюда.'
+    : 'Здравствуйте! Помогу выбрать сорт под блюдо или настроение. Спросите, выберите подсказку ниже или пришлите фото блюда: узнаю его и подберу напиток.');
 
   // Открытие и закрытие
 
@@ -389,6 +417,7 @@ export class SommelierChatComponent {
     if (!q || this.busy()) return;
     this.input.set('');
     this.error.set('');
+    this.lastPhoto = null;
     this.push({ role: 'user', content: q.slice(0, MAX_CHARS) });
     this.ask();
   }
@@ -397,7 +426,33 @@ export class SommelierChatComponent {
   retry(): void {
     if (this.busy()) return;
     this.error.set('');
-    this.ask();
+    if (this.lastPhoto) this.askByPhoto(this.lastPhoto);
+    else this.ask();
+  }
+
+  /** Гость выбрал или снял фото блюда: уменьшаем его и отправляем сомелье. */
+  async onPhoto(event: Event): Promise<void> {
+    const inputEl = event.target as HTMLInputElement;
+    const original = inputEl.files?.[0];
+    inputEl.value = '';
+    if (!original || this.busy()) return;
+    this.error.set('');
+    const file = await downscalePhoto(original, PHOTO_MAX_SIDE);
+    const problem = photoProblem(file);
+    if (problem) {
+      this.lastPhoto = null;
+      this.error.set(problem);
+      return;
+    }
+    this.lastPhoto = file;
+    this.push({ role: 'user', content: PHOTO_CAPTION, photo: URL.createObjectURL(file) });
+    this.askByPhoto(file);
+  }
+
+  private askByPhoto(file: File): void {
+    const p = this.prefs();
+    const prefs = { no_bitter: !!p.no_bitter, light: !!p.light, no_alcohol: !!p.no_alcohol };
+    this.run(this.api.askSommelierByPhoto(file, this.slug(), prefs).pipe(timeout(AI_VISION_TIMEOUT_MS)));
   }
 
   togglePref(key: keyof AiPrefs): void {
@@ -415,7 +470,6 @@ export class SommelierChatComponent {
   private ask(): void {
     const turns = lastTurns(this.messages());
     if (!turns.length || turns[turns.length - 1].role !== 'user') return;
-    const key = this.currentKey;
     const slug = this.slug();
     const table = this.selection.tableNumber();
     const p = this.prefs();
@@ -430,8 +484,15 @@ export class SommelierChatComponent {
       if (cart.length) body.cart = cart.map(l => ({ kind: l.kind, id: l.id, title: l.title, qty: l.qty }));
     }
 
+    this.run(this.api.askSommelier(body).pipe(timeout(REQUEST_TIMEOUT_MS)));
+  }
+
+  /** Общий путь ответа для текста и фото: индикатор, карточки, ошибка с повтором. */
+  private run(request: Observable<AiReply>): void {
+    const key = this.currentKey;
+    const slug = this.slug();
     this.busy.set(true);
-    this.api.askSommelier(body).pipe(timeout(REQUEST_TIMEOUT_MS), takeUntilDestroyed(this.destroyRef)).subscribe({
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: r => {
         this.busy.set(false);
         // Пока ждали, гость открыл другое заведение: ответ относится к прошлой истории
@@ -456,8 +517,13 @@ export class SommelierChatComponent {
   private errorText(err: unknown): string {
     if (err instanceof TimeoutError) return 'Сомелье долго не отвечает. Попробуйте ещё раз.';
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 429) return 'Слишком много вопросов подряд. Подождите минуту и повторите.';
+      if (err.status === 429) {
+        return err.error?.code === 'ai_budget'
+          ? 'На сегодня лимит фото исчерпан. Напишите название блюда словами.'
+          : 'Слишком много вопросов подряд. Подождите минуту и повторите.';
+      }
       if (err.status === 404) return 'ИИ-сомелье пока недоступен на сервере.';
+      if (err.status === 413) return 'Фото слишком большое. Снимите его ещё раз или выберите файл поменьше.';
     }
     return AuthService.errorText(err);
   }
@@ -522,7 +588,7 @@ export class SommelierChatComponent {
   addToOrder(s: AiSuggestion): void {
     const slug = this.slug();
     if (!slug || !this.isAvailable(s)) return;
-    addToCart(slug, this.lineFor(s));
+    addToCart(slug, { ...this.lineFor(s), via: 'AI' });
     notifyCartChanged(slug);
     const key = `${s.kind}:${s.id}`;
     this.added.update(a => ({ ...a, [key]: true }));
