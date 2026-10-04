@@ -1076,7 +1076,14 @@
    }
   ],
   "status": "auto",
-  "description": "Рисовый лагер. Производитель: Asahi (JP)."
+  "description": "Рисовый лагер. Производитель: Asahi (JP).",
+  "image": "img/beers/asahi-super-dry.webp",
+  "image_credit": {
+   "author": "Zrevhiop Limsa",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:HK_SW_%E4%B8%8A%E7%92%B0_Sheung_Wan_%E7%A3%85%E5%B7%B7_Pound_Lane_Asahi_beer_can_night_April_2020_SS2_08.jpg"
+  }
  },
  {
   "id": "auster-apa",
@@ -4175,7 +4182,14 @@
    }
   ],
   "status": "auto",
-  "description": "Чешский премиальный светлый лагер (пилзнер). Производитель: Budějovický Budvar (CZ)."
+  "description": "Чешский премиальный светлый лагер (пилзнер). Производитель: Budějovický Budvar (CZ).",
+  "image": "img/beers/budweiser-budvar-svetly-lezak.webp",
+  "image_credit": {
+   "author": "Viktor Fiala (Plzeň)",
+   "license": "Public domain",
+   "license_url": "",
+   "source": "https://commons.wikimedia.org/wiki/File:Pivo_Pard%C3%A1l,_Pard%C3%A1l_Echt_(Czech_beer).jpg"
+  }
  },
  {
   "id": "carlsberg",
@@ -4291,7 +4305,14 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Международный светлый лагер. Производитель: Carlsberg Kazakhstan.",
+  "image": "img/beers/carlsberg.webp",
+  "image_credit": {
+   "author": "Moheen Reeyad",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Carlsberg_beer,_Haji_Lane,_Kampong_Glam.jpg"
+  }
  },
  {
   "id": "corona-extra",
@@ -7759,7 +7780,14 @@
    }
   ],
   "status": "auto",
-  "description": "Бельгийский светлый эль. Производитель: AB InBev (BE)."
+  "description": "Бельгийский светлый эль. Производитель: AB InBev (BE).",
+  "image": "img/beers/leffe-blonde.webp",
+  "image_credit": {
+   "author": "Ludovic Péron",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Leffe_blonde_verre_et_bouteille.jpg"
+  }
  },
  {
   "id": "leffe-brune",
@@ -11084,7 +11112,8 @@
    }
   ],
   "status": "auto",
-  "description": "Раухбир (копчёное пиво). Производитель: Sigma Bräu / Auster (Шымкент)."
+  "description": "Раухбир (копчёное пиво). Производитель: Sigma Bräu / Auster (Шымкент).",
+  "image": null
  },
  {
   "id": "saphir-craft-beer",
@@ -11275,7 +11304,8 @@
    }
   ],
   "status": "auto",
-  "description": "Рисовый лагер. Производитель: Sapporo (JP)."
+  "description": "Рисовый лагер. Производитель: Sapporo (JP).",
+  "image": null
  },
  {
   "id": "sigma-dunkelweizen",
@@ -11968,7 +11998,14 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Spaten (AB InBev, DE)."
+  "description": "Мюнхенский хеллес. Производитель: Spaten (AB InBev, DE).",
+  "image": "img/beers/spaten-munchner-hell.webp",
+  "image_credit": {
+   "author": "Pansebert",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Spaten_M%C3%BCnchner_Hell_(Spaten-Franziskaner-Br%C3%A4u).jpg"
+  }
  },
  {
   "id": "staropramen-premium",
@@ -12199,7 +12236,14 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: AB InBev."
+  "description": "Международный светлый лагер. Производитель: AB InBev.",
+  "image": "img/beers/stella-artois.webp",
+  "image_credit": {
+   "author": "Brucedenyu",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:HK_SW_%E8%8D%B7%E6%9D%8E%E6%B4%BB%E9%81%93%E5%B7%B2%E5%A9%9A%E8%AD%A6%E5%AF%9F%E5%AE%BF%E8%88%8D_Hollywood_Road_Police_Married_Quarters_night_bottles_Stella_Artois_Dec-2011.jpg"
+  }
  },
  {
   "id": "stiegl-hell",
@@ -12290,7 +12334,14 @@
    }
   ],
   "status": "auto",
-  "description": "Мюнхенский хеллес. Производитель: Stiegl (AT)."
+  "description": "Мюнхенский хеллес. Производитель: Stiegl (AT).",
+  "image": "img/beers/stiegl-hell.webp",
+  "image_credit": {
+   "author": "Kiwi63",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Stiegl_Hell_Dose.jpg"
+  }
  },
  {
   "id": "stuttgart-premium",
@@ -12481,7 +12532,14 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Wellpark (UK)."
+  "description": "Международный светлый лагер. Производитель: Wellpark (UK).",
+  "image": "img/beers/tennents-lager.webp",
+  "image_credit": {
+   "author": "Alex Liivet from Chester, United Kingdom",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Tennent%27s_(29398635824).jpg"
+  }
  },
  {
   "id": "tennents-stout",
@@ -12890,7 +12948,8 @@
    }
   ],
   "status": "auto",
-  "description": "Международный светлый лагер. Производитель: Tsingtao (CN)."
+  "description": "Международный светлый лагер. Производитель: Tsingtao (CN).",
+  "image": null
  },
  {
   "id": "tuborg-green",
@@ -13386,7 +13445,14 @@
    }
   ],
   "status": "auto",
-  "description": "Немецкий пилс. Производитель: Veltins (DE)."
+  "description": "Немецкий пилс. Производитель: Veltins (DE).",
+  "image": "img/beers/veltins-pilsener.webp",
+  "image_credit": {
+   "author": "Felix Stember",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Veltins_Pilsener_Flasche_und_Glas.jpg"
+  }
  },
  {
   "id": "volny-vlk",
@@ -20248,7 +20314,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Carlsberg Kazakhstan."
+  "description": "Безалкогольный лагер. Производитель: Carlsberg Kazakhstan.",
+  "image": "img/beers/carlsberg-0-0.webp",
+  "image_credit": {
+   "author": "Hernán Piñera from Marbella",
+   "license": "CC BY-SA 2.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Carlsberg_(26681478763).jpg"
+  }
  },
  {
   "id": "clausthaler-original",
@@ -20358,7 +20431,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Radeberger Gruppe. Ноты по источнику: сусло, благородный хмель."
+  "description": "Безалкогольный лагер. Производитель: Radeberger Gruppe. Ноты по источнику: сусло, благородный хмель.",
+  "image": "img/beers/clausthaler-original.webp",
+  "image_credit": {
+   "author": "Bertrouf",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Clausthaler_beer_bottle.JPG"
+  }
  },
  {
   "id": "efes-0-0",
@@ -20805,7 +20885,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Damm (ES)."
+  "description": "Безалкогольный лагер. Производитель: Damm (ES).",
+  "image": "img/beers/free-damm-0-0.webp",
+  "image_credit": {
+   "author": "Erik Cleves Kristensen",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Estrella_Damm_botella.jpg"
+  }
  },
  {
   "id": "guinness-0-0",
@@ -20898,7 +20985,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный стаут. Производитель: Diageo (IE)."
+  "description": "Безалкогольный стаут. Производитель: Diageo (IE).",
+  "image": "img/beers/guinness-0-0.webp",
+  "image_credit": {
+   "author": "Satirdan kahraman",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Guinness_beer.jpg"
+  }
  },
  {
   "id": "heineken-0-0",
@@ -21004,7 +21098,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Heineken. Ноты по источнику: солод, хмелевой экстракт, лёгкая сладость."
+  "description": "Безалкогольный лагер. Производитель: Heineken. Ноты по источнику: солод, хмелевой экстракт, лёгкая сладость.",
+  "image": "img/beers/heineken-0-0.webp",
+  "image_credit": {
+   "author": "Tamorlan",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Botella_de_cerveza_(Heineken).JPG"
+  }
  },
  {
   "id": "jever-fun",
@@ -21109,7 +21210,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Friesisches Brauhaus zu Jever. Ожидаемый профиль (оценка по стилю): сухой, резкий хмель, sugar free."
+  "description": "Безалкогольный лагер. Производитель: Friesisches Brauhaus zu Jever. Ожидаемый профиль (оценка по стилю): сухой, резкий хмель, sugar free.",
+  "image": "img/beers/jever-fun.webp",
+  "image_credit": {
+   "author": "Pansebert",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Jever_Fun_(Friesisches_Brauhaus_zu_Jever).jpg"
+  }
  },
  {
   "id": "paulaner-hefe-weissbier-0-0",
@@ -21240,7 +21348,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пшеничное. Производитель: Paulaner (DE). Ожидаемый профиль (оценка по стилю): банан, гвоздика, пшеница."
+  "description": "Безалкогольное пшеничное. Производитель: Paulaner (DE). Ожидаемый профиль (оценка по стилю): банан, гвоздика, пшеница.",
+  "image": "img/beers/paulaner-hefe-weissbier-0-0.webp",
+  "image_credit": {
+   "author": "LeeKeoma",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Paulaner_Hefe-Weissbier.JPG"
+  }
  },
  {
   "id": "peroni-nastro-azzurro-0-0",
@@ -21347,7 +21462,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Asahi/Peroni. Ожидаемый профиль (оценка по стилю): кукурузная сладость, лёгкий хмель."
+  "description": "Безалкогольный лагер. Производитель: Asahi/Peroni. Ожидаемый профиль (оценка по стилю): кукурузная сладость, лёгкий хмель.",
+  "image": "img/beers/peroni-nastro-azzurro-0-0.webp",
+  "image_credit": {
+   "author": "Benoît Prieur",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Birra_Peroni_-_Pizzeria_Bella_Italia_(Cr%C3%A9pieux-la-Pape).jpg"
+  }
  },
  {
   "id": "staropramen-non-alcoholic",
@@ -21454,7 +21576,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Molson Coors (Staropramen). Ожидаемый профиль (оценка по стилю): жатецкий хмель, солод."
+  "description": "Безалкогольный лагер. Производитель: Molson Coors (Staropramen). Ожидаемый профиль (оценка по стилю): жатецкий хмель, солод.",
+  "image": "img/beers/staropramen-non-alcoholic.webp",
+  "image_credit": {
+   "author": "Koefbac",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Czeskie_piwo_bezalkoholowe_Staropramen_w_Poznaniu_-_wrzesie%C5%84_2023.jpg"
+  }
  },
  {
   "id": "velkopopovicky-kozel-0-0",
@@ -21954,7 +22083,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольный лагер. Производитель: Балтика (RU). Ожидаемый профиль (оценка по стилю): светлый солод, сладковатые ноты."
+  "description": "Безалкогольный лагер. Производитель: Балтика (RU). Ожидаемый профиль (оценка по стилю): светлый солод, сладковатые ноты.",
+  "image": "img/beers/baltika-0.webp",
+  "image_credit": {
+   "author": "Petar Milošević",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D0%BB%D1%82%D0%B8%D0%BA%D0%B0_7.JPG"
+  }
  },
  {
   "id": "baltika-0-granat",
@@ -27932,7 +28068,8 @@
    }
   ],
   "status": "auto",
-  "description": "Красное сухое, среднее тело. Производитель: Purcari / Cricova. Ожидаемый профиль (оценка по стилю): красные ягоды/белые фрукты."
+  "description": "Красное сухое, среднее тело. Производитель: Purcari / Cricova. Ожидаемый профиль (оценка по стилю): красные ягоды/белые фрукты.",
+  "image": null
  },
  {
   "id": "mukuzani",
@@ -28037,7 +28174,14 @@
    }
   ],
   "status": "auto",
-  "description": "Полнотелое красное (каберне / саперави). Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): чернослив, дуб, табак."
+  "description": "Полнотелое красное (каберне / саперави). Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): чернослив, дуб, табак.",
+  "image": "img/beers/mukuzani.webp",
+  "image_credit": {
+   "author": "Bogdanov-62",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Wine_bottles_of_Mukuzani.jpg"
+  }
  },
  {
   "id": "rkatsiteli-sukhoe",
@@ -28593,7 +28737,14 @@
    }
   ],
   "status": "auto",
-  "description": "Белое сухое вино. Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): груша, айва, цитрус, цветы."
+  "description": "Белое сухое вино. Производитель: Teliani Valley / Marani. Ожидаемый профиль (оценка по стилю): груша, айва, цитрус, цветы.",
+  "image": "img/beers/tsinandali.webp",
+  "image_credit": {
+   "author": "Bogdanov-62",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Wine_bottle_of_Tsinandali.jpg"
+  }
  },
  {
   "id": "canti-prosecco-doc-extra-dry",
@@ -29394,7 +29545,14 @@
    }
   ],
   "status": "auto",
-  "description": "Вермут сладкий (bianco / rosso). Производитель: Martini & Rossi. Ожидаемый профиль (оценка по стилю): карамель, травы, горечь."
+  "description": "Вермут сладкий (bianco / rosso). Производитель: Martini & Rossi. Ожидаемый профиль (оценка по стилю): карамель, травы, горечь.",
+  "image": "img/beers/martini-rosso.webp",
+  "image_credit": {
+   "author": "Metsavend",
+   "license": "CC BY-SA 2.5",
+   "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+   "source": "https://commons.wikimedia.org/wiki/File:MartiniBianco%26Rosso.JPG"
+  }
  },
  {
   "id": "aperol-spritz",
@@ -30119,7 +30277,14 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): клюква, лайм, апельсин."
+  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): клюква, лайм, апельсин.",
+  "image": "img/beers/cosmopolitan.webp",
+  "image_credit": {
+   "author": "CrystalMixer - CrystalMixer.com",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Cosmopolitan_-_CrystalMixer.jpg"
+  }
  },
  {
   "id": "cuba-libre",
@@ -31212,7 +31377,14 @@
    }
   ],
   "status": "auto",
-  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): миндаль, лайм, ром."
+  "description": "Сауэр (виски сауэр, дайкири, кайпиринья). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): миндаль, лайм, ром.",
+  "image": "img/beers/mai-tai.webp",
+  "image_credit": {
+   "author": "Andy Li",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Love_in_Goa_%26_Mai_Tai_-_Calcutta_16_2026-07-11.jpg"
+  }
  },
  {
   "id": "manhattan",
@@ -31419,7 +31591,14 @@
    }
   ],
   "status": "auto",
-  "description": "Маргарита. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): лайм, агава, соль."
+  "description": "Маргарита. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): лайм, агава, соль.",
+  "image": "img/beers/margarita.webp",
+  "image_credit": {
+   "author": "Nicole Bratt from Seattle, WA, USA",
+   "license": "CC BY-SA 2.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Berry_margaritas_(7257867702).jpg"
+  }
  },
  {
   "id": "mimosa",
@@ -31522,7 +31701,14 @@
    }
   ],
   "status": "auto",
-  "description": "Коктейль на игристом (беллини, мимоза, хуго). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): апельсин."
+  "description": "Коктейль на игристом (беллини, мимоза, хуго). Производитель: барная классика. Ожидаемый профиль (оценка по стилю): апельсин.",
+  "image": "img/beers/mimosa.webp",
+  "image_credit": {
+   "author": "Missvain",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Tick_Tock_Lounge_%E2%80%93_November_2023_-_Sarah_Stierch_04.jpg"
+  }
  },
  {
   "id": "mojito",
@@ -32741,7 +32927,14 @@
    }
   ],
   "status": "auto",
-  "description": "Пина колада. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): ананас, кокос, сливки."
+  "description": "Пина колада. Производитель: барная классика. Ожидаемый профиль (оценка по стилю): ананас, кокос, сливки.",
+  "image": "img/beers/virgin-colada.webp",
+  "image_credit": {
+   "author": "Martin Asche",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Pinky_Colada_(Cocktail).jpg"
+  }
  },
  {
   "id": "virgin-mojito",
@@ -33160,7 +33353,14 @@
    }
   ],
   "status": "auto",
-  "description": "Белый ром. Производитель: Bacardí. Ожидаемый профиль (оценка по стилю): ваниль, тростник, нейтральный."
+  "description": "Белый ром. Производитель: Bacardí. Ожидаемый профиль (оценка по стилю): ваниль, тростник, нейтральный.",
+  "image": "img/beers/bacardi-carta-blanca.webp",
+  "image_credit": {
+   "author": "H005",
+   "license": "Public domain",
+   "license_url": "",
+   "source": "https://commons.wikimedia.org/wiki/File:Old_Bacardi_Front.JPG"
+  }
  },
  {
   "id": "blantons-original",
@@ -33788,7 +33988,14 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): виноград, цитрус, гладкая."
+  "description": "Водка. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): виноград, цитрус, гладкая.",
+  "image": "img/beers/ciroc.webp",
+  "image_credit": {
+   "author": "User:Rdotchhun",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:The_impeachapple_emperor-_made_with_a_shot_of_peach_Ciroc_and_a_bottle_of_angry_orchard_or_your_favorite_hard_cider-_This_cocktail_is_also_known_as_I_M_E_M-_Created_on_a_an_emperor_island_raft,_a_handful_of_fr_2014-07-04_23-54.jpg"
+  }
  },
  {
   "id": "dalmore-12-y-o",
@@ -34416,7 +34623,8 @@
    }
   ],
   "status": "auto",
-  "description": "Джин. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): можжевельник, кориандр."
+  "description": "Джин. Производитель: Diageo. Ожидаемый профиль (оценка по стилю): можжевельник, кориандр.",
+  "image": null
  },
  {
   "id": "grappa-moscato-francoli",
@@ -34632,7 +34840,14 @@
    }
   ],
   "status": "auto",
-  "description": "Джин. Производитель: William Grant & Sons. Ожидаемый профиль (оценка по стилю): огурец, роза, можжевельник."
+  "description": "Джин. Производитель: William Grant & Sons. Ожидаемый профиль (оценка по стилю): огурец, роза, можжевельник.",
+  "image": "img/beers/hendricks.webp",
+  "image_credit": {
+   "author": "JIP",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Hendrick%27s_Gin_and_Fever-Tree_Tonic.jpg"
+  }
  },
  {
   "id": "hennessy-vs",
@@ -35360,7 +35575,14 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Beam Suntory. Ожидаемый профиль (оценка по стилю): солод, мёд, мягкий."
+  "description": "Виски без льда. Производитель: Beam Suntory. Ожидаемый профиль (оценка по стилю): солод, мёд, мягкий.",
+  "image": "img/beers/kilbeggan.webp",
+  "image_credit": {
+   "author": "Blackrock78 at English Wikipedia",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Kilbeggan%27s_whiskey_bottle.jpg"
+  }
  },
  {
   "id": "kilchoman-machir-bay",
@@ -35564,7 +35786,14 @@
    }
   ],
   "status": "auto",
-  "description": "Виски без льда. Производитель: Helios Distillery. Ожидаемый профиль (оценка по стилю): мёд, лёгкий дуб."
+  "description": "Виски без льда. Производитель: Helios Distillery. Ожидаемый профиль (оценка по стилю): мёд, лёгкий дуб.",
+  "image": "img/beers/kura.webp",
+  "image_credit": {
+   "author": "固体物性",
+   "license": "Public domain",
+   "license_url": "",
+   "source": "https://commons.wikimedia.org/wiki/File:Manzairaku.JPG"
+  }
  },
  {
   "id": "martell-vs",
@@ -35772,7 +36001,14 @@
    }
   ],
   "status": "auto",
-  "description": "Джин. Производитель: Pernod Ricard. Ожидаемый профиль (оценка по стилю): брусника, травы, цитрус, можжевельник."
+  "description": "Джин. Производитель: Pernod Ricard. Ожидаемый профиль (оценка по стилю): брусника, травы, цитрус, можжевельник.",
+  "image": "img/beers/monkey-47.webp",
+  "image_credit": {
+   "author": "Grossmatthias1234",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Monkey_47_-_Schwarzwald_Dry_Gin_-_Packshot.jpg"
+  }
  },
  {
   "id": "olmeca-blanco-gold",
@@ -36075,7 +36311,8 @@
    }
   ],
   "status": "auto",
-  "description": "Водка. Производитель: Geom (Snow Queen Vodka). Ожидаемый профиль (оценка по стилю): нейтральная, чистая, слегка сладковатая."
+  "description": "Водка. Производитель: Geom (Snow Queen Vodka). Ожидаемый профиль (оценка по стилю): нейтральная, чистая, слегка сладковатая.",
+  "image": null
  },
  {
   "id": "sobolinaya-organic",
@@ -38241,7 +38478,8 @@
    }
   ],
   "status": "auto",
-  "description": "Амаро / горький травяной ликёр. Производитель: Fratelli Branca. Ожидаемый профиль (оценка по стилю): мята, шафран, горькие травы."
+  "description": "Амаро / горький травяной ликёр. Производитель: Fratelli Branca. Ожидаемый профиль (оценка по стилю): мята, шафран, горькие травы.",
+  "image": null
  },
  {
   "id": "grand-marnier-cordon-rouge",
@@ -38833,7 +39071,14 @@
    }
   ],
   "status": "auto",
-  "description": "Боза (злаковый ферментированный). Производитель: Боз бие. Ожидаемый профиль (оценка по стилю): пшено/пшеница, кисло-сладкий, густой."
+  "description": "Боза (злаковый ферментированный). Производитель: Боз бие. Ожидаемый профиль (оценка по стилю): пшено/пшеница, кисло-сладкий, густой.",
+  "image": "img/beers/boza.webp",
+  "image_credit": {
+   "author": "Berishasinan",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Boz%C3%AB_Elbasani.jpg"
+  }
  },
  {
   "id": "vyatskiy-kvas",
@@ -41093,7 +41338,14 @@
    }
   ],
   "status": "auto",
-  "description": "Кумыс. Производитель: фермерские хозяйства/бренды: Боз бие, Мясо с фермы и др. Ожидаемый профиль (оценка по стилю): кисломолочный, дрожжевой, слегка шипучий, лёгкая алкогольность ~1–2.5%."
+  "description": "Кумыс. Производитель: фермерские хозяйства/бренды: Боз бие, Мясо с фермы и др. Ожидаемый профиль (оценка по стилю): кисломолочный, дрожжевой, слегка шипучий, лёгкая алкогольность ~1–2.5%.",
+  "image": "img/beers/kumys.webp",
+  "image_credit": {
+   "author": "A.Savin",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Kumys-bottle.jpg"
+  }
  },
  {
   "id": "molochnyy-kokteyl",
@@ -41407,7 +41659,14 @@
    }
   ],
   "status": "auto",
-  "description": "Тан (газированный кисломолочный). Производитель: Рудненский тан / Adal. Ожидаемый профиль (оценка по стилю): кислый, солёный, газированный."
+  "description": "Тан (газированный кисломолочный). Производитель: Рудненский тан / Adal. Ожидаемый профиль (оценка по стилю): кислый, солёный, газированный.",
+  "image": "img/beers/tan.webp",
+  "image_credit": {
+   "author": "Voronel k",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B0%D0%BD_%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9.jpg"
+  }
  },
  {
   "id": "shubat",
@@ -42642,7 +42901,14 @@
    }
   ],
   "status": "auto",
-  "description": "Минеральная вода (солоноватая, газированная). Производитель: IDS Borjomi. Ожидаемый профиль (оценка по стилю): минеральная, солоноватая, сода."
+  "description": "Минеральная вода (солоноватая, газированная). Производитель: IDS Borjomi. Ожидаемый профиль (оценка по стилю): минеральная, солоноватая, сода.",
+  "image": "img/beers/borjomi.webp",
+  "image_credit": {
+   "author": "Matsievsky",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:BORJOMI_GEORGIAN_MINERAL_WATER_glass_bottle0.5_barcode4860019001346_codeCG2RUBY1_date30.10.2019L10_1.jpg"
+  }
  },
  {
   "id": "maniva",

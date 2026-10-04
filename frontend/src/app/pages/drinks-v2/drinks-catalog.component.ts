@@ -1,14 +1,17 @@
-import { Component, ElementRef, EventEmitter, HostListener, OnInit, Output, ViewChild, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, EventEmitter, HostListener, Injector, OnInit, Output, ViewChild, afterNextRender, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Brand } from '../../models/flavor-tree.models';
 import { V2ApiService } from './v2-api.service';
 import { V2Drink, V2DrinkDetail, V2Meta } from './v2.models';
-import { V2GlassComponent, drinkLine, drinkTitle, isEfes, isEnergy, loadErrorText, priceLabel, reasonLines } from './v2-ui';
+import { TapHintDirective, V2GlassComponent, drinkLine, drinkTitle, isEfes, isEnergy, loadErrorText, priceLabel, reasonLines } from './v2-ui';
 import { CATALOG_PATH, isSheetEntry, setUrlParams, urlParam } from './v2-url';
 import { countOf } from '../venue-menu/plural';
+import { matchesSearch } from '../../services/search-text';
 
 const PAGE = 48;
+/** Сколько первых фото грузить сразу: два ряда сетки на широком экране, первый экран телефона. */
+const EAGER = 6;
 
 /** Порядок в каталоге: сначала собственные марки Efes, потом дистрибуция и CCI, потом весь рынок. */
 const EFES_ORDER: Record<string, number> = { own: 0, distribution: 1, cci: 2 };
@@ -26,9 +29,9 @@ function efesFirst(list: V2Drink[]): V2Drink[] {
 @Component({
   selector: 'app-drinks-catalog',
   standalone: true,
-  imports: [FormsModule, V2GlassComponent],
+  imports: [FormsModule, V2GlassComponent, TapHintDirective],
   template: `
-    <div class="glass-panel v2-filters mb-xl">
+    <div class="glass-panel v2-filters mb-xl" #chips>
       <button class="btn-outline" [class.active]="category() === ''" (click)="setCategory('')">
         Все{{ drinks().length ? ' (' + drinks().length + ')' : '' }}
       </button>
@@ -71,13 +74,17 @@ function efesFirst(list: V2Drink[]): V2Drink[] {
         Найдено: <strong style="color: var(--foam);">{{ filtered().length }}</strong> из {{ drinks().length }}
       </p>
       <div class="v2-grid">
-        @for (d of shown(); track d.id) {
+        @for (d of shown(); track d.id; let i = $index) {
           <button type="button" class="glass-card v2-drink stagger-item" (click)="open(d)">
-            @if (d.image || brandFor(d)?.image; as img) {
-              <img class="v2-photo" [src]="img" [alt]="d.name" loading="lazy" decoding="async" />
-            } @else {
-              <v2-glass [category]="d.category" [size]="52" />
-            }
+            <!-- Светлая плитка как у карточек брендов: фото бутылки с тенью, без фото — пиктограмма бокала -->
+            <span class="v2-tile">
+              @if (d.image || brandFor(d)?.image; as img) {
+                <!-- Первые карточки видны сразу: их фото без lazy, остальные по мере прокрутки -->
+                <img class="v2-photo" [attr.loading]="i < EAGER ? 'eager' : 'lazy'" [src]="img" [alt]="d.name" decoding="async" />
+              } @else {
+                <v2-glass [category]="d.category" [size]="48" />
+              }
+            </span>
             <span class="v2-drink-body">
               <span class="v2-badges">
                 <span class="badge">{{ categoryLabel(d.category) }}</span>
@@ -109,11 +116,13 @@ function efesFirst(list: V2Drink[]): V2Drink[] {
       <div class="v2-sheet-inner">
         <button class="v2-sheet-close" (click)="close()" aria-label="Закрыть">&#x2715;</button>
         <div class="flex gap-lg items-center mb-lg">
-          @if (d.image || brandFor(d)?.image; as img) {
-            <img class="v2-photo v2-photo-lg" [src]="img" [alt]="d.name" decoding="async" />
-          } @else {
-            <v2-glass [category]="d.category" [size]="64" />
-          }
+          <span class="v2-tile v2-tile-lg">
+            @if (d.image || brandFor(d)?.image; as img) {
+              <img class="v2-photo" [src]="img" [alt]="d.name" decoding="async" />
+            } @else {
+              <v2-glass [category]="d.category" [size]="64" />
+            }
+          </span>
           <div>
             <div class="v2-badges">
               <span class="badge">{{ categoryLabel(d.category) }}</span>
@@ -164,7 +173,7 @@ function efesFirst(list: V2Drink[]): V2Drink[] {
                   <span class="v2-dish-score" [attr.data-band]="p.band">{{ p.score }}</span>
                 </span>
                 @if (dishReasons()[i]; as why) {
-                  <span class="text-sm text-muted" [attr.title]="why.source || null">{{ why.text }}</span>
+                  <span class="text-sm text-muted" [attr.title]="why.source || null" [ftHint]="why.source">{{ why.text }}</span>
                 }
               </li>
             }
@@ -195,17 +204,24 @@ function efesFirst(list: V2Drink[]): V2Drink[] {
     .v2-efes { background: rgba(245, 158, 11, 0.16); color: var(--beer-deep); }
     .v2-name { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.25; }
     .v2-line { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .v2-photo { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
-    .v2-photo-lg { width: 72px; height: 72px; }
+    .v2-tile { width: 96px; height: 96px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      padding: 8px; border-radius: var(--radius-lg); border: 1px solid var(--line-subtle);
+      background: radial-gradient(circle at 50% 40%, var(--beer-glow) 0%, rgba(0, 0, 0, 0.02) 75%), #FFFCF8; }
+    .v2-tile-lg { width: 128px; height: 128px; padding: 10px; }
+    .v2-photo { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+      transition: transform var(--duration-normal) var(--ease-out); }
+    .v2-drink:hover .v2-photo { transform: scale(1.08) translateY(-2px); }
     .v2-credit { margin-top: -8px; font-size: 0.72rem; color: var(--muted); }
     .v2-credit a { color: inherit; text-decoration: underline; }
     .v2-h3 { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; }
 
     .v2-sheet { margin: 0 0 0 auto; padding: 0; border: none; height: 100dvh; max-height: 100dvh;
-      width: min(460px, 100%); max-width: 100%; overflow-y: auto; color: var(--foam);
+      width: min(460px, 100%); max-width: 100%; overflow-y: auto; overscroll-behavior: contain; color: var(--foam);
       background: #FFFCF8; box-shadow: var(--shadow-md); animation: v2-slide var(--duration-normal) var(--ease-out); }
     .v2-sheet::backdrop { background: rgba(28, 25, 23, 0.35); backdrop-filter: blur(2px); }
-    .v2-sheet-inner { position: relative; min-height: 100%; padding: 28px 26px 32px; }
+    /* Отступы с учётом выреза и полоски «домой» iPhone; на десктопе env() равен 0 */
+    .v2-sheet-inner { position: relative; min-height: 100%;
+      padding: 28px max(26px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) 26px; }
     @keyframes v2-slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
     .v2-sheet-close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 18px;
       color: var(--muted); cursor: pointer; padding: 6px; }
@@ -227,20 +243,35 @@ function efesFirst(list: V2Drink[]): V2Drink[] {
       .v2-filters::-webkit-scrollbar { display: none; }
       .v2-filters .btn-outline { flex-shrink: 0; white-space: nowrap; }
       .v2-search { max-width: none; }
+      .v2-tile { width: 80px; height: 80px; }
       .v2-sheet { margin: auto 0 0 0; height: auto; max-height: 88dvh; width: 100%; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-      .v2-sheet-inner { padding: 24px 18px 28px; }
+      .v2-sheet-inner { padding: 24px 18px calc(28px + env(safe-area-inset-bottom)); }
       @keyframes v2-slide { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+    }
+
+    /* Телефон и планшет: зоны нажатия под палец, подписи не мельче 12px, поле без зума iOS */
+    @media (max-width: 640px), (pointer: coarse) {
+      .v2-search .input { font-size: 16px; padding-right: 44px; text-overflow: ellipsis; }
+      .v2-clear { right: 2px; width: 40px; height: 40px; padding: 0; }
+      /* Крестик 44px и прилипает к верху: длинную карточку можно закрыть, не листая её обратно */
+      .v2-sheet-close { position: sticky; top: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px;
+        margin: -16px -10px -28px auto; padding: 0; border-radius: 50%; background: rgba(255, 252, 248, 0.92); }
+      .v2-sheet-inner .v2-badges { padding-right: 36px; }
+      .v2-facts span, .v2-credit { font-size: 0.75rem; }
+      .v2-sheet .btn-sm { min-height: 40px; }
     }
   `],
 })
 export class DrinksCatalogComponent implements OnInit {
   private v2 = inject(V2ApiService);
   private api = inject(ApiService);
+  private injector = inject(Injector);
 
   /** id сорта из каталога Efes: страница сорта с пирамидой. */
   @Output() openBrand = new EventEmitter<string>();
 
   readonly PAGE = PAGE;
+  readonly EAGER = EAGER;
   readonly isEfes = isEfes;
   readonly isEnergy = isEnergy;
   readonly drinkLine = drinkLine;
@@ -268,14 +299,12 @@ export class DrinksCatalogComponent implements OnInit {
   filtered = computed(() => {
     const cat = this.category();
     const efes = this.efesOnly();
-    const q = this.query().trim().toLowerCase().replace(/ё/g, 'е');
+    const q = this.query();
     return this.drinks().filter(d => {
       if (cat && d.category !== cat) return false;
       if (efes && !isEfes(d.efes_relation)) return false;
-      if (!q) return true;
-      const hay = [d.name, d.display_name ?? '', d.style?.name ?? '', d.producer?.name ?? '']
-        .join(' ').toLowerCase().replace(/ё/g, 'е');
-      return hay.includes(q);
+      // Название как угодно: «эфес», «хайнекен», «гиннесс» находят Efes, Heineken, Guinness
+      return matchesSearch(q, d.name, d.display_name, d.style?.name, d.producer?.name);
     });
   });
 
@@ -298,6 +327,18 @@ export class DrinksCatalogComponent implements OnInit {
       q: this.query().trim() || null,
       efes: this.efesOnly() ? '1' : null,
     }));
+    // Пока открыта карточка, страница под ней стоит: на телефоне свайп по подложке листал каталог
+    effect(() => this.lockPage(!!this.selected()));
+    inject(DestroyRef).onDestroy(() => this.lockPage(false));
+  }
+
+  private pageLocked = false;
+
+  /** Только сенсорные экраны: на десктопе пропавшая полоса прокрутки сдвинула бы страницу под подложкой. */
+  private lockPage(on: boolean) {
+    if (on === this.pageLocked || (on && !matchMedia('(pointer: coarse)').matches)) return;
+    document.body.style.overflow = on ? 'hidden' : '';
+    this.pageLocked = on;
   }
 
   ngOnInit() {
@@ -312,6 +353,7 @@ export class DrinksCatalogComponent implements OnInit {
           this.meta.set(m);
           // Категория из старой ссылки, которой больше нет: показываем все
           if (this.category() && !m.categories.some(c => c.id === this.category())) this.category.set('');
+          afterNextRender(() => this.revealActiveChip(), { injector: this.injector });
         },
         error: () => { /* без счётчиков категорий каталог всё равно работает */ },
       });
@@ -322,6 +364,8 @@ export class DrinksCatalogComponent implements OnInit {
         this.loadError.set(null);
         this.loaded.set(true);
         this.showFromUrl();
+        // Счётчик «Все (412)» появляется только сейчас и сдвигает кнопки категорий
+        afterNextRender(() => this.revealActiveChip(), { injector: this.injector });
       },
       error: err => { this.loadError.set(loadErrorText(err)); this.loaded.set(true); },
     });
@@ -392,10 +436,29 @@ export class DrinksCatalogComponent implements OnInit {
   @HostListener('window:popstate')
   onPopState() {
     if (location.pathname !== CATALOG_PATH) return;
-    this.category.set(urlParam(CATALOG_PATH, 'cat') ?? '');
+    const cat = urlParam(CATALOG_PATH, 'cat') ?? '';
+    if (cat !== this.category()) afterNextRender(() => this.revealActiveChip(), { injector: this.injector });
+    this.category.set(cat);
     this.query.set(urlParam(CATALOG_PATH, 'q') ?? '');
     this.efesOnly.set(urlParam(CATALOG_PATH, 'efes') === '1');
     this.showFromUrl();
+  }
+
+  @ViewChild('chips') private chips?: ElementRef<HTMLElement>;
+
+  /**
+   * На телефоне категории в одну прокручиваемую строку: выбранную из адреса докручиваем в видимую часть.
+   * Меряем после загрузки шрифтов, иначе ширина кнопок ещё не та.
+   */
+  private revealActiveChip() {
+    document.fonts.ready.then(() => {
+      const row = this.chips?.nativeElement;
+      const chip = row?.querySelector<HTMLElement>('.btn-outline.active');
+      if (!row || !chip || row.scrollWidth <= row.clientWidth) return;
+      const box = chip.getBoundingClientRect(), rowBox = row.getBoundingClientRect();
+      if (box.left >= rowBox.left && box.right <= rowBox.right) return;
+      row.scrollLeft += box.left - rowBox.left - (rowBox.width - box.width) / 2;
+    });
   }
 
   @ViewChild('sheet') set sheet(ref: ElementRef<HTMLDialogElement> | undefined) {

@@ -1078,7 +1078,13 @@
   ],
   "status": "auto",
   "description": "Japanese Rice Lager: живая карбонизация. Крепость 5.0%. Подавайте при 2-6°C.",
-  "image": null
+  "image": "img/beers/asahi-super-dry.webp",
+  "image_credit": {
+   "author": "Zrevhiop Limsa",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:HK_SW_%E4%B8%8A%E7%92%B0_Sheung_Wan_%E7%A3%85%E5%B7%B7_Pound_Lane_Asahi_beer_can_night_April_2020_SS2_08.jpg"
+  }
  },
  {
   "id": "auster-apa",
@@ -4191,7 +4197,14 @@
    }
   ],
   "status": "auto",
-  "description": "Czech Premium Pale Lager: выраженная хмелевая горечь, плотное солодовое тело, живая карбонизация. Крепость 5.0%. Подавайте при 4-8°C."
+  "description": "Czech Premium Pale Lager: выраженная хмелевая горечь, плотное солодовое тело, живая карбонизация. Крепость 5.0%. Подавайте при 4-8°C.",
+  "image": "img/beers/budweiser-budvar-svetly-lezak.webp",
+  "image_credit": {
+   "author": "Viktor Fiala (Plzeň)",
+   "license": "Public domain",
+   "license_url": "",
+   "source": "https://commons.wikimedia.org/wiki/File:Pivo_Pard%C3%A1l,_Pard%C3%A1l_Echt_(Czech_beer).jpg"
+  }
  },
  {
   "id": "carlsberg",
@@ -4308,7 +4321,13 @@
   ],
   "status": "auto",
   "description": "International Pale Lager: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C.",
-  "image": null
+  "image": "img/beers/carlsberg.webp",
+  "image_credit": {
+   "author": "Moheen Reeyad",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Carlsberg_beer,_Haji_Lane,_Kampong_Glam.jpg"
+  }
  },
  {
   "id": "corona-extra",
@@ -7884,7 +7903,14 @@
    }
   ],
   "status": "auto",
-  "description": "Belgian Blond Ale (abbey): живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.6%. Подавайте при 5-9°C."
+  "description": "Belgian Blond Ale (abbey): живая карбонизация, яркий хмелевой аромат, плотное солодовое тело. Крепость 6.6%. Подавайте при 5-9°C.",
+  "image": "img/beers/leffe-blonde.webp",
+  "image_credit": {
+   "author": "Ludovic Péron",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Leffe_blonde_verre_et_bouteille.jpg"
+  }
  },
  {
   "id": "leffe-brune",
@@ -11260,7 +11286,8 @@
    }
   ],
   "status": "auto",
-  "description": "Rauchbier: яркий хмелевой аромат, живая карбонизация, плотное солодовое тело. Крепость 5.3%. Подавайте при 7-11°C."
+  "description": "Rauchbier: яркий хмелевой аромат, живая карбонизация, плотное солодовое тело. Крепость 5.3%. Подавайте при 7-11°C.",
+  "image": null
  },
  {
   "id": "saphir-craft-beer",
@@ -11451,7 +11478,8 @@
    }
   ],
   "status": "auto",
-  "description": "Japanese Rice Lager: живая карбонизация. Крепость 4.7%. Подавайте при 2-6°C."
+  "description": "Japanese Rice Lager: живая карбонизация. Крепость 4.7%. Подавайте при 2-6°C.",
+  "image": null
  },
  {
   "id": "sigma-dunkelweizen",
@@ -12145,7 +12173,14 @@
    }
   ],
   "status": "auto",
-  "description": "Munich Helles: живая карбонизация, плотное солодовое тело. Крепость 5.2%. Подавайте при 4-8°C."
+  "description": "Munich Helles: живая карбонизация, плотное солодовое тело. Крепость 5.2%. Подавайте при 4-8°C.",
+  "image": "img/beers/spaten-munchner-hell.webp",
+  "image_credit": {
+   "author": "Pansebert",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Spaten_M%C3%BCnchner_Hell_(Spaten-Franziskaner-Br%C3%A4u).jpg"
+  }
  },
  {
   "id": "staropramen-premium",
@@ -12383,7 +12418,14 @@
    }
   ],
   "status": "auto",
-  "description": "International Pale Lager: живая карбонизация. Крепость 5.0%. Подавайте при 3-7°C."
+  "description": "International Pale Lager: живая карбонизация. Крепость 5.0%. Подавайте при 3-7°C.",
+  "image": "img/beers/stella-artois.webp",
+  "image_credit": {
+   "author": "Brucedenyu",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:HK_SW_%E8%8D%B7%E6%9D%8E%E6%B4%BB%E9%81%93%E5%B7%B2%E5%A9%9A%E8%AD%A6%E5%AF%9F%E5%AE%BF%E8%88%8D_Hollywood_Road_Police_Married_Quarters_night_bottles_Stella_Artois_Dec-2011.jpg"
+  }
  },
  {
   "id": "stiegl-hell",
@@ -12474,7 +12516,14 @@
    }
   ],
   "status": "auto",
-  "description": "Munich Helles-type: живая карбонизация, плотное солодовое тело. Крепость 4.5%. Подавайте при 4-8°C."
+  "description": "Munich Helles-type: живая карбонизация, плотное солодовое тело. Крепость 4.5%. Подавайте при 4-8°C.",
+  "image": "img/beers/stiegl-hell.webp",
+  "image_credit": {
+   "author": "Kiwi63",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Stiegl_Hell_Dose.jpg"
+  }
  },
  {
   "id": "stuttgart-premium",
@@ -12666,7 +12715,14 @@
    }
   ],
   "status": "auto",
-  "description": "International Pale Lager: живая карбонизация. Крепость 5.0%. Подавайте при 3-7°C."
+  "description": "International Pale Lager: живая карбонизация. Крепость 5.0%. Подавайте при 3-7°C.",
+  "image": "img/beers/tennents-lager.webp",
+  "image_credit": {
+   "author": "Alex Liivet from Chester, United Kingdom",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Tennent%27s_(29398635824).jpg"
+  }
  },
  {
   "id": "tennents-stout",
@@ -13075,7 +13131,8 @@
    }
   ],
   "status": "auto",
-  "description": "International Pale Lager: живая карбонизация. Крепость 4.7%. Подавайте при 3-7°C."
+  "description": "International Pale Lager: живая карбонизация. Крепость 4.7%. Подавайте при 3-7°C.",
+  "image": null
  },
  {
   "id": "tuborg-green",
@@ -13591,7 +13648,14 @@
    }
   ],
   "status": "auto",
-  "description": "German Pils: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C."
+  "description": "German Pils: живая карбонизация. Крепость 4.8%. Подавайте при 3-7°C.",
+  "image": "img/beers/veltins-pilsener.webp",
+  "image_credit": {
+   "author": "Felix Stember",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Veltins_Pilsener_Flasche_und_Glas.jpg"
+  }
  },
  {
   "id": "volny-vlk",
@@ -20455,7 +20519,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
+  "image": "img/beers/carlsberg-0-0.webp",
+  "image_credit": {
+   "author": "Hernán Piñera from Marbella",
+   "license": "CC BY-SA 2.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Carlsberg_(26681478763).jpg"
+  }
  },
  {
   "id": "clausthaler-original",
@@ -20565,7 +20636,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
+  "image": "img/beers/clausthaler-original.webp",
+  "image_credit": {
+   "author": "Bertrouf",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Clausthaler_beer_bottle.JPG"
+  }
  },
  {
   "id": "efes-0-0",
@@ -21013,7 +21091,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
+  "image": "img/beers/free-damm-0-0.webp",
+  "image_credit": {
+   "author": "Erik Cleves Kristensen",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Estrella_Damm_botella.jpg"
+  }
  },
  {
   "id": "guinness-0-0",
@@ -21106,7 +21191,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: насыщенный аромат. Подавайте при 6-10°C."
+  "description": "Безалкогольное пиво: насыщенный аромат. Подавайте при 6-10°C.",
+  "image": "img/beers/guinness-0-0.webp",
+  "image_credit": {
+   "author": "Satirdan kahraman",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Guinness_beer.jpg"
+  }
  },
  {
   "id": "heineken-0-0",
@@ -21212,7 +21304,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
+  "image": "img/beers/heineken-0-0.webp",
+  "image_credit": {
+   "author": "Tamorlan",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Botella_de_cerveza_(Heineken).JPG"
+  }
  },
  {
   "id": "jever-fun",
@@ -21318,7 +21417,13 @@
   ],
   "status": "auto",
   "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
-  "image": null
+  "image": "img/beers/jever-fun.webp",
+  "image_credit": {
+   "author": "Pansebert",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Jever_Fun_(Friesisches_Brauhaus_zu_Jever).jpg"
+  }
  },
  {
   "id": "paulaner-hefe-weissbier-0-0",
@@ -21449,7 +21554,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность, яркая сладость, насыщенный аромат. Подавайте при 3-7°C."
+  "description": "Безалкогольное пиво: звонкая газированность, яркая сладость, насыщенный аромат. Подавайте при 3-7°C.",
+  "image": "img/beers/paulaner-hefe-weissbier-0-0.webp",
+  "image_credit": {
+   "author": "LeeKeoma",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Paulaner_Hefe-Weissbier.JPG"
+  }
  },
  {
   "id": "peroni-nastro-azzurro-0-0",
@@ -21556,7 +21668,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
+  "image": "img/beers/peroni-nastro-azzurro-0-0.webp",
+  "image_credit": {
+   "author": "Benoît Prieur",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Birra_Peroni_-_Pizzeria_Bella_Italia_(Cr%C3%A9pieux-la-Pape).jpg"
+  }
  },
  {
   "id": "staropramen-non-alcoholic",
@@ -21663,7 +21782,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
+  "image": "img/beers/staropramen-non-alcoholic.webp",
+  "image_credit": {
+   "author": "Koefbac",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Czeskie_piwo_bezalkoholowe_Staropramen_w_Poznaniu_-_wrzesie%C5%84_2023.jpg"
+  }
  },
  {
   "id": "velkopopovicky-kozel-0-0",
@@ -22163,7 +22289,14 @@
    }
   ],
   "status": "auto",
-  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C."
+  "description": "Безалкогольное пиво: звонкая газированность. Подавайте при 2-6°C.",
+  "image": "img/beers/baltika-0.webp",
+  "image_credit": {
+   "author": "Petar Milošević",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D0%BB%D1%82%D0%B8%D0%BA%D0%B0_7.JPG"
+  }
  },
  {
   "id": "baltika-0-granat",
@@ -28177,7 +28310,8 @@
    }
   ],
   "status": "auto",
-  "description": "красное/белое сухое и полусладкое: выразительный аромат, свежая кислотность, уверенные танины. Подавайте при 14-18°C."
+  "description": "красное/белое сухое и полусладкое: выразительный аромат, свежая кислотность, уверенные танины. Подавайте при 14-18°C.",
+  "image": null
  },
  {
   "id": "mukuzani",
@@ -28282,7 +28416,14 @@
    }
   ],
   "status": "auto",
-  "description": "красное сухое выдержанное (Саперави, дуб): уверенные танины, насыщенное тело, выразительный аромат. Подавайте при 15-19°C."
+  "description": "красное сухое выдержанное (Саперави, дуб): уверенные танины, насыщенное тело, выразительный аромат. Подавайте при 15-19°C.",
+  "image": "img/beers/mukuzani.webp",
+  "image_credit": {
+   "author": "Bogdanov-62",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Wine_bottles_of_Mukuzani.jpg"
+  }
  },
  {
   "id": "rkatsiteli-sukhoe",
@@ -28838,7 +28979,14 @@
    }
   ],
   "status": "auto",
-  "description": "белое сухое (Ркацители+Мцване): свежая кислотность, выразительный аромат. Подавайте при 6-10°C."
+  "description": "белое сухое (Ркацители+Мцване): свежая кислотность, выразительный аромат. Подавайте при 6-10°C.",
+  "image": "img/beers/tsinandali.webp",
+  "image_credit": {
+   "author": "Bogdanov-62",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Wine_bottle_of_Tsinandali.jpg"
+  }
  },
  {
   "id": "canti-prosecco-doc-extra-dry",
@@ -29654,7 +29802,13 @@
   ],
   "status": "auto",
   "description": "вермут красный сладкий: мягкая сладость, выразительный аромат, насыщенное тело. Подавайте при 4-8°C.",
-  "image": null
+  "image": "img/beers/martini-rosso.webp",
+  "image_credit": {
+   "author": "Metsavend",
+   "license": "CC BY-SA 2.5",
+   "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+   "source": "https://commons.wikimedia.org/wiki/File:MartiniBianco%26Rosso.JPG"
+  }
  },
  {
   "id": "aperol-spritz",
@@ -30415,7 +30569,13 @@
   ],
   "status": "auto",
   "description": "Коктейль Cosmopolitan: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым.",
-  "image": null
+  "image": "img/beers/cosmopolitan.webp",
+  "image_credit": {
+   "author": "CrystalMixer - CrystalMixer.com",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Cosmopolitan_-_CrystalMixer.jpg"
+  }
  },
  {
   "id": "cuba-libre",
@@ -31571,7 +31731,14 @@
    }
   ],
   "status": "auto",
-  "description": "Коктейль Mai Tai: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым."
+  "description": "Коктейль Mai Tai: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым.",
+  "image": "img/beers/mai-tai.webp",
+  "image_credit": {
+   "author": "Andy Li",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Love_in_Goa_%26_Mai_Tai_-_Calcutta_16_2026-07-11.jpg"
+  }
  },
  {
   "id": "manhattan",
@@ -31786,7 +31953,13 @@
   ],
   "status": "auto",
   "description": "Коктейль Margarita: цитрусовая кислинка, ароматный букет, ощутимая крепость. Подавайте охлаждённым.",
-  "image": null
+  "image": "img/beers/margarita.webp",
+  "image_credit": {
+   "author": "Nicole Bratt from Seattle, WA, USA",
+   "license": "CC BY-SA 2.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Berry_margaritas_(7257867702).jpg"
+  }
  },
  {
   "id": "mimosa",
@@ -31890,7 +32063,13 @@
   ],
   "status": "auto",
   "description": "Коктейль Mimosa: цитрусовая кислинка, ароматный букет, сочная сладость. Подавайте охлаждённым.",
-  "image": null
+  "image": "img/beers/mimosa.webp",
+  "image_credit": {
+   "author": "Missvain",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Tick_Tock_Lounge_%E2%80%93_November_2023_-_Sarah_Stierch_04.jpg"
+  }
  },
  {
   "id": "mojito",
@@ -33187,7 +33366,13 @@
   ],
   "status": "auto",
   "description": "Коктейль Virgin Colada: сочная сладость, ароматный букет. Подавайте охлаждённым.",
-  "image": null
+  "image": "img/beers/virgin-colada.webp",
+  "image_credit": {
+   "author": "Martin Asche",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Pinky_Colada_(Cocktail).jpg"
+  }
  },
  {
   "id": "virgin-mojito",
@@ -33628,7 +33813,13 @@
   ],
   "status": "auto",
   "description": "white rum: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
-  "image": null
+  "image": "img/beers/bacardi-carta-blanca.webp",
+  "image_credit": {
+   "author": "H005",
+   "license": "Public domain",
+   "license_url": "",
+   "source": "https://commons.wikimedia.org/wiki/File:Old_Bacardi_Front.JPG"
+  }
  },
  {
   "id": "blantons-original",
@@ -34256,7 +34447,14 @@
    }
   ],
   "status": "auto",
-  "description": "grape vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом."
+  "description": "grape vodka: чистый выдержанный характер. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
+  "image": "img/beers/ciroc.webp",
+  "image_credit": {
+   "author": "User:Rdotchhun",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:The_impeachapple_emperor-_made_with_a_shot_of_peach_Ciroc_and_a_bottle_of_angry_orchard_or_your_favorite_hard_cider-_This_cocktail_is_also_known_as_I_M_E_M-_Created_on_a_an_emperor_island_raft,_a_handful_of_fr_2014-07-04_23-54.jpg"
+  }
  },
  {
   "id": "dalmore-12-y-o",
@@ -35108,7 +35306,14 @@
    }
   ],
   "status": "auto",
-  "description": "gin (огурец/роза): насыщенный аромат. Крепость 41.4%. Пейте неспешно, комнатной температуры или со льдом."
+  "description": "gin (огурец/роза): насыщенный аромат. Крепость 41.4%. Пейте неспешно, комнатной температуры или со льдом.",
+  "image": "img/beers/hendricks.webp",
+  "image_credit": {
+   "author": "JIP",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Hendrick%27s_Gin_and_Fever-Tree_Tonic.jpg"
+  }
  },
  {
   "id": "hennessy-vs",
@@ -35872,7 +36077,13 @@
   ],
   "status": "auto",
   "description": "blended Irish whiskey: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
-  "image": null
+  "image": "img/beers/kilbeggan.webp",
+  "image_credit": {
+   "author": "Blackrock78 at English Wikipedia",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Kilbeggan%27s_whiskey_bottle.jpg"
+  }
  },
  {
   "id": "kilchoman-machir-bay",
@@ -36078,7 +36289,13 @@
   ],
   "status": "auto",
   "description": "Japanese blended whisky: насыщенный аромат, маслянистое тело. Крепость 40.0%. Пейте неспешно, комнатной температуры или со льдом.",
-  "image": null
+  "image": "img/beers/kura.webp",
+  "image_credit": {
+   "author": "固体物性",
+   "license": "Public domain",
+   "license_url": "",
+   "source": "https://commons.wikimedia.org/wiki/File:Manzairaku.JPG"
+  }
  },
  {
   "id": "martell-vs",
@@ -36294,7 +36511,13 @@
   ],
   "status": "auto",
   "description": "gin (47 botanicals): маслянистое тело, насыщенный аромат. Крепость 47.0%. Пейте неспешно, комнатной температуры или со льдом.",
-  "image": null
+  "image": "img/beers/monkey-47.webp",
+  "image_credit": {
+   "author": "Grossmatthias1234",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Monkey_47_-_Schwarzwald_Dry_Gin_-_Packshot.jpg"
+  }
  },
  {
   "id": "olmeca-blanco-gold",
@@ -39441,7 +39664,14 @@
    }
   ],
   "status": "auto",
-  "description": "Квас: яркая сладость, освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C."
+  "description": "Квас: яркая сладость, освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C.",
+  "image": "img/beers/boza.webp",
+  "image_credit": {
+   "author": "Berishasinan",
+   "license": "CC0 1.0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "source": "https://commons.wikimedia.org/wiki/File:Boz%C3%AB_Elbasani.jpg"
+  }
  },
  {
   "id": "vyatskiy-kvas",
@@ -41702,7 +41932,14 @@
    }
   ],
   "status": "auto",
-  "description": "Кисломолочный напиток: освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C."
+  "description": "Кисломолочный напиток: освежающая кислинка, насыщенный аромат. Подавайте при 4-8°C.",
+  "image": "img/beers/kumys.webp",
+  "image_credit": {
+   "author": "A.Savin",
+   "license": "CC BY-SA 3.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Kumys-bottle.jpg"
+  }
  },
  {
   "id": "molochnyy-kokteyl",
@@ -42016,7 +42253,14 @@
    }
   ],
   "status": "auto",
-  "description": "Кисломолочный напиток: освежающая кислинка, звонкая газированность. Подавайте при 3-7°C."
+  "description": "Кисломолочный напиток: освежающая кислинка, звонкая газированность. Подавайте при 3-7°C.",
+  "image": "img/beers/tan.webp",
+  "image_credit": {
+   "author": "Voronel k",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B0%D0%BD_%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9.jpg"
+  }
  },
  {
   "id": "shubat",
@@ -43258,7 +43502,14 @@
    }
   ],
   "status": "auto",
-  "description": "Вода: звонкая газированность. Подавайте при 3-9°C."
+  "description": "Вода: звонкая газированность. Подавайте при 3-9°C.",
+  "image": "img/beers/borjomi.webp",
+  "image_credit": {
+   "author": "Matsievsky",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:BORJOMI_GEORGIAN_MINERAL_WATER_glass_bottle0.5_barcode4860019001346_codeCG2RUBY1_date30.10.2019L10_1.jpg"
+  }
  },
  {
   "id": "maniva",
