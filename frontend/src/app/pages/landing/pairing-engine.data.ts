@@ -98,6 +98,29 @@ export const emptyProfile = (): DishProfile => ({
   category: null, cooking: null, taste: null, weight: null, fat: null, freeText: '',
 });
 
+/* Шаги мастера по порядку. Лежат здесь, а не в dish-wizard: главная знает последний шаг,
+   не загружая сам мастер (он приходит отдельным чанком, @defer в landing) */
+
+export interface WizardStep {
+  key: keyof DishProfile;
+  title: string;
+  accent: string;
+  sub: string;
+  options: WizardOption[];
+  /** Первый шаг нельзя пропустить: без категории подбирать не от чего. */
+  skippable: boolean;
+}
+
+export const WIZARD_STEPS: WizardStep[] = [
+  { key: 'category', title: 'Что ты', accent: 'ешь?', sub: 'Выбери категорию блюда', options: CATEGORIES, skippable: false },
+  { key: 'cooking', title: 'Как это', accent: 'приготовлено?', sub: 'Огонь, пар или сырое - способ меняет вкус сильнее, чем кажется', options: COOKING, skippable: true },
+  { key: 'taste', title: 'Какой вкус', accent: 'главный?', sub: 'Тот, что чувствуется первым, ещё до остальных', options: TASTES, skippable: true },
+  { key: 'weight', title: 'Насколько', accent: 'сытное?', sub: 'От веса блюда зависит плотность сорта - лёгкое к лёгкому, тяжёлое к тяжёлому', options: WEIGHTS, skippable: true },
+];
+
+/** Последний шаг мастера: на него возвращает «Изменить ответы» из результата. */
+export const LAST_STEP = WIZARD_STEPS.length - 1;
+
 /** Человеческое название блюда по ответам - для заголовка результата. */
 export function profileTitle(p: DishProfile): string {
   if (p.freeText.trim()) return p.freeText.trim();

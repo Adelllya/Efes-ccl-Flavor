@@ -1,4 +1,7 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  Component, ElementRef, EventEmitter, HostListener, Injector, OnDestroy, OnInit, Output, afterNextRender, computed, effect, inject, signal,
+  untracked
+} from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { PanelTab } from '../../models/navigation';
@@ -16,6 +19,7 @@ import { PanelSettingsComponent } from './panel-settings.component';
 import { PanelEngineComponent } from './panel-engine.component';
 import { PanelPilotComponent } from './panel-pilot.component';
 import { OrderAlertService } from './order-alert.service';
+import { countOf, isNarrowPanel } from './panel-shared';
 import { environment } from '../../../environments/environment';
 
 interface PanelTabDef {
@@ -125,6 +129,14 @@ const ORDERS_POLL_MS = 20000;
       </aside>
 
       <section class="wa-main">
+        <!-- Телефон и планшет: плашка у нижнего края экрана (panel.css), её видно, как бы далеко ни пролистали вкладку -->
+        @if (showOrdersNote()) {
+          <button type="button" class="wa-orders-note" (click)="setTab('orders')">
+            <panel-icon name="bell" />
+            <span>{{ countOf(newOrdersCount(), 'новый заказ', 'новых заказа', 'новых заказов') }}</span>
+            <panel-icon name="chevronRight" />
+          </button>
+        }
         @if (loadErrorText(); as text) {
           <div class="wa-loadbar">
             <panel-icon name="alert" />
@@ -236,6 +248,14 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
   readonly auth = inject(AuthService);
   /** Сигнал о новых заказах, пока панель открыта на любой вкладке. */
   private alerts = inject(OrderAlertService);
+  private host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private injector = inject(Injector);
+  /** Первый раз полосу вкладок ставим на место сразу, дальше плавно. */
+  private navRevealed = false;
+  /** Телефон: где листали список, из которого открыли карточку. «К списку» возвращает туда же. */
+  private listScrollY = 0;
+  /** Снимает слежение за рейлом при уходе из панели. */
+  private stopNavWatch: (() => void) | null = null;
   /** Django admin: локально на :8000, на проде /admin/ того же домена. */
   readonly adminUrl = environment.adminUrl;
 
@@ -279,6 +299,7 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
       }))
   );
   readonly quickTabs = computed(() => this.visibleTabs().filter(t => t.id !== 'overview'));
+  readonly countOf = countOf;
   readonly activeTab = signal<PanelTab>('overview');
 
   readonly overviewText = computed(() => {
@@ -318,6 +339,11 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
   ordersVenue = signal<string | null>(null);
   newOrdersCount = signal(0);
   private ordersTimer: ReturnType<typeof setInterval> | null = null;
+  /** Напоминание о новых заказах на остальных вкладках. Видно на телефоне и планшете: на десктопе число стоит в рейле. */
+  readonly showOrdersNote = computed(() => {
+    const tab = this.activeTab();
+    return this.newOrdersCount() > 0 && tab !== 'orders' && tab !== 'overview' && this.auth.can('orders');
+  });
   /** Прошлое число новых заказов: рост значит, что пришёл заказ. null - ещё не считали. */
   private lastNewCount: number | null = null;
 
@@ -360,6 +386,14 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
       const own = this.auth.user()?.venue?.slug ?? null;
       if (own && this.auth.role() !== 'moderator') untracked(() => this.onOrdersVenue(own));
     }, { allowSignalWrites: true });
+
+    // Телефон: вкладки идут полосой с прокруткой вбок, активная всегда в кадре
+    effect(() => {
+      this.activeTab();
+      afterNextRender(() => this.revealActiveTab(), { injector: this.injector });
+    });
+
+    afterNextRender(() => this.watchNavOverflow());
   }
 
   ngOnInit() {
@@ -373,10 +407,78 @@ export class SommelierAdminComponent implements OnInit, OnDestroy {
     if (this.ordersTimer !== null) clearInterval(this.ordersTimer);
     this.ordersTimer = null;
     this.alerts.detach();
+    this.stopNavWatch?.();
   }
 
   setTab(id: PanelTab) {
-    if (this.visibleTabs().some(t => t.id === id)) this.activeTab.set(id);
+    if (!this.visibleTabs().some(t => t.id === id)) return;
+    this.activeTab.set(id);
+    this.listScrollY = 0;
+    // Телефон: вкладку, открытую с плиток внизу обзора, показываем с начала
+    if (isNarrowPanel() && window.scrollY > 0) window.scrollTo({ top: 0 });
+  }
+
+  /**
+   * Телефон: карточка открывается вместо списка, а длинный список (телефон боком) листается вместе со страницей.
+   * Карточку показываем с начала, по «К списку» возвращаемся туда, где листали. Так устроены все вкладки.
+   */
+  @HostListener('click', ['$event'])
+  onPanelClick(event: MouseEvent) {
+    if (!isNarrowPanel()) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest('.wa-list .wa-row')) {
+      this.listScrollY = window.scrollY;
+      afterNextRender(() => this.revealDetail(), { injector: this.injector });
+    } else if (target?.closest('.wa-back')) {
+      const y = this.listScrollY;
+      if (y > 0) afterNextRender(() => window.scrollTo({ top: y }), { injector: this.injector });
+    }
+  }
+
+  /**
+   * Открытая карточка начинается под шапкой сайта: не за ней (список листали вниз) и не в нижней половине экрана
+   * (телефон боком), где кнопкам статуса заказа некуда прилипнуть над нижней панелью.
+   */
+  private revealDetail() {
+    const detail = this.host.nativeElement.querySelector<HTMLElement>('.wa-page.has-selection .wa-detail');
+    if (!detail) return;
+    const header = document.querySelector<HTMLElement>('header.nav-container');
+    const headerBottom = header && getComputedStyle(header).position === 'sticky' ? header.getBoundingClientRect().bottom : 0;
+    const top = detail.getBoundingClientRect().top;
+    if (top < headerBottom || top > window.innerHeight / 2) {
+      window.scrollTo({ top: Math.max(0, window.scrollY + top - headerBottom - 8) });
+    }
+  }
+
+  /** Планшет: пока ниже в рейле есть вкладки, его нижний край растворяется (panel.css, .wa-nav-more). */
+  private watchNavOverflow() {
+    const nav = this.host.nativeElement.querySelector<HTMLElement>('.wa-nav');
+    if (!nav) return;
+    const update = () => nav.classList.toggle('wa-nav-more', nav.scrollHeight - nav.scrollTop - nav.clientHeight > 4);
+    nav.addEventListener('scroll', update, { passive: true });
+    // Высота рейла меняется с окном, число вкладок с ролью
+    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    resize?.observe(nav);
+    const rows = new MutationObserver(update);
+    rows.observe(nav, { childList: true });
+    update();
+    this.stopNavWatch = () => {
+      nav.removeEventListener('scroll', update);
+      resize?.disconnect();
+      rows.disconnect();
+    };
+  }
+
+  /** Прокручивает полосу вкладок так, чтобы активная стояла по центру. На широком экране рейл не прокручивается вбок. */
+  private revealActiveTab() {
+    const nav = this.host.nativeElement.querySelector<HTMLElement>('.wa-nav');
+    const row = nav?.querySelector<HTMLElement>('.wa-nav-row.active');
+    if (!nav || !row || nav.scrollWidth <= nav.clientWidth) return;
+    const navBox = nav.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    const left = nav.scrollLeft + rowBox.left - navBox.left - (navBox.width - rowBox.width) / 2;
+    nav.scrollTo({ left: Math.max(0, left), behavior: this.navRevealed ? 'smooth' : 'auto' });
+    this.navRevealed = true;
   }
 
   private pickDefaultTab() {

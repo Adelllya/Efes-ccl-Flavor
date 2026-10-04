@@ -1,12 +1,13 @@
 {
-  "name": "Flavor Tree - сенсорный гид по пиву",
+  "id": "/",
+  "name": "Flavor Tree: вкусы напитков и подбор к блюду",
   "short_name": "Flavor Tree",
-  "description": "Вкусовая пирамида сортов, пиво к блюду и электронное меню заведений.",
+  "description": "Справочник вкусов напитков, подбор к блюду и электронное меню заведения с заказом со стола.",
   "lang": "ru",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#FAFAF9",
   "theme_color": "#FAFAF9",
   "icons": [

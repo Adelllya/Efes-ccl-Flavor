@@ -104,6 +104,12 @@ class AiTestsBase(TestCase):
         entry, _, result = ai_local.moderate_first(rows, ai_local.Plan())[0]
         return entry, result
 
+    def menu_first(self, menu_item, **params):
+        """Первый вариант «Подобрать напиток» к позиции в меню заведения (GET /api/venues/<slug>/menu/)."""
+        menu = client_for().get('/api/venues/efes-beer-garden/menu/', params).json()
+        item = next(i for s in menu['sections'] for i in s['items'] if i['id'] == str(menu_item.id))
+        return item['recommendations'][0] if item['recommendations'] else None
+
 
 class AiStatusTests(AiTestsBase):
     def test_status_without_key(self):
@@ -359,19 +365,22 @@ class SafetyChatTests(AiTestsBase):
 
 class LocalSommelierTests(AiTestsBase):
     def test_drink_for_named_dish_follows_engine(self):
-        resp = self.ask('что взять к бешбармаку', table=7)
+        # У мантов пара команды (Белый Медведь) не из карты бара: первым идёт напиток движка
+        self.assertFalse(self.menu_first(self.manty)['curated'])
+        resp = self.ask('что взять к мантам', table=7)
         self.assertEqual(resp.status_code, 200, resp.content)
         data = resp.json()
         self.assertEqual(data['mode'], 'local')
         self.assertEqual(data['note'], '')
-        top, result = self.expected_first(self.besh)
+        top, result = self.expected_first(self.manty)
         first = data['suggestions'][0]
         self.assertEqual(first['id'], top['id'])
-        self.assertEqual(first['pairs_with'], str(self.besh.id))
+        self.assertEqual(first['pairs_with'], str(self.manty.id))
         self.assertEqual(first['score'], ai_engine.score5(result))
         self.assertTrue(first['is_alcoholic'])
-        self.assertIn('Бешбармак', data['reply'])
+        self.assertIn('Манты', data['reply'])
         self.assertIn('{} из 100'.format(result['score']), data['reply'])
+        self.assertNotIn('подбор команды', data['reply'])
         # Пометка об ответственном потреблении, раз советуем алкоголь
         self.assertIn('21', data['disclaimer'])
         self.assertNotIn('\u2014', data['reply'])
@@ -837,8 +846,11 @@ class ClaudePathTests(AiTestsBase):
         # Название, подпись и оценка из базы и движка, а не из текста модели.
         self.assertEqual(drink['title'], 'Velkopopovický Kozel')
         self.assertEqual(drink['subtitle'], 'Czech Lager · 0,5 л · 2 200 ₸')
-        expected = dict((e['id'], r) for e, r in self.engine_ranked(self.besh))[str(self.kozel.id)]
-        self.assertEqual(drink['score'], ai_engine.score5(expected))
+        # Kozel к бешбармаку меню ставит первым как пару команды: у карточки та же оценка, что в меню
+        menu = self.menu_first(self.besh)
+        self.assertTrue(menu['curated'])
+        self.assertEqual(menu['menu_drink']['id'], str(self.kozel.id))
+        self.assertEqual(drink['score'], menu['compatibility_score'])
         self.assertEqual(drink['reason'], 'Солод к мясу')
         self.assertEqual(drink['pairs_with'], str(self.besh.id))
         self.assertEqual(dish['title'], 'Казы')
@@ -858,6 +870,9 @@ class ClaudePathTests(AiTestsBase):
         self.assertIn('без горечи', state)
         self.assertIn('<engine_hints>', state)
         self.assertIn(str(self.besh.id), state)
+        # Подсказка модели: пара команды, которую меню ставит первой
+        self.assertIn('подбор команды Flavor Tree (в меню стоит первым): Velkopopovický Kozel ({}) 5 из 5'.format(
+            self.kozel.id), state)
         self.assertEqual(messages, [{'role': 'user', 'content': 'что взять к бешбармаку'}])
 
     def test_cart_titles_and_menu_names_cannot_inject(self):

@@ -252,7 +252,12 @@ const READY_SECTIONS: Record<number, { anchor: string; label: string }> = {
     .lesson-notes li { display: flex; align-items: center; gap: var(--space-sm); font-size: 0.9rem; }
     .lesson-notes li .text-beer { margin-left: auto; }
 
+    /* «Урок ниже» и «Тест ниже» докручивают до заголовка раздела, а не прячут его под липкой шапкой */
+    #academy-lesson, #academy-quiz { scroll-margin-top: 110px; }
+
     @media (max-width: 768px) {
+      /* «Урок ниже», «Тест ниже», «Пройти заново» под палец: не меньше 44px */
+      .btn-outline { min-height: 44px; }
       .quiz-option { width: 100%; min-height: 48px; }
     }
   `]

@@ -1,7 +1,9 @@
-import { Component, EventEmitter, OnInit, Output, computed, effect, inject, signal } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, afterNextRender, computed, effect, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
 import { SelectionService } from '../../services/selection.service';
+import { backLeadsToCatalog, markCatalogReturn } from '../drinks-v2/v2-url';
+import { TapHintDirective } from '../drinks-v2/v2-ui';
 import { Brand, Dish, FoodPairing, PAIRING_LABELS, PairingType, PyramidNoteItem } from '../../models/flavor-tree.models';
 import { CATEGORIES, COOKING, TASTES, bigImage, smallImage } from '../landing/pairing-engine.data';
 import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
@@ -69,6 +71,7 @@ const MAX_ORBIT = 6;
 @Component({
   selector: 'app-beer-detail',
   standalone: true,
+  imports: [TapHintDirective],
   template: `
     @if (!brandLoaded()) {
       <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сорт">
@@ -82,7 +85,7 @@ const MAX_ORBIT = 6;
       </div>
     } @else {
       @if (brand(); as b) {
-      <button type="button" class="bd-back" (click)="back.emit()">
+      <button type="button" class="bd-back" (click)="goBack()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Все сорта
       </button>
@@ -99,7 +102,7 @@ const MAX_ORBIT = 6;
             <div class="bd-row"><dt>Тип</dt><dd>{{ b.packaging_type_display || b.packaging_type }}</dd></div>
             <div class="bd-row"><dt>Стиль</dt><dd>{{ b.style }}</dd></div>
             @if (abvText(b.abv, b.abv_estimated); as abv) {
-              <div class="bd-row"><dt>Крепость</dt><dd [attr.title]="b.abv_estimated ? abvHint : null">{{ abv }}</dd></div>
+              <div class="bd-row"><dt>Крепость</dt><dd [attr.title]="b.abv_estimated ? abvHint : null" [ftHint]="b.abv_estimated ? abvHint : null">{{ abv }}</dd></div>
             }
             @if (b.density) { <div class="bd-row"><dt>Плотность</dt><dd>{{ b.density }}</dd></div> }
             @if (b.fermentation_type) { <div class="bd-row"><dt>Брожение</dt><dd>{{ b.fermentation_type }}</dd></div> }
@@ -118,7 +121,7 @@ const MAX_ORBIT = 6;
           @if (b.is_horeca_only) { <span class="badge badge-horeca">Только в заведениях</span> }
         </div>
 
-        <div class="bd-visual">
+        <div class="bd-visual" [class.bd-crowded]="orbit().length > 4">
           <span class="bd-halo" aria-hidden="true"></span>
 
           <span class="bd-bottle">
@@ -258,7 +261,7 @@ const MAX_ORBIT = 6;
           } @else {
             <p class="text-dim">Сорт не выбран - откройте его из каталога или подбора.</p>
           }
-          <button type="button" class="bd-back" (click)="back.emit()">
+          <button type="button" class="bd-back" (click)="goBack()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             Все сорта
           </button>
@@ -413,7 +416,10 @@ const MAX_ORBIT = 6;
     }
     .bd-taste-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .bd-taste-emoji { font-size: 2rem; line-height: 1; }
-    .bd-taste:hover .bd-taste-face { transform: scale(1.14); box-shadow: var(--shadow-hover); }
+    /* Только мышь: на телефоне :hover залипает после касания, и кружок остаётся увеличенным */
+    @media (hover: hover) {
+      .bd-taste:hover .bd-taste-face { transform: scale(1.14); box-shadow: var(--shadow-hover); }
+    }
 
     .bd-taste-label {
       display: flex;
@@ -503,20 +509,39 @@ const MAX_ORBIT = 6;
     .bd-empty { padding: var(--space-5xl); text-align: center; }
 
     @media (max-width: 900px) {
-      .bd-hero { grid-template-columns: 1fr; padding: var(--space-2xl); gap: var(--space-2xl); }
+      /* minmax(0, 1fr): длинное слово в названии не раздвигает колонку шире экрана */
+      .bd-hero { grid-template-columns: minmax(0, 1fr); padding: var(--space-2xl); gap: var(--space-2xl); }
+      .bd-title { overflow-wrap: anywhere; }
+      .bd-back { min-height: 44px; }
       .bd-visual { min-height: 340px; }
+      /* 5-6 нот стоят в три ряда: без запаса по высоте подписи наезжают на кружки ниже */
+      .bd-visual.bd-crowded { min-height: 440px; }
       .bd-taste { width: 84px; margin-left: -42px; }
       .bd-taste-face { width: 58px; height: 58px; }
       .bd-taste-emoji { font-size: 1.5rem; }
-      /* Подписи на телефоне не мельче 11px */
-      .bd-taste-int { font-size: 0.7rem; }
-      .bd-serve-label { font-size: 0.72rem; }
+      /* Подписи на телефоне не мельче 12px */
+      .bd-taste-name, .bd-taste-int, .bd-row dt, .bd-serve-label { font-size: 0.75rem; }
+    }
+
+    /* Сенсорный экран шире 900px (телефон боком, планшет): подписи тоже не мельче 12px */
+    @media (pointer: coarse) {
+      .bd-taste-name, .bd-taste-int, .bd-row dt, .bd-serve-label { font-size: 0.75rem; }
     }
 
     @media (max-width: 480px) {
       .bd-hero { padding: var(--space-xl); }
       .bd-layer { padding: var(--space-xl); }
       .bd-section { margin-bottom: var(--space-5xl); }
+      .bd-empty { padding: var(--space-2xl) var(--space-xl); }
+      /* «Карагандинское» целиком помещается и на 320px */
+      .bd-title { font-size: clamp(1.75rem, 9.1vw, 2.2rem); }
+      /* Длинная нота («Сбалансированный финиш») переносится по слогам внутри кружка, а не вылезает за экран.
+         Подписи от этого выше, поэтому витрина выше, а кольцо чуть уже, чтобы крайние кружки не упирались в рамку */
+      .bd-visual { min-height: 400px; }
+      .bd-visual.bd-crowded { min-height: 460px; }
+      .bd-orbit { inset: 0 12px; }
+      .bd-taste { width: 92px; margin-left: -46px; }
+      .bd-taste-label { max-width: 100%; padding: 4px 6px; hyphens: auto; overflow-wrap: anywhere; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -554,6 +579,17 @@ export class BeerDetailComponent implements OnInit {
       const id = this.selection.brandId();
       if (id) this.load(id);
     }, { allowSignalWrites: true });
+    // К первой отрисовке AppComponent уже положил запись сорта в историю: помечаем её, если открыли из каталога
+    afterNextRender(() => markCatalogReturn(this.selection.brandId()));
+  }
+
+  /**
+   * «Все сорта». Открыли из каталога - шаг назад, как «Назад» браузера: каталог с теми же фильтрами
+   * и той же прокруткой. Иначе (ссылка, меню заведения, чат) каталог открывается заново.
+   */
+  goBack(): void {
+    if (backLeadsToCatalog()) history.back();
+    else this.back.emit();
   }
 
   ngOnInit(): void {

@@ -1,5 +1,5 @@
 import {
-  Component, DestroyRef, ElementRef, EventEmitter, Injector, OnDestroy, Output, afterNextRender, computed, effect, inject,
+  Component, DestroyRef, ElementRef, EventEmitter, Injector, NgZone, OnDestroy, Output, afterNextRender, computed, effect, inject,
   signal, untracked, viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -181,11 +181,11 @@ function writeView(slug: string, view: MenuView | null): void {
       @if (d.is_available) {
         <div class="vm-stepper" [class.vm-stepper-on]="qtyOf('DRINK', d.id) > 0">
           @if (qtyOf('DRINK', d.id) > 0) {
-            <button type="button" class="vm-step" (click)="dec('DRINK', d.id)" aria-label="Убрать одну">-</button>
+            <button type="button" class="vm-step" data-fab-avoid (click)="dec('DRINK', d.id)" aria-label="Убрать одну">-</button>
             <span class="vm-step-n" aria-live="polite">{{ qtyOf('DRINK', d.id) }}</span>
-            <button type="button" class="vm-step" (click)="addDrink(d, it, r, rank)" [disabled]="qtyOf('DRINK', d.id) >= maxQty" aria-label="Добавить ещё">+</button>
+            <button type="button" class="vm-step" data-fab-avoid (click)="addDrink(d, it, r, rank)" [disabled]="qtyOf('DRINK', d.id) >= maxQty" aria-label="Добавить ещё">+</button>
           } @else {
-            <button type="button" class="vm-step vm-step-add" (click)="addDrink(d, it, r, rank)">Добавить в заказ</button>
+            <button type="button" class="vm-step vm-step-add" data-fab-avoid (click)="addDrink(d, it, r, rank)">Добавить в заказ</button>
           }
         </div>
       } @else {
@@ -335,7 +335,7 @@ function writeView(slug: string, view: MenuView | null): void {
               @if (!closed(o)) {
                 <button type="button" class="vm-chip vm-chip-order" (click)="openOrder()" [attr.aria-label]="'Заказ ' + o.number + ', ' + statusLabel(o.status)">
                   <span class="vm-chip-dot" aria-hidden="true"></span>
-                  №{{ o.number }} · {{ statusLabel(o.status) }}
+                  <span class="vm-chip-text">№{{ o.number }} · {{ statusLabel(o.status) }}</span>
                 </button>
               }
             }
@@ -425,7 +425,11 @@ function writeView(slug: string, view: MenuView | null): void {
                   @for (it of s.items; track it.id) {
                     <article class="glass-card vm-dish" [class.vm-item-off]="!it.is_available">
                       <div class="vm-dish-photo">
-                        @if (it.dish.image) {
+                        <!-- Фото первого блюда видно сразу при открытии и обычно самое крупное на экране: грузим его без очереди.
+                             loading в разметке, а не привязкой: так он стоит у img раньше src, и остальные фото ждут прокрутки -->
+                        @if (it.dish.image && it.id === firstDishId()) {
+                          <img [src]="it.dish.image" alt="" loading="eager" fetchpriority="high" />
+                        } @else if (it.dish.image) {
                           <img [src]="it.dish.image" alt="" loading="lazy" />
                         } @else {
                           <span class="vm-dish-initial" aria-hidden="true">{{ initialOf(it.dish.name) }}</span>
@@ -454,17 +458,17 @@ function writeView(slug: string, view: MenuView | null): void {
                           @if (it.is_available) {
                             <div class="vm-stepper" [class.vm-stepper-on]="qtyOf('DISH', it.id) > 0">
                               @if (qtyOf('DISH', it.id) > 0) {
-                                <button type="button" class="vm-step" (click)="dec('DISH', it.id)" aria-label="Убрать одну">-</button>
+                                <button type="button" class="vm-step" data-fab-avoid (click)="dec('DISH', it.id)" aria-label="Убрать одну">-</button>
                                 <span class="vm-step-n" aria-live="polite">{{ qtyOf('DISH', it.id) }}</span>
-                                <button type="button" class="vm-step" (click)="addDish(it)" [disabled]="qtyOf('DISH', it.id) >= maxQty" aria-label="Добавить ещё">+</button>
+                                <button type="button" class="vm-step" data-fab-avoid (click)="addDish(it)" [disabled]="qtyOf('DISH', it.id) >= maxQty" aria-label="Добавить ещё">+</button>
                               } @else {
-                                <button type="button" class="vm-step vm-step-add" (click)="addDish(it)">+ В заказ</button>
+                                <button type="button" class="vm-step vm-step-add" data-fab-avoid (click)="addDish(it)">+ В заказ</button>
                               }
                             </div>
                           } @else {
                             <span class="text-xs text-muted">Сегодня не готовим</span>
                           }
-                          <button type="button" class="vm-rec-toggle" [class.active]="isOpen(it.id)" (click)="toggleRec(it.id)" [attr.aria-expanded]="isOpen(it.id)">
+                          <button type="button" class="vm-rec-toggle" data-fab-avoid [class.active]="isOpen(it.id)" (click)="toggleRec(it.id)" [attr.aria-expanded]="isOpen(it.id)">
                             <ng-container *ngTemplateOutlet="mug; context: { $implicit: 18 }" />
                             Подобрать напиток
                             <svg class="vm-rec-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -698,9 +702,9 @@ function writeView(slug: string, view: MenuView | null): void {
                         <span class="text-xs text-muted">{{ lineMeta(l) }}</span>
                       </div>
                       <div class="vm-stepper vm-stepper-on vm-stepper-sm">
-                        <button type="button" class="vm-step" (click)="dec(l.kind, l.id)" aria-label="Убрать одну">-</button>
+                        <button type="button" class="vm-step" data-fab-avoid (click)="dec(l.kind, l.id)" aria-label="Убрать одну">-</button>
                         <span class="vm-step-n">{{ l.qty }}</span>
-                        <button type="button" class="vm-step" (click)="inc(l.kind, l.id)" [disabled]="l.qty >= maxQty" aria-label="Добавить ещё">+</button>
+                        <button type="button" class="vm-step" data-fab-avoid (click)="inc(l.kind, l.id)" [disabled]="l.qty >= maxQty" aria-label="Добавить ещё">+</button>
                       </div>
                       <span class="vm-cart-line-sum">{{ price(lineSum(l)) }}</span>
                       <button type="button" class="btn-ghost vm-cart-remove" (click)="remove(l)" aria-label="Убрать из заказа">
@@ -824,6 +828,7 @@ export class VenueMenuComponent implements OnDestroy {
   private track = inject(TrackService);
   private destroyRef = inject(DestroyRef);
   private injector = inject(Injector);
+  private zone = inject(NgZone);
   /** После ngOnDestroy опрос заказа не перезапускаем. */
   private destroyed = false;
 
@@ -906,6 +911,15 @@ export class VenueMenuComponent implements OnDestroy {
   private entrySrc = '';
   /** Прокрутка, которую вернём, когда меню отрисуется (назад со страницы напитка, перезагрузка). */
   private pendingScroll: number | null = null;
+  /** Меню открылось из сохранённого вида: гость здесь уже был и выбор стола видел, второй раз его не открываем. */
+  private viewRestored = false;
+  /**
+   * Прокрутка страницы по последнему событию scroll. В ngOnDestroy scrollY читать поздно: меню уже снято
+   * со страницы, короткая страница сбросила прокрутку к началу, и «Назад» со страницы напитка (из карточки
+   * подбора, чата сомелье или нижней панели) вернул бы гостя в начало меню.
+   */
+  private lastY = window.scrollY;
+  private readonly onScroll = () => { this.lastY = window.scrollY; };
 
   /** Листы снизу: native dialog, showModal кладёт их в top layer поверх всего. */
   private readonly tableDlg = viewChild<ElementRef<HTMLDialogElement>>('tableDlg');
@@ -934,6 +948,8 @@ export class VenueMenuComponent implements OnDestroy {
     window.addEventListener(CART_CHANGED_EVENT, this.onCartChanged);
     // Уход со страницы или перезагрузка: запоминаем, где гость был в меню
     window.addEventListener('pagehide', this.onPageHide);
+    // Прокрутку для этого запоминаем вне зоны Angular: событие scroll не запускает проверку изменений
+    this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
 
     // Панель подбора открыли раньше, чем запасной подбор посчитал напиток: записываем открытие, когда он готов
     effect(() => {
@@ -1004,6 +1020,7 @@ export class VenueMenuComponent implements OnDestroy {
     if (this.autoTableTimer) clearTimeout(this.autoTableTimer);
     window.removeEventListener(CART_CHANGED_EVENT, this.onCartChanged);
     window.removeEventListener('pagehide', this.onPageHide);
+    window.removeEventListener('scroll', this.onScroll);
     document.body.style.overflow = '';
   }
 
@@ -1016,7 +1033,7 @@ export class VenueMenuComponent implements OnDestroy {
     writeView(slug, {
       step: this.step(),
       // Меню ещё не вернуло прокрутку (гость ушёл сразу): сохраняем ту, что ждала своей очереди
-      y: this.pendingScroll ?? Math.round(window.scrollY),
+      y: this.pendingScroll ?? Math.round(this.lastY),
       open: Object.keys(this.expanded()).filter(id => this.expanded()[id]),
       section: this.activeSection(),
       sent: [...this.pairOpensSent],
@@ -1051,6 +1068,8 @@ export class VenueMenuComponent implements OnDestroy {
   });
 
   readonly sectionNames = computed(() => this.sections().map(s => ({ name: s.name, count: s.items.length })));
+  /** Первое блюдо меню: его фото грузим сразу. Не зависит от выбранного раздела, чтобы img не пересоздавался. */
+  readonly firstDishId = computed(() => this.menu()?.sections[0]?.items[0]?.id ?? '');
   readonly totalItems = computed(() => this.sections().reduce((n, s) => n + s.items.length, 0));
 
   readonly visibleSections = computed(() => {
@@ -1166,6 +1185,21 @@ export class VenueMenuComponent implements OnDestroy {
 
   selectSection(name: string): void {
     this.activeSection.set(name);
+    // Список стал короче, и браузер мог оставить гостя внизу страницы, выше которой ушёл выбранный раздел
+    afterNextRender(() => this.revealSections(), { injector: this.injector });
+  }
+
+  /**
+   * Заголовок первого показанного раздела ушёл под липкие полосы или за нижний край экрана:
+   * ставим его сразу под полосу разделов. Отступ сверху задаёт scroll-margin-top у .vm-section в menu.css.
+   */
+  private revealSections(): void {
+    const first = this.pillsNav()?.nativeElement.parentElement?.querySelector<HTMLElement>('.vm-section');
+    if (!first) return;
+    const top = first.getBoundingClientRect().top;
+    const margin = parseFloat(getComputedStyle(first).scrollMarginTop) || 0;
+    if (top >= margin - 2 && top <= window.innerHeight - 120) return;
+    first.scrollIntoView({ block: 'start', behavior: 'instant' });
   }
 
   openDrink(brandId: string): void {
@@ -1218,10 +1252,9 @@ export class VenueMenuComponent implements OnDestroy {
     });
   }
 
-  /** «Все напитки бара» из панели подбора: только карта напитков, прокрутка к ней. */
+  /** «Все напитки бара» из панели подбора: только карта напитков, прокрутку к ней делает selectSection. */
   showBarDrinks(): void {
     this.selectSection(DRINKS_SECTION);
-    setTimeout(() => document.getElementById('vm-bar-drinks')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   /** Прокручивает полосу разделов (только её, не страницу), чтобы активный раздел был виден целиком. */
@@ -1374,10 +1407,14 @@ export class VenueMenuComponent implements OnDestroy {
       this.tableOpen.set(true);
       return;
     }
-    if (this.takeawayAlcohol()) return;
+    if (this.takeawayAlcohol()) {
+      this.revealCartNotice();
+      return;
+    }
     const alcohol = this.cartHasAlcohol();
     if (alcohol && !this.ageOk()) {
       this.ageHint.set(true);
+      this.revealCartNotice();
       return;
     }
     this.sending.set(true);
@@ -1429,8 +1466,37 @@ export class VenueMenuComponent implements OnDestroy {
         else if (status === 429) this.sendError.set('Слишком много заказов подряд. Подождите пару минут или позовите официанта.');
         else if (itemsRejected) this.refreshCartAfterReject(slug);
         else this.sendError.set(AuthService.errorText(err));
+        this.revealCartNotice();
       },
     });
+  }
+
+  /**
+   * Галочка 21+ или ошибка в листе корзины могли остаться под липким итогом (длинный заказ, телефон боком),
+   * и нажатие «Отправить заказ» выглядело бы так, будто ничего не произошло. Прокручиваем лист так,
+   * чтобы всё от первой такой строки до последней встало над итогом. Если всё и так видно, лист стоит на месте.
+   */
+  private revealCartNotice(): void {
+    afterNextRender(() => {
+      const dlg = this.cartDlg()?.nativeElement;
+      if (!dlg?.open) return;
+      // Алкоголь с собой: вместе с ошибкой показываем и строку «Куда нести», там меняют стол
+      const sel = '.vm-age-missing, .vm-form-error' + (this.takeawayAlcohol() ? ', .vm-cart-table' : '');
+      const marks = Array.from(dlg.querySelectorAll<HTMLElement>(sel), el => el.getBoundingClientRect());
+      if (!marks.length) return;
+      const box = dlg.getBoundingClientRect();
+      const foot = dlg.querySelector<HTMLElement>('.vm-sheet-foot')?.getBoundingClientRect();
+      const gap = 12;
+      const from = box.top + gap;
+      const to = (foot ? foot.top : box.bottom) - gap;
+      const top = Math.min(...marks.map(r => r.top));
+      const bottom = Math.max(...marks.map(r => r.bottom));
+      // Не помещается целиком: важнее начало, там галочка или стол
+      const dy = top < from || bottom - top > to - from ? top - from : Math.max(0, bottom - to);
+      if (Math.abs(dy) < 1) return;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      dlg.scrollBy({ top: dy, behavior: reduce ? 'instant' : 'smooth' });
+    }, { injector: this.injector });
   }
 
   /** Сервер отверг позиции: пока гость выбирал, меню изменилось. Обновляем меню и корзину. */
@@ -1443,10 +1509,12 @@ export class VenueMenuComponent implements OnDestroy {
         this.menu.set(m);
         this.reconcileCart(m);
         this.sendError.set('Часть позиций уже недоступна, мы обновили корзину. Проверьте заказ и отправьте снова.');
+        this.revealCartNotice();
       },
       error: () => {
         if (this.slug() !== slug) return;
         this.sendError.set('Часть позиций уже недоступна. Обновите страницу и соберите заказ снова.');
+        this.revealCartNotice();
       },
     });
   }
@@ -1685,6 +1753,7 @@ export class VenueMenuComponent implements OnDestroy {
     // и перезагрузка возвращают экран, прокрутку и открытые панели подбора
     const view = entry ? null : readView(slug);
     if (entry) writeView(slug, null);
+    this.viewRestored = !!view;
     if (view) {
       this.expanded.set(Object.fromEntries(view.open.map(id => [id, true])));
       this.activeSection.set(view.section);
@@ -1728,8 +1797,9 @@ export class VenueMenuComponent implements OnDestroy {
         const table = this.tableNumber();
         if (table !== null && table > this.tablesCount()) this.selection.setTable(slug, null);
         if (m.sections.some(s => s.items.some(i => !i.recommendations && !i.pairing))) this.ensureEngineData();
-        // Стол ещё не выбран: предложим выбрать, когда меню на экране и гость ответил на вопрос о возрасте
-        if (first && this.tableNumber() === null && this.step() === 'menu') this.tablePromptPending = true;
+        // Стол ещё не выбран: предложим выбрать, когда меню на экране и гость ответил на вопрос о возрасте.
+        // Возврат со страницы напитка и перезагрузка не в счёт: выбор стола гость уже видел и мог закрыть
+        if (first && !this.viewRestored && this.tableNumber() === null && this.step() === 'menu') this.tablePromptPending = true;
         this.restoreScroll();
         this.afterMenuShown(slug);
       },
@@ -1795,6 +1865,7 @@ export class VenueMenuComponent implements OnDestroy {
     }
     this.tablePromptPending = false;
     this.pendingScroll = null;
+    this.viewRestored = false;
     this.entrySrc = '';
     this.activeSection.set('');
     this.expanded.set({});

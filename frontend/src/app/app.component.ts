@@ -1,4 +1,6 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  Component, HostListener, Injector, NgZone, OnDestroy, OnInit, afterNextRender, computed, effect, inject, signal, untracked
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LandingComponent } from './pages/landing/landing.component';
 import { BrandExplorerComponent } from './pages/brand-explorer/brand-explorer.component';
@@ -13,6 +15,8 @@ import { ProfileComponent } from './pages/profile/profile.component';
 import { SommelierChatComponent } from './ui/sommelier-chat.component';
 import { AgeGateComponent } from './ui/age-gate.component';
 import { SiteFooterComponent } from './ui/site-footer.component';
+import { OverlayHistory, overlayEntry, replaceOverlayEntry } from './ui/overlay-history';
+import { OPEN_CHAT_EVENT, openChatDetail, requestOpenChat } from './ui/chat-open';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
 import { AgeService } from './services/age.service';
 import { AuthService } from './services/auth.service';
@@ -81,6 +85,9 @@ function parsePath(pathname: string): ParsedPath {
   }
 }
 
+/** Телефон и сенсорный экран: у открытого мобильного меню своя запись в истории, «Назад» закрывает его. */
+const TOUCH_QUERY = '(max-width: 768px), (pointer: coarse)';
+
 /** Заголовок вкладки браузера по разделу. На главной остаётся title из index.html. */
 const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
   explorer: 'Каталог',
@@ -134,7 +141,7 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
     </div>
 
     <!-- Навигация с Glassmorphism -->
-    <header class="nav-container">
+    <header class="nav-container" [class.has-tabbar]="showTabBar()">
       <nav class="glass-panel nav-bar">
         <!-- Логотип -->
         <div class="nav-logo" (click)="goTo('landing')">
@@ -400,9 +407,10 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
     }
 
     <!-- ИИ-сомелье: плавающая кнопка и чат. В панели и на формах входа не нужен.
-         Грузится отдельным чанком, когда браузер освободится после первой отрисовки -->
+         Грузится отдельным чанком, когда браузер освободится после первой отрисовки,
+         или сразу, если страница уже попросила открыть чат (событие ft-open-chat) -->
     @if (activeTab() !== 'admin' && activeTab() !== 'login' && activeTab() !== 'register') {
-      @defer (on idle) {
+      @defer (on idle; when chatWanted()) {
         <app-sommelier-chat [lift]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
       }
     }
@@ -425,6 +433,9 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
       max-width: var(--container-max);
       margin: 32px auto;
       padding: 0 var(--container-padding) 80px;
+      /* iPhone боком: текст не уходит под вырез экрана */
+      padding-left: max(var(--container-padding), env(safe-area-inset-left));
+      padding-right: max(var(--container-padding), env(safe-area-inset-right));
     }
 
     /* Скелетон, пока грузится чанк раздела */
@@ -567,8 +578,28 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
       .nav-user .btn-outline { max-width: 130px; }
     }
 
+    /* Сенсорный экран шире 768px (планшет, телефон боком): профиль и выход в шапке под палец */
+    @media (pointer: coarse) {
+      .nav-user .btn-outline,
+      .nav-user .btn-ghost { min-height: 40px; min-width: 40px; }
+    }
+
+    /* Планшет 1024-1120px: «Выйти» 40px и подпись логотипа 12px делают ряд шире на 14px. Вкладки уже
+       на 2px с каждой стороны, иначе «Выйти» вылезает за край панели (у модератора с «Панелью») */
+    @media (pointer: coarse) and (max-width: 1100px) {
+      .nav-tab { padding: 0 10px; }
+    }
+    @media (pointer: coarse) and (min-width: 1101px) and (max-width: 1120px) {
+      .nav-tab { padding: 0 16px; }
+    }
+
     @media (max-width: 860px) {
       .nav-sticky-title { display: none; }
+    }
+
+    /* Планшет и телефон боком: вход, профиль и панель в выезжающем меню (шапка как на телефоне, styles.css) */
+    @media (min-width: 769px) and (max-width: 1023px) {
+      .nav-admin-btn { display: none; }
     }
 
     @media (max-width: 768px) {
@@ -589,11 +620,23 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly track = inject(TrackService);
   private readonly zone = inject(NgZone);
 
+  private readonly injector = inject(Injector);
+
   activeTab = signal<ActiveTab>('landing');
   /** Последний query каталога и подбора: вернувшись в раздел, гость видит тот же режим и фильтры. */
   private readonly lastQuery = new Map<ActiveTab, string>();
   mobileMenuOpen = signal(false);
   showStickyTitle = signal(false);
+  /** Страница попросила открыть чат раньше, чем он загрузился: грузим его чанк сразу. */
+  readonly chatWanted = signal(false);
+
+  private readonly touch = window.matchMedia(TOUCH_QUERY);
+  /** Запись мобильного меню в истории: «Назад» на телефоне закрывает меню, а не уводит со страницы. */
+  private readonly menuEntry = new OverlayHistory('menu', {
+    back: () => this.zone.run(() => this.mobileMenuOpen.set(false)),
+    forward: () => this.zone.run(() => this.mobileMenuOpen.set(true)),
+    isOpen: () => this.mobileMenuOpen(),
+  });
 
   /** Открыто меню конкретного заведения: в подвале строка о подаче алкоголя с 21 года. */
   readonly venueMenuOpen = computed(() => this.activeTab() === 'menu' && !!this.selection.venueSlug());
@@ -613,6 +656,11 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor() {
     // Адрес читаем до первого запуска эффекта, иначе он перепишет его на главную
     this.applyPath(location.pathname);
+    // Страницу обновили с открытым мобильным меню (его запись текущая): открываем его снова
+    if (this.menuEntry.resume()) {
+      if (this.touch.matches) this.mobileMenuOpen.set(true);
+      else this.menuEntry.settle(false);
+    }
 
     // Заголовок вкладки браузера по разделу, чтобы вкладки и история различались
     const baseTitle = document.title;
@@ -629,7 +677,11 @@ export class AppComponent implements OnInit, OnDestroy {
         // (вкладка или кнопка «назад» на странице сорта) подставляем. Открытую карточку напитка не возвращаем
         const from = parsePath(location.pathname).tab;
         if (QUERY_TABS.has(from)) this.lastQuery.set(from, withoutParam(location.search, 'drink'));
-        history.pushState({}, '', path + (this.lastQuery.get(this.activeTab()) ?? ''));
+        const url = path + (this.lastQuery.get(this.activeTab()) ?? '');
+        // Переход из открытого чата или мобильного меню: новая страница встаёт на место записи листа,
+        // и «Назад» с неё ведёт на страницу под листом (ui/overlay-history.ts)
+        if (overlayEntry()) replaceOverlayEntry(url);
+        else history.pushState({}, '', url);
       }
     });
 
@@ -645,6 +697,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Сессию AuthService проверяет сам в конструкторе (loadMe), второй запрос не нужен
     window.addEventListener('popstate', this.onPopState);
+    window.addEventListener(OPEN_CHAT_EVENT, this.onOpenChat);
     // Прокрутку слушаем вне зоны Angular: иначе каждое событие scroll запускало бы
     // проверку изменений во всём приложении, на телефоне это заметно при листании
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScrollEvent, { passive: true }));
@@ -652,8 +705,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('popstate', this.onPopState);
+    window.removeEventListener(OPEN_CHAT_EVENT, this.onOpenChat);
     window.removeEventListener('scroll', this.onScrollEvent);
+    this.menuEntry.destroy();
   }
+
+  /** Страница просит открыть чат сомелье (ui/chat-open.ts). Чат ещё не загружен: грузим его сразу. */
+  private readonly onOpenChat = (event: Event) => {
+    this.zone.run(() => {
+      if (requestOpenChat(openChatDetail(event))) this.chatWanted.set(true);
+    });
+  };
 
   /** Esc закрывает мобильное меню. */
   @HostListener('document:keydown.escape')
@@ -664,7 +726,8 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Кнопки назад/вперёд браузера: адрес уже сменился, разбираем его без нового pushState. */
   private readonly onPopState = () => {
     this.applyPath(location.pathname);
-    this.closeMobileMenu();
+    // На записи самого меню («Вперёд» на неё) его открывает menuEntry
+    if (overlayEntry() !== 'menu') this.closeMobileMenu();
     this.showStickyTitle.set(false);
   };
 
@@ -720,7 +783,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   goTo(tab: ActiveTab) {
     this.activeTab.set(tab);
-    this.closeMobileMenu();
+    this.closeMobileMenu(false);
     this.showStickyTitle.set(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -739,15 +802,26 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Выход из шапки и мобильного меню: всегда ведёт на страницу входа. */
   logout() {
     this.auth.logout();
-    this.closeMobileMenu();
     this.goTo('login');
   }
 
   toggleMobileMenu() {
-    this.mobileMenuOpen.update(v => !v);
+    if (this.mobileMenuOpen()) {
+      this.closeMobileMenu();
+      return;
+    }
+    this.mobileMenuOpen.set(true);
+    if (this.touch.matches) this.menuEntry.push();
   }
 
-  closeMobileMenu() {
+  /**
+   * dismiss (крестик, подложка, Escape): запись меню в истории снимаем шагом назад. Пункт меню
+   * (goTo) ставит новую страницу на место записи меню, поэтому ждём отрисовки и только потом смотрим,
+   * осталась ли запись (ui/overlay-history.ts).
+   */
+  closeMobileMenu(dismiss = true) {
+    if (!this.mobileMenuOpen()) return;
     this.mobileMenuOpen.set(false);
+    afterNextRender(() => this.menuEntry.settle(dismiss), { injector: this.injector });
   }
 }

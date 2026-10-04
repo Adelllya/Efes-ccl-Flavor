@@ -14,6 +14,8 @@ import {
   AiMessage, AiMode, AiPrefs, AiRequest, AiStatus, AiSuggestion, MenuDrink, MenuEntry, VenueMenu
 } from '../models/flavor-tree.models';
 import { CartLine, addToCart, notifyCartChanged, readCart } from '../pages/venue-menu/cart-storage';
+import { OverlayHistory } from './overlay-history';
+import { OpenChatDetail, attachChat, detachChat } from './chat-open';
 
 /** Сколько реплик уходит на сервер и сколько знаков в каждой: лимиты API. */
 const MAX_TURNS = 12;
@@ -75,6 +77,26 @@ function writeHistory(key: string, chat: StoredChat | null): void {
 /** Прокрутка страницы меню, после которой кнопка сомелье прячется, пока гость листает вниз. */
 const TUCK_AFTER_PX = 160;
 const TUCK_STEP_PX = 6;
+
+/**
+ * Что плавающая кнопка не должна закрывать на телефоне: основные кнопки (.btn-amber, отправка формы),
+ * поля ввода и форму поиска целиком (на главной это «Подобрать» и поле блюда). Страница может отметить
+ * и свой элемент атрибутом data-fab-avoid.
+ */
+const FAB_AVOID = 'button[type="submit"], .btn-amber, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), select, textarea, [role="search"], [data-fab-avoid]';
+/** Проверяем, когда прокрутка остановилась: на ходу кнопка не мигает над каждой карточкой. */
+const COVER_REST_MS = 160;
+/** Точки кнопки (доли ширины и высоты), под которыми ищем такие элементы: центр и четыре точки на краю круга. */
+const FAB_PROBES: ReadonlyArray<readonly [number, number]> = [[0.5, 0.5], [0.15, 0.15], [0.85, 0.15], [0.15, 0.85], [0.85, 0.85]];
+/** Телефон и сенсорный экран: только там кнопка уходит с основных действий, десктоп не меняем. */
+const TOUCH_QUERY = '(max-width: 768px), (pointer: coarse)';
+/** На сколько видимая часть экрана меньше макета, чтобы считать это клавиатурой, а не адресной строкой. */
+const KEYBOARD_MIN_PX = 120;
+/**
+ * Лист во весь экран (телефон, телефон боком, styles.css): у открытого чата своя запись в истории,
+ * «Назад» закрывает его. Боковая панель планшета и десктопа истории не трогает.
+ */
+const FULL_SHEET_QUERY = '(max-width: 768px), (max-height: 500px) and (pointer: coarse)';
 
 /** Строка корзины из чата: откуда позиция, к какому блюду подобран напиток и место карточки (поля CartLine). */
 interface AiCartMeta {
@@ -140,14 +162,15 @@ function subFromSubtitle(subtitle: string): string {
     </button>
 
     @if (open()) {
-      <section class="ai-sheet" id="ai-sheet" role="dialog" aria-labelledby="ai-title">
+      <section class="ai-sheet" id="ai-sheet" role="dialog" aria-labelledby="ai-title" #sheet>
         <header class="ai-head">
           <div class="ai-head-text">
             <h2 id="ai-title" class="ai-title">Сомелье</h2>
             <span class="ai-sub">{{ contextLabel() }}</span>
           </div>
+          <!-- На узком телефоне подпись движка короче (styles.css), иначе она съедает подпись контекста -->
           @if (status()) {
-            <span class="ai-status" [class.ai-status-on]="claudeOn()" [title]="statusTitle()">{{ claudeOn() ? 'ИИ Claude' : 'Ответы по вкусовому движку' }}</span>
+            <span class="ai-status" [class.ai-status-on]="claudeOn()" [title]="statusTitle()">@if (claudeOn()) {ИИ Claude} @else {<span class="ai-status-long">Ответы по вкусовому движку</span><span class="ai-status-short">Вкусовой движок</span>}</span>
           }
           @if (messages().length) {
             <button type="button" class="btn-ghost ai-icon-btn" (click)="clearHistory()" aria-label="Начать заново" title="Начать заново">
@@ -321,8 +344,37 @@ export class SommelierChatComponent {
   private readonly list = viewChild<ElementRef<HTMLElement>>('list');
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly fab = viewChild<ElementRef<HTMLButtonElement>>('fab');
+  private readonly sheet = viewChild<ElementRef<HTMLElement>>('sheet');
+  private readonly touch = window.matchMedia(TOUCH_QUERY);
+  private readonly fullSheet = window.matchMedia(FULL_SHEET_QUERY);
+  private coverTicking = false;
+  private coverTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** Запись чата в истории браузера: «Назад» на телефоне закрывает лист, «Вперёд» открывает снова. */
+  private readonly entry = new OverlayHistory('chat', {
+    back: () => this.zone.run(() => this.hide()),
+    forward: () => this.zone.run(() => this.show(false)),
+    isOpen: () => this.open(),
+  });
+
+  /** Страница попросила открыть чат (событие ft-open-chat, chat-open.ts): текст встаёт в поле ввода. */
+  private readonly openRequest = (detail: OpenChatDetail) => this.zone.run(() => {
+    const text = (detail.text || '').trim().slice(0, MAX_CHARS);
+    if (text) this.input.set(text);
+    if (!this.open()) this.show();
+  });
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.entry.destroy());
+    // Страницу обновили с открытым чатом (запись чата текущая): открываем его снова
+    if (this.entry.resume()) {
+      if (this.fullSheet.matches) this.show(false);
+      else this.entry.settle(false);
+    }
+    const waiting = attachChat(this.openRequest);
+    this.destroyRef.onDestroy(() => detachChat(this.openRequest));
+    if (waiting) this.openRequest(waiting);
+
     // Сменилось заведение: показываем его историю, а не чужую
     effect(() => {
       const key = historyKey(this.selection.venueSlug());
@@ -347,6 +399,32 @@ export class SommelierChatComponent {
     // Прокрутку слушаем вне зоны Angular: в зону заходим, только когда кнопка прячется или появляется
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
     this.destroyRef.onDestroy(() => window.removeEventListener('scroll', this.onScroll));
+
+    // Кнопка поверх основного действия: проверяем после первой отрисовки, после остановки прокрутки (onScroll)
+    // и когда меняется высота документа (другая страница, догрузка) или ширина экрана (поворот)
+    this.afterRender(() => this.checkCover());
+    this.destroyRef.onDestroy(() => clearTimeout(this.coverTimer));
+    if (typeof ResizeObserver !== 'undefined') {
+      this.zone.runOutsideAngular(() => {
+        const ro = new ResizeObserver(this.scheduleCover);
+        ro.observe(document.documentElement);
+        this.destroyRef.onDestroy(() => ro.disconnect());
+      });
+    }
+
+    // Лист открыт: следим за visualViewport, чтобы клавиатура не закрывала шапку и ленту
+    effect(onCleanup => {
+      const vv = window.visualViewport;
+      if (!this.open() || !vv) return;
+      this.zone.runOutsideAngular(() => {
+        vv.addEventListener('resize', this.fitSheet);
+        vv.addEventListener('scroll', this.fitSheet);
+      });
+      onCleanup(() => {
+        vv.removeEventListener('resize', this.fitSheet);
+        vv.removeEventListener('scroll', this.fitSheet);
+      });
+    });
 
     // Новые сообщения и индикатор набора: список листаем вниз
     effect(() => {
@@ -376,8 +454,13 @@ export class SommelierChatComponent {
 
   readonly chips = computed(() => {
     const dish = this.firstDish();
+    const toDish = dish ? `Что взять к блюду «${dish}»?` : 'Что взять к бешбармаку?';
+    // Гостю младше 21 не предлагаем вопросов о пиве: только блюда и безалкогольное
+    if (this.under21()) {
+      return [toDish, 'Что выпить без алкоголя?', 'Хочу что-то лёгкое', 'Что взять к десерту?', 'Посоветуй ужин на двоих'];
+    }
     return [
-      dish ? `Что взять к блюду «${dish}»?` : 'Что взять к бешбармаку?',
+      toDish,
       'Чем закусить пиво?',
       'Хочу что-то лёгкое',
       'Что такое лагер?',
@@ -423,6 +506,8 @@ export class SommelierChatComponent {
    * у правого края), и возвращается при прокрутке вверх и в начале страницы.
    */
   private readonly onScroll = () => {
+    clearTimeout(this.coverTimer);
+    this.coverTimer = setTimeout(this.checkCover, COVER_REST_MS);
     if (this.scrollTicking) return;
     this.scrollTicking = true;
     requestAnimationFrame(() => {
@@ -436,6 +521,52 @@ export class SommelierChatComponent {
     });
   };
 
+  /**
+   * Телефон: кнопка сомелье уходит, пока стоит поверх основной кнопки или поля ввода (на главной при 390x844
+   * она закрывала правый край «Подобрать»). Проверка после остановки прокрутки, после смены страницы
+   * и поворота экрана. Класс ставим прямо на кнопку: всё это идёт вне зоны Angular.
+   */
+  private readonly checkCover = () => {
+    const fab = this.fab()?.nativeElement;
+    if (!fab) return;
+    // offsetLeft и offsetTop у fixed-кнопки без transform: спрятанная (сдвинутая вниз) кнопка проверяет
+    // то же место, где стоит видимая, и не мигает. Открыт чат: кнопки нет (display: none), ширина 0
+    const w = fab.offsetWidth;
+    const h = fab.offsetHeight;
+    const cover = !!w && !!h && this.touch.matches && FAB_PROBES.some(([fx, fy]) =>
+      document.elementsFromPoint(fab.offsetLeft + w * fx, fab.offsetTop + h * fy)
+        .some(el => !fab.contains(el) && el.matches(FAB_AVOID)));
+    fab.classList.toggle('ai-fab-away', cover);
+  };
+
+  private readonly scheduleCover = () => {
+    if (this.coverTicking) return;
+    this.coverTicking = true;
+    requestAnimationFrame(() => {
+      this.coverTicking = false;
+      this.checkCover();
+    });
+  };
+
+  /**
+   * Экранная клавиатура уменьшает видимую часть экрана, а лист (position: fixed) остаётся во весь макет:
+   * шапка с «Закрыть» и лента уходят за край. Пока клавиатура открыта, лист встаёт в видимую часть
+   * (visualViewport), а класс ai-kb прячет подсказки и пожелания. Щипок-зум не трогаем.
+   */
+  private readonly fitSheet = () => {
+    const el = this.sheet()?.nativeElement;
+    const vv = window.visualViewport;
+    if (!el || !vv) return;
+    const kb = vv.scale < 1.01 && document.documentElement.clientHeight - vv.height > KEYBOARD_MIN_PX;
+    const opened = kb && !el.classList.contains('ai-kb');
+    el.classList.toggle('ai-kb', kb);
+    el.style.top = kb ? `${Math.round(vv.offsetTop)}px` : '';
+    el.style.height = kb ? `${Math.round(vv.height)}px` : '';
+    // Клавиатура только открылась: последние сообщения остаются на виду над полем ввода
+    const list = this.list()?.nativeElement;
+    if (opened && list) list.scrollTop = list.scrollHeight;
+  };
+
   // Открытие и закрытие
 
   toggle(): void {
@@ -443,8 +574,11 @@ export class SommelierChatComponent {
     else this.show();
   }
 
-  show(): void {
+  /** push: лист во весь экран получает свою запись в истории (false: открываем по «Вперёд» или после обновления). */
+  show(push = true): void {
+    if (this.open()) return;
     this.open.set(true);
+    if (push && this.fullSheet.matches) this.entry.push();
     if (!this.statusRequested) this.loadStatus();
     // Отрисовка идёт после события (eventCoalescing), поэтому ждём её, а не setTimeout.
     // На телефоне клавиатура закрыла бы половину чата, поэтому фокус только на широком экране
@@ -454,10 +588,24 @@ export class SommelierChatComponent {
     });
   }
 
-  close(): void {
+  /**
+   * Крестик и Escape (dismiss): запись чата в истории снимаем шагом назад. Переход на страницу сорта
+   * (dismiss = false): AppComponent ставит новую страницу на место записи чата, шаг назад не нужен.
+   */
+  close(dismiss = true): void {
+    if (!this.open()) return;
+    this.hide();
+    this.afterRender(() => this.entry.settle(dismiss));
+  }
+
+  /** Лист закрылся: кнопка сомелье снова на месте и в фокусе. «Назад» телефона вызывает только это. */
+  private hide(): void {
     if (!this.open()) return;
     this.open.set(false);
-    this.afterRender(() => this.fab()?.nativeElement.focus());
+    this.afterRender(() => {
+      this.checkCover();
+      this.fab()?.nativeElement.focus();
+    });
   }
 
   /** Escape закрывает чат, но не когда открыт лист стола или корзины: там Escape закрывает его. */
@@ -685,7 +833,7 @@ export class SommelierChatComponent {
   openBrandPage(brandId: string): void {
     this.selection.open(brandId);
     this.openBrand.emit(brandId);
-    this.close();
+    this.close(false);
   }
 
   /** Строка корзины из меню; если меню не загрузилось, цену и объём берём из подписи карточки. */

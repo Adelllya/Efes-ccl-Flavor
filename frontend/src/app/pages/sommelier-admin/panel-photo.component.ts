@@ -50,7 +50,8 @@ export const DEFAULT_PHOTO_HINT =
           (drop)="onDrop($event)"
         >
           <panel-icon name="upload" />
-          <span>Перетащите фото или нажмите, чтобы выбрать</span>
+          <span class="wa-drop-mouse">Перетащите фото или нажмите, чтобы выбрать</span>
+          <span class="wa-drop-touch">Нажмите, чтобы выбрать фото</span>
         </div>
         <input type="file" accept="image/png,image/jpeg,image/webp" #fileInput hidden (change)="onInput($event)" />
         <p class="wa-photo-hint">{{ hint }}</p>

@@ -417,11 +417,15 @@ class MediaInDatabaseTests(TestCase):
 class SettingsDefaultsTests(TestCase):
     """Настройки читаются в отдельном процессе с окружением, как на Vercel."""
 
-    def settings_in(self, **env):
+    def env_for(self, **env):
         base = {k: v for k, v in os.environ.items() if not k.startswith(('DJANGO_', 'VERCEL', 'FT_'))}
         base.update({'DJANGO_SETTINGS_MODULE': 'flavor_tree.settings', 'DJANGO_DEBUG': '',
                      'DJANGO_SECRET_KEY': '', 'DJANGO_ALLOWED_HOSTS': ''})
         base.update(env)
+        return base
+
+    def settings_in(self, **env):
+        base = self.env_for(**env)
         code = (
             'import json, django; from django.conf import settings; django.setup(); '
             'print(json.dumps({"debug": settings.DEBUG, "hosts": settings.ALLOWED_HOSTS, '
@@ -450,6 +454,18 @@ class SettingsDefaultsTests(TestCase):
         self.assertEqual(data['storage'], 'media_db.storage.DatabaseStorage')
         self.assertEqual(data['rates']['login'], '10/min')
         self.assertEqual(data['proxies'], 1)
+
+    def test_deploy_checks_clean_on_vercel(self):
+        # manage.py check --deploy с окружением Vercel: ни одного предупреждения. HSTS, secure-cookie
+        # и прокси https заданы в settings.py; W008 и W021 там же заглушены только на Vercel.
+        env = self.env_for(VERCEL='1', VERCEL_URL='ft-abc.vercel.app',
+                           DJANGO_SECRET_KEY='deploy-check-' + 'k7Qm2Xv9Lp4Rt8Wz' * 3,
+                           DJANGO_CORS_ALLOWED_ORIGINS='https://flavor-tree-frontend.vercel.app',
+                           DJANGO_CSRF_TRUSTED_ORIGINS='https://flavor-tree-backend.vercel.app')
+        result = subprocess.run([sys.executable, 'manage.py', 'check', '--deploy', '--fail-level', 'WARNING'],
+                                cwd=BACKEND_DIR, env=env, capture_output=True, text=True, timeout=60)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('no issues', result.stdout)
 
     def test_gunicorn_without_debug_flag_is_production(self):
         # Не manage.py и не Vercel (например, gunicorn): DEBUG тоже выключен, ключ обязателен.

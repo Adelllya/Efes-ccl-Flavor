@@ -221,7 +221,8 @@
 }
 .vm-pill-n { font-size: 0.72rem; opacity: 0.75; }
 
-.vm-section { margin-bottom: var(--space-3xl); }
+/* scroll-margin-top: при выборе раздела заголовок встаёт сразу под липкую полосу разделов */
+.vm-section { margin-bottom: var(--space-3xl); scroll-margin-top: 214px; }
 .vm-section-title {
   font-size: 1.3rem;
   margin-bottom: var(--space-md);
@@ -350,7 +351,11 @@
   cursor: pointer;
   transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
-.vm-rec-toggle:hover, .vm-rec-toggle.active { background: var(--beer-glow); border-color: var(--beer-light); }
+.vm-rec-toggle.active { background: var(--beer-glow); border-color: var(--beer-light); }
+/* Только с мышью: на телефоне hover залипает после касания, и закрытая панель выглядела бы открытой */
+@media (hover: hover) {
+  .vm-rec-toggle:hover { background: var(--beer-glow); border-color: var(--beer-light); }
+}
 .vm-rec-chevron { transition: transform var(--duration-fast) ease; }
 .vm-rec-toggle.active .vm-rec-chevron { transform: rotate(180deg); }
 
@@ -453,7 +458,6 @@ p.vm-score { margin: 0; align-items: baseline; gap: 6px; }
 .vm-alt-name:hover, .vm-drink-name:hover { color: var(--beer-deep); text-decoration: underline; }
 /* Напиток из базы подбора без страницы сорта: название без ссылки */
 .vm-name-plain, .vm-name-plain:hover { cursor: default; color: var(--foam); text-decoration: none; }
-#vm-bar-drinks { scroll-margin-top: 210px; }
 
 /* Напитки бара */
 .vm-drinks { display: grid; gap: var(--space-md); }
@@ -688,7 +692,9 @@ p.vm-score { margin: 0; align-items: baseline; gap: 6px; }
   cursor: pointer;
   transition: color var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
-.vm-star:hover { color: var(--beer-accent); }
+@media (hover: hover) {
+  .vm-star:hover { color: var(--beer-accent); }
+}
 .vm-star:active { transform: scale(0.92); }
 .vm-star.on { color: var(--beer-accent); }
 .vm-star:disabled { cursor: default; }
@@ -816,17 +822,81 @@ p.vm-score { margin: 0; align-items: baseline; gap: 6px; }
   to { transform: none; opacity: 1; }
 }
 
-/* Узкий телефон: «+ В заказ» и «Подобрать напиток» помещаются в одну строку,
-   у названий напитков нормальная зона нажатия */
-@media (max-width: 400px) {
-  .vm-rec-toggle { gap: 6px; padding: 0 12px; }
+/* Телефон (и боком) и планшет: зоны нажатия от 40 px, главные кнопки от 44 px, подписи не мельче 12 px.
+   (pointer: coarse): планшет шире 768 px (iPad вертикально 820-834 px) и телефон боком шире 768 px тоже под палец.
+   Низкое окно с мышью (например, с открытой снизу панелью разработчика) остаётся десктопом */
+@media (max-width: 768px), (pointer: coarse) {
+  /* Зона нажатия у названий напитков 40 px, отрицательные поля держат прежний ритм карточки */
+  .vm-alt-name, .vm-drink-name { min-height: 40px; padding: 8px 0; margin: -4px 0; }
+  .vm-facts a { display: inline-block; min-height: 40px; padding: 8px 0; }
+  /* Длинное слово в названии переносится, а не выталкивает цену за край карточки */
+  .vm-title, .vm-venue-name, .vm-dish-name, .vm-rec-name, .vm-alt-name, .vm-drink-name,
+  .vm-cart-line-title, .vm-order-item-title, .vm-rate-title { overflow-wrap: anywhere; }
+
+  .vm-chip, .vm-pill { min-height: 40px; }
+  .vm-pill-n { font-size: 0.75rem; }
+  .vm-cart-n { min-width: 20px; height: 20px; font-size: 0.75rem; }
+  /* Мало места в полосе: сжимается чип заказа (с многоточием), стол и корзина остаются целиком */
+  .vm-chip-order { flex-shrink: 1; min-width: 0; }
+  .vm-chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* «+ В заказ» сразу шириной степпера «- 1 +»: после первого нажатия «Подобрать напиток» не прыгает на новую строку */
+  .vm-stepper { min-height: 44px; }
+  .vm-step { min-width: 44px; height: 44px; }
+  .vm-actions .vm-stepper { min-width: 114px; }
+  .vm-actions .vm-step-add { flex: 1; }
+  /* И наоборот: «- 1 +» напитка шириной с «Добавить в заказ». На 360-375 px кнопка стоит под ценой,
+     и степпер встаёт туда же, а не прыгает к цене из-под пальца; «Ещё из карты бара» ниже не сдвигается */
+  .vm-rec-buy .vm-stepper, .vm-drink-foot .vm-stepper { min-width: 152px; justify-content: space-between; }
+  .vm-rec-buy .vm-step-add, .vm-drink-foot .vm-step-add { flex: 1; }
+  .vm-rec-toggle { min-height: 44px; }
+  .vm-stepper-sm { min-height: 40px; }
+  .vm-stepper-sm .vm-step { min-width: 40px; height: 40px; }
+  .vm-link { min-height: 40px; margin-top: 0; }
+  .vm-rec-kind, .vm-alts-title { font-size: 0.75rem; letter-spacing: 0.08em; }
+  .vm-note-age { flex-wrap: wrap; }
+
+  .vm-venue .vm-venue-btn, .vm-empty .btn-amber, .vm-empty .btn-outline, .vm-share .btn-amber, .vm-share-url,
+  .vm-cart-bar-info, .vm-cart-bar .vm-cart-bar-go, .vm-sheet-body > .btn-outline, .vm-sheet-foot .btn-amber, .vm-field .input,
+  .vm-order-actions .btn-amber, .vm-order-actions .btn-outline, .vm-rate-row .input, .vm-rate-row .btn-outline { min-height: 44px; }
+  .vm-sheet-close { min-width: 44px; min-height: 44px; margin: -4px -4px 0 0; }
+  .vm-cart-remove, .vm-note-close { min-width: 40px; min-height: 40px; }
+  /* Поле в фокусе не прячется под липким итогом листа корзины */
+  .vm-sheet[open] { scroll-padding-bottom: 140px; }
+  .vm-timeline li, .vm-order-facts dt { font-size: 0.75rem; }
 }
-@media (max-width: 768px) {
-  .vm-alt-name, .vm-drink-name { min-height: 32px; padding: 5px 0; }
-  .vm-facts a { display: inline-block; padding: 6px 0; }
+
+/* Узкий телефон: «+ В заказ» и «Подобрать напиток» в одну строку от 390 px, на 360-375 px в две;
+   строка корзины в две строки: название целиком, под ним количество, сумма и удаление */
+@media (max-width: 400px) {
+  .vm-rec-toggle { gap: 6px; padding: 0 10px; }
+  .vm-actions { column-gap: 6px; }
+  .vm-chip { padding: 0 10px; }
+  /* Есть текущий заказ: полосе нужна вся ширина, название заведения видно в витрине ниже */
+  .vm-strip:has(.vm-chip-order) .vm-strip-name { display: none; }
+  .vm-strip:has(.vm-chip-order) .vm-chip-order { margin-left: auto; }
+  .vm-strip:has(.vm-chip-order) .vm-chip svg { display: none; }
+  .vm-cart-line { flex-wrap: wrap; row-gap: 4px; }
+  .vm-cart-line-body { flex-basis: 100%; }
+  .vm-cart-line-sum { margin-left: auto; }
+  /* Большой заказ на 320 px: счётчик позиций уступает место сумме, а не наезжает на «Оформить» */
+  .vm-cart-bar-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
+/* 320 px: пять звёзд оценки помещаются в карточку */
+@media (max-width: 360px) {
+  .vm-stars { gap: 2px; }
+  .vm-star { width: 40px; }
+}
+
+/* Шире 480 px в шапке видна подпись SENSORY BEER GUIDE, шапка выше на 8 px: полосы липнут ниже, как на десктопе */
+@media (min-width: 481px) and (max-width: 768px) {
+  .vm-strip { top: 96px; }
+  .vm-pills { top: 152px; }
+  .vm-section { scroll-margin-top: 222px; }
 }
 
 @media (min-width: 769px) {
+  .vm-section { scroll-margin-top: 220px; }
   .vm-strip { top: 96px; }
   .vm-pills { top: 152px; }
   .vm-hero { flex-direction: row; align-items: flex-start; gap: var(--space-2xl); padding: var(--space-2xl) var(--space-3xl); }
@@ -837,4 +907,21 @@ p.vm-score { margin: 0; align-items: baseline; gap: 6px; }
   .vm-order-card { padding: var(--space-3xl); }
   .vm-sheet[open] { inset: 0; max-width: 520px; margin: auto; border-bottom: 1px solid var(--line); border-radius: var(--radius-2xl); }
   .vm-sheet-body::before { display: none; }
+}
+
+/* Телефон боком (низкий экран под палец или узкий): шапка сайта уезжает при прокрутке (styles.css, то же условие),
+   поэтому полоса меню липнет к верху экрана, полоса разделов сразу под ней и пониже обычной: вдвоём они
+   занимают меньше трети экрана, а к любому разделу можно перейти из середины меню. Заголовок раздела встаёт под обе.
+   Низкое окно с мышью шире 768 px сюда не попадает: там десктоп */
+@media (max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
+  .vm-strip { top: 8px; }
+  .vm-pills { top: 66px; padding: 4px 10px; }
+  .vm-section { scroll-margin-top: 128px; }
+  /* Лист корзины низкий: итог и «Отправить заказ» в одну строку, над ними помещается больше заказа */
+  .vm-sheet-foot { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: var(--space-lg); }
+  .vm-sheet-foot .vm-total { flex: 1; }
+  .vm-sheet-foot .btn-amber.btn-block { flex: 0 0 50%; width: auto; }
+  .vm-sheet-foot .vm-closed { flex-basis: 100%; }
+  /* Шире 768 px общее правило про 16 px в полях не действует, а iOS увеличивает страницу при фокусе на мелком поле */
+  .vm-field .input, .vm-rate-row .input, .vm-share-url { font-size: 16px; }
 }

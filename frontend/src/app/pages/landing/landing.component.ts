@@ -1,17 +1,19 @@
 import { Component, HostListener, OnInit, inject, signal, computed, Output, EventEmitter, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SelectionService } from '../../services/selection.service';
 import { Brand, Dish, FoodPairing, FoodIcon, SiteSettings } from '../../models/flavor-tree.models';
 import { ActiveTab } from '../../app.component';
 import { V2ApiService } from '../drinks-v2/v2-api.service';
 import { V2Dish } from '../drinks-v2/v2.models';
-import { HeroComponent } from './hero/hero.component';
-import { DishWizardComponent, LAST_STEP, WizardMove } from './dish-wizard.component';
+import { HeroComponent, HeroPillId } from './hero/hero.component';
+// Мастер, результат и витрина сортов нужны только после нажатия: грузятся отдельным чанком (@defer ниже).
+// Поэтому их классы здесь только в imports компонента и в типах, иначе сборщик вернёт их в основной бандл
+import { DishWizardComponent } from './dish-wizard.component';
+import type { WizardMove } from './dish-wizard.component';
 import { DishResultComponent } from './dish-result.component';
 import { BeerPairingsComponent } from './beer-pairings.component';
-import { DishProfile, emptyProfile } from './pairing-engine.data';
+import { DishProfile, LAST_STEP, emptyProfile } from './pairing-engine.data';
 import { DishChoice, DishPick, buildDishIndex, resolveDish } from './dish-search';
 
 type Stage = 'idle' | 'searching' | 'wizard' | 'dish-result' | 'brand';
@@ -69,7 +71,7 @@ interface MoodOption {
   selector: 'app-landing',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, HeroComponent,
+    CommonModule, HeroComponent,
     DishWizardComponent, DishResultComponent, BeerPairingsComponent,
   ],
   template: `
@@ -77,16 +79,22 @@ interface MoodOption {
          1. HERO SECTION & VALUE PROPOSITION
          -->
     @if (stage() === 'idle') {
-      <app-hero (choose)="scrollToSelector($event)" (dishSearch)="onHeroSearch($event)" />
+      <app-hero (choose)="scrollToSelector($event)" (dishSearch)="onHeroSearch($event)" (pill)="onHeroPill($event)" />
     }
 
     <!--
          2. ПОДБОР: ДВА ПУТИ - ОТ БЛЮДА И ОТ НАПИТКА
          Вход только через две кнопки в hero. Дальше - мастер из четырёх
          вопросов для блюда либо витрина сортов для напитка.
+         Мастер, результат и витрина едут отдельным чанком: главная рисуется без них, а чанк браузер
+         берёт сразу после её первой отрисовки (prefetch on immediate). На медленном телефоне (4x CPU,
+         1.6 Мбит/с) так первый экран на 0.14 с раньше, чем без чанка, а нажатие в первую же секунду
+         ждёт 0.2-0.4 с вместо 0.7 с при prefetch on idle.
+         Не успел: пока чанк грузится, стоит скелетон с тем же id, и прокрутка к подбору находит его.
          -->
+    @defer (when stage() !== 'idle'; prefetch on immediate) {
     @if (stage() !== 'idle') {
-    <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel">
+    <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel" [class.pairing-wait]="stage() === 'searching'">
       @switch (stage()) {
         @case ('searching') {
           <div class="skeleton-grid" aria-busy="true" aria-label="Ищем блюдо в каталоге">
@@ -102,6 +110,7 @@ interface MoodOption {
 
         @case ('wizard') {
           <app-dish-wizard
+            #wizard
             [catalog]="dishIndex()"
             [icons]="foodIcons()"
             [restore]="wizardProfile()"
@@ -137,6 +146,7 @@ interface MoodOption {
 
         @case ('brand') {
           <app-beer-pairings
+            #beerPairings
             [brands]="brands()"
             [pairings]="pairings()"
             [dishes]="dishes()"
@@ -153,6 +163,19 @@ interface MoodOption {
       }
     </section>
     }
+    } @loading {
+      <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel pairing-wait">
+        <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем подбор">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="skeleton-card">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+            </div>
+          }
+        </div>
+      </section>
+    }
 
     <!--
          3. ЭКСПРЕСС-ПОДБОР: ВКУСОВОЙ КОМПАС & НАСТРОЕНИЕ
@@ -168,7 +191,11 @@ interface MoodOption {
         @for (mood of moodPresets; track mood.id) {
           <div
             class="glass-card mood-card stagger-item"
+            role="button"
+            tabindex="0"
             (click)="applyMoodPreset(mood)"
+            (keydown.enter)="applyMoodPreset(mood)"
+            (keydown.space)="$event.preventDefault(); applyMoodPreset(mood)"
           >
             <div class="mood-icon">{{ mood.icon }}</div>
             <h3 class="mb-xs">{{ mood.title }}</h3>
@@ -185,7 +212,7 @@ interface MoodOption {
     <!--
          4. ХРОНОМЕТРАЖ ГЛОТКА (СЕНСОРНАЯ ПИРАМИДА)
          -->
-    <section class="glass-panel p-4xl mb-4xl">
+    <section id="taste-pyramid" class="glass-panel p-4xl mb-4xl">
       <div class="text-center max-w-2xl mx-auto mb-3xl">
         <span class="badge badge-accent mb-sm">Методология дегустации</span>
         <h2 class="section-header">Хронометраж глотка: Вкусовая Пирамида</h2>
@@ -218,6 +245,13 @@ interface MoodOption {
 
   `,
   styles: [`
+    /* К пирамиде ведёт пилюля hero: раздел встаёт под липкую шапку */
+    #taste-pyramid { scroll-margin-top: 120px; }
+    /* Телефон: скелетон подбора не короче экрана. Мастер, витрина и результат длиннее экрана,
+       поэтому, когда они приходят, раздел ниже сдвигается уже за нижним краем, а не на глазах */
+    @media (max-width: 768px), (pointer: coarse) {
+      .pairing-wait { min-height: 100vh; }
+    }
     .pairing-engine-panel {
       scroll-margin-top: 120px;
       border: 1px solid var(--beer-light);
@@ -581,8 +615,8 @@ export class LandingComponent implements OnInit {
   private pendingQuery: string | null = null;
   /** Сорт из истории браузера, пока каталог сортов ещё грузится. */
   private pendingBrandId: string | null = null;
-  private readonly beerPairings = viewChild(BeerPairingsComponent);
-  private readonly wizard = viewChild(DishWizardComponent);
+  private readonly beerPairings = viewChild<BeerPairingsComponent>('beerPairings');
+  private readonly wizard = viewChild<DishWizardComponent>('wizard');
 
 
   // Экспресс-сценарии настроения (на основе CustDev-сегментов)
@@ -760,6 +794,16 @@ export class LandingComponent implements OnInit {
     if (!el) return;
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  /** Пилюли hero: сорта ведут в каталог, «Школа вкуса» в академию, пирамида к разделу ниже на этой странице. */
+  onHeroPill(id: HeroPillId): void {
+    if (id === 'brands') { this.navigate.emit('explorer'); return; }
+    if (id === 'school') { this.navigate.emit('academy'); return; }
+    if (id === 'pyramid') {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      document.getElementById('taste-pyramid')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    }
   }
 
   /** Две кнопки из hero - вход в подбор. */

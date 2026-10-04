@@ -1,9 +1,9 @@
-import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, Injector, OnInit, afterNextRender, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { V2ApiService } from './v2-api.service';
 import { V2CategoryBest, V2Dish, V2Meta, V2Pair, V2PairingResult } from './v2.models';
-import { V2GlassComponent, drinkLine, drinkTitle, firstWarning, isEfes, isEnergy, loadErrorText, priceLabel, reasonLines } from './v2-ui';
+import { TapHintDirective, V2GlassComponent, drinkLine, drinkTitle, firstWarning, isEfes, isEnergy, loadErrorText, priceLabel, reasonLines } from './v2-ui';
 import { PAIRINGS_PATH, setUrlParams, urlParam } from './v2-url';
 import { countOf } from '../venue-menu/plural';
 
@@ -19,7 +19,7 @@ const DISHES_PREVIEW = 24;
 @Component({
   selector: 'app-pairing-v2',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet, V2GlassComponent],
+  imports: [FormsModule, NgTemplateOutlet, V2GlassComponent, TapHintDirective],
   template: `
     <div class="glass-panel v2-intro mb-2xl">
       <p>
@@ -50,7 +50,7 @@ const DISHES_PREVIEW = 24;
         <button class="btn-amber" (click)="loadDishes()">Повторить</button>
       </div>
     } @else {
-      <div class="v2-chips mb-xl">
+      <div class="v2-chips mb-xl" #chips>
         @for (d of visibleDishes(); track d.id) {
           <button class="btn-outline v2-chip" [class.active]="d.id === selectedId()" (click)="select(d.id)">
             <span aria-hidden="true">{{ d.emoji }}</span> {{ d.name }}
@@ -177,7 +177,7 @@ const DISHES_PREVIEW = 24;
           <h3 class="v2-name">{{ drinkTitle(p.drink_name) }}</h3>
           <p class="text-muted text-sm">{{ drinkLine(p.drink) }}</p>
           <ul class="v2-reasons">
-            @for (t of reasonLines(p); track t.text) { <li [attr.title]="t.source || null">{{ t.text }}</li> }
+            @for (t of reasonLines(p); track t.text) { <li [attr.title]="t.source || null" [ftHint]="t.source">{{ t.text }}</li> }
           </ul>
           @if (firstWarning(p); as w) { <p class="v2-warning">{{ w }}</p> }
           @if (priceLabel(p.drink?.price_kzt); as price) { <p class="text-xs text-muted">{{ price }}</p> }
@@ -229,21 +229,42 @@ const DISHES_PREVIEW = 24;
     .v2-cat-score { font-family: var(--font-heading); font-weight: 800; font-size: 1.2rem; color: var(--beer-mid); }
     .v2-cat-score[data-band="ideal"] { color: var(--success); }
 
+    /* Телефон, в том числе боком (шире 768px), и планшет */
+    @media (max-width: 768px), (pointer: coarse) {
+      /* Блюда, переключатели и «Показать весь рынок» под палец: не ниже 44px, крестик поиска тоже */
+      .btn-outline { min-height: 44px; }
+      .v2-search .input { padding-right: 48px; }
+      .v2-clear { right: 2px; width: 44px; height: 44px; padding: 0; }
+    }
+
     @media (max-width: 640px) {
       .v2-search { max-width: none; }
       /* Блюда одной строкой с прокруткой, поиск над ними находит любое из 114 */
       .v2-chips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 2px 16px 6px; scrollbar-width: none; }
       .v2-chips::-webkit-scrollbar { display: none; }
       .v2-chip { flex-shrink: 0; white-space: nowrap; }
-      .v2-pair, .v2-pair.v2-norank { grid-template-columns: 40px 1fr; gap: 12px; padding: 16px; }
+      /* Колонка под бокал в его размер (48px), иначе бокал заходит на текст */
+      .v2-pair, .v2-pair.v2-norank { grid-template-columns: 48px 1fr; gap: 12px; padding: 16px; }
       .v2-rank { display: none; }
+      /* Длинный бейдж правила Efes переносится внутри карточки, а не уходит за край экрана */
+      .v2-promoted { white-space: normal; border-radius: var(--radius-md); }
       .v2-score { grid-column: 1 / -1; flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 8px; }
       .v2-score strong { font-size: 1.6rem; }
+      /* Длинные названия в «Лучшее в каждой категории» в две строки, а не обрыв на двадцатом знаке */
+      .v2-cat-body strong { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+    }
+
+    @media (max-width: 480px) {
+      /* Переключатели заполняют строку, а не висят лесенкой разной ширины */
+      .v2-toggles .btn-outline { flex: 1 1 auto; justify-content: center; }
     }
   `],
 })
 export class PairingV2Component implements OnInit {
   private api = inject(V2ApiService);
+  private injector = inject(Injector);
+  /** Полоса блюд: на телефоне она прокручивается вбок. */
+  private readonly chipsRow = viewChild<ElementRef<HTMLElement>>('chips');
 
   meta = signal<V2Meta | null>(null);
   dishes = signal<V2Dish[]>([]);
@@ -300,6 +321,27 @@ export class PairingV2Component implements OnInit {
       na: this.nonAlcoholic() ? '1' : null,
       efes: this.efesOnly() ? null : '0',
     }));
+
+    // Выбранное блюдо всегда видно в полосе блюд: блюдо из ссылки стоит в её конце, за краем экрана телефона
+    effect(() => {
+      this.selectedId();
+      const row = this.chipsRow()?.nativeElement;
+      if (row) untracked(() => afterNextRender(() => this.revealActiveChip(row), { injector: this.injector }));
+    });
+  }
+
+  /** Докручивает полосу блюд вбок до выбранного; если оно уже видно (или полоса не прокручивается), ничего не делает. */
+  private revealActiveChip(row: HTMLElement): void {
+    const chip = row.querySelector<HTMLElement>('.v2-chip.active');
+    if (!chip) return;
+    const pad = 16;
+    const rowBox = row.getBoundingClientRect();
+    const box = chip.getBoundingClientRect();
+    let left = row.scrollLeft;
+    if (box.left < rowBox.left + pad) left += box.left - rowBox.left - pad;
+    else if (box.right > rowBox.right - pad) left += box.right - rowBox.right + pad;
+    else return;
+    row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
   }
 
   ngOnInit() {

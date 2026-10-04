@@ -63,6 +63,28 @@ PY=~/projects/Efes-ccl-Flavor/backend/.venv/bin/python
    `gh api repos/Adelllya/Efes-ccl-Flavor/commits/<sha>/status`.
 5. После выкладки: `scripts/smoke.sh`.
 
+## Кэш, заголовки и логи на проде
+
+- **Каталог API в браузере гостя.** Анонимный GET к спискам каталога (сорта, напитки и блюда движка,
+  пары, ноты, курсы, команда, настройки) получает `Cache-Control: private, max-age=60` и
+  `Vary: Authorization, Cookie`. Хранит ответ только браузер, CDN Vercel его не кэширует
+  (почему, написано в `backend/api/http_cache.py`). Правку модератора гость увидит не позже чем через минуту.
+  Запросы с токеном, меню и заведения, заказы, пилот, ИИ и подбор с `?venue=` не кэшируются. Локально (DEBUG) кэша нет.
+- **HTTPS.** Django шлёт HSTS на два года (`includeSubDomains`, без `preload`). На Vercel
+  `manage.py check --deploy` проходит чисто: W008 (редирект на https) и W021 (preload) выключены,
+  их делает сам Vercel. За этим следит тест `test_deploy_checks_clean_on_vercel`.
+- **Логи.** На сервере Django пишет WARNING и выше, в том числе трейсбеки ответов 500, в stderr:
+  это логи функции в Vercel (проект бэкенда → Logs).
+- **Корневой `vercel.json`.** Страницы сайта (`index.html` и любой адрес без файла) идут с
+  `Cache-Control: public, max-age=0, must-revalidate`, `X-Frame-Options: DENY`,
+  `Referrer-Policy: strict-origin-when-cross-origin` и `Permissions-Policy` (камера, микрофон, геолокация,
+  оплата, USB, MIDI и датчики выключены). Бандлы с хэшем в имени кэшируются на год (`immutable`), файлы из
+  `frontend/public/` (`img/`, `decor/`, `icons/`, `og.jpg`, `favicon.ico`, `manifest.webmanifest`,
+  `robots.txt`) на час: заменённая картинка у гостей обновится не позже чем через час. У всех файлов
+  сборки `X-Content-Type-Options: nosniff`.
+- **`frontend/vercel.json`** (деплой фронта из CLI, раздел 5) ставит те же заголовки безопасности
+  и тот же час кэша для файлов из `public/`.
+
 ## 1. Переменные окружения
 
 Vercel → проект → Settings → Environment Variables. Ставить для **Production и Preview**.
@@ -120,7 +142,9 @@ compute и Max Duration не меньше 30 с, можно поставить `
 
 ### Настройки проектов в Vercel (проверить один раз)
 
-- Settings → Build and Deployment: у бэкенда Framework = Other, у фронта сборка из `frontend/vercel.json`.
+- Settings → Build and Deployment: сборку из git задаёт корневой `vercel.json` (в нём `builds`, поэтому
+  настройки сборки в панели проекта не действуют). `frontend/vercel.json` читается только при
+  `vercel --prod` из папки `frontend/` (раздел 5).
 - Root Directory у обоих проектов не задан (проверено 27.09 по тому, что сборка из git выкладывала
   корень репозитория). Поэтому сборка из git идёт по корневому `vercel.json` (раздел «Деплой из git»),
   а `vercel --prod` из CLI запускают из папок `backend/` и `frontend/`, где лежат свои `vercel.json`.
@@ -361,6 +385,7 @@ QR печатать только когда домен окончательны�
   лимиты запросов, кэш в базе на Vercel, хранилище фото.
 - `backend/media_db/`: загруженные фото в базе и их раздача по `/media/` с долгим кэшем.
 - `backend/api/throttles.py`, `backend/api/authentication.py`: лимиты и срок жизни токена.
+- `backend/api/http_cache.py`: минутный кэш браузера для анонимных запросов каталога.
 - `backend/api/demo_accounts.py`, команды `seed_roles` и `rotate_demo_passwords`: демо-учётки.
 - `.vercelignore` в корне, в `backend/` и `frontend/`: что не уезжает на Vercel.
 - `scripts/smoke.sh`: проверка после деплоя и перед показом.

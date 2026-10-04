@@ -593,6 +593,24 @@ def apply_filters(ranked, plan, ctx, ds):
     return pool, relaxed, budget_failed
 
 
+def team_first(pool, dish, plan):
+    """
+    Пара команды к блюду меню (team_pick из build_context): в меню заведения она стоит первой с подписью
+    «Подбор команды Flavor Tree», поэтому и в чате идёт первой, с той же оценкой 1-5 и тем же объяснением.
+    Только если она прошла фильтры гостя (запреты, категория, пожелание, бюджет, apply_filters) и гость
+    не просил подешевле; иначе порядок движка. -> (pool, стоит ли первой пара команды).
+    """
+    pick = dish.get('team_pick')
+    if not pick or 'cheaper' in plan.wishes:
+        return pool, False
+    for i, row in enumerate(pool):
+        if row[0]['id'] == pick['drink']:
+            # Объяснение команды написано по-русски: гостю на другом языке оставляем объяснение движка
+            reason = (pick['reason'] if plan.lang == 'ru' else '') or row[2] or pick['reason']
+            return [(row[0], row[1], reason, pick['rating'])] + pool[:i] + pool[i + 1:], True
+    return pool, False
+
+
 def best_efes_beer(ranked, first, plan):
     """Лучшее пиво портфеля Efes из подобранных (при «без алкоголя» их 0.0), если первым стоит не оно."""
     categories = ('na_beer',) if plan.no_alcohol else ('beer', 'radler')
@@ -631,6 +649,7 @@ def pair_for_dish(out, dish, plan, ctx, ds, allowed, lead_key='pair_lead', with_
     lang = plan.lang
     ranked = ranked_for_dish(dish, ctx, ds, allowed)
     pool, relaxed, budget_failed = apply_filters(ranked, plan, ctx, ds)
+    pool, team = team_first(pool, dish, plan)
     if budget_failed:
         out.say(t('budget_none', lang, budget=format_price(plan.budget)))
     if not pool:
@@ -639,19 +658,24 @@ def pair_for_dish(out, dish, plan, ctx, ds, allowed, lead_key='pair_lead', with_
         else:
             out.say(t('pair_none', lang, dish=dish['name']))
         return False
-    if pool[0][1] is not None and pool[0][1] < MIN_SCORE:
+    # Пару команды меню ставит первой, только если движок не считает её неудачной: слабой она не бывает
+    if not team and pool[0][1] is not None and pool[0][1] < MIN_SCORE:
         out.say(t('pair_weak', lang, dish=dish['name']))
         return False
-    if family_missing([r[0] for r in ranked], plan, allowed):
+    # Без алкоголя «водки здесь нет» и «ближайшее» неправда: алкоголь гостю не предлагаем вовсе
+    alcohol_asked = plan.no_alcohol and plan.category in ALCOHOL_WISHES
+    if family_missing([r[0] for r in ranked], plan, allowed) and not alcohol_asked:
         say_family_missing(out, plan)
-    elif relaxed and not (plan.no_alcohol and plan.category in ALCOHOL_WISHES):
+    elif relaxed and not alcohol_asked:
         out.say(t('filter_relaxed', lang))
     entry, score, reason, score_5 = pool[0]
     if reason:
         out.say(t(lead_key, lang, dish=dish['name'], drink=describe_drink(entry, ctx, lang), reason=reason.rstrip('.')))
     else:
         out.say(t(lead_key + '_plain', lang, dish=dish['name'], drink=describe_drink(entry, ctx, lang)))
-    if score is not None:
+    if team:
+        out.say(t('pair_team', lang, score=score_5))
+    elif score is not None:
         out.say(t('pair_score', lang, score=score))
     out.card(entry, reason, dish['id'], score_5)
     shown = [entry]
@@ -750,6 +774,47 @@ def safety_options(kind, ctx, allowed, exclude=(), limit=3):
     return picked
 
 
+# Гость младше 21: об алкоголе не рассказываем и еду к нему не подбираем.
+# «Покрепче» и «погорче» тоже про алкоголь («С выраженной хмелевой горечью: чай» звучит странно).
+MINOR_MOODS = frozenset({'strong', 'bitter'})
+
+
+def asks_about_alcohol(plan):
+    """
+    Вопрос про алкоголь: стиль или термин справки (кроме minor_ok), названный алкогольный сорт, категория
+    (пиво, вино, сидр, коктейль, крепкое), «покрепче», «погорче» или портфель Efes. Гостю младше 21 на такой
+    вопрос отвечают правила: модель не вызывается, local_sommelier не объясняет и предлагает безалкогольное.
+    """
+    if any(not GLOSSARY[key].get('minor_ok') for key in plan.glossary):
+        return True
+    if any(not ai_safety.drink_allowed('minor', e) for e in plan.drinks + plan.drinks_absent):
+        return True
+    return plan.category in ALCOHOL_WISHES or plan.mood in MINOR_MOODS or plan.efes
+
+
+def say_minor_options(out, plan, ctx, allowed, exclude=()):
+    """Безалкогольное гостю младше 21: лимонад, чай, айран, вода (по одному); если нет ничего, так и говорим."""
+    lang = plan.lang
+    options = safety_options('minor', ctx, allowed, exclude)
+    if options:
+        key = 'safety_option_one' if len(options) == 1 else 'safety_options'
+        out.say(t(key, lang, drinks=join_list([describe_drink(e, ctx, lang) for e in options], lang)))
+        for entry in options:
+            out.card(entry, category_label(entry.get('category'), lang).capitalize())
+    else:
+        out.say(t('no_na_in_bar', lang) if ctx['venue'] else t('safety_water_tea', lang))
+    return options
+
+
+def minor_redirect(out, plan, ctx, allowed, lead=''):
+    """Гость младше 21 спросил про алкоголь: короткий отказ (lead), безалкогольное из карты и вопрос про блюдо."""
+    if lead:
+        out.say(t(lead, plan.lang))
+    if say_minor_options(out, plan, ctx, allowed):
+        out.say(t('ask_dish', plan.lang))
+    return out.result('minor')
+
+
 def popular_dishes(ctx, ds, allowed, pool=None, limit=2, category='', with_dessert=False):
     """
     Блюда, к которым в карте есть самая сильная пара по движку. Без просьбы о десерте десерты не берём,
@@ -784,7 +849,8 @@ def combos(out, dishes, plan, ctx, ds, allowed, dish_reason, word='or'):
         out.card(dish, dish_reason)
         ranked = ranked_for_dish(dish, ctx, ds, allowed)
         pool, _, _ = apply_filters(ranked, plan, ctx, ds)
-        pool = [r for r in pool if r[1] is None or r[1] >= MIN_SCORE]
+        pool, team = team_first(pool, dish, plan)
+        pool = [r for i, r in enumerate(pool) if (team and i == 0) or r[1] is None or r[1] >= MIN_SCORE]
         if pool:
             # Второе блюдо лучше показать с другим напитком, если он почти так же хорош
             used = {s['id'] for s in out.suggestions}
@@ -890,6 +956,8 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
     Ответ без модели. Порядок: правила безопасности -> приветствие и спасибо -> вне темы ->
     названные напитки -> блюда (из вопроса, заказа или прошлой реплики) -> пожелания без блюда ->
     блюда по желанию (мясное, десерт, острое, «что взять», праздник) -> два быстрых варианта и вопрос.
+    Гостю младше 21 (флаг minor, в том числе запомненный) об алкоголе не рассказываем: справка о стилях,
+    сорт и его цена, закуска к пиву, «какое пиво» получают короткий отказ и безалкогольное или блюдо.
     Возвращает {reply, suggestions, lang, intent, dish}.
     """
     if ds is None:
@@ -902,13 +970,14 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
     out = Reply(ctx, lang)
     main_dish = plan.dishes[0] if plan.dishes else None
     advise_key = 'dishes_advise' if ctx['venue'] else 'dishes_advise_catalog'
+    minor = safety is not None and 'minor' in safety.kinds
 
     # 1. Гость только что сказал о возрасте, руле, беременности, самочувствии: сначала забота
     if safety is not None and safety.kind and safety.fresh:
         out.say(safety_text(safety.kind, lang, fresh=True))
         exclude = []
         if main_dish is not None and safety.pairing_allowed:
-            ranked = ranked_for_dish(main_dish, ctx, ds, allowed)
+            ranked, _ = team_first(ranked_for_dish(main_dish, ctx, ds, allowed), main_dish, plan)
             if ranked:
                 entry, _, reason, score_5 = ranked[0]
                 out.say(t('safety_pair', lang, dish=main_dish['name'], drink=describe_drink(entry, ctx, lang),
@@ -952,7 +1021,7 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
         out.say(t('thanks', lang))
         return out.result('thanks')
     if not related and 'smalltalk' in plan.wishes:
-        out.say(t('greet_help', lang))
+        out.say(t('greet_help_minor' if minor else 'greet_help', lang))
         return out.result('greet')
     if not related and 'greet' in plan.wishes:
         out.say(t('greet_venue' if ctx['venue'] else 'greet_catalog', lang))
@@ -970,6 +1039,8 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
 
     # 3а. Справка: «что такое лагер», «чем отличается стаут от портера»
     if plan.glossary and not plan.drinks and not plan.dishes:
+        if minor and asks_about_alcohol(plan):
+            return minor_redirect(out, plan, ctx, allowed, 'minor_no_talk')
         if plan.diff:
             out.say(plan.diff)
         for key in plan.glossary:
@@ -984,12 +1055,16 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
             and not plan.missing:
         term = ' '.join(w for w in plan.tokens if w not in AE.QUESTION_SKIP
                         and w not in ('такое', 'что', 'за', 'чем', 'отличается', 'what', 'is'))[:40]
-        out.say(t('glossary_unknown', lang, term=term or '?'))
+        out.say(t('glossary_unknown_minor' if minor else 'glossary_unknown', lang, term=term or '?'))
         return out.result('glossary')
 
     # 3б. Цена: «сколько стоит бешбармак», «почём козел»
     if plan.price and (plan.dishes or plan.drinks):
-        for entry in (plan.dishes + plan.drinks)[:2]:
+        # Гостю младше 21 цену и крепость алкогольного сорта не называем
+        priced = [e for e in plan.drinks if not minor or ai_safety.drink_allowed('minor', e)]
+        if minor and not plan.dishes and not priced:
+            return minor_redirect(out, plan, ctx, allowed, 'minor_no_talk')
+        for entry in (plan.dishes + priced)[:2]:
             if not ctx['venue']:
                 out.say(t('price_catalog', lang))
                 break
@@ -1006,9 +1081,14 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
 
     # 4. Названные напитки без блюда: что это, к чему лучше, сравнение двух
     if (plan.drinks or plan.drinks_absent) and not plan.dishes:
-        for entry in plan.drinks_absent[:2]:
+        # Гостю младше 21 про алкогольные сорта не рассказываем, даже что их нет в карте
+        named = [e for e in plan.drinks if not minor or ai_safety.drink_allowed('minor', e)]
+        absent = [e for e in plan.drinks_absent if not minor or ai_safety.drink_allowed('minor', e)]
+        if minor and not named and not absent:
+            return minor_redirect(out, plan, ctx, allowed, 'minor_no_talk')
+        for entry in absent[:2]:
             out.say(t('drink_not_listed', lang, drink=entry['name']))
-        shown = [e for e in plan.drinks[:2] if allowed(e)]
+        shown = [e for e in named[:2] if allowed(e)]
         if len(shown) == 2 and plan.compare:
             out.say(compare_drinks(shown[0], shown[1], plan.compare, ctx, ds, lang))
         elif len(shown) == 2 and plan.diff:
@@ -1025,9 +1105,9 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
                 if ctx['venue'] or plan.food_intent:
                     for dish, result in best:
                         out.card(dish, AE.guest_reason(result))
-        if len(plan.drinks) + len(plan.drinks_absent) >= 2 and not plan.compare:
+        if len(named) + len(absent) >= 2 and not plan.compare:
             out.say(t('drink_compare', lang))
-        elif plan.drinks and not out.suggestions:
+        elif named and not out.suggestions:
             out.say(t('ask_dish', lang))
         if out.parts:
             return out.result('drink')
@@ -1063,6 +1143,17 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
         if snacks:
             light = [d for d in pool if re.search(r'закус|snack|тіскебасар', (d.get('section') or '').lower())]
             pool = light or pool
+        if minor and plan.category in ALCOHOL_WISHES:
+            # «Чем закусить пиво» гостю младше 21: к пиву не подбираем, советуем блюдо и безалкогольное к нему
+            out.say(t('minor_no_pair', lang))
+            picks = popular_dishes(ctx, ds, allowed, pool or None, limit=2)
+            if picks:
+                na_plan = Plan(lang=lang, zero=plan.zero, no_alcohol=True, budget=plan.budget)
+                out.say(t(advise_key, lang, combos=combos(out, picks, na_plan, ctx, ds, allowed,
+                                                          t('reason_popular', lang))))
+            if not any(s['kind'] == KIND_DRINK for s in out.suggestions):
+                say_minor_options(out, plan, ctx, allowed)
+            return out.result('minor', picks[0].get('v2') if picks else None)
         picks = popular_dishes(ctx, ds, allowed, pool or None, limit=2, category=plan.category)
         if picks:
             cat_plan = Plan(lang=lang, category=plan.category, zero=plan.zero, no_alcohol=plan.no_alcohol,
@@ -1074,6 +1165,9 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
 
     # 6. Пожелания без блюда: без алкоголя, лёгкое, без горечи, категория, бюджет, «кроме пива»
     if plan.mood_or_filter and not any(w in plan.wishes for w in ('dessert', 'meat', 'spicy', 'party')):
+        if minor and asks_about_alcohol(plan):
+            # «Какое пиво посоветуешь», «что покрепче», «что есть из Efes»: гостю младше 21 только безалкогольное
+            return minor_redirect(out, plan, ctx, allowed)
         picks = list_drinks(ctx, ds, plan, allowed, limit=2)
         drinks_text = join_list([describe_drink(e, ctx, lang) for e in picks], lang)
         if picks and family_missing(ctx['drinks'], plan, allowed):
@@ -1091,6 +1185,9 @@ def local_sommelier(messages, ctx, cart=None, prefs=None, safety=None, plan=None
             if alternatives:
                 out.say(t('ask_dish', lang))
             return out.result('drinks')
+        if not picks and minor:
+            # Кваса или 0.0 подростку нет, но чай или лимонад в карте могут быть: «безалкогольного нет» неправда
+            return minor_redirect(out, plan, ctx, allowed)
         if not picks:
             out.say(t('no_na_in_bar', lang) if plan.zero and ctx['venue'] else t('list_none', lang))
         elif plan.exclude_category and not plan.category and not plan.mood and not plan.zero:

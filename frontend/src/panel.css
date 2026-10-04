@@ -1458,6 +1458,26 @@
   .wa-table-row { grid-template-columns: 1fr; }
 }
 
+/* Обёртки полей и подписи нужны только телефону и планшету (раскладка в конце файла):
+   здесь обёртки не рисуются и поля остаются ячейками сетки */
+.wa-table-fields,
+.wa-table-cell { display: contents; }
+.wa-table-cap { display: none; }
+
+/* Итог сохранения строки: прямо под ней, а не над таблицей, которая длиннее экрана */
+.wa-table-note {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.wa-table-note.error { color: var(--error); }
+
 /* Строка ошибки загрузки с кнопкой "Обновить": над вкладкой, в карточке пирамиды, в списках */
 
 .wa-main {
@@ -1679,6 +1699,11 @@
   gap: 6px;
 }
 
+/* Время заказа в правой колонке строки и итог смены статуса над кнопками нужны только телефону
+   и планшету (конец файла): на широком экране время стоит в строке суммы, а итог виден в списке */
+.wa-order-time,
+.wa-order-msg { display: none; }
+
 /* Вкладка "Пилот" */
 
 .wa-stat.wa-kpi { cursor: default; }
@@ -1792,4 +1817,278 @@
   .wa-funnel-track { grid-column: 1 / -1; grid-row: 2; }
   .wa-pilot-dates { width: 100%; }
   .wa-pilot-dates .wa-field { flex: 1; width: auto; }
+}
+
+/* Телефон и планшет: пальцевые размеры, подписи не мельче 12px, полоса вкладок */
+
+/* Касание вместо мыши: перетаскивать фото на телефоне нечего */
+.wa-drop-touch { display: none; }
+
+@media (hover: none) and (pointer: coarse) {
+  .wa-drop-mouse { display: none; }
+  .wa-drop-touch { display: inline; }
+}
+
+/* Узкий экран или сенсорный (планшет на стойке и в альбомной ориентации): мышь не поменяется */
+@media (max-width: 768px), (pointer: coarse) {
+  .wa-iconbtn,
+  .wa-iconbtn-sm {
+    width: 40px;
+    height: 40px;
+  }
+  .wa-back { min-height: 44px; }
+  .wa-search { height: 44px; }
+  .wa-search input {
+    align-self: stretch;
+    text-overflow: ellipsis;
+  }
+  .wa-pill { height: 40px; }
+  .wa-rail-link { height: 40px; }
+  .wa-link-btn { min-height: 40px; }
+  .wa-actions .btn-amber,
+  .wa-actions .btn-outline { height: 44px; }
+  .wa-guest .btn-outline,
+  .wa-loadbar .btn-outline { height: 40px; }
+  .btn-outline.panel-btn-sm,
+  .wa-orders-tools .wa-check { min-height: 40px; }
+  .wa-check-sm {
+    min-height: 40px;
+    margin-top: 0;
+    font-size: 0.8rem;
+  }
+  .wa-check-sm input {
+    width: 18px;
+    height: 18px;
+  }
+  .wa-range {
+    height: 40px;
+    margin-top: 2px;
+  }
+  .wa-table-row .input { min-height: 40px; }
+
+  .wa-nav-count,
+  .wa-count,
+  .wa-pill-count,
+  .wa-row-meta,
+  .wa-group,
+  .wa-chip,
+  .wa-facts dt,
+  .wa-confirm,
+  .wa-photo-tag,
+  .wa-layer h4,
+  .wa-diff-col h4,
+  .wa-stat small,
+  .wa-table-head,
+  .wa-table-group,
+  .wa-hint,
+  .wa-data th { font-size: 0.75rem; }
+
+  /* Сколько ждёт заказ: справа над статусом, как время в мессенджере. В строке суммы хвост обрезался */
+  .wa-order-ago { display: none; }
+  .wa-order-time { display: inline; }
+
+  /* Правая колонка строки не шире 120px: длинная роль переносится, заведение обрезается, а имя слева видно */
+  .wa-row-meta { max-width: 120px; }
+  .wa-row-meta .wa-chip {
+    white-space: normal;
+    text-align: center;
+  }
+  .wa-row-meta .wa-time {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Фильтры не помещаются в строку: правый край растворяется, как у полосы вкладок */
+  .wa-list .wa-pills {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+  .wa-list .wa-pills::after {
+    content: '';
+    flex: 0 0 16px;
+  }
+
+  /* Название в таблице меню целиком, при нужде в две строки: два сорта Kozel не сливаются в одно «Velkopopovický ...» */
+  .wa-table-row .wa-row-title,
+  .wa-table-row .wa-row-sub {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Таблицы меню: колонка деталей уже 640px, название и кнопки строкой, ниже поля с подписями вместо шапки.
+     Колонка десктопа (618px) тоже уже 640px, поэтому раскладка только здесь: там остаётся прежняя */
+  @container (max-width: 640px) {
+    .wa-table-row,
+    .wa-table-drinks .wa-table-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .wa-table-dish { grid-column: 1; }
+    .wa-table-actions {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: start;
+      justify-content: flex-end;
+    }
+    .wa-table-fields {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    /* Цена, объём и порядок короткие: помещаются одной строкой, порядку хватает трёх цифр */
+    .wa-table-drinks .wa-table-fields { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr) minmax(0, 0.7fr); }
+    .wa-table-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+    .wa-table-cap {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    /* Цена «4500.00» шрифтом 16px помещается целиком */
+    .wa-table-row .input {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+  }
+
+  /* Колонка пошире (планшет боком): четыре поля блюда в один ряд */
+  @container (min-width: 520px) and (max-width: 640px) {
+    .wa-table-fields { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+}
+
+@media (max-width: 768px) {
+  /* Правый край полосы растворяется: видно, что вкладок больше, чем влезло */
+  .wa-nav {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+  .wa-nav::after {
+    content: '';
+    flex: 0 0 20px;
+  }
+  .wa-nav-row { height: 44px; }
+
+  /* Длинное имя без пробелов (логин-почта, название) переносится, а не раздвигает страницу */
+  .wa-card-title,
+  .wa-card-sub { overflow-wrap: anywhere; }
+
+  /* Заказ: кнопки статуса всегда под пальцем, над нижней панелью разделов.
+     clip, а не auto: колонка не становится областью прокрутки, иначе sticky не сработает */
+  .wa-detail {
+    overflow: visible;
+    overflow-x: clip;
+  }
+  .wa-order-actions:has(button, .wa-order-msg) {
+    position: sticky;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    z-index: 2;
+    margin: 12px -18px -16px;
+    padding: 10px 18px 12px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 16px 16px;
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+  /* Итог смены статуса: список с сообщением спрятан за карточкой, поэтому повторяем его над кнопками */
+  .wa-order-msg {
+    display: block;
+    flex-basis: 100%;
+  }
+  .wa-order-error { display: none; }
+}
+
+/* Телефон боком: 70% высоты (около 250px) съедают шапка списка, поиск и фильтры, у заказов ещё и настройки смены,
+   строкам не остаётся места. Список идёт во всю длину и листается вместе со страницей */
+@media (max-width: 768px) and (max-height: 500px) {
+  .wa-list { max-height: none; }
+  /* Нижняя панель разделов боком ниже и тоньше */
+  .wa-order-actions:has(button, .wa-order-msg) { bottom: calc(62px + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 480px) {
+  /* Аватар уступает место полосе вкладок: кто вошёл, видно в «Профиле» */
+  .wa-user-avatar { display: none; }
+  .wa-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Звук и экран помещаются в одну строку даже на 360px */
+  .wa-orders-tools { padding: 8px; }
+  .wa-orders-toggles .panel-btn-sm {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+}
+
+/* Планшет: вкладок больше, чем влезает по высоте рейла (класс ставит панель, пока ниже что-то есть):
+   нижний край растворяется, как у полосы на телефоне. Подсказок title на касании нет */
+@media (pointer: coarse) and (min-width: 769px) {
+  .wa-nav.wa-nav-more {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+  }
+}
+
+/* Планшет боком: логотип рейла уступает место вкладкам, иначе последние уходят за край. Бренд есть в шапке сайта */
+@media (pointer: coarse) and (min-width: 769px) and (max-height: 860px) {
+  .wa-rail-brand { display: none; }
+}
+
+/* В узком рейле аватар стоит отдельной строкой над кнопкой выхода: тоже уступает место вкладкам */
+@media (pointer: coarse) and (min-width: 769px) and (max-width: 1024px) and (max-height: 860px) {
+  .wa-user-avatar { display: none; }
+}
+
+/* Новые заказы, пока открыта другая вкладка. На телефоне и планшете плашка у нижнего края:
+   её видно при любой прокрутке. На десктопе число новых и так стоит в рейле */
+.wa-orders-note { display: none; }
+
+@media (max-width: 768px), (pointer: coarse) {
+  .wa-orders-note {
+    position: fixed;
+    right: calc(16px + env(safe-area-inset-right));
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    /* Над строками вкладки, но под открытым списком выбора (60) и нижней панелью разделов (88) */
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 14px;
+    background: var(--beer-mid);
+    color: #fff;
+    box-shadow: 0 12px 32px -10px rgba(146, 64, 14, 0.55);
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  .wa-orders-note span { flex: 1; }
+}
+
+/* Планшет: плашка в правом нижнем углу, конец колонки можно докрутить из-под неё */
+@media (min-width: 769px) and (pointer: coarse) {
+  .wa-shell:has(.wa-orders-note) :is(.wa-detail, .wa-page-single) { padding-bottom: 76px; }
+}
+
+@media (max-width: 768px) {
+  /* Телефон: во всю ширину над нижней панелью разделов, низ страницы докручивается из-под неё */
+  .wa-orders-note {
+    left: calc(12px + env(safe-area-inset-left));
+    right: calc(12px + env(safe-area-inset-right));
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+  .wa-shell:has(.wa-orders-note) { padding-bottom: 60px; }
+  /* Открыта клавиатура (фокус в поле ввода): плашка не заслоняет поле, вернётся, как только из него выйдут */
+  .wa-shell:has(:is(input:not([type='checkbox']):not([type='radio']), textarea):focus) .wa-orders-note { display: none; }
+}
+
+@media (max-width: 768px) and (max-height: 500px) {
+  .wa-orders-note { bottom: calc(62px + env(safe-area-inset-bottom)); }
 }

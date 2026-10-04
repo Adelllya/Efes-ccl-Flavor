@@ -38,13 +38,16 @@ const PARALLEL = 4;
           <p class="wa-card-sub">{{ venue().name }}: таблички A6, по четыре на листе A4</p>
         </div>
         <div class="qrp-range">
+          <!-- Пока набирают, число в поле не трогаем, кроме номера больше числа столов; при выходе из поля в нём то, что уйдёт в печать -->
           <label class="wa-field">
             <span class="wa-label">Столы с</span>
-            <input class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="from()" (ngModelChange)="setFrom($event)" />
+            <input #fromInput class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="from()" (ngModelChange)="setFrom($event, fromInput)"
+                   (blur)="showRange(fromInput, from())" (keydown.enter)="showRange(fromInput, from())" />
           </label>
           <label class="wa-field">
             <span class="wa-label">по</span>
-            <input class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="to()" (ngModelChange)="setTo($event)" />
+            <input #toInput class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="to()" (ngModelChange)="setTo($event, toInput)"
+                   (blur)="commitTo(toInput)" (keydown.enter)="commitTo(toInput)" />
           </label>
         </div>
         <div class="wa-actions qrp-actions">
@@ -121,7 +124,9 @@ const PARALLEL = 4;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding: 16px;
+      /* viewport-fit=cover: на iPhone окно не уходит под вырез и полоску «Домой» */
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+        max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
       overflow: auto;
       background: #F5F5F4;
       font-size: 0.92rem;
@@ -184,6 +189,17 @@ const PARALLEL = 4;
     @media screen {
       body.qrp-printing { overflow: hidden; }
     }
+
+    /* Телефон и низкий сенсорный экран: листается всё окно, а не узкое окошко предпросмотра.
+       Низкое окно десктопа с мышью остаётся как было */
+    @media screen and (max-width: 768px), screen and (max-height: 560px) and (pointer: coarse) {
+      .qrp-sheets { flex: none; overflow: visible; }
+    }
+    /* Предпросмотр A4 (210 мм = 794px) уменьшаем до ширины экрана, печать остаётся в натуральную величину */
+    @media screen and (max-width: 840px) { .qrp-page { zoom: 0.8; } }
+    @media screen and (max-width: 666px) { .qrp-page { zoom: 0.5; } }
+    @media screen and (max-width: 430px) { .qrp-page { zoom: 0.4; } }
+    @media screen and (max-width: 359px) { .qrp-page { zoom: 0.35; } }
 
     @media print {
       @page { size: A4; margin: 0; }
@@ -267,19 +283,44 @@ export class PanelQrPrintComponent implements OnInit, OnDestroy {
     return url.startsWith('https://');
   }
 
-  setFrom(value: unknown) {
+  setFrom(value: unknown, input?: HTMLInputElement) {
     const n = this.clamp(value);
     if (n === null) return;
+    this.showOverMax(input, value, n);
     this.from.set(n);
     if (this.to() < n) this.to.set(n);
     this.loadCodes();
   }
 
-  setTo(value: unknown) {
+  setTo(value: unknown, input?: HTMLInputElement) {
     const n = this.clamp(value);
     if (n === null) return;
-    this.to.set(Math.max(n, this.from()));
+    this.showOverMax(input, value, n);
+    // Конец раньше начала поправляем при выходе из поля: иначе «15» при «с 10» не набрать, первая цифра станет 10
+    this.to.set(n);
     this.loadCodes();
+  }
+
+  /** Выход из поля «по»: конец не раньше начала, в поле то, что напечатается. */
+  commitTo(input: HTMLInputElement) {
+    if (this.to() < this.from()) {
+      this.to.set(this.from());
+      this.loadCodes();
+    }
+    this.showRange(input, this.to());
+  }
+
+  /**
+   * Поле диапазона показывает то, что напечатается. ngModel этого не сделает: если введённое
+   * обрезали до прежнего значения (30 -> 24 при 24 столах), модель не изменилась и поле не перерисуется.
+   */
+  showRange(input: HTMLInputElement, value: number) {
+    if (input.value !== String(value)) input.value = String(value);
+  }
+
+  /** Столов больше, чем в заведении (вставили 240 при 24): сразу показываем последний стол, дальше набирать некуда. */
+  private showOverMax(input: HTMLInputElement | undefined, typed: unknown, n: number) {
+    if (input && Math.trunc(Number(typed)) > n) this.showRange(input, n);
   }
 
   print() {

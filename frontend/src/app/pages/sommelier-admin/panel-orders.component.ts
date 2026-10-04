@@ -119,9 +119,11 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
                 <span class="wa-avatar wa-avatar-table" [class.is-new]="o.status === 'NEW'" [title]="tableText(o)">{{ tableShort(o) }}</span>
                 <span class="wa-row-body">
                   <span class="wa-row-title">№{{ o.number }}<span class="wa-dot"></span>{{ tableText(o) }}</span>
-                  <span class="wa-row-sub">{{ money(o.total) }}<span class="wa-dot"></span>{{ countOf(itemsCount(o), 'позиция', 'позиции', 'позиций') }}<span class="wa-dot"></span>{{ ago(o.created_at) }}</span>
+                  <span class="wa-row-sub">{{ money(o.total) }}<span class="wa-dot"></span>{{ countOf(itemsCount(o), 'позиция', 'позиции', 'позиций') }}<span class="wa-order-ago"><span class="wa-dot"></span>{{ ago(o.created_at, now()) }}</span></span>
                 </span>
                 <span class="wa-row-meta">
+                  <!-- Телефон и планшет: время здесь, а не в конце строки суммы, где его обрезало -->
+                  <span class="wa-time wa-order-time">{{ ago(o.created_at, now()) }}</span>
                   <span [class]="chip[o.status]">{{ labels[o.status] }}</span>
                 </span>
               </button>
@@ -142,7 +144,7 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
                 <span class="wa-avatar wa-avatar-lg wa-avatar-table" [class.is-new]="o.status === 'NEW'">{{ tableShort(o) }}</span>
                 <div class="wa-card-head-text">
                   <h3 class="wa-card-title">Заказ №{{ o.number }}</h3>
-                  <p class="wa-card-sub">{{ tableText(o) }}<span class="wa-dot"></span>{{ when(o.created_at) }}<span class="wa-dot"></span>{{ ago(o.created_at) }}</p>
+                  <p class="wa-card-sub">{{ tableText(o) }}<span class="wa-dot"></span>{{ when(o.created_at) }}<span class="wa-dot"></span>{{ ago(o.created_at, now()) }}</p>
                 </div>
                 <span [class]="chip[o.status]">{{ labels[o.status] }}</span>
               </div>
@@ -192,9 +194,13 @@ function matchesFilter(o: Order, f: OrderFilter): boolean {
               }
 
               @if (actionError()) {
-                <p class="wa-error">{{ actionError() }}</p>
+                <p class="wa-error wa-order-error">{{ actionError() }}</p>
               }
-              <div class="wa-actions">
+              <div class="wa-actions wa-order-actions">
+                <!-- Телефон: список со строкой итога спрятан за карточкой, итог виден прямо над кнопками -->
+                @if (actionError() || msg(); as text) {
+                  <p class="wa-msg wa-order-msg" [class.error]="isError(text)" role="status">{{ text }}</p>
+                }
                 @if (nextOf(o.status); as n) {
                   <button type="button" class="btn-amber" [disabled]="acting()" (click)="setStatus(o, n)">
                     <panel-icon name="arrowRight" /> {{ nextLabel(o.status) }}
@@ -239,6 +245,11 @@ export class PanelOrdersComponent implements OnInit {
   readonly flow = ORDER_FLOW;
   readonly money = formatMoney;
   readonly ago = formatAgo;
+  /**
+   * Одно «сейчас» на проход отрисовки для «N мин назад», обновляется с опросом. С new Date() в каждой привязке
+   * две подписи строки на границе минуты расходились, и dev-режим ругался ExpressionChangedAfterItHasBeenChecked.
+   */
+  readonly now = signal(new Date());
   readonly when = formatWhen;
   readonly countOf = countOf;
   readonly closed = isOrderClosed;
@@ -311,7 +322,10 @@ export class PanelOrdersComponent implements OnInit {
       if (v && untracked(this.slug) !== v) untracked(() => this.applyVenue(v));
     }, { allowSignalWrites: true });
 
-    const timer = setInterval(() => this.load(true), POLL_MS);
+    const timer = setInterval(() => {
+      this.now.set(new Date());
+      this.load(true);
+    }, POLL_MS);
     this.destroyRef.onDestroy(() => clearInterval(timer));
   }
 
@@ -455,6 +469,7 @@ export class PanelOrdersComponent implements OnInit {
       next: list => {
         if (seq !== this.loadSeq || this.slug() !== slug) return;
         this.notifyNew(list);
+        this.now.set(new Date());
         this.orders.set(list);
         this.loaded.set(true);
         this.loading.set(false);

@@ -124,6 +124,12 @@ TEXTS = {
         'kk': 'Дәм қозғалтқышының бағасы: 100-ден {score}.',
         'en': 'Flavour engine score: {score} out of 100.',
     },
+    # Первым стоит пара команды: в меню заведения у неё подпись «Подбор команды Flavor Tree» и та же оценка
+    'pair_team': {
+        'ru': 'Это подбор команды Flavor Tree с оценкой {score} из 5.',
+        'kk': 'Бұл Flavor Tree командасының таңдауы, бағасы: 5-тен {score}.',
+        'en': 'This is the Flavor Tree team pick, rated {score} out of 5.',
+    },
     'pair_none': {
         'ru': 'К блюду «{dish}» подходящего напитка в карте сейчас нет.',
         'kk': '«{dish}» тағамына қазір картада сай сусын жоқ.',
@@ -366,6 +372,18 @@ TEXTS = {
         'kk': 'Даяшыдан су немесе шай сұраңыз.',
         'en': 'Ask the waiter for water or tea.',
     },
+    # Гость младше 21 спросил про алкоголь (стиль, сорт, его цену, закуску к пиву): не объясняем
+    # и не подбираем, коротко говорим об этом и предлагаем безалкогольное или блюдо
+    'minor_no_talk': {
+        'ru': 'Про пиво и другой алкоголь я не рассказываю.',
+        'kk': 'Сыра мен басқа алкоголь туралы айтпаймын.',
+        'en': "I don't talk about beer or other alcohol.",
+    },
+    'minor_no_pair': {
+        'ru': 'Закуску к алкоголю не подбираю.',
+        'kk': 'Алкогольге тағам таңдамаймын.',
+        'en': "I don't pair food with alcohol.",
+    },
 
     # v2.4: справка, цена, сравнение, еда к напитку, исключение категории, компания, популярное
     'glossary_example': {
@@ -380,6 +398,15 @@ TEXTS = {
               'Мысалы, лагер деген не немесе шашлыққа не алу керек деп сұраңыз.',
         'en': "I can't explain «{term}», I know drinks and how they pair with food. "
               'Ask, for example, what a lager is or what goes with shashlyk.',
+    },
+    # То же гостю младше 21: без примера про лагер
+    'glossary_unknown_minor': {
+        'ru': 'Про «{term}» рассказать не могу, я подбираю блюда и безалкогольные напитки к ним. '
+              'Спросите, например, что взять к шашлыку.',
+        'kk': '«{term}» туралы айта алмаймын, мен тағам мен оған алкогольсіз сусын таңдаймын. '
+              'Мысалы, шашлыққа не алу керек деп сұраңыз.',
+        'en': "I can't explain «{term}», I pick dishes and alcohol-free drinks to go with them. "
+              'Ask, for example, what goes with shashlyk.',
     },
     'price_dish': {
         'ru': '«{name}»: {facts}.',
@@ -468,6 +495,13 @@ TEXTS = {
               'күштілігін айтамын. Неден бастаймыз?',
         'en': "I'm fine, thanks. I pair drinks with dishes and dishes with drinks, compare two beers, tell prices "
               'and strength, or explain what a lager or an IPA is. Where shall we start?',
+    },
+    'greet_help_minor': {
+        'ru': 'У меня всё хорошо, спасибо. Я подбираю блюдо и безалкогольный напиток к нему, могу подсказать цену '
+              'или что-то лёгкое. С чего начнём?',
+        'kk': 'Жақсымын, рахмет. Тағам мен оған алкогольсіз сусын таңдаймын, бағасын айтамын. Неден бастаймыз?',
+        'en': "I'm fine, thanks. I pick a dish and an alcohol-free drink to go with it, and can tell you prices. "
+              'Where shall we start?',
     },
 }
 
@@ -623,6 +657,7 @@ def category_dative(category, lang):
 
 # Справочник стилей и терминов: короткие определения для «что такое лагер», «чем отличается стаут от портера».
 # match: как гость называет термин; style: как найти пример в карте (стиль или название), category: или категория.
+# minor_ok: термин не про алкоголь, его объясняем и гостю младше 21; остальное ему не рассказываем.
 GLOSSARY = {
     'lager': {
         'match': r'лагер|lager',
@@ -757,6 +792,7 @@ GLOSSARY = {
     },
     'ayran': {
         'match': r'айран|ayran',
+        'minor_ok': True,
         'style': r'айран|ayran',
         'ru': 'Айран: кисломолочный напиток с водой и солью, без алкоголя, освежает и гасит остроту.',
         'kk': 'Айран: су мен тұз қосылған ашыған сүт сусыны, алкогольсіз, сергітеді және ащылықты басады.',
@@ -779,6 +815,7 @@ GLOSSARY = {
     },
     'tannin': {
         'match': r'танин|tannin',
+        'minor_ok': True,
         'ru': 'Танины: вяжущие вещества из кожицы винограда и дуба, сушат рот, а жир и белок мяса их смягчают.',
         'kk': 'Таниндер: жүзім қабығы мен еменнен шығатын тұтқыр заттар, ауызды кептіреді, ет майы мен ақуызы '
               'жұмсартады.',
@@ -787,6 +824,7 @@ GLOSSARY = {
     },
     'sommelier': {
         'match': r'сомелье|sommelier',
+        'minor_ok': True,
         'ru': 'Сомелье: специалист по напиткам, который подбирает их к еде. Здесь это я, вкусовой движок Flavor Tree.',
         'kk': 'Сомелье: сусындарды тағамға таңдайтын маман. Мұнда бұл мен, Flavor Tree дәм қозғалтқышы.',
         'en': 'A sommelier is a drinks expert who pairs them with food. Here that is me, the Flavor Tree flavour engine.',

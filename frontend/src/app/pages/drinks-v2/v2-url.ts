@@ -80,3 +80,36 @@ export function isSheetEntry(): boolean {
   const state = history.state as Record<string, unknown> | null;
   return !!state && state[SHEET_KEY] === true;
 }
+
+/** Метка записи истории со страницей сорта, открытой из каталога: запись перед ней и есть каталог. */
+const FROM_CATALOG_KEY = 'ftFromCatalog';
+
+/** Сорт, который каталог открывает сейчас: его запись истории AppComponent кладёт сразу за каталогом. */
+let openingFromCatalog: string | null = null;
+
+/** Каталог открывает страницу сорта (карточка сорта или кнопка в карточке напитка); null снимает отметку. */
+export function noteOpenFromCatalog(brandId: string | null): void {
+  openingFromCatalog = brandId;
+}
+
+/**
+ * Страница сорта показана. Если её только что открыл каталог, помечаем её запись истории: метка
+ * переживает «Назад», «Вперёд» и перезагрузку, а новая запись (другой сорт из чата) её не получает.
+ */
+export function markCatalogReturn(brandId: string | null): void {
+  const opened = openingFromCatalog;
+  openingFromCatalog = null;
+  // Путь сорта строит AppComponent (pathFor): метку ставим только на запись этого сорта
+  if (!brandId || opened !== brandId || location.pathname !== `/beer/${encodeURIComponent(brandId)}`) return;
+  try {
+    history.replaceState({ ...(history.state ?? {}), [FROM_CATALOG_KEY]: true }, '');
+  } catch {
+    // Без метки «Все сорта» просто откроет каталог заново
+  }
+}
+
+/** Перед этой записью истории каталог: «Все сорта» может вернуться шагом назад, как «Назад» браузера. */
+export function backLeadsToCatalog(): boolean {
+  const state = history.state as Record<string, unknown> | null;
+  return !!state && state[FROM_CATALOG_KEY] === true;
+}

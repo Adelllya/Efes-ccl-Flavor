@@ -626,7 +626,17 @@ interface EngineView {
 
     .dr-none { padding: var(--space-5xl); text-align: center; border: 1.5px dashed var(--line); border-radius: var(--radius-xl); }
 
+    /* Сенсорный экран: чипы от 40px, служебные подписи от 12px */
+    @media (max-width: 768px), (pointer: coarse) {
+      .dr-also-chip { min-height: 40px; }
+      .dr-offline .btn-ghost, .dr-none-acts .btn-ghost { min-height: 44px; padding: 0 var(--space-lg); }
+      .dr-alt-title, .dr-weight-title, .dr-credit, .dr-points-sm span { font-size: 0.75rem; }
+    }
+
     @media (max-width: 760px) {
+      .dr-none { padding: var(--space-3xl) var(--space-lg); }
+      /* Без фото emoji встаёт в центр рамки, а не в её угол */
+      .dr-best-visual, .dr-alt-visual { display: grid; place-items: center; }
       .dr-best { grid-template-columns: 1fr; gap: var(--space-xl); padding: var(--space-xl); }
       .dr-best-visual { height: 220px; }
       .dr-alt { grid-template-columns: 1fr; }

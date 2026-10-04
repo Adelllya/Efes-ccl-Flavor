@@ -185,6 +185,30 @@ interface SoftGroup {
     .ag-soft-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
     .ag-soft-list li { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; line-height: 1.35; }
 
+    /* Телефон и низкий сенсорный экран: одна прокрутка вместо двух. Список безалкогольного занимает место,
+       что осталось в окне, а ссылки под ним всегда на виду. Ссылки высотой 40px под палец.
+       Низкое окно ноутбука (мышь) остаётся с десктопным окном */
+    @media (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
+      .ag-dialog[open] { display: flex; flex-direction: column; }
+      .ag-card { display: flex; flex-direction: column; min-height: 0; }
+      .ag-soft { flex: 1 1 auto; min-height: 96px; max-height: none; }
+      .ag-note { row-gap: 0; }
+      .ag-note a, .ag-link { display: inline-flex; align-items: center; min-height: 40px; }
+    }
+    @media (max-height: 640px) and (max-width: 768px), (max-height: 640px) and (pointer: coarse) {
+      .ag-badge-soft { display: none; }
+    }
+    /* Сенсорный экран: подписи групп не мельче 12px */
+    @media (max-width: 768px), (pointer: coarse) {
+      .ag-soft-title { font-size: 0.75rem; }
+    }
+    /* Телефон боком: окно шире и плотнее, чтобы списку осталась не одна строка */
+    @media (max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
+      .ag-dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 16px); }
+      .ag-card { padding: var(--space-xl) var(--space-2xl) var(--space-lg); }
+      .ag-text, .ag-actions, .ag-soft { margin-bottom: var(--space-md); }
+    }
+
     @media (prefers-reduced-motion: reduce) { .ag-dialog { animation: none; } }
   `]
 })

@@ -7,6 +7,7 @@ import { FoodPairing, Dish, CuisineType, PAIRING_LABELS, PairingType } from '../
 import { countOf } from '../venue-menu/plural';
 import { PairingV2Component } from '../drinks-v2/pairing-v2.component';
 import { V2ApiService } from '../drinks-v2/v2-api.service';
+import { matchesSearch } from '../../services/search-text';
 
 /** Короткое пояснение к типу сочетания на бейдже карточки. */
 const PAIRING_HINT: Record<PairingType, string> = {
@@ -39,7 +40,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
     <div class="flex justify-between items-center mb-2xl flex-wrap gap-lg">
       <div class="flex gap-md flex-wrap items-center">
         <button
-          class="btn-outline"
+          class="btn-outline fp-mode"
           [class.active]="viewMode() === 'pairings'"
           (click)="viewMode.set('pairings')"
         >
@@ -47,7 +48,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
           {{ pairingsLoaded() ? countOf(pairings().length, 'сочетание', 'сочетания', 'сочетаний') : 'Сочетания' }}
         </button>
         <button
-          class="btn-outline"
+          class="btn-outline fp-mode"
           [class.active]="viewMode() === 'dishes'"
           (click)="viewMode.set('dishes')"
         >
@@ -55,7 +56,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
           {{ dishesLoaded() ? 'Каталог ' + countOf(dishes().length, 'блюда', 'блюд', 'блюд') : 'Каталог блюд' }}
         </button>
         <button
-          class="btn-outline"
+          class="btn-outline fp-mode"
           [class.active]="viewMode() === 'drinks'"
           (click)="viewMode.set('drinks')"
         >
@@ -65,21 +66,16 @@ const CUISINES: { id: CuisineType; label: string }[] = [
       </div>
 
       @if (viewMode() !== 'drinks') {
-      <div style="position: relative; min-width: 260px; max-width: 360px; width: 100%;">
+      <div class="fp-search">
         <input
           type="text"
           class="input"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
           [placeholder]="viewMode() === 'pairings' ? 'Поиск по блюду или пиву...' : 'Поиск блюда...'"
-          style="width: 100%; padding-right: 36px;"
         />
         @if (searchQuery()) {
-          <button
-            (click)="searchQuery.set('')"
-            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px;"
-            title="Очистить"
-          >&#x2715;</button>
+          <button class="fp-clear" (click)="searchQuery.set('')" title="Очистить">&#x2715;</button>
         }
       </div>
       }
@@ -190,6 +186,24 @@ const CUISINES: { id: CuisineType; label: string }[] = [
     .badge-cleanse { background: rgba(37, 99, 235, 0.1); color: #2563EB; }
     .badge-bridge { background: rgba(147, 51, 234, 0.1); color: #9333EA; }
     .pairing-connector svg { display: block; margin: 0 auto; color: var(--beer-mid); }
+    .fp-search { position: relative; min-width: 260px; max-width: 360px; width: 100%; }
+    .fp-search .input { width: 100%; padding-right: 36px; }
+    .fp-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none;
+      border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px; }
+
+    @media (max-width: 768px) {
+      /* Режимы раздела и крестик поиска под палец: не меньше 44px */
+      .fp-mode { min-height: 44px; }
+      .fp-search .input { padding-right: 48px; }
+      .fp-clear { right: 2px; width: 44px; height: 44px; padding: 0; }
+      /* Подписи «Сорт напитка» и «Блюдо» не мельче 12px */
+      .pairing-versus-label { font-size: 0.75rem; }
+    }
+
+    @media (max-width: 480px) {
+      /* Режимы заполняют строку, а не висят лесенкой разной ширины */
+      .fp-mode { flex: 1 1 auto; justify-content: center; }
+    }
   `]
 })
 export class FoodPairingComponent implements OnInit {
@@ -221,9 +235,9 @@ export class FoodPairingComponent implements OnInit {
 
     return this.pairings().filter(p => {
       const matchType = !filter || p.pairing_type === filter;
+      // Сорт и блюдо как угодно («эфес», «козел»); в пояснении ищем как есть, иначе короткий запрос находит всё подряд
       const matchQuery = !query ||
-        p.brand_name.toLowerCase().includes(query) ||
-        p.dish_name.toLowerCase().includes(query) ||
+        matchesSearch(query, p.brand_name, p.dish_name) ||
         (p.explanation && p.explanation.toLowerCase().includes(query));
       return matchType && matchQuery;
     });

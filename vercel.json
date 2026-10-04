@@ -40,7 +40,29 @@
     {
       "src": "/([^/]+-[A-Z0-9]{8}\\.(?:js|css))",
       "dest": "/frontend/$1",
-      "headers": { "cache-control": "public, max-age=31536000, immutable" }
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "src": "/((?:img|decor|icons)/.+|og\\.jpg|favicon\\.ico|manifest\\.webmanifest|robots\\.txt)",
+      "dest": "/frontend/$1",
+      "headers": {
+        "cache-control": "public, max-age=3600",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "src": "/index\\.html",
+      "dest": "/frontend/index.html",
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), midi=(), accelerometer=(), gyroscope=(), magnetometer=()"
+      }
     },
     {
       "src": "/(.+\\.[A-Za-z0-9]{1,12})",
@@ -51,9 +73,11 @@
       "src": "/(.*)",
       "dest": "/frontend/index.html",
       "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
         "x-content-type-options": "nosniff",
         "x-frame-options": "DENY",
-        "cache-control": "public, max-age=0, must-revalidate"
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), midi=(), accelerometer=(), gyroscope=(), magnetometer=()"
       }
     }
   ],

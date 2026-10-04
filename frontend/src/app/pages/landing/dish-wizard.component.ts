@@ -1,10 +1,6 @@
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, computed, signal, viewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, ElementRef, EventEmitter, Injector, Input, OnDestroy, OnInit, Output, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { FoodIcon } from '../../models/flavor-tree.models';
-import {
-  CATEGORIES, COOKING, TASTES, WEIGHTS, FATS,
-  DishProfile, WizardOption, emptyProfile,
-} from './pairing-engine.data';
+import { FATS, WIZARD_STEPS, DishProfile, emptyProfile } from './pairing-engine.data';
 import { DishChoice, IndexedDish, resolveDish, searchDishes, toPick } from './dish-search';
 
 /** Шаг мастера и ответы на момент перехода: родитель кладёт их в историю браузера. */
@@ -13,25 +9,10 @@ export interface WizardMove {
   profile: DishProfile;
 }
 
-interface StepDef {
-  key: keyof DishProfile;
-  title: string;
-  accent: string;
-  sub: string;
-  options: WizardOption[];
-  /** Первый шаг нельзя пропустить: без категории подбирать не от чего. */
-  skippable: boolean;
-}
-
-const STEPS: StepDef[] = [
-  { key: 'category', title: 'Что ты', accent: 'ешь?', sub: 'Выбери категорию блюда', options: CATEGORIES, skippable: false },
-  { key: 'cooking', title: 'Как это', accent: 'приготовлено?', sub: 'Огонь, пар или сырое - способ меняет вкус сильнее, чем кажется', options: COOKING, skippable: true },
-  { key: 'taste', title: 'Какой вкус', accent: 'главный?', sub: 'Тот, что чувствуется первым, ещё до остальных', options: TASTES, skippable: true },
-  { key: 'weight', title: 'Насколько', accent: 'сытное?', sub: 'От веса блюда зависит плотность сорта - лёгкое к лёгкому, тяжёлое к тяжёлому', options: WEIGHTS, skippable: true },
-];
-
-/** Последний шаг мастера: на него возвращает «Изменить ответы» из результата. */
-export const LAST_STEP = STEPS.length - 1;
+/** Телефон боком: шапка сайта на таком экране не липнет (styles.css), прокрутку считаем от края экрана. */
+const LOW_SCREEN = '(max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse)';
+/** Отступ от верха экрана после прокрутки на низком экране (--space-md). */
+const TOP_GAP = 12;
 
 /** Какому типу картинок из админки соответствует шаг мастера. */
 const STEP_KIND: Record<string, string> = {
@@ -46,7 +27,8 @@ const STEP_KIND: Record<string, string> = {
 @Component({
   selector: 'app-dish-wizard',
   standalone: true,
-  imports: [FormsModule],
+  // FormsModule не подключаем: поле читаем через (input), как в hero. Мастер приходит отдельным чанком
+  // (@defer в landing), и главной не нужно тянуть за ним ещё и чанк форм
   template: `
     <div class="wiz">
       <div class="wiz-head">
@@ -150,7 +132,7 @@ const STEP_KIND: Record<string, string> = {
       @if (index() === 0) {
         <div class="wiz-or"><span>или напиши своё</span></div>
 
-        <form class="wiz-free" (ngSubmit)="submitFree()">
+        <form class="wiz-free" (submit)="$event.preventDefault(); submitFree()">
           <div class="wiz-field">
             <label class="sr-only" for="wiz-dish">Название блюда</label>
             <svg class="wiz-find-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -160,9 +142,11 @@ const STEP_KIND: Record<string, string> = {
               type="text"
               name="dish"
               autocomplete="off"
+              enterkeyhint="search"
               placeholder="Например: бешбармак, плов, стейк рибай…"
-              [ngModel]="query()"
-              (ngModelChange)="query.set($event)"
+              [value]="query()"
+              (input)="query.set($any($event.target).value)"
+              (focus)="liftField($event)"
             />
 
             @if (suggestions().length) {
@@ -200,7 +184,7 @@ const STEP_KIND: Record<string, string> = {
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; scroll-margin-top: 118px; }
 
     .wiz { display: flex; flex-direction: column; align-items: center; text-align: center; }
 
@@ -492,11 +476,27 @@ const STEP_KIND: Record<string, string> = {
 
     .wiz-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-md); margin-top: var(--space-2xl); }
 
+    /* Сенсорный экран: зона нажатия от 40px, служебные подписи от 12px.
+       Полоса шагов остаётся тонкой, прозрачная рамка добавляет ей высоту.
+       Подпись поля только для скринридера: видимая сдвигала значок поиска к верхнему краю поля */
+    @media (max-width: 768px), (pointer: coarse) {
+      .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+      .wiz-bar { margin: -12px 0; }
+      .wiz-bar .wiz-seg { box-sizing: content-box; border-block: 17px solid transparent; border-radius: 3.5px / 20.5px; background-clip: padding-box; }
+      .wiz-chip { min-height: 40px; }
+      .wiz-acts .btn-ghost { min-height: 44px; padding: 0 var(--space-lg); }
+      .wiz-step, .wiz-or, .wiz-extra-title, .wiz-hint { font-size: 0.75rem; }
+      .wiz-field { scroll-margin-top: 96px; }
+      .wiz-input { font-size: 16px; }
+      .wiz-hints button { min-height: 44px; justify-content: center; }
+    }
+
     @media (max-width: 620px) {
       .wiz-opts { gap: var(--space-lg) var(--space-md); }
       .wiz-opt { width: calc((100% - 2 * var(--space-md)) / 3); }
       .wiz-circle { width: min(100%, 104px); }
-      .wiz-label { font-size: 0.8rem; }
+      /* «Морепродукты» шире трети экрана: переносим по слогам */
+      .wiz-label { font-size: 0.8rem; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
       .wiz-hint { display: none; }
       .wiz-free { flex-direction: column; }
       .wiz-back { align-self: center; }
@@ -525,10 +525,12 @@ export class DishWizardComponent implements OnInit, OnDestroy {
   /** Шаг назад кнопкой мастера. */
   @Output() retreat = new EventEmitter<WizardMove>();
 
-  readonly steps = STEPS;
+  readonly steps = WIZARD_STEPS;
   readonly fats = FATS;
 
   private gridRef = viewChild<ElementRef<HTMLElement>>('grid');
+  private host: ElementRef<HTMLElement> = inject(ElementRef);
+  private injector = inject(Injector);
 
   index = signal(0);
   profile = signal<DishProfile>(emptyProfile());
@@ -593,7 +595,10 @@ export class DishWizardComponent implements OnInit, OnDestroy {
       const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
       this.cancelAdvance();
       this.advanceTimer = setTimeout(() => { this.advanceTimer = null; this.next(); }, reduce ? 0 : 260);
+      return;
     }
+    // Последний шаг: под вариантами появились вопрос о жирности и «Подобрать пиво»
+    afterNextRender(() => this.revealFinish(), { injector: this.injector });
   }
 
   setFat(id: string): void {
@@ -643,14 +648,72 @@ export class DishWizardComponent implements OnInit, OnDestroy {
 
     // Блюда нет в каталоге - запоминаем название и уточняем его вручную.
     this.profile.update(p => ({ ...p, freeText: text }));
-    // Похожее есть: остаёмся на первом шаге, где видно «Возможно, вы искали»
-    if (found) { this.query.set(''); return; }
+    // Похожее есть: остаёмся на первом шаге, где видно «Возможно, вы искали».
+    // Подсказки стоят над полем: закрываем клавиатуру и показываем их
+    if (found) {
+      this.query.set('');
+      (document.activeElement as HTMLElement | null)?.blur();
+      this.revealQuestion();
+      return;
+    }
     this.next();
   }
 
   pickExact(dish: IndexedDish): void {
     this.query.set('');
     this.dishPicked.emit({ pick: toPick(dish), also: [] });
+  }
+
+  /**
+   * На телефоне клавиатура закрывает нижнюю половину экрана: поднимаем поле
+   * к шапке, чтобы подсказки под ним были видны.
+   */
+  liftField(event: FocusEvent): void {
+    if (!window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches) return;
+    const field = (event.target as HTMLElement).closest<HTMLElement>('.wiz-field');
+    setTimeout(() => field && this.toTop(field), 300);
+  }
+
+  /** Плавная прокрутка, если человек не просил убрать анимацию. */
+  private motion(): ScrollBehavior {
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  }
+
+  /**
+   * Новый вопрос показываем с заголовка. На телефоне круги длиннее экрана:
+   * после нажатия на нижний заголовок следующего шага остался бы выше экрана.
+   * Телефон боком: «Назад» и полоса шагов заняли бы полэкрана, и варианты ушли бы вниз.
+   * Там к верху экрана встаёт сам вопрос, первый ряд вариантов виден под ним.
+   */
+  private revealQuestion(): void {
+    const el = this.host.nativeElement;
+    const low = window.matchMedia?.(LOW_SCREEN).matches;
+    const target = (low && el.querySelector<HTMLElement>('.wiz-ask')) || el;
+    if (target.getBoundingClientRect().top < 0) this.toTop(target);
+  }
+
+  /**
+   * Ставит элемент к верху экрана: обычно под липкую шапку сайта (scroll-margin-top в стилях).
+   * На низком экране шапка не липнет, там отступ TOP_GAP, иначе сверху оставалась пустая полоса.
+   */
+  private toTop(el: HTMLElement): void {
+    if (!window.matchMedia?.(LOW_SCREEN).matches) {
+      el.scrollIntoView({ behavior: this.motion(), block: 'start' });
+      return;
+    }
+    const top = el.getBoundingClientRect().top;
+    if (Math.abs(top - TOP_GAP) > 1) window.scrollTo({ top: window.scrollY + top - TOP_GAP, behavior: this.motion() });
+  }
+
+  /**
+   * Вес выбран: вопрос о жирности и кнопка «Подобрать пиво» стоят под вариантами. На телефоне они
+   * оказывались под нижней панелью, и нажатие выглядело так, будто ничего не произошло.
+   * Прокручиваем ровно настолько, чтобы кнопка встала над панелью (scroll-padding-bottom в styles.css).
+   */
+  private revealFinish(): void {
+    if (!window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches) return;
+    this.host.nativeElement.querySelector<HTMLElement>('.wiz-acts')
+      ?.scrollIntoView({ behavior: this.motion(), block: 'nearest' });
   }
 
   private clampStep(step: number): number {
@@ -677,6 +740,7 @@ export class DishWizardComponent implements OnInit, OnDestroy {
   private focusGrid(): void {
     queueMicrotask(() => {
       this.gridRef()?.nativeElement.querySelector<HTMLButtonElement>('.wiz-opt')?.focus({ preventScroll: true });
+      this.revealQuestion();
     });
   }
 }

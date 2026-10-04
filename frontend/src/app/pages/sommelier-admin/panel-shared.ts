@@ -162,6 +162,14 @@ export function flash(target: WritableSignal<string | null>, text: string, ms = 
   }, ms);
 }
 
+/**
+ * Телефонная раскладка панели (panel.css, max-width: 768px): список и детали вкладки
+ * показываются по очереди, а вкладки идут полосой, которая прокручивается вбок.
+ */
+export function isNarrowPanel(): boolean {
+  return typeof window !== 'undefined' && !!window.matchMedia?.('(max-width: 768px)').matches;
+}
+
 /** Сообщения об ошибках начинаются с "Ошибка", по этому признаку красим текст. */
 export function isErrorText(msg: string | null | undefined): boolean {
   return !!msg && msg.startsWith('Ошибка');

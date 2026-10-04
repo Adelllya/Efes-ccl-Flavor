@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { Component, OnInit, WritableSignal, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import { isEfes } from '../drinks-v2/v2-ui';
 import { PanelIconComponent } from './panel-icons';
 import { PanelPhotoComponent } from './panel-photo.component';
 import { PanelQrPrintComponent } from './panel-qr-print.component';
-import { VENUE_TYPE_CHOICES, confirmTwice, countOf, flash, initialOf, isErrorText } from './panel-shared';
+import { VENUE_TYPE_CHOICES, confirmTwice, countOf, flash, initialOf, isErrorText, isNarrowPanel } from './panel-shared';
 
 interface VenueForm {
   name: string;
@@ -327,10 +327,17 @@ function nextOrder(list: { sort_order: number }[]): number {
                               <input type="checkbox" [checked]="row.is_available" (change)="toggleAvailable(row, $event)" /> В наличии
                             </label>
                           </div>
-                          <input class="input" type="number" min="0" step="50" [(ngModel)]="row.price" />
-                          <input class="input" type="text" [(ngModel)]="row.section" />
-                          <input class="input" type="text" [(ngModel)]="row.portion" placeholder="350 г" />
-                          <input class="input" type="number" [(ngModel)]="row.sort_order" />
+                          <!-- На широком экране обёртки не рисуются, подписи видны только в узкой колонке -->
+                          <div class="wa-table-fields">
+                            <label class="wa-table-cell"><span class="wa-table-cap">Цена, тг</span>
+                              <input class="input" type="number" min="0" step="50" [(ngModel)]="row.price" /></label>
+                            <label class="wa-table-cell"><span class="wa-table-cap">Раздел</span>
+                              <input class="input" type="text" [(ngModel)]="row.section" /></label>
+                            <label class="wa-table-cell"><span class="wa-table-cap">Порция</span>
+                              <input class="input" type="text" [(ngModel)]="row.portion" placeholder="350 г" /></label>
+                            <label class="wa-table-cell"><span class="wa-table-cap">Порядок</span>
+                              <input class="input" type="number" [(ngModel)]="row.sort_order" /></label>
+                          </div>
                           <div class="wa-table-actions">
                             <button type="button" class="wa-iconbtn" title="Сохранить" (click)="saveItem(row)">
                               <panel-icon name="save" />
@@ -339,6 +346,11 @@ function nextOrder(list: { sort_order: number }[]): number {
                               @if (pendingDelete() === row.id) { <span class="wa-confirm">Точно?</span> } @else { <panel-icon name="trash" /> }
                             </button>
                           </div>
+                          @if (noteFor('item', row.id); as note) {
+                            <p class="wa-table-note" [class.error]="isError(note)" role="status">
+                              <panel-icon [name]="isError(note) ? 'alert' : 'check'" /> {{ note }}
+                            </p>
+                          }
                         </div>
                       }
                     }
@@ -417,9 +429,14 @@ function nextOrder(list: { sort_order: number }[]): number {
                             </label>
                           </div>
                         </div>
-                        <input class="input" type="number" min="0" step="50" [(ngModel)]="row.price" />
-                        <input class="input" type="text" [(ngModel)]="row.volume" placeholder="0,5 л" />
-                        <input class="input" type="number" [(ngModel)]="row.sort_order" />
+                        <div class="wa-table-fields">
+                          <label class="wa-table-cell"><span class="wa-table-cap">Цена, тг</span>
+                            <input class="input" type="number" min="0" step="50" [(ngModel)]="row.price" /></label>
+                          <label class="wa-table-cell"><span class="wa-table-cap">Объём</span>
+                            <input class="input" type="text" [(ngModel)]="row.volume" placeholder="0,5 л" /></label>
+                          <label class="wa-table-cell"><span class="wa-table-cap">Порядок</span>
+                            <input class="input" type="number" [(ngModel)]="row.sort_order" /></label>
+                        </div>
                         <div class="wa-table-actions">
                           <button type="button" class="wa-iconbtn" title="Сохранить" (click)="saveDrink(row)">
                             <panel-icon name="save" />
@@ -428,6 +445,11 @@ function nextOrder(list: { sort_order: number }[]): number {
                             @if (pendingDeleteDrink() === row.id) { <span class="wa-confirm">Точно?</span> } @else { <panel-icon name="trash" /> }
                           </button>
                         </div>
+                        @if (noteFor('drink', row.id); as note) {
+                          <p class="wa-table-note" [class.error]="isError(note)" role="status">
+                            <panel-icon [name]="isError(note) ? 'alert' : 'check'" /> {{ note }}
+                          </p>
+                        }
                       </div>
                     }
                   </div>
@@ -516,6 +538,9 @@ export class PanelMenuComponent implements OnInit {
   pickPrice = signal<number | string>(0);
   pickVolume = signal(DEFAULT_VOLUME);
   addingDrink = signal(false);
+
+  /** Итог сохранения строки таблицы: сообщение над таблицей не видно, если строка на экран ниже. */
+  rowNote = signal<{ kind: 'item' | 'drink'; id: string; text: string } | null>(null);
 
   /** Модератор создаёт сколько угодно, администратор заведения только первое. */
   canCreate = computed(() => this.isModerator() || (!this.loadingVenues() && !this.venues().length));
@@ -647,8 +672,10 @@ export class PanelMenuComponent implements OnInit {
       next: list => {
         this.venues.set(list);
         this.loadingVenues.set(false);
-        if (list.length) this.selectVenue(list[0].slug);
-        else if (!this.isModerator()) this.startCreate();
+        // На телефоне карточка закрывает список: модератор сначала видит все заведения
+        if (list.length) {
+          if (list.length === 1 || !isNarrowPanel()) this.selectVenue(list[0].slug);
+        } else if (!this.isModerator()) this.startCreate();
       },
       error: err => {
         this.loadingVenues.set(false);
@@ -697,7 +724,7 @@ export class PanelMenuComponent implements OnInit {
 
   cancelCreate() {
     const first = this.venues()[0];
-    if (first) this.selectVenue(first.slug);
+    if (first && !isNarrowPanel()) this.selectVenue(first.slug);
     else this.creating.set(false);
   }
 
@@ -796,6 +823,23 @@ export class PanelMenuComponent implements OnInit {
     });
   }
 
+  /** Итог для строки таблицы, если он есть. */
+  noteFor(kind: 'item' | 'drink', id: string): string | null {
+    const note = this.rowNote();
+    return note && note.kind === kind && note.id === id ? note.text : null;
+  }
+
+  /** Сообщение над таблицей и короткий итог прямо под строкой, где стоит палец: строка бывает на экран ниже. */
+  private noteRow(target: WritableSignal<string | null>, kind: 'item' | 'drink', id: string, text: string, rowText = text) {
+    const ms = isErrorText(text) ? 6000 : 4000;
+    flash(target, text, ms);
+    const note = { kind, id, text: rowText };
+    this.rowNote.set(note);
+    setTimeout(() => {
+      if (this.rowNote() === note) this.rowNote.set(null);
+    }, ms);
+  }
+
   // Позиции меню
 
   loadItems(venueId: string) {
@@ -817,7 +861,7 @@ export class PanelMenuComponent implements OnInit {
   saveItem(row: MenuItem) {
     const price = priceOf(row.price);
     if (price === null) {
-      flash(this.itemsMsg, PRICE_ERROR, 6000);
+      this.noteRow(this.itemsMsg, 'item', row.id, PRICE_ERROR);
       return;
     }
     this.api.updateMenuItem(row.id, {
@@ -828,9 +872,9 @@ export class PanelMenuComponent implements OnInit {
     }).subscribe({
       next: saved => {
         this.items.update(list => list.map(i => i.id === saved.id ? saved : i));
-        flash(this.itemsMsg, (saved.dish_name || 'Позиция') + ': сохранено');
+        this.noteRow(this.itemsMsg, 'item', saved.id, (saved.dish_name || 'Позиция') + ': сохранено', 'Сохранено');
       },
-      error: err => flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+      error: err => this.noteRow(this.itemsMsg, 'item', row.id, 'Ошибка: ' + AuthService.errorText(err))
     });
   }
 
@@ -843,7 +887,7 @@ export class PanelMenuComponent implements OnInit {
       next: saved => this.items.update(list => list.map(i => i.id === saved.id ? { ...i, is_available: saved.is_available } : i)),
       error: err => {
         input.checked = row.is_available;
-        flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        this.noteRow(this.itemsMsg, 'item', row.id, 'Ошибка: ' + AuthService.errorText(err));
       }
     });
   }
@@ -856,7 +900,7 @@ export class PanelMenuComponent implements OnInit {
           this.bumpCount(row.venue, -1);
           flash(this.itemsMsg, (row.dish_name || 'Позиция') + ': убрано из меню');
         },
-        error: err => flash(this.itemsMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+        error: err => this.noteRow(this.itemsMsg, 'item', row.id, 'Ошибка: ' + AuthService.errorText(err))
       });
     });
   }
@@ -935,7 +979,7 @@ export class PanelMenuComponent implements OnInit {
   saveDrink(row: MenuDrink) {
     const price = priceOf(row.price);
     if (price === null) {
-      flash(this.drinksMsg, PRICE_ERROR, 6000);
+      this.noteRow(this.drinksMsg, 'drink', row.id, PRICE_ERROR);
       return;
     }
     this.api.updateMenuDrink(row.id, {
@@ -945,9 +989,9 @@ export class PanelMenuComponent implements OnInit {
     }).subscribe({
       next: saved => {
         this.drinks.update(list => sortDrinks(list.map(d => d.id === saved.id ? saved : d)));
-        flash(this.drinksMsg, (saved.brand_name || 'Напиток') + ': сохранено');
+        this.noteRow(this.drinksMsg, 'drink', saved.id, (saved.brand_name || 'Напиток') + ': сохранено', 'Сохранено');
       },
-      error: err => flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+      error: err => this.noteRow(this.drinksMsg, 'drink', row.id, 'Ошибка: ' + AuthService.errorText(err))
     });
   }
 
@@ -958,7 +1002,7 @@ export class PanelMenuComponent implements OnInit {
       next: saved => this.drinks.update(list => list.map(d => d.id === saved.id ? { ...d, is_available: saved.is_available } : d)),
       error: err => {
         input.checked = row.is_available;
-        flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000);
+        this.noteRow(this.drinksMsg, 'drink', row.id, 'Ошибка: ' + AuthService.errorText(err));
       }
     });
   }
@@ -970,7 +1014,7 @@ export class PanelMenuComponent implements OnInit {
           this.drinks.update(list => list.filter(d => d.id !== row.id));
           flash(this.drinksMsg, (row.brand_name || 'Напиток') + ': убрано из карты');
         },
-        error: err => flash(this.drinksMsg, 'Ошибка: ' + AuthService.errorText(err), 6000)
+        error: err => this.noteRow(this.drinksMsg, 'drink', row.id, 'Ошибка: ' + AuthService.errorText(err))
       });
     });
   }
@@ -989,6 +1033,7 @@ export class PanelMenuComponent implements OnInit {
     this.venueMsg.set(null);
     this.itemsMsg.set(null);
     this.drinksMsg.set(null);
+    this.rowNote.set(null);
     this.logoError.set(null);
     this.pendingDelete.set(null);
     this.pendingDeleteDrink.set(null);

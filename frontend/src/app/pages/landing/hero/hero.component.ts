@@ -10,12 +10,13 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { ApiService } from '../../../services/api.service';
 import { countOf } from '../../venue-menu/plural';
 
 type DiscoveryMode = 'dish' | 'brand';
+/** Пилюли под заголовком: сорта, пирамида, сомелье, школа вкуса. */
+export type HeroPillId = 'brands' | 'pyramid' | 'ai' | 'school';
 
 interface RisingBubble {
   id: number;
@@ -27,7 +28,7 @@ interface RisingBubble {
 }
 
 interface HeroPill {
-  id: string;
+  id: HeroPillId;
   label: string;
   icon: 'beer' | 'pyramid' | 'sparkle' | 'book';
 }
@@ -41,7 +42,7 @@ interface HeroPill {
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet],
+  imports: [NgTemplateOutlet],
   template: `
     <!-- Боковые «пузыри» появляются при скролле (только desktop) -->
     <div class="side-beers side-beers--left" aria-hidden="true">
@@ -69,9 +70,18 @@ interface HeroPill {
         каждого сорта на три слоя, как аромат в парфюмерии, и подбираем сочетания с едой.
       </p>
 
-      <ul class="hero-pills" aria-label="Что есть на платформе">
+      <!-- Пилюли ведут в свои разделы, «Сомелье» открывает чат. Кнопки, а не список: li не может быть кнопкой -->
+      <div class="hero-pills" role="group" aria-label="Что есть на платформе">
         @for (pill of pills(); track pill.id) {
-          <li class="hero-pill">
+          <div
+            class="hero-pill"
+            role="button"
+            tabindex="0"
+            [attr.aria-haspopup]="pill.id === 'ai' ? 'dialog' : null"
+            (click)="openPill(pill.id)"
+            (keydown.enter)="openPill(pill.id)"
+            (keydown.space)="$event.preventDefault(); openPill(pill.id)"
+          >
             <span class="hero-pill-icon" aria-hidden="true">
               @switch (pill.icon) {
                 @case ('beer') { <ng-container *ngTemplateOutlet="beerIcon"></ng-container> }
@@ -87,12 +97,11 @@ interface HeroPill {
               }
             </span>
             {{ pill.label }}
-          </li>
+          </div>
         }
-      </ul>
+      </div>
 
       <form class="hero-search" (submit)="submitSearch($event)" role="search">
-        <label class="sr-only" for="hero-search-input">Введите блюдо для подбора пива</label>
         <svg class="hero-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input
           id="hero-search-input"
@@ -101,9 +110,10 @@ interface HeroPill {
           name="dish"
           autocomplete="off"
           enterkeyhint="search"
+          aria-label="Введите блюдо для подбора пива"
           placeholder="Введите блюдо (напр. Шашлык, Бешбармак…)"
-          [ngModel]="query()"
-          (ngModelChange)="query.set($event)"
+          [value]="query()"
+          (input)="query.set($any($event.target).value)"
         />
         <button class="hero-search-btn" type="submit">
           Подобрать
@@ -192,18 +202,6 @@ interface HeroPill {
   styles: [`
     :host { display: block; }
 
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
     /* ── Hero */
     .hero {
       text-align: center;
@@ -263,6 +261,7 @@ interface HeroPill {
       padding: 0 var(--space-xl);
       border-radius: var(--radius-full);
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      cursor: pointer;
     }
 
     .hero-pill-icon {
@@ -405,15 +404,13 @@ interface HeroPill {
     }
 
     @keyframes floatLeft {
-      0%   { transform: translateY(-28px) rotate(0deg); }
-      50%  { transform: translateY(-42px) rotate(-1.5deg); }
-      100% { transform: translateY(-28px) rotate(0deg); }
+      0%, 100% { transform: translateY(-28px) rotate(0deg); }
+      50%      { transform: translateY(-42px) rotate(-1.5deg); }
     }
 
     @keyframes floatRight {
-      0%   { transform: translateY(18px) rotate(0deg); }
-      50%  { transform: translateY(32px) rotate(1.5deg); }
-      100% { transform: translateY(18px) rotate(0deg); }
+      0%, 100% { transform: translateY(18px) rotate(0deg); }
+      50%      { transform: translateY(32px) rotate(1.5deg); }
     }
 
     .choice:hover {
@@ -611,6 +608,20 @@ interface HeroPill {
 
     @media (max-width: 400px) {
       .choice { width: min(300px, calc(100vw - 32px)); height: min(300px, calc(100vw - 32px)); }
+      /* Плотнее по вертикали: поиск с кнопкой «Подобрать» помещается над нижней панелью уже на первом экране */
+      .hero { padding-top: var(--space-lg); }
+      .hero-title { margin-bottom: var(--space-lg); }
+      .hero-lede { margin-bottom: var(--space-2xl); font-size: 1rem; line-height: 1.6; }
+      .hero-pills { margin-bottom: var(--space-2xl); }
+    }
+
+    /* Телефон боком: экран низкий, поэтому поиск и оба круга в одну строку */
+    @media (max-width: 860px) and (max-height: 500px) {
+      .choices { flex-direction: row; gap: var(--space-2xl); }
+      .choice { width: min(260px, 50vw - 32px); height: min(260px, 50vw - 32px); padding: var(--space-xl); }
+      .hero-search { flex-wrap: nowrap; }
+      .hero-search-input { flex-basis: auto; }
+      .hero-search-btn { width: auto; }
     }
   `],
 })
@@ -623,6 +634,8 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   choose = output<DiscoveryMode>();
   /** Пользователь отправил поисковый запрос по блюду. */
   dishSearch = output<string>();
+  /** Нажата пилюля раздела: куда вести, решает главная. Пилюля сомелье сама открывает чат. */
+  pill = output<HeroPillId>();
 
   query = signal('');
   revealed = signal(false);
@@ -727,6 +740,15 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.sideVisible.set(visible);
     this.sideTransform.set(transforms);
+  }
+
+  /** Чат сомелье живёт в оболочке приложения: она слушает ft-open-chat и открывает лист. */
+  openPill(id: HeroPillId): void {
+    if (id === 'ai') {
+      window.dispatchEvent(new CustomEvent('ft-open-chat'));
+      return;
+    }
+    this.pill.emit(id);
   }
 
   submitSearch(event: Event): void {

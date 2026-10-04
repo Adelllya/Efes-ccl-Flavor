@@ -26,7 +26,7 @@ interface Feedback {
         <aside class="glass-panel p-2xl">
           <div class="flex items-center gap-lg mb-xl">
             <div class="profile-avatar" aria-hidden="true">{{ initial(u.username) }}</div>
-            <div>
+            <div class="profile-id">
               <div class="font-bold text-lg">{{ u.username }}</div>
               <span class="badge">{{ u.role_display }}</span>
             </div>

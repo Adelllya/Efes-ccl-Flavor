@@ -228,7 +228,8 @@ export class AuthService {
   /** Превращает ответ DRF ({detail} | {field: [..]} | {errors: {...}}) в одну строку. */
   static errorText(err: unknown): string {
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 0) return 'Сервер недоступен. Проверьте, запущен ли бэкенд.';
+      // Статус 0: запрос не дошёл (на телефоне обычно пропала сеть). Текст видит гость, без слов про бэкенд
+      if (err.status === 0) return 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.';
       const text = AuthService.bodyText(err.error);
       if (text) return text;
       if (err.status === 401) return 'Нужно войти в аккаунт';

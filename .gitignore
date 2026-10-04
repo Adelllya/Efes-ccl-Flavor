@@ -26,3 +26,6 @@ Thumbs.db
 
 # Django collected static (generated on deploy)
 staticfiles/
+
+# служебная папка Claude Code (worktrees)
+.claude/

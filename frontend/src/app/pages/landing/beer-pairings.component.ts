@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Output, computed, effect, input, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, ElementRef, EventEmitter, Output, computed, effect, inject, input, signal } from '@angular/core';
 import { Brand, Dish, FoodIcon, FoodPairing, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { COOKING, TASTES, CATEGORIES, bigImage, smallImage } from './pairing-engine.data';
+import { matchesSearch } from '../../services/search-text';
 
 const PAIRING_HINT: Record<string, string> = {
   COMPLEMENT: 'Похожие вкусы усиливают друг друга',
@@ -9,6 +9,11 @@ const PAIRING_HINT: Record<string, string> = {
   CLEANSE: 'Пиво освежает после тяжёлого или острого',
   BRIDGE: 'У пива и блюда есть общая нота',
 };
+
+/** Телефон боком: шапка сайта на таком экране не липнет (styles.css), прокрутку считаем от края экрана. */
+const LOW_SCREEN = '(max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse)';
+/** Отступ от верха экрана после прокрутки на низком экране (--space-md). */
+const TOP_GAP = 12;
 
 interface PairCard {
   pairing: FoodPairing;
@@ -29,7 +34,8 @@ interface PairCard {
 @Component({
   selector: 'app-beer-pairings',
   standalone: true,
-  imports: [FormsModule],
+  // FormsModule не подключаем: поле читаем через (input), как в hero. Витрина приходит отдельным чанком
+  // (@defer в landing), и главной не нужно тянуть за ней ещё и чанк форм
   template: `
     <div class="bp">
       <div class="bp-head">
@@ -60,9 +66,12 @@ interface PairCard {
             id="bp-search"
             class="input bp-input"
             type="search"
+            enterkeyhint="search"
             placeholder="Efes Pilsener, Kozel, Хмельной Лось…"
-            [ngModel]="query()"
-            (ngModelChange)="query.set($event)"
+            [value]="query()"
+            (input)="query.set($any($event.target).value)"
+            (focus)="liftField($event)"
+            (keyup.enter)="$any($event.target).blur()"
           />
         </div>
 
@@ -170,7 +179,7 @@ interface PairCard {
                         @if (c.photo) {
                           <img [src]="c.photo" alt="" loading="lazy" />
                         } @else {
-                          <span class="bp-duo-emoji">{{ c.marks[0]?.emoji || '🍽️' }}</span>
+                          <span class="bp-duo-emoji">{{ (c.marks.length && c.marks[0].emoji) || '🍽️' }}</span>
                         }
                       </span>
 
@@ -224,7 +233,7 @@ interface PairCard {
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; scroll-margin-top: 118px; }
 
     .bp-head {
       display: flex;
@@ -501,10 +510,28 @@ interface PairCard {
       .bp-drink { position: static; }
     }
 
+    /* Сенсорный экран: служебные подписи от 12px.
+       Подпись поля только для скринридера: видимая сдвигала значок поиска к верхнему краю поля */
+    @media (max-width: 768px), (pointer: coarse) {
+      .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+      .bp-step, .bp-mark { font-size: 0.75rem; }
+      .bp-input { font-size: 16px; }
+      .bp-find { scroll-margin-top: 96px; }
+    }
+
     @media (max-width: 560px) {
       .bp-pair { grid-template-columns: 1fr; }
       .bp-duo { width: 100%; height: 140px; }
       .bp-back { align-self: center; }
+      /* Витрина в две колонки: в одну семнадцать сортов растягивались на пять экранов */
+      .bp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+      .bp-card { padding: var(--space-lg) var(--space-sm) var(--space-xl); }
+      .bp-card-visual { height: 120px; }
+      .bp-card-name { hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
+      .bp-card-go { margin-top: auto; padding: 7px 12px; white-space: nowrap; }
+      /* Без фото emoji встаёт в центр рамки, а не к её верхнему краю */
+      .bp-card-visual, .bp-bottle { display: grid; place-items: center; }
+      .bp-empty, .bp-none { padding: var(--space-3xl) var(--space-lg); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -544,6 +571,8 @@ export class BeerPairingsComponent {
   query = signal('');
   pack = signal('');
 
+  private host: ElementRef<HTMLElement> = inject(ElementRef);
+
   constructor() {
     // Родитель передал сорт: открываем сразу пары к нему
     effect(() => {
@@ -556,13 +585,13 @@ export class BeerPairingsComponent {
   readonly small = smallImage;
 
   visible = computed(() => {
-    const q = this.query().trim().toLowerCase();
+    const q = this.query();
     const p = this.pack();
     return this.brands().filter(b => {
       if (b.is_active === false) return false;
       if (p && b.packaging_type !== p) return false;
-      if (q && !`${b.name} ${b.style}`.toLowerCase().includes(q)) return false;
-      return true;
+      // «эфес», «козел», «бавария» с русской раскладки находят латинские названия (как в каталоге)
+      return matchesSearch(q, b.name, b.style);
     });
   });
 
@@ -600,7 +629,34 @@ export class BeerPairingsComponent {
   select(brand: Brand): void {
     this.selected.set(brand);
     this.picked.emit(brand);
+    // До 900px всё в одну колонку: сорт и пары начинаются выше карточки, по которой нажали.
+    // Без этого гость из середины витрины попадал в конец пар или ниже подбора
+    if (window.matchMedia?.('(max-width: 900px)').matches) {
+      this.toTop(this.host.nativeElement);
+      return;
+    }
     window.scrollTo({ top: Math.max(0, window.scrollY - 200), behavior: 'smooth' });
+  }
+
+  /** На телефоне клавиатура закрывает витрину под полем: поднимаем поиск к шапке, сорта видны над клавиатурой. */
+  liftField(event: FocusEvent): void {
+    if (!window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches) return;
+    const field = (event.target as HTMLElement).closest<HTMLElement>('.bp-find');
+    setTimeout(() => field && this.toTop(field), 300);
+  }
+
+  /**
+   * Ставит элемент к верху экрана: обычно под липкую шапку сайта (scroll-margin-top в стилях).
+   * На низком экране шапка не липнет, там отступ TOP_GAP, иначе сверху оставалась пустая полоса.
+   */
+  private toTop(el: HTMLElement): void {
+    const behavior: ScrollBehavior = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (!window.matchMedia?.(LOW_SCREEN).matches) {
+      el.scrollIntoView({ behavior, block: 'start' });
+      return;
+    }
+    const top = el.getBoundingClientRect().top;
+    if (Math.abs(top - TOP_GAP) > 1) window.scrollTo({ top: window.scrollY + top - TOP_GAP, behavior });
   }
 
   goBack(): void {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Directive, ElementRef, HostListener, Input, OnChanges, OnDestroy, booleanAttribute, inject } from '@angular/core';
 import { V2Drink, V2Pair, V2Price, V2Reason } from './v2.models';
 
 /** Связь с Efes по данным каталога: собственные сорта, Coca-Cola İçecek и дистрибуция. */
@@ -147,7 +147,7 @@ export function cleanEngineText(raw: string | null | undefined, names: (string |
   keep.forEach((name, i) => { t = t.split(name).join(`\uE000${i}\uE001`); });
 
   // Технические числа движка
-  t = t.replace(/\s*\((?:[\d.,]+\s*↔\s*[\d.,]+)\)/g, '').replace(/:?\s*громкость\s+[\d.,]+\s+против\s+[\d.,]+/gi, '');
+  t = t.replace(/\s*\((?:[\d.,]+\s*↔\s*[\d.,]+)\)/g, '').replace(/:?\s*(?:громкость|насыщенность)\s+[\d.,]+\s+против\s+[\d.,]+/gi, '');
   // Хвосты « · фрукт ↔ фрукт» и « · кислота усиливает вяжущесть танинов»
   const [head, ...tails] = t.split(' · ');
   t = [head, ...tails.map(part => {
@@ -278,5 +278,91 @@ export class V2GlassComponent {
 
   get paths(): string[] {
     return GLASS_PATHS[(CATEGORY_STYLE[this.category] ?? CATEGORY_STYLE['beer']).glass];
+  }
+}
+
+/** Экран без наведения (телефон, планшет): всплывающую подсказку title там не открыть. */
+const NO_HOVER = '(hover: none), (pointer: coarse)';
+
+/** Строка с текстом подсказки: мелкая и приглушённая, шрифт основного текста, а не заголовка вокруг. */
+const HINT_LINE = 'display:block;font:400 0.75rem/1.4 var(--font-body);color:var(--muted);'
+  + 'letter-spacing:normal;text-transform:none;white-space:normal;';
+
+/** Значок «i» (как в lucide), размер от шрифта строки. */
+function hintIcon(): SVGSVGElement {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  const attrs: Record<string, string> = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2',
+    'stroke-linecap': 'round', 'aria-hidden': 'true' };
+  for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v);
+  svg.style.cssText = 'display:inline-block;width:0.95em;height:0.95em;margin-left:0.3em;vertical-align:-0.12em;opacity:0.6;';
+  const circle = document.createElementNS(ns, 'circle');
+  circle.setAttribute('cx', '12'); circle.setAttribute('cy', '12'); circle.setAttribute('r', '10');
+  svg.appendChild(circle);
+  for (const d of ['M12 16v-4', 'M12 8h.01']) {
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', d);
+    svg.appendChild(path);
+  }
+  return svg;
+}
+
+/**
+ * Подсказка из title, до которой дотянется и палец: источник причины, «около» у крепости.
+ * С мышью ничего не меняется: title стоит в шаблоне как был, директива на таком экране разметку не трогает.
+ * На сенсорном экране рядом с текстом значок «i», касание показывает подсказку строкой ниже, второе прячет.
+ * ftHintAfter: строка встаёт после элемента, а не внутри него (бейдж в строке flex).
+ */
+@Directive({ selector: '[ftHint]', standalone: true })
+export class TapHintDirective implements OnChanges, OnDestroy {
+  @Input() ftHint: string | null | undefined;
+  @Input({ transform: booleanAttribute }) ftHintAfter = false;
+
+  private readonly host: HTMLElement = inject(ElementRef).nativeElement;
+  private readonly touch = typeof matchMedia === 'function' && matchMedia(NO_HOVER).matches;
+  private icon: SVGSVGElement | null = null;
+  private line: HTMLElement | null = null;
+
+  ngOnChanges(): void {
+    if (!this.touch) return;
+    if (!this.ftHint) {
+      this.icon?.remove();
+      this.icon = null;
+      this.hide();
+      return;
+    }
+    if (!this.icon) this.host.appendChild(this.icon = hintIcon());
+    if (this.line) this.line.textContent = this.ftHint;
+  }
+
+  @HostListener('click', ['$event'])
+  toggle(event: Event): void {
+    if (!this.touch || !this.ftHint) return;
+    // Касание по подсказке не открывает карточку, в которой она стоит
+    event.stopPropagation();
+    if (this.line) {
+      this.hide();
+      return;
+    }
+    const line = document.createElement('span');
+    line.textContent = this.ftHint;
+    line.style.cssText = HINT_LINE + (this.ftHintAfter ? 'flex-basis:100%;' : 'margin-top:4px;');
+    if (this.ftHintAfter) {
+      // Строка вне элемента: касание по ней тоже прячет подсказку, а не открывает карточку
+      line.addEventListener('click', e => { e.stopPropagation(); this.hide(); });
+      this.host.after(line);
+    } else {
+      this.host.appendChild(line);
+    }
+    this.line = line;
+  }
+
+  ngOnDestroy(): void {
+    this.hide();
+  }
+
+  private hide(): void {
+    this.line?.remove();
+    this.line = null;
   }
 }

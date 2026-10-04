@@ -103,6 +103,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Анонимные GET каталога кэшируются в браузере гостя на минуту (api/http_cache.py)
+    'api.http_cache.CatalogBrowserCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'flavor_tree.urls'
@@ -217,6 +219,17 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    # HSTS: браузер два года открывает сайт только по https (столько же ставит сам Vercel на *.vercel.app).
+    # Django шлёт заголовок лишь на https-запросы (за прокси это X-Forwarded-Proto), поэтому http
+    # на своей машине он не трогает. preload не включаем: это заявка своего домена в списки браузеров,
+    # её делает владелец домена.
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365 * 2
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+if ON_VERCEL:
+    # Vercel сам уводит http на https (308) ещё до функции и для *.vercel.app сам отдаёт HSTS с preload.
+    # Поэтому SECURE_SSL_REDIRECT (W008) и SECURE_HSTS_PRELOAD (W021) здесь не нужны. Остальные проверки
+    # check --deploy включены: тест test_deploy_checks_clean_on_vercel требует, чтобы они проходили чисто.
+    SILENCED_SYSTEM_CHECKS = ['security.W008', 'security.W021']
 
 # Счётчики лимитов запросов (вход, регистрация, заказы, ИИ) живут в кэше. На Vercel у каждого
 # инстанса функции своя память, поэтому там кэш общий, в таблице базы ft_cache.
@@ -289,3 +302,14 @@ FT_AI_DAILY_LIMIT = os.environ.get('FT_AI_DAILY_LIMIT', '300')
 # На проде задать обязательно, например https://<домен-фронта>.vercel.app. Пусто: берётся сайт,
 # с которого открыли картинку QR (Origin или Referer), а в DEBUG - http://localhost:4200.
 FT_PUBLIC_SITE_URL = os.environ.get('FT_PUBLIC_SITE_URL', '').strip().rstrip('/')
+
+# На сервере предупреждения и ошибки, в том числе трейсбеки ответов 500, пишутся в stderr: это логи
+# функции Vercel. Стандартный LOGGING Django выводит их в консоль только при DEBUG, а письма админам
+# не настроены, поэтому без этого блока ошибки на проде нигде не видны.
+if not DEBUG and not TESTING:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {'stderr': {'class': 'logging.StreamHandler', 'level': 'WARNING'}},
+        'root': {'handlers': ['stderr'], 'level': 'WARNING'},
+    }

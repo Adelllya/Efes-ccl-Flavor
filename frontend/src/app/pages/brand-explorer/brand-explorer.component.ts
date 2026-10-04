@@ -1,19 +1,28 @@
 import { Component, EventEmitter, OnInit, Output, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { catalogModeFromUrl, syncCatalogMode } from '../drinks-v2/v2-url';
+import { catalogModeFromUrl, noteOpenFromCatalog, syncCatalogMode } from '../drinks-v2/v2-url';
 import { ApiService } from '../../services/api.service';
 import { Brand } from '../../models/flavor-tree.models';
 import { SelectionService } from '../../services/selection.service';
 import { countOf } from '../venue-menu/plural';
 import { DrinksCatalogComponent } from '../drinks-v2/drinks-catalog.component';
+import { TapHintDirective } from '../drinks-v2/v2-ui';
 import { V2ApiService } from '../drinks-v2/v2-api.service';
 import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
+import { matchesSearch } from '../../services/search-text';
+
+/**
+ * Список сортов с прошлого показа каталога. Вернувшись сюда («Все сорта» или «Назад» браузера), рисуем его
+ * сразу: со скелетом страница короче, и браузер восстановил бы прокрутку только до её низа. Свежий список
+ * всё равно запрашиваем и подменяем.
+ */
+let lastBrands: Brand[] | null = null;
 
 @Component({
   selector: 'app-brand-explorer',
   standalone: true,
-  imports: [CommonModule, FormsModule, DrinksCatalogComponent],
+  imports: [CommonModule, FormsModule, DrinksCatalogComponent, TapHintDirective],
   template: `
     <!-- Сорта Efes с пирамидой или все напитки движка подбора -->
     <div class="flex gap-md flex-wrap mb-2xl">
@@ -37,27 +46,22 @@ import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
         <h1 class="section-header">Каталог {{ loaded() ? countOf(brands().length, 'сорта', 'сортов', 'сортов') : 'сортов' }} и вкусовая пирамида</h1>
         <p class="text-muted">Исследуйте сенсорные профили, температуру подачи, бокалы и подходящие блюда</p>
       </div>
-      <div style="position: relative; min-width: 280px; max-width: 380px; width: 100%;">
+      <div class="be-search">
         <input
           type="text"
           class="input"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
           placeholder="Поиск по названию или стилю..."
-          style="width: 100%; padding-right: 36px;"
         />
         @if (searchQuery()) {
-          <button
-            (click)="searchQuery.set('')"
-            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px;"
-            title="Очистить"
-          >✕</button>
+          <button class="be-clear" (click)="searchQuery.set('')" title="Очистить" aria-label="Очистить поиск">✕</button>
         }
       </div>
     </div>
 
     <!-- Панель фильтров -->
-    <div class="glass-panel flex items-center gap-md flex-wrap mb-3xl" style="padding: 16px 24px;">
+    <div class="glass-panel be-filters flex items-center gap-md flex-wrap mb-3xl">
       <span class="text-muted font-semibold text-sm">Упаковка:</span>
       <button class="btn-outline" [class.active]="selectedPackaging() === ''" (click)="selectedPackaging.set('')">Все{{ loaded() ? ' (' + brands().length + ')' : '' }}</button>
       <button class="btn-outline" [class.active]="selectedPackaging() === 'BOTTLE'" (click)="selectedPackaging.set('BOTTLE')">Бутылка</button>
@@ -65,10 +69,9 @@ import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
       <button class="btn-outline" [class.active]="selectedPackaging() === 'DRAFT'" (click)="selectedPackaging.set('DRAFT')">Разливное</button>
 
       <button
-        class="btn-outline"
+        class="btn-outline be-horeca"
         [class.active]="onlyHoreca()"
         (click)="onlyHoreca.set(!onlyHoreca())"
-        style="margin-left: auto;"
       >
         <span [style.color]="onlyHoreca() ? 'var(--beer-accent)' : 'inherit'">★</span>
         Только HoReCa
@@ -79,7 +82,7 @@ import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
     @if (searchQuery() || selectedPackaging() || onlyHoreca()) {
       <div class="flex justify-between items-center mb-xl text-sm text-muted">
         <span>Найдено сортов: <strong style="color: var(--foam);">{{ filteredBrands().length }}</strong> из {{ brands().length }}</span>
-        <button class="btn-outline btn-sm" (click)="resetFilters()">Сбросить фильтры</button>
+        <button class="btn-outline btn-sm be-reset" (click)="resetFilters()">Сбросить фильтры</button>
       </div>
     }
 
@@ -96,7 +99,7 @@ import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
       </div>
     } @else {
     <div class="grid grid-cards">
-      @for (brand of filteredBrands(); track brand.id) {
+      @for (brand of filteredBrands(); track brand.id; let i = $index) {
         <div class="glass-card beer-card p-xl stagger-item" (click)="openBrandDetail(brand)">
           <!-- Фото -->
           <div class="beer-card-image">
@@ -106,7 +109,9 @@ import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
               <span class="badge badge-dark beer-card-image-badge">{{ brand.packaging_type_display || brand.packaging_type }}</span>
             }
             @if (brand.image) {
-              <img [src]="brand.image" [alt]="brand.name" loading="lazy" decoding="async" />
+              <!-- Первый ряд виден сразу (первое фото и есть самый крупный элемент экрана): грузим без lazy -->
+              <img [attr.loading]="i < eagerImages ? 'eager' : 'lazy'" [attr.fetchpriority]="i === 0 ? 'high' : null"
+                   [src]="brand.image" [alt]="brand.name" decoding="async" />
             } @else {
               <div class="beer-card-placeholder">
                 <span>🍺</span>
@@ -122,7 +127,8 @@ import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
                 <span class="badge">{{ brand.style }}</span>
                 <!-- Крепости нет: бейдж не показываем. Оценку по стилю подписываем «около». -->
                 @if (abvText(brand.abv, brand.abv_estimated); as abv) {
-                  <span class="beer-card-abv" [attr.title]="brand.abv_estimated ? abvHint : 'Крепость'">{{ abv }}</span>
+                  <span class="beer-card-abv" [attr.title]="brand.abv_estimated ? abvHint : 'Крепость'"
+                        [ftHint]="brand.abv_estimated ? abvHint : null" ftHintAfter>{{ abv }}</span>
                 }
               </div>
               <h3 class="beer-card-name">{{ brand.name }}</h3>
@@ -165,6 +171,28 @@ import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
       font-size: 0.7rem;
       padding: 2px 8px;
     }
+    .be-search { position: relative; min-width: 280px; max-width: 380px; width: 100%; }
+    .be-search .input { width: 100%; padding-right: 36px; }
+    .be-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none;
+      border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px; }
+    .be-filters { padding: 16px 24px; }
+    .be-horeca { margin-left: auto; }
+
+    /* Телефон и планшет: кнопки под палец, подписи не мельче 12px, поле без зума iOS */
+    @media (max-width: 768px), (pointer: coarse) {
+      .beer-card-image-badge { font-size: 0.75rem; }
+      .beer-card-footer .btn-sm { min-height: 44px; }
+      .be-reset { min-height: 40px; }
+      .be-search .input { font-size: 16px; padding-right: 44px; }
+      .be-clear { right: 2px; width: 40px; height: 40px; padding: 0; }
+    }
+
+    @media (max-width: 640px) {
+      /* Фильтры одной строкой с прокруткой, как категории во «Всех напитках»: иначе они занимают весь первый экран */
+      .be-filters { flex-wrap: nowrap; overflow-x: auto; padding: 12px 14px; scrollbar-width: none; }
+      .be-filters::-webkit-scrollbar { display: none; }
+      .be-filters > * { flex-shrink: 0; white-space: nowrap; }
+    }
   `]
 })
 export class BrandExplorerComponent implements OnInit {
@@ -175,9 +203,9 @@ export class BrandExplorerComponent implements OnInit {
   /** Просит показать страницу сорта - маршрут выбирает AppComponent. */
   @Output() openBrand = new EventEmitter<string>();
 
-  brands = signal<Brand[]>([]);
+  brands = signal<Brand[]>(lastBrands ?? []);
   /** Пока false - скелет; "ничего не найдено" показываем только после загрузки. */
-  loaded = signal(false);
+  loaded = signal(lastBrands !== null);
   searchQuery = signal<string>('');
 
   readonly countOf = countOf;
@@ -190,19 +218,19 @@ export class BrandExplorerComponent implements OnInit {
   /** Режим живёт в адресе (?view=all): переживает перезагрузку и возврат со страницы сорта. */
   private readonly modeInUrl = effect(() => syncCatalogMode(this.mode()));
   readonly skeletonCards = [1, 2, 3, 4, 5, 6];
+  /** Сколько первых фото грузить сразу: первый ряд сетки на широком экране. */
+  readonly eagerImages = 3;
   selectedPackaging = signal<string>('');
   onlyHoreca = signal<boolean>(false);
 
   filteredBrands = computed(() => {
-    const q = this.searchQuery().trim().toLowerCase();
+    const q = this.searchQuery();
     const pack = this.selectedPackaging();
     const horeca = this.onlyHoreca();
 
     return this.brands().filter(b => {
-      const matchSearch = !q ||
-        b.name.toLowerCase().includes(q) ||
-        (b.style && b.style.toLowerCase().includes(q)) ||
-        (b.brand_owner && b.brand_owner.toLowerCase().includes(q));
+      // «эфес», «козел», «бавария» находят Efes, Kozel, Bavaria: кириллица и латиница сравниваются по одному ключу
+      const matchSearch = matchesSearch(q, b.name, b.style, b.brand_owner);
       const matchPack = !pack || b.packaging_type === pack;
       const matchHoreca = !horeca || b.is_horeca_only;
       return matchSearch && matchPack && matchHoreca;
@@ -210,10 +238,16 @@ export class BrandExplorerComponent implements OnInit {
   });
 
   ngOnInit() {
+    // Каталог снова на экране: переход, который до страницы сорта не дошёл («Назад», пока грузился её чанк), не в счёт
+    noteOpenFromCatalog(null);
     this.v2.meta().subscribe({ next: m => this.drinksTotal.set(m.drinks || null), error: () => {} });
     this.api.getBrands().subscribe({
       // Снятые с публикации сорта в каталог не попадают
-      next: data => { this.brands.set(data.filter(b => b.is_active !== false)); this.loaded.set(true); },
+      next: data => {
+        lastBrands = data.filter(b => b.is_active !== false);
+        this.brands.set(lastBrands);
+        this.loaded.set(true);
+      },
       error: () => this.loaded.set(true),
     });
   }
@@ -231,6 +265,8 @@ export class BrandExplorerComponent implements OnInit {
 
   /** Каталог и подбор ведут на одну и ту же страницу сорта. */
   openBrandDetail(brand: Brand) {
+    // «Все сорта» на странице сорта тогда вернётся сюда шагом назад, с той же прокруткой
+    noteOpenFromCatalog(brand.id);
     this.selection.open(brand.id);
     this.openBrand.emit(brand.id);
   }

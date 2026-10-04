@@ -503,6 +503,9 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 var(--container-padding);
+  /* iPhone боком: с viewport-fit=cover край уходит под вырез экрана, поэтому отступ не меньше safe-area */
+  padding-left: max(var(--container-padding), env(safe-area-inset-left));
+  padding-right: max(var(--container-padding), env(safe-area-inset-right));
 }
 
 .nav-bar {
@@ -646,6 +649,8 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   flex-shrink: 0;
   justify-content: flex-start;
   padding: var(--space-md) var(--space-lg);
+  /* Длинный логин без пробелов переносится внутри кнопки */
+  overflow-wrap: anywhere;
 }
 
 .nav-mobile-backdrop {
@@ -667,9 +672,12 @@ h4 { font-size: 1.1rem; font-weight: 600; }
   transition: opacity var(--duration-normal) ease;
 }
 
-/* Пока открыто мобильное меню, страница под ним не прокручивается */
-body:has(.nav-mobile-menu.open) {
-  overflow: hidden;
+/* Пока открыто мобильное меню, страница под ним не прокручивается. Шире 1023px меню не показывается:
+   планшет повернули с открытым меню, и страница не остаётся запертой */
+@media (max-width: 1023px) {
+  body:has(.nav-mobile-menu.open) {
+    overflow: hidden;
+  }
 }
 
 /* Нижняя панель разделов: на десктопе разделы в шапке, поэтому её нет */
@@ -1120,6 +1128,12 @@ body:has(.nav-mobile-menu.open) {
     padding: var(--space-md) var(--space-lg);
   }
 
+  /* Служебные подписи на телефоне не мельче 12px */
+  .beer-card-image .badge,
+  .pairing-versus-label {
+    font-size: 0.75rem;
+  }
+
   .beer-card {
     grid-template-columns: 100px 1fr;
     gap: var(--space-md);
@@ -1171,6 +1185,33 @@ body:has(.nav-mobile-menu.open) {
 
   .stat-number {
     font-size: 1.8rem;
+  }
+}
+
+/* Планшет и телефон боком (769-1023px): логотип, разделы и вход в одну строку не помещаются
+   (у сотрудника шапке нужно больше 1000px, и телефон уменьшает всю страницу). Шапка как на телефоне:
+   логотип и гамбургер, разделы и вход в выезжающем меню */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .nav-tabs {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: flex;
+  }
+
+  .nav-mobile-menu {
+    display: flex;
+  }
+
+  .nav-mobile-backdrop {
+    display: block;
+  }
+
+  /* Открытое меню: кнопка сомелье не лезет поверх него */
+  .nav-mobile-menu.open ~ app-sommelier-chat .ai-fab {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
@@ -1252,6 +1293,8 @@ body:has(.nav-mobile-menu.open) {
   font-size: 0.88rem;
   line-height: 1.45;
   margin-bottom: var(--space-lg);
+  /* Длинный email или логин в ответе сервера переносится, а не раздвигает карточку */
+  overflow-wrap: anywhere;
 }
 
 .auth-consent {
@@ -1285,6 +1328,7 @@ body:has(.nav-mobile-menu.open) {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--success);
+  overflow-wrap: anywhere;
 }
 
 .auth-feedback.error {
@@ -1406,6 +1450,12 @@ body:has(.nav-mobile-menu.open) {
   font-weight: 800;
 }
 
+/* Длинный логин без пробелов переносится, а не растягивает карточку профиля */
+.profile-id {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .profile-list {
   margin-bottom: var(--space-xl);
 }
@@ -1437,7 +1487,7 @@ body:has(.nav-mobile-menu.open) {
 
 @media (max-width: 860px) {
   .profile-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1718,9 +1768,10 @@ ft-select { display: block; position: relative; width: 100%; }
 .ai-fab:focus-visible { outline: none; box-shadow: var(--shadow-glow), 0 14px 32px -10px rgba(180, 83, 9, 0.6); }
 .ai-fab svg { flex-shrink: 0; }
 .ai-fab-open { display: none; }
-/* Меню заведения: пока гость листает вниз, кнопка уходит и не закрывает «Добавить в заказ» у правого края */
-.ai-fab.ai-fab-tucked { opacity: 0; transform: translateY(24px) scale(0.85); pointer-events: none; }
-.ai-fab.ai-fab-tucked:focus-visible { opacity: 1; transform: none; pointer-events: auto; }
+/* Меню заведения: пока гость листает вниз, кнопка уходит и не закрывает «Добавить в заказ» у правого края.
+   ai-fab-away: на телефоне кнопка встала поверх отправки формы или поля ввода (проверяет сам чат) */
+.ai-fab.ai-fab-tucked, .ai-fab.ai-fab-away { opacity: 0; transform: translateY(24px) scale(0.85); pointer-events: none; }
+.ai-fab.ai-fab-tucked:focus-visible, .ai-fab.ai-fab-away:focus-visible { opacity: 1; transform: none; pointer-events: auto; }
 
 /* Боковая панель на десктопе */
 .ai-sheet {
@@ -1766,6 +1817,7 @@ ft-select { display: block; position: relative; width: 100%; }
   text-align: center;
 }
 .ai-status-on { color: var(--success); background: var(--success-bg); border-color: rgba(22, 163, 74, 0.2); }
+.ai-status-short { display: none; }
 .ai-icon-btn { flex-shrink: 0; color: var(--muted); }
 .ai-icon-btn:hover { color: var(--foam); background: var(--beer-glow); }
 
@@ -1994,6 +2046,47 @@ ft-select { display: block; position: relative; width: 100%; }
   .ai-msg { max-width: 94%; }
 }
 
+/* Сенсорный экран: кнопки чата под палец («Закрыть» 44px, остальные 40px), мелкий текст не меньше 12px */
+@media (max-width: 768px), (pointer: coarse) {
+  .ai-head { padding: max(10px, env(safe-area-inset-top)) 6px 10px 16px; gap: 6px; }
+  .ai-icon-btn { min-width: 40px; min-height: 40px; }
+  .ai-icon-btn:last-child { min-width: 44px; min-height: 44px; }
+  .ai-chip, .ai-pref, .ai-card-btn, .ai-card-link, .ai-retry { min-height: 40px; }
+  .ai-status, .ai-card-kind, .ai-score-num, .ai-note, .ai-foot-note { font-size: 0.75rem; }
+}
+
+/* Узкий телефон: вместо «Ответы по вкусовому движку» шириной 152px «Вкусовой движок» в две строки
+   по длине слова, иначе подпись «Совет по каталогу сортов» обрезается до «Совет по кат…» */
+@media (max-width: 480px) {
+  .ai-status:not(.ai-status-on) { width: min-content; }
+  .ai-status-long { display: none; }
+  .ai-status-short { display: inline; }
+}
+
+/* Открыта экранная клавиатура (класс и размер по visualViewport ставит чат): лист занимает видимую часть
+   экрана, остаются шапка, лента и поле ввода. Подсказки и пожелания вернутся, когда клавиатура закроется */
+.ai-sheet.ai-kb { bottom: auto; }
+.ai-kb .ai-chips, .ai-kb .ai-prefs, .ai-kb .ai-foot-note { display: none; }
+
+/* Телефон боком шире 768px: нижней панели нет, и пилюля «Сомелье» 135x52 стояла поверх чипсов
+   и карточек у правого края. Здесь кнопка круглая и без подписи, как на телефоне, и не заходит под вырез iPhone */
+@media (min-width: 769px) and (max-height: 500px) and (pointer: coarse) {
+  .ai-fab { right: calc(16px + env(safe-area-inset-right)); width: 50px; min-height: 50px; padding: 0; justify-content: center; }
+  .ai-fab-label { display: none; }
+}
+
+/* Телефон боком (низкий экран): лист во весь экран, подсказки и пожелания в одной строке,
+   иначе на ленту остаётся пара строк */
+@media (max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
+  .ai-sheet { inset: 0; width: 100%; border-left: none; padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left); }
+  .ai-head { padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: 6px; }
+  .ai-list { padding-top: 10px; padding-bottom: 10px; }
+  .ai-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding-top: 8px; }
+  .ai-input-row, .ai-foot-note { grid-column: 1 / -1; }
+  .ai-prefs { flex-wrap: nowrap; }
+  body:has(.ai-sheet) { overflow: hidden; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ai-sheet { animation: none; }
   .ai-typing span { animation: none; opacity: 0.7; }
@@ -2007,8 +2100,8 @@ ft-select { display: block; position: relative; width: 100%; }
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 4px;
     position: fixed;
-    left: 12px;
-    right: 12px;
+    left: calc(12px + env(safe-area-inset-left));
+    right: calc(12px + env(safe-area-inset-right));
     bottom: calc(10px + env(safe-area-inset-bottom));
     /* Под подложкой мобильного меню (89): открытое меню её притеняет */
     z-index: 88;
@@ -2037,7 +2130,7 @@ ft-select { display: block; position: relative; width: 100%; }
     background: transparent;
     color: var(--foam-dim);
     font-family: var(--font-body);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -2087,6 +2180,23 @@ ft-select { display: block; position: relative; width: 100%; }
     pointer-events: none;
   }
 
+  /* Открыт лист или окно любой страницы (dialog[open], aria-modal): кнопка сомелье не висит над ним.
+     Странице ничего добавлять не нужно */
+  body:has(dialog[open], [aria-modal='true']) .ai-fab {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Чат открыт на весь экран: страница под ним не прокручивается */
+  body:has(.ai-sheet) {
+    overflow: hidden;
+  }
+
+  /* scrollIntoView и фокус не оставляют элемент под нижней панелью */
+  html {
+    scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
   /* iOS Safari увеличивает страницу при фокусе на поле со шрифтом меньше 16px */
   input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
   select,
@@ -2119,11 +2229,9 @@ ft-select { display: block; position: relative; width: 100%; }
 
   /* Текстовые ссылки-кнопки («Зарегистрироваться», «Войти»): зона нажатия выше строки */
   .auth-link {
-    padding: 10px 4px;
-    margin: -10px -4px;
+    padding: 12px 4px;
+    margin: -12px -4px;
   }
-
-  .ai-pref { min-height: 36px; }
 
   /* Пузырьков вдвое меньше */
   .bubble:nth-child(n + 10) {
@@ -2156,7 +2264,63 @@ ft-select { display: block; position: relative; width: 100%; }
 @media (max-width: 360px) {
   .p-2xl { padding: var(--space-xl) var(--space-lg); }
   .tabbar { left: 8px; right: 8px; gap: 2px; padding: 5px; }
-  .tabbar-item { padding: 4px 0; font-size: 0.69rem; }
+  .tabbar-item { padding: 4px 0; }
+}
+
+/* Телефон боком (низкий экран): шапка уезжает при прокрутке, нижняя панель в одну строку.
+   Иначе шапка и панель вдвоём занимают почти половину экрана */
+@media (max-width: 768px) and (max-height: 500px) {
+  .tabbar { bottom: calc(6px + env(safe-area-inset-bottom)); padding: 4px; }
+  .tabbar-item { flex-direction: row; gap: 6px; min-height: 40px; }
+  .tabbar ~ app-sommelier-chat .ai-fab { width: 50px; min-height: 50px; bottom: calc(64px + env(safe-area-inset-bottom)); }
+}
+
+/* Шапка не липнет на низком экране: и на телефоне боком шире 768px, и в меню заведения (там полоса меню
+   с корзиной сама липнет к верху экрана, menu.css). top остаётся: у верха страницы шапка на прежнем месте */
+@media (max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
+  .nav-container { position: relative; }
+}
+
+/* Планшет и телефон боком шире 768px: iOS так же увеличивает страницу при фокусе на поле мельче 16px */
+@media (min-width: 769px) and (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  .auth-link {
+    padding: 12px 4px;
+    margin: -12px -4px;
+  }
+}
+
+/* Сенсорный экран (телефон, планшет, телефон боком): маленькие кнопки под палец, подписи от 12px */
+@media (max-width: 768px), (pointer: coarse) {
+  .btn-amber.btn-sm,
+  .btn-outline.btn-sm {
+    min-height: 40px;
+  }
+
+  .profile-actions .btn-ghost {
+    min-height: 44px;
+  }
+
+  .nav-brand-sub,
+  .auth-demo-title,
+  .pairing-versus-label {
+    font-size: 0.75rem;
+  }
+
+  /* Строка подписи той же высоты, что при 0.7rem: шапка не растёт */
+  .nav-brand-sub {
+    line-height: calc(0.7rem * 1.6);
+  }
+
+  /* Окно 21+ открыто: страница под ним не прокручивается (листы каталога и меню делают это сами) */
+  body:has(.ag-dialog[open]) {
+    overflow: hidden;
+  }
 }
 
 @media (max-width: 768px) and (prefers-reduced-motion: reduce) {
