@@ -1,0 +1,5923 @@
+{
+ "_meta": {
+  "generated_at": "2026-09-22T22:30:38Z",
+  "script": "scripts/fetch_dish_photos.py",
+  "dishes_with_photo": 127,
+  "traditional_drinks": 0,
+  "by_source": {
+   "commons": 127
+  },
+  "by_license": {
+   "CC0 1.0": 15,
+   "CC BY 4.0": 8,
+   "CC BY 2.0": 27,
+   "CC BY-SA 3.0": 11,
+   "CC BY-SA 4.0": 52,
+   "CC BY-SA 2.0": 12,
+   "Public domain": 2
+  },
+  "large": {
+   "size": "1200x900",
+   "format": "webp",
+   "quality": 78,
+   "max_bytes": 130000
+  },
+  "square": {
+   "size": "480x480",
+   "format": "webp",
+   "quality": 78,
+   "max_bytes": 40000
+  },
+  "grade": {
+   "warmth": 0.035,
+   "contrast": 1.06,
+   "saturation": 1.04,
+   "vignette": 0.1,
+   "unsharp": {
+    "radius": 1.2,
+    "percent": 55,
+    "threshold": 3
+   }
+  },
+  "min_short_side_px": 900,
+  "allowed_licenses": [
+   "CC0",
+   "Public domain",
+   "CC BY *",
+   "CC BY-SA *"
+  ],
+  "no_photo": {
+   "zhaya": "На Commons и в Openverse нет свободных фото жая (вяленый конский окорок); подменять похожей нарезкой не стали.",
+   "shuzhyk": "Свободные фото есть только для турецкого/армянского суджука - это другой продукт, не казахский шужык.",
+   "irimshik": "Свободных фото иримшика не найдено (поиск по irimshik / ірімшік / казахская кухня даёт только другие сыры).",
+   "kuyrdak": "Единственное свободное фото (1280×960, CC BY-SA 2.0) - казан с рукой повара в кадре; ниже порога качества и разрешения.",
+   "kuyrdak-liver": "См. kuyrdak - подходящего фото нет.",
+   "ganfan": "Фото ганфана (дунганская кухня) в свободных источниках нет."
+  },
+  "note": "Производные файлы под CC BY-SA распространяются на условиях той же лицензии (derivative_license)."
+ },
+ "achichuk": {
+  "large": "img/dishes/achichuk.webp",
+  "square": "img/dishes/achichuk-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Ачичук",
+  "cuisine": "Среднеазиатская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%90%D1%87%D1%96%D0%BA-%D1%87%D1%83%D1%87%D1%83%D0%BA.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/%D0%90%D1%87%D1%96%D0%BA-%D1%87%D1%83%D1%87%D1%83%D0%BA.jpg",
+  "original_title": "File:Ачік-чучук.jpg",
+  "author": "Olexdj",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Olexdj, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    204,
+    153,
+    3876,
+    2907
+   ],
+   "square": [
+    663,
+    153,
+    3417,
+    2907
+   ],
+   "source_size": [
+    4080,
+    3060
+   ]
+  },
+  "bytes": {
+   "large": 119194,
+   "square": 36626
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:52Z"
+ },
+ "apple-pie": {
+  "large": "img/dishes/apple-pie.webp",
+  "square": "img/dishes/apple-pie-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Яблочный пирог",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Apple_pie_44.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/de/Apple_pie_44.jpg",
+  "original_title": "File:Apple pie 44.jpg",
+  "author": "Shisma",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Shisma, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    202,
+    212,
+    3830,
+    2933
+   ],
+   "square": [
+    655,
+    212,
+    3377,
+    2933
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 80108,
+   "square": 23266
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:36Z"
+ },
+ "ashlyam-fu": {
+  "large": "img/dishes/ashlyam-fu.webp",
+  "square": "img/dishes/ashlyam-fu-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Ашлям-фу",
+  "cuisine": "Китайская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Karakol_-_247_(49359622038).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Karakol_-_247_%2849359622038%29.jpg",
+  "original_title": "File:Karakol - 247 (49359622038).jpg",
+  "author": "Bruno Rijsman",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Bruno Rijsman, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    547,
+    182,
+    4925,
+    3466
+   ],
+   "square": [
+    1094,
+    182,
+    4378,
+    3466
+   ],
+   "source_size": [
+    5472,
+    3648
+   ]
+  },
+  "bytes": {
+   "large": 122790,
+   "square": 38684
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 62
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:41Z"
+ },
+ "asparagus-grilled": {
+  "large": "img/dishes/asparagus-grilled.webp",
+  "square": "img/dishes/asparagus-grilled-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Спаржа на гриле",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Grilled_Asparagus_(13917724779).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/10/Grilled_Asparagus_%2813917724779%29.jpg",
+  "original_title": "File:Grilled Asparagus (13917724779).jpg",
+  "author": "Ralph Daily from Birmingham, United States",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Ralph Daily from Birmingham, United States, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    435,
+    142,
+    3853,
+    2706
+   ],
+   "square": [
+    862,
+    142,
+    3426,
+    2706
+   ],
+   "source_size": [
+    4288,
+    2848
+   ]
+  },
+  "bytes": {
+   "large": 101844,
+   "square": 33236
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:51Z"
+ },
+ "baklava": {
+  "large": "img/dishes/baklava.webp",
+  "square": "img/dishes/baklava-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Пахлава",
+  "cuisine": "Турецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D8%A8%D9%82%D9%84%D8%A7%D9%88%D8%A9_(%D8%AD%D9%84%D9%88%D9%89_%D8%B4%D8%B1%D9%82%D9%8A%D8%A9).JPG",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/a8/%D8%A8%D9%82%D9%84%D8%A7%D9%88%D8%A9_%28%D8%AD%D9%84%D9%88%D9%89_%D8%B4%D8%B1%D9%82%D9%8A%D8%A9%29.JPG",
+  "original_title": "File:بقلاوة (حلوى شرقية).JPG",
+  "author": "Fadyatef",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Fadyatef, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    397,
+    82,
+    4531,
+    3182
+   ],
+   "square": [
+    914,
+    82,
+    4014,
+    3182
+   ],
+   "source_size": [
+    4928,
+    3264
+   ]
+  },
+  "bytes": {
+   "large": 123932,
+   "square": 37650
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:27:57Z"
+ },
+ "baursaki": {
+  "large": "img/dishes/baursaki.webp",
+  "square": "img/dishes/baursaki-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Баурсаки",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%BE%D2%9B%D0%B0%D1%88(%D0%B1%D0%B0%D1%83%D1%8B%D1%80%D1%81%D0%B0%D2%9B).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/3b/%D0%A2%D0%BE%D2%9B%D0%B0%D1%88%28%D0%B1%D0%B0%D1%83%D1%8B%D1%80%D1%81%D0%B0%D2%9B%29.jpg",
+  "original_title": "File:Тоқаш(бауырсақ).jpg",
+  "author": "Bbj",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Bbj, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    156,
+    819,
+    2964,
+    2925
+   ],
+   "square": [
+    156,
+    468,
+    2964,
+    3276
+   ],
+   "source_size": [
+    3120,
+    4160
+   ]
+  },
+  "bytes": {
+   "large": 114664,
+   "square": 25018
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:18:48Z"
+ },
+ "baursaki-kaimak": {
+  "large": "img/dishes/baursaki-kaimak.webp",
+  "square": "img/dishes/baursaki-kaimak-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Баурсаки с каймаком",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Kazakh_Baursak.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Kazakh_Baursak.jpg",
+  "original_title": "File:Kazakh Baursak.jpg",
+  "author": "Kurmanbek",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Kurmanbek, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    458,
+    412,
+    3387,
+    2609
+   ],
+   "square": [
+    824,
+    412,
+    3021,
+    2609
+   ],
+   "source_size": [
+    3845,
+    2746
+   ]
+  },
+  "bytes": {
+   "large": 82150,
+   "square": 25526
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:18:50Z",
+  "note": "в центре пиала с каймаком"
+ },
+ "bbq-ribs": {
+  "large": "img/dishes/bbq-ribs.webp",
+  "square": "img/dishes/bbq-ribs-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Рёбрышки BBQ",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Pork-ribs_02.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/84/Pork-ribs_02.jpg",
+  "original_title": "File:Pork-ribs 02.jpg",
+  "author": "Pannet",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Pannet, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    305,
+    79,
+    4303,
+    3077
+   ],
+   "square": [
+    805,
+    79,
+    3803,
+    3077
+   ],
+   "source_size": [
+    4608,
+    3156
+   ]
+  },
+  "bytes": {
+   "large": 114432,
+   "square": 29032
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:21:26Z"
+ },
+ "bbq-wings": {
+  "large": "img/dishes/bbq-wings.webp",
+  "square": "img/dishes/bbq-wings-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Куриные крылышки BBQ",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Chicken_wings_meal_at_Siipiweikot.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/09/Chicken_wings_meal_at_Siipiweikot.jpg",
+  "original_title": "File:Chicken wings meal at Siipiweikot.jpg",
+  "author": "JIP",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: JIP, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    461,
+    1037,
+    3686,
+    3456
+   ],
+   "square": [
+    864,
+    1037,
+    3283,
+    3456
+   ],
+   "source_size": [
+    4608,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 62848,
+   "square": 21918
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:26:37Z",
+  "note": "стакан сверху за кадром"
+ },
+ "beef-tartare": {
+  "large": "img/dishes/beef-tartare.webp",
+  "square": "img/dishes/beef-tartare-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Тартар из говядины",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:2019_-_ContentMakers_dinner_-_Day_2_CG1_1671_(49025770076).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/f/f0/2019_-_ContentMakers_dinner_-_Day_2_CG1_1671_%2849025770076%29.jpg",
+  "original_title": "File:2019 - ContentMakers dinner - Day 2 CG1 1671 (49025770076).jpg",
+  "author": "Web Summit",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Web Summit, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    715,
+    492,
+    4213,
+    3116
+   ],
+   "square": [
+    1152,
+    492,
+    3776,
+    3116
+   ],
+   "source_size": [
+    4928,
+    3280
+   ]
+  },
+  "bytes": {
+   "large": 54934,
+   "square": 19792
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:53Z"
+ },
+ "berries-dessert": {
+  "large": "img/dishes/berries-dessert.webp",
+  "square": "img/dishes/berries-dessert-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Ягодный десерт / фруктовый тарт",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Berries,_lemon_sorbet_and_agar_jelly._A_beautiful_and_delicious_dessert_at_Otto!_(5042970449).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/07/Berries%2C_lemon_sorbet_and_agar_jelly._A_beautiful_and_delicious_dessert_at_Otto%21_%285042970449%29.jpg",
+  "original_title": "File:Berries, lemon sorbet and agar jelly. A beautiful and delicious dessert at Otto! (5042970449).jpg",
+  "author": "Sharon from Sydney, Australia",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: Sharon from Sydney, Australia, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    182,
+    137,
+    3466,
+    2599
+   ],
+   "square": [
+    593,
+    137,
+    3055,
+    2599
+   ],
+   "source_size": [
+    3648,
+    2736
+   ]
+  },
+  "bytes": {
+   "large": 41412,
+   "square": 15646
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:49Z"
+ },
+ "beshbarmak": {
+  "large": "img/dishes/beshbarmak.webp",
+  "square": "img/dishes/beshbarmak-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Бешбармак",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%91%D0%B5%D1%88%D0%B1%D0%B0%D1%80%D0%BC%D0%B0%D0%BA_-_%D0%BA%D0%B0%D0%B7%D0%B0%D1%85%D1%81%D0%BA%D0%BE%D0%B5_%D0%BD%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D0%B1%D0%BB%D1%8E%D0%B4%D0%BE.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/81/%D0%91%D0%B5%D1%88%D0%B1%D0%B0%D1%80%D0%BC%D0%B0%D0%BA_-_%D0%BA%D0%B0%D0%B7%D0%B0%D1%85%D1%81%D0%BA%D0%BE%D0%B5_%D0%BD%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D0%B1%D0%BB%D1%8E%D0%B4%D0%BE.jpg",
+  "original_title": "File:Бешбармак - казахское национальное блюдо.jpg",
+  "author": "NataAllice",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: NataAllice, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    518,
+    173,
+    4666,
+    3283
+   ],
+   "square": [
+    1037,
+    173,
+    4147,
+    3283
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 129676,
+   "square": 39574
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:17:32Z"
+ },
+ "blini-caviar": {
+  "large": "img/dishes/blini-caviar.webp",
+  "square": "img/dishes/blini-caviar-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Блины с икрой",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Blin_with_red_caviar_by_shakko_02.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/67/Blin_with_red_caviar_by_shakko_02.jpg",
+  "original_title": "File:Blin with red caviar by shakko 02.jpg",
+  "author": "shakko",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: shakko, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    154,
+    115,
+    2918,
+    2189
+   ],
+   "square": [
+    499,
+    115,
+    2573,
+    2189
+   ],
+   "source_size": [
+    3072,
+    2304
+   ]
+  },
+  "bytes": {
+   "large": 129256,
+   "square": 34768
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:58Z"
+ },
+ "blue-cheese": {
+  "large": "img/dishes/blue-cheese.webp",
+  "square": "img/dishes/blue-cheese-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Голубой сыр (горгонзола, рокфор, стилтон)",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:2015-01-25_Blaue_Geiss_-_Toggenburg_-_der_Schweizer_-_hu_-_8021.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b5/2015-01-25_Blaue_Geiss_-_Toggenburg_-_der_Schweizer_-_hu_-_8021.jpg",
+  "original_title": "File:2015-01-25 Blaue Geiss - Toggenburg - der Schweizer - hu - 8021.jpg",
+  "author": "Hubertl",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Hubertl, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    97,
+    293,
+    3776,
+    3052
+   ],
+   "square": [
+    348,
+    84,
+    3525,
+    3261
+   ],
+   "source_size": [
+    3873,
+    3345
+   ]
+  },
+  "bytes": {
+   "large": 124684,
+   "square": 39840
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 62
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:08Z"
+ },
+ "borsch": {
+  "large": "img/dishes/borsch.webp",
+  "square": "img/dishes/borsch-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Борщ",
+  "cuisine": "Украинская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%9A%D1%83%D0%B1%D0%B0%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B1%D0%BE%D1%80%D1%89.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b1/%D0%9A%D1%83%D0%B1%D0%B0%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B1%D0%BE%D1%80%D1%89.jpg",
+  "original_title": "File:Кубанский борщ.jpg",
+  "author": "Pannet",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Pannet, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    0,
+    239,
+    3618,
+    2953
+   ],
+   "square": [
+    297,
+    239,
+    3010,
+    2953
+   ],
+   "source_size": [
+    4593,
+    3192
+   ]
+  },
+  "bytes": {
+   "large": 97562,
+   "square": 28408
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:25:13Z"
+ },
+ "bratwurst": {
+  "large": "img/dishes/bratwurst.webp",
+  "square": "img/dishes/bratwurst-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Братвурст",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:D%C3%BClmen,_B%C3%BCrgerfest_2013_--_2013_--_3139.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/02/D%C3%BClmen%2C_B%C3%BCrgerfest_2013_--_2013_--_3139.jpg",
+  "original_title": "File:Dülmen, Bürgerfest 2013 -- 2013 -- 3139.jpg",
+  "author": "Dietmar Rabich",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Dietmar Rabich, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    642,
+    229,
+    4099,
+    2821
+   ],
+   "square": [
+    1074,
+    229,
+    3667,
+    2821
+   ],
+   "source_size": [
+    4741,
+    3050
+   ]
+  },
+  "bytes": {
+   "large": 122112,
+   "square": 35122
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:22:17Z"
+ },
+ "brie": {
+  "large": "img/dishes/brie.webp",
+  "square": "img/dishes/brie-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Бри / камамбер",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Wikicheese_-_Brie_de_Meaux_-_20150515_-_022.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/42/Wikicheese_-_Brie_de_Meaux_-_20150515_-_022.jpg",
+  "original_title": "File:Wikicheese - Brie de Meaux - 20150515 - 022.jpg",
+  "author": "Thesupermat",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Thesupermat, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    576,
+    192,
+    5184,
+    3648
+   ],
+   "square": [
+    1152,
+    192,
+    4608,
+    3648
+   ],
+   "source_size": [
+    5760,
+    3840
+   ]
+  },
+  "bytes": {
+   "large": 127232,
+   "square": 30914
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:11Z"
+ },
+ "brisket-smoked": {
+  "large": "img/dishes/brisket-smoked.webp",
+  "square": "img/dishes/brisket-smoked-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Брискет копчёный",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Smoked_Brisket_with_smoke_ring.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Smoked_Brisket_with_smoke_ring.jpg",
+  "original_title": "File:Smoked Brisket with smoke ring.jpg",
+  "author": "Johnsparks75",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Johnsparks75, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    504,
+    454,
+    3931,
+    3024
+   ],
+   "square": [
+    1215,
+    378,
+    3785,
+    2948
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 129066,
+   "square": 32612
+  },
+  "webp_quality": {
+   "large": 62,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:29:32Z"
+ },
+ "bruschetta": {
+  "large": "img/dishes/bruschetta.webp",
+  "square": "img/dishes/bruschetta-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Брускетта",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Caprese_Bruschetta_(14700996415).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Caprese_Bruschetta_%2814700996415%29.jpg",
+  "original_title": "File:Caprese Bruschetta (14700996415).jpg",
+  "author": "jeffreyw",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: jeffreyw, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    261,
+    0,
+    4201,
+    2955
+   ],
+   "square": [
+    754,
+    0,
+    3708,
+    2955
+   ],
+   "source_size": [
+    4462,
+    2955
+   ]
+  },
+  "bytes": {
+   "large": 91604,
+   "square": 32008
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:10Z"
+ },
+ "buffalo-wings": {
+  "large": "img/dishes/buffalo-wings.webp",
+  "square": "img/dishes/buffalo-wings-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Крылышки Buffalo",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Torches_Petaluma_-_July_2023_-_Sarah_Stierch_07.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Torches_Petaluma_-_July_2023_-_Sarah_Stierch_07.jpg",
+  "original_title": "File:Torches Petaluma - July 2023 - Sarah Stierch 07.jpg",
+  "author": "Missvain",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Missvain, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    0,
+    365,
+    2921,
+    2556
+   ],
+   "square": [
+    0,
+    0,
+    2921,
+    2921
+   ],
+   "source_size": [
+    2921,
+    2921
+   ]
+  },
+  "bytes": {
+   "large": 128500,
+   "square": 39188
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 66
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:30Z"
+ },
+ "burger": {
+  "large": "img/dishes/burger.webp",
+  "square": "img/dishes/burger-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Бургер",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Beautiful_Burger.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Beautiful_Burger.jpg",
+  "original_title": "File:Beautiful Burger.jpg",
+  "author": "Marshall Astor from Olympia, WA, United States",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: Marshall Astor from Olympia, WA, United States, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    314,
+    94,
+    3203,
+    2261
+   ],
+   "square": [
+    675,
+    94,
+    2842,
+    2261
+   ],
+   "source_size": [
+    3256,
+    2355
+   ]
+  },
+  "bytes": {
+   "large": 98830,
+   "square": 34338
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:02Z"
+ },
+ "burrata": {
+  "large": "img/dishes/burrata.webp",
+  "square": "img/dishes/burrata-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Буррата",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Burrata_cheese.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Burrata_cheese.jpg",
+  "original_title": "File:Burrata cheese.jpg",
+  "author": "lazy fri13th",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: lazy fri13th, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    202,
+    151,
+    3830,
+    2873
+   ],
+   "square": [
+    655,
+    151,
+    3377,
+    2873
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 60642,
+   "square": 19596
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:20Z"
+ },
+ "burrito": {
+  "large": "img/dishes/burrito.webp",
+  "square": "img/dishes/burrito-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Буррито",
+  "cuisine": "Мексиканская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:La_Casa_Restaurant_-_Sarah_Stierch_-_July_2019_01.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/95/La_Casa_Restaurant_-_Sarah_Stierch_-_July_2019_01.jpg",
+  "original_title": "File:La Casa Restaurant - Sarah Stierch - July 2019 01.jpg",
+  "author": "Missvain",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Missvain, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    202,
+    151,
+    3830,
+    2873
+   ],
+   "square": [
+    655,
+    151,
+    3377,
+    2873
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 62506,
+   "square": 21838
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:44Z"
+ },
+ "caesar-salad": {
+  "large": "img/dishes/caesar-salad.webp",
+  "square": "img/dishes/caesar-salad-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Салат «Цезарь» с курицей",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Ensalada_Cesar.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Ensalada_Cesar.jpg",
+  "original_title": "File:Ensalada Cesar.jpg",
+  "author": "Tamorlan",
+  "license": "CC BY-SA 3.0",
+  "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+  "attribution_ru": "Фото: Tamorlan, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    531,
+    583,
+    3123,
+    2527
+   ],
+   "square": [
+    855,
+    583,
+    2799,
+    2527
+   ],
+   "source_size": [
+    3888,
+    2592
+   ]
+  },
+  "bytes": {
+   "large": 67644,
+   "square": 28868
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:33Z",
+  "note": "бутылки сверху за кадром"
+ },
+ "calamari-rings": {
+  "large": "img/dishes/calamari-rings.webp",
+  "square": "img/dishes/calamari-rings-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Кальмары в кляре",
+  "cuisine": "Испанская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Fried_squid;_Calamares_fritos_(Las_Siete_Orillas_project)_(1).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/97/Fried_squid%3B_Calamares_fritos_%28Las_Siete_Orillas_project%29_%281%29.jpg",
+  "original_title": "File:Fried squid; Calamares fritos (Las Siete Orillas project) (1).jpg",
+  "author": "El Mono Español",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: El Mono Español, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    69,
+    1866,
+    3180,
+    4199
+   ],
+   "square": [
+    173,
+    1719,
+    3110,
+    4657
+   ],
+   "source_size": [
+    3456,
+    5184
+   ]
+  },
+  "bytes": {
+   "large": 72794,
+   "square": 27844
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:18Z",
+  "note": "бокал пива сверху за кадром"
+ },
+ "caprese": {
+  "large": "img/dishes/caprese.webp",
+  "square": "img/dishes/caprese-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Капрезе",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Caprese_salad_in_homemade.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Caprese_salad_in_homemade.jpg",
+  "original_title": "File:Caprese salad in homemade.jpg",
+  "author": "spiralmushroom",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: spiralmushroom, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    171,
+    0,
+    2837,
+    2000
+   ],
+   "square": [
+    504,
+    0,
+    2504,
+    2000
+   ],
+   "source_size": [
+    3008,
+    2000
+   ]
+  },
+  "bytes": {
+   "large": 86362,
+   "square": 29740
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:24Z"
+ },
+ "carbonara": {
+  "large": "img/dishes/carbonara.webp",
+  "square": "img/dishes/carbonara-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Паста Карбонара",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Spaghetti_Carbonara_von_Unico_Tauberbischofsheim.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/c/cd/Spaghetti_Carbonara_von_Unico_Tauberbischofsheim.jpg",
+  "original_title": "File:Spaghetti Carbonara von Unico Tauberbischofsheim.jpg",
+  "author": "Triplec85",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Triplec85, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    182,
+    137,
+    3466,
+    2599
+   ],
+   "square": [
+    593,
+    137,
+    3055,
+    2599
+   ],
+   "source_size": [
+    3648,
+    2736
+   ]
+  },
+  "bytes": {
+   "large": 122454,
+   "square": 39284
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:07Z"
+ },
+ "carrot-cake": {
+  "large": "img/dishes/carrot-cake.webp",
+  "square": "img/dishes/carrot-cake-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Морковный торт",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Torta_de_zanahoria.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Torta_de_zanahoria.jpg",
+  "original_title": "File:Torta de zanahoria.jpg",
+  "author": "Muago",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Muago, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    312,
+    0,
+    3848,
+    2652
+   ],
+   "square": [
+    754,
+    0,
+    3406,
+    2652
+   ],
+   "source_size": [
+    4160,
+    3120
+   ]
+  },
+  "bytes": {
+   "large": 102568,
+   "square": 33448
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:37Z"
+ },
+ "ceviche": {
+  "large": "img/dishes/ceviche.webp",
+  "square": "img/dishes/ceviche-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Севиче",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Ceviche_at_the_Municipal_Market_of_Sao_Paulo.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Ceviche_at_the_Municipal_Market_of_Sao_Paulo.jpg",
+  "original_title": "File:Ceviche at the Municipal Market of Sao Paulo.jpg",
+  "author": "Wilfredor",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Wilfredor, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    350,
+    187,
+    4848,
+    3561
+   ],
+   "square": [
+    912,
+    187,
+    4286,
+    3561
+   ],
+   "source_size": [
+    5198,
+    3748
+   ]
+  },
+  "bytes": {
+   "large": 126960,
+   "square": 35142
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:41Z"
+ },
+ "chak-chak": {
+  "large": "img/dishes/chak-chak.webp",
+  "square": "img/dishes/chak-chak-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Чак-чак",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%A7%D0%B0%D0%BA-%D1%87%D0%B0%D0%BA.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/db/%D0%A7%D0%B0%D0%BA-%D1%87%D0%B0%D0%BA.jpg",
+  "original_title": "File:Чак-чак.jpg",
+  "author": "Pannet",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Pannet, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    340,
+    78,
+    4284,
+    3036
+   ],
+   "square": [
+    833,
+    78,
+    3791,
+    3036
+   ],
+   "source_size": [
+    4624,
+    3114
+   ]
+  },
+  "bytes": {
+   "large": 125540,
+   "square": 39866
+  },
+  "webp_quality": {
+   "large": 62,
+   "square": 70
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:19:33Z"
+ },
+ "chebureki": {
+  "large": "img/dishes/chebureki.webp",
+  "square": "img/dishes/chebureki-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Чебуреки",
+  "cuisine": "Татарская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Chebureki_at_Pushkin_Literature_Restaurant,_Zhong_Guan_Cun_No.1_(20210714185521).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/85/Chebureki_at_Pushkin_Literature_Restaurant%2C_Zhong_Guan_Cun_No.1_%2820210714185521%29.jpg",
+  "original_title": "File:Chebureki at Pushkin Literature Restaurant, Zhong Guan Cun No.1 (20210714185521).jpg",
+  "author": "N509FZ",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: N509FZ, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    493,
+    336,
+    3539,
+    2621
+   ],
+   "square": [
+    874,
+    336,
+    3158,
+    2621
+   ],
+   "source_size": [
+    4032,
+    2688
+   ]
+  },
+  "bytes": {
+   "large": 122922,
+   "square": 37156
+  },
+  "webp_quality": {
+   "large": 66,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:13Z"
+ },
+ "cheese-aged": {
+  "large": "img/dishes/cheese-aged.webp",
+  "square": "img/dishes/cheese-aged-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Выдержанный сыр / рокфор",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Wikicheese_-_Roquefort_-_20150417_-_003.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Wikicheese_-_Roquefort_-_20150417_-_003.jpg",
+  "original_title": "File:Wikicheese - Roquefort - 20150417 - 003.jpg",
+  "author": "Thesupermat",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Thesupermat, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    576,
+    0,
+    5184,
+    3456
+   ],
+   "square": [
+    1210,
+    173,
+    4493,
+    3456
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 49696,
+   "square": 17624
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:56Z"
+ },
+ "cheese-plate": {
+  "large": "img/dishes/cheese-plate.webp",
+  "square": "img/dishes/cheese-plate-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Сырная тарелка",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:International_cheese_platters.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/International_cheese_platters.jpg",
+  "original_title": "File:International cheese platters.jpg",
+  "author": "Tim Reckmann",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Tim Reckmann, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    360,
+    77,
+    4272,
+    3011
+   ],
+   "square": [
+    849,
+    77,
+    3783,
+    3011
+   ],
+   "source_size": [
+    4632,
+    3088
+   ]
+  },
+  "bytes": {
+   "large": 88222,
+   "square": 26792
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:25:41Z"
+ },
+ "cheeseburger": {
+  "large": "img/dishes/cheeseburger.webp",
+  "square": "img/dishes/cheeseburger-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Чизбургер",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Hamburguesa_completa_argentina_con_queso_derretido.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Hamburguesa_completa_argentina_con_queso_derretido.jpg",
+  "original_title": "File:Hamburguesa completa argentina con queso derretido.jpg",
+  "author": "Horacio Cambeiro",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Horacio Cambeiro, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    200,
+    150,
+    3800,
+    2850
+   ],
+   "square": [
+    650,
+    150,
+    3350,
+    2850
+   ],
+   "source_size": [
+    4000,
+    3000
+   ]
+  },
+  "bytes": {
+   "large": 58194,
+   "square": 21778
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:07Z"
+ },
+ "cheesecake": {
+  "large": "img/dishes/cheesecake.webp",
+  "square": "img/dishes/cheesecake-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Чизкейк",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Cheesecake_dessert_(3250237208).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/39/Cheesecake_dessert_%283250237208%29.jpg",
+  "original_title": "File:Cheesecake dessert (3250237208).jpg",
+  "author": "Geoff Peters from Vancouver, BC, Canada",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Geoff Peters from Vancouver, BC, Canada, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    173,
+    115,
+    2938,
+    2189
+   ],
+   "square": [
+    518,
+    115,
+    2592,
+    2189
+   ],
+   "source_size": [
+    3456,
+    2304
+   ]
+  },
+  "bytes": {
+   "large": 54916,
+   "square": 17298
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:38Z"
+ },
+ "chicken-curry": {
+  "large": "img/dishes/chicken-curry.webp",
+  "square": "img/dishes/chicken-curry-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Карри с курицей",
+  "cuisine": "Индийская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Chicken_curry_Trivandrum.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Chicken_curry_Trivandrum.jpg",
+  "original_title": "File:Chicken curry Trivandrum.jpg",
+  "author": "Abhilashsnair",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Abhilashsnair, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    560,
+    270,
+    3840,
+    2730
+   ],
+   "square": [
+    970,
+    270,
+    3430,
+    2730
+   ],
+   "source_size": [
+    4000,
+    3000
+   ]
+  },
+  "bytes": {
+   "large": 96542,
+   "square": 36734
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:46Z"
+ },
+ "chili-con-carne": {
+  "large": "img/dishes/chili-con-carne.webp",
+  "square": "img/dishes/chili-con-carne-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Чили кон карне",
+  "cuisine": "Мексиканская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Chili_con_carne.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/14/Flickr_-_cyclonebill_-_Chili_con_carne.jpg",
+  "original_title": "File:Flickr - cyclonebill - Chili con carne.jpg",
+  "author": "cyclonebill",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: cyclonebill, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    948,
+    0,
+    3340,
+    1794
+   ],
+   "square": [
+    1247,
+    0,
+    3041,
+    1794
+   ],
+   "source_size": [
+    4288,
+    2848
+   ]
+  },
+  "bytes": {
+   "large": 129348,
+   "square": 35970
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:58Z",
+  "note": "без нижней части кастрюли"
+ },
+ "chocolate-fondant": {
+  "large": "img/dishes/chocolate-fondant.webp",
+  "square": "img/dishes/chocolate-fondant-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Шоколадный фондан",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%A8%D0%BE%D0%BA%D0%BE%D0%BB%D0%B0%D0%B4%D0%BD%D0%B8%D0%B9_%D1%84%D0%BE%D0%BD%D0%B4%D0%B0%D0%BD.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/72/%D0%A8%D0%BE%D0%BA%D0%BE%D0%BB%D0%B0%D0%B4%D0%BD%D0%B8%D0%B9_%D1%84%D0%BE%D0%BD%D0%B4%D0%B0%D0%BD.jpg",
+  "original_title": "File:Шоколадний фондан.jpg",
+  "author": "Ата",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Ата, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    458,
+    194,
+    3396,
+    2398
+   ],
+   "square": [
+    825,
+    194,
+    3029,
+    2398
+   ],
+   "source_size": [
+    3854,
+    2592
+   ]
+  },
+  "bytes": {
+   "large": 119468,
+   "square": 39270
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:42Z"
+ },
+ "churros": {
+  "large": "img/dishes/churros.webp",
+  "square": "img/dishes/churros-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Чуррос",
+  "cuisine": "Мексиканская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Churros._Vienna,_Austria._2016._(28768491952).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Churros._Vienna%2C_Austria._2016._%2828768491952%29.jpg",
+  "original_title": "File:Churros. Vienna, Austria. 2016. (28768491952).jpg",
+  "author": "Nico Kaiser from Wien, Austria",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Nico Kaiser from Wien, Austria, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    612,
+    250,
+    4392,
+    3086
+   ],
+   "square": [
+    1084,
+    250,
+    3920,
+    3086
+   ],
+   "source_size": [
+    5004,
+    3336
+   ]
+  },
+  "bytes": {
+   "large": 82582,
+   "square": 29338
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:22:05Z"
+ },
+ "cold-cuts": {
+  "large": "img/dishes/cold-cuts.webp",
+  "square": "img/dishes/cold-cuts-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Мясная нарезка",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Salame_ticinese.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Salame_ticinese.jpg",
+  "original_title": "File:Salame ticinese.jpg",
+  "author": "Zacharie Grossen",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Zacharie Grossen, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    792,
+    132,
+    3959,
+    2507
+   ],
+   "square": [
+    1188,
+    132,
+    3563,
+    2507
+   ],
+   "source_size": [
+    3959,
+    2639
+   ]
+  },
+  "bytes": {
+   "large": 126076,
+   "square": 37754
+  },
+  "webp_quality": {
+   "large": 66,
+   "square": 70
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:25:52Z",
+  "note": "нож с логотипом за кадром"
+ },
+ "crayfish-boiled": {
+  "large": "img/dishes/crayfish-boiled.webp",
+  "square": "img/dishes/crayfish-boiled-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Раки варёные",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Boiled_crawfish_036_-_Tony%27s_Seafood,_Baton_Rouge,_Louisiana.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/c/c6/Boiled_crawfish_036_-_Tony%27s_Seafood%2C_Baton_Rouge%2C_Louisiana.jpg",
+  "original_title": "File:Boiled crawfish 036 - Tony's Seafood, Baton Rouge, Louisiana.jpg",
+  "author": "Louisiana Sea Grant College Program Louisiana State University",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Louisiana Sea Grant College Program Louisiana State University, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    294,
+    65,
+    3578,
+    2527
+   ],
+   "square": [
+    705,
+    65,
+    3167,
+    2527
+   ],
+   "source_size": [
+    3872,
+    2592
+   ]
+  },
+  "bytes": {
+   "large": 105356,
+   "square": 30454
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:28:16Z"
+ },
+ "creme-brulee": {
+  "large": "img/dishes/creme-brulee.webp",
+  "square": "img/dishes/creme-brulee-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Крем-брюле",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Alex_Munsell_2015_(Unsplash).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Alex_Munsell_2015_%28Unsplash%29.jpg",
+  "original_title": "File:Alex Munsell 2015 (Unsplash).jpg",
+  "author": "Alex Munsell alexmunsell",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Alex Munsell alexmunsell, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    506,
+    163,
+    4422,
+    3101
+   ],
+   "square": [
+    995,
+    163,
+    3933,
+    3101
+   ],
+   "source_size": [
+    4928,
+    3264
+   ]
+  },
+  "bytes": {
+   "large": 122860,
+   "square": 39142
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:46Z"
+ },
+ "currywurst": {
+  "large": "img/dishes/currywurst.webp",
+  "square": "img/dishes/currywurst-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Карривурст",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Curryking-4612.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Curryking-4612.jpg",
+  "original_title": "File:Curryking-4612.jpg",
+  "author": "Superbass",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Superbass, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    662,
+    305,
+    3919,
+    2749
+   ],
+   "square": [
+    1069,
+    305,
+    3512,
+    2749
+   ],
+   "source_size": [
+    4581,
+    3054
+   ]
+  },
+  "bytes": {
+   "large": 91848,
+   "square": 24784
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:23:14Z"
+ },
+ "dark-chocolate": {
+  "large": "img/dishes/dark-chocolate.webp",
+  "square": "img/dishes/dark-chocolate-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Тёмный шоколад 70%",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Chocolate_-_stonesoup.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Chocolate_-_stonesoup.jpg",
+  "original_title": "File:Chocolate - stonesoup.jpg",
+  "author": "jules",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: jules, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    0,
+    754,
+    2000,
+    2254
+   ],
+   "square": [
+    0,
+    504,
+    2000,
+    2504
+   ],
+   "source_size": [
+    2000,
+    3008
+   ]
+  },
+  "bytes": {
+   "large": 77838,
+   "square": 23510
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:58Z"
+ },
+ "dolma": {
+  "large": "img/dishes/dolma.webp",
+  "square": "img/dishes/dolma-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Долма",
+  "cuisine": "Кавказская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Dolmades_with_Tomato_Wedges_(5045977233).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/32/Dolmades_with_Tomato_Wedges_%285045977233%29.jpg",
+  "original_title": "File:Dolmades with Tomato Wedges (5045977233).jpg",
+  "author": "Geoff Peters from Vancouver, BC, Canada",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Geoff Peters from Vancouver, BC, Canada, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    829,
+    622,
+    4147,
+    3110
+   ],
+   "square": [
+    1210,
+    553,
+    3767,
+    3110
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 105434,
+   "square": 34416
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:35Z",
+  "note": "щипцы и карточка за кадром"
+ },
+ "duck-roast": {
+  "large": "img/dishes/duck-roast.webp",
+  "square": "img/dishes/duck-roast-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Утка запечённая",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:A_dish_of_Peking_Duck_from_Fu_Dong_Kwok_Restaurant_in_Sha_Tin.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/69/A_dish_of_Peking_Duck_from_Fu_Dong_Kwok_Restaurant_in_Sha_Tin.jpg",
+  "original_title": "File:A dish of Peking Duck from Fu Dong Kwok Restaurant in Sha Tin.jpg",
+  "author": "Peachyeung316",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Peachyeung316, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    700,
+    369,
+    5106,
+    3674
+   ],
+   "square": [
+    1251,
+    369,
+    4555,
+    3674
+   ],
+   "source_size": [
+    5184,
+    3888
+   ]
+  },
+  "bytes": {
+   "large": 127108,
+   "square": 35800
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:51Z"
+ },
+ "edamame": {
+  "large": "img/dishes/edamame.webp",
+  "square": "img/dishes/edamame-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Эдамаме",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%E6%9E%9D%E8%B1%86_%E5%A1%A9_(10857029115).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/%E6%9E%9D%E8%B1%86_%E5%A1%A9_%2810857029115%29.jpg",
+  "original_title": "File:枝豆 塩 (10857029115).jpg",
+  "author": "inazakira",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: inazakira, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    0,
+    0,
+    4896,
+    3672
+   ],
+   "square": [
+    612,
+    0,
+    4284,
+    3672
+   ],
+   "source_size": [
+    4896,
+    3672
+   ]
+  },
+  "bytes": {
+   "large": 76416,
+   "square": 24218
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:44Z"
+ },
+ "enchilada": {
+  "large": "img/dishes/enchilada.webp",
+  "square": "img/dishes/enchilada-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Энчилада",
+  "cuisine": "Мексиканская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Enchiladas_hidroc%C3%A1lidas_veganas.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/68/Enchiladas_hidroc%C3%A1lidas_veganas.jpg",
+  "original_title": "File:Enchiladas hidrocálidas veganas.jpg",
+  "author": "Luisalvaz",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Luisalvaz, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    80,
+    600,
+    3280,
+    3000
+   ],
+   "square": [
+    480,
+    600,
+    2880,
+    3000
+   ],
+   "source_size": [
+    4000,
+    3000
+   ]
+  },
+  "bytes": {
+   "large": 127092,
+   "square": 30608
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:22:03Z",
+  "note": "рука и вилка за кадром"
+ },
+ "fish-and-chips": {
+  "large": "img/dishes/fish-and-chips.webp",
+  "square": "img/dishes/fish-and-chips-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Фиш-энд-чипс",
+  "cuisine": "Английская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Fish_and_chips_plate_with_peas.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/be/Fish_and_chips_plate_with_peas.jpg",
+  "original_title": "File:Fish and chips plate with peas.jpg",
+  "author": "Grendelkhan",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Grendelkhan, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    202,
+    152,
+    3846,
+    2884
+   ],
+   "square": [
+    658,
+    152,
+    3390,
+    2884
+   ],
+   "source_size": [
+    4048,
+    3036
+   ]
+  },
+  "bytes": {
+   "large": 127308,
+   "square": 36164
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:27:14Z"
+ },
+ "fried-chicken": {
+  "large": "img/dishes/fried-chicken.webp",
+  "square": "img/dishes/fried-chicken-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Жареная курица",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Fried_chicken_(25045114592).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/73/Fried_chicken_%2825045114592%29.jpg",
+  "original_title": "File:Fried chicken (25045114592).jpg",
+  "author": "T.Tseng",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: T.Tseng, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    163,
+    122,
+    3101,
+    2326
+   ],
+   "square": [
+    530,
+    122,
+    2734,
+    2326
+   ],
+   "source_size": [
+    3264,
+    2448
+   ]
+  },
+  "bytes": {
+   "large": 122286,
+   "square": 38684
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 66
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:55Z"
+ },
+ "fries": {
+  "large": "img/dishes/fries.webp",
+  "square": "img/dishes/fries-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Картофель фри",
+  "cuisine": "Бельгийская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Pub_fries_with_ketchup_2021_001.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Pub_fries_with_ketchup_2021_001.jpg",
+  "original_title": "File:Pub fries with ketchup 2021 001.jpg",
+  "author": "Adam S. Keck",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Adam S. Keck, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    219,
+    117,
+    2696,
+    1975
+   ],
+   "square": [
+    470,
+    58,
+    2445,
+    2034
+   ],
+   "source_size": [
+    2915,
+    2324
+   ]
+  },
+  "bytes": {
+   "large": 93144,
+   "square": 38732
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 62
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:25:37Z"
+ },
+ "fruit-salad": {
+  "large": "img/dishes/fruit-salad.webp",
+  "square": "img/dishes/fruit-salad-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Фруктовый салат",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Mexican_fruit_salad_2.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Mexican_fruit_salad_2.jpg",
+  "original_title": "File:Mexican fruit salad 2.jpg",
+  "author": "Emna Mizouni",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Emna Mizouni, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    664,
+    0,
+    4648,
+    2988
+   ],
+   "square": [
+    1162,
+    0,
+    4150,
+    2988
+   ],
+   "source_size": [
+    5312,
+    2988
+   ]
+  },
+  "bytes": {
+   "large": 81874,
+   "square": 24936
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:57Z"
+ },
+ "garlic-croutons": {
+  "large": "img/dishes/garlic-croutons.webp",
+  "square": "img/dishes/garlic-croutons-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Гренки чесночные",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Estonian_rye_bread_sticks_at_restaurant_100_%C3%B5lle_koht.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Estonian_rye_bread_sticks_at_restaurant_100_%C3%B5lle_koht.jpg",
+  "original_title": "File:Estonian rye bread sticks at restaurant 100 õlle koht.jpg",
+  "author": "JIP",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: JIP, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    714,
+    760,
+    4216,
+    3387
+   ],
+   "square": [
+    1164,
+    691,
+    3721,
+    3249
+   ],
+   "source_size": [
+    4608,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 79832,
+   "square": 22356
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:25:39Z",
+  "note": "бокал пива сверху за кадром"
+ },
+ "garlic-shrimp": {
+  "large": "img/dishes/garlic-shrimp.webp",
+  "square": "img/dishes/garlic-shrimp-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Креветки в чесночном соусе",
+  "cuisine": "Испанская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Layla_at_MacArthur_Place_-_2021-05-20_-_Sarah_Stierch_03.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Layla_at_MacArthur_Place_-_2021-05-20_-_Sarah_Stierch_03.jpg",
+  "original_title": "File:Layla at MacArthur Place - 2021-05-20 - Sarah Stierch 03.jpg",
+  "author": "Missvain",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Missvain, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    564,
+    484,
+    3951,
+    3024
+   ],
+   "square": [
+    988,
+    484,
+    3528,
+    3024
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 124264,
+   "square": 34682
+  },
+  "webp_quality": {
+   "large": 62,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:26:14Z",
+  "note": "этикетка вина за кадром"
+ },
+ "goat-cheese": {
+  "large": "img/dishes/goat-cheese.webp",
+  "square": "img/dishes/goat-cheese-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Козий сыр (шевр)",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Crottin_02.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Crottin_02.jpg",
+  "original_title": "File:Crottin 02.jpg",
+  "author": "Coyau",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Coyau, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    908,
+    211,
+    4103,
+    2608
+   ],
+   "square": [
+    1307,
+    211,
+    3704,
+    2608
+   ],
+   "source_size": [
+    5011,
+    2819
+   ]
+  },
+  "bytes": {
+   "large": 61098,
+   "square": 20382
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:29:59Z"
+ },
+ "greek-salad": {
+  "large": "img/dishes/greek-salad.webp",
+  "square": "img/dishes/greek-salad-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Греческий салат",
+  "cuisine": "Греческая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Tomato_Salad_(7846872334).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Tomato_Salad_%287846872334%29.jpg",
+  "original_title": "File:Tomato Salad (7846872334).jpg",
+  "author": "Ralph Daily from Birmingham, United States",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Ralph Daily from Birmingham, United States, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    95,
+    0,
+    3892,
+    2848
+   ],
+   "square": [
+    570,
+    0,
+    3418,
+    2848
+   ],
+   "source_size": [
+    3987,
+    2848
+   ]
+  },
+  "bytes": {
+   "large": 110238,
+   "square": 34512
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:38Z"
+ },
+ "grilled-lamb": {
+  "large": "img/dishes/grilled-lamb.webp",
+  "square": "img/dishes/grilled-lamb-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Баранина на гриле (каре, котлетки на кости)",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Lamb_Chops_from_a_Greek_restaurant_in_Fort_Lauderdale,_Florida.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/31/Lamb_Chops_from_a_Greek_restaurant_in_Fort_Lauderdale%2C_Florida.jpg",
+  "original_title": "File:Lamb Chops from a Greek restaurant in Fort Lauderdale, Florida.jpg",
+  "author": "Gatorfan252525",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Gatorfan252525, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    363,
+    514,
+    3669,
+    2994
+   ],
+   "square": [
+    776,
+    514,
+    3256,
+    2994
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 129796,
+   "square": 29834
+  },
+  "webp_quality": {
+   "large": 66,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:30:09Z"
+ },
+ "grilled-trout": {
+  "large": "img/dishes/grilled-trout.webp",
+  "square": "img/dishes/grilled-trout-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Форель на гриле",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Grillforelle_5688.JPG",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Grillforelle_5688.JPG",
+  "original_title": "File:Grillforelle 5688.JPG",
+  "author": "Karl Gruber",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Karl Gruber, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    605,
+    432,
+    4061,
+    3024
+   ],
+   "square": [
+    1037,
+    432,
+    3629,
+    3024
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 128788,
+   "square": 38988
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:37Z"
+ },
+ "guacamole": {
+  "large": "img/dishes/guacamole.webp",
+  "square": "img/dishes/guacamole-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Гуакамоле",
+  "cuisine": "Мексиканская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Guacomole.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Guacomole.jpg",
+  "original_title": "File:Guacomole.jpg",
+  "author": "Popo le Chien",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Popo le Chien, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    1042,
+    504,
+    5611,
+    3931
+   ],
+   "square": [
+    1613,
+    504,
+    5040,
+    3931
+   ],
+   "source_size": [
+    6048,
+    4032
+   ]
+  },
+  "bytes": {
+   "large": 91356,
+   "square": 31634
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:46Z"
+ },
+ "herring": {
+  "large": "img/dishes/herring.webp",
+  "square": "img/dishes/herring-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Сельдь с картофелем и луком",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Herring_with_sour_cream_and_onion_and_fried_potato.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/74/Herring_with_sour_cream_and_onion_and_fried_potato.jpg",
+  "original_title": "File:Herring with sour cream and onion and fried potato.jpg",
+  "author": "Jessica from Hove, United Kingdom",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Jessica from Hove, United Kingdom, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    95,
+    0,
+    2744,
+    1987
+   ],
+   "square": [
+    426,
+    0,
+    2413,
+    1987
+   ],
+   "source_size": [
+    2839,
+    1987
+   ]
+  },
+  "bytes": {
+   "large": 126758,
+   "square": 38562
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 70
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:30:13Z"
+ },
+ "herring-shuba": {
+  "large": "img/dishes/herring-shuba.webp",
+  "square": "img/dishes/herring-shuba-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Сельдь под шубой",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D0%BB%D0%B0%D1%82_%D0%A1%D0%B5%D0%BB%D1%8C%D0%B4%D1%8C_%D0%BF%D0%BE%D0%B4_%D0%A8%D1%83%D0%B1%D0%BE%D0%B9_04.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/12/%D0%A1%D0%B0%D0%BB%D0%B0%D1%82_%D0%A1%D0%B5%D0%BB%D1%8C%D0%B4%D1%8C_%D0%BF%D0%BE%D0%B4_%D0%A8%D1%83%D0%B1%D0%BE%D0%B9_04.jpg",
+  "original_title": "File:Салат Сельдь под Шубой 04.jpg",
+  "author": "Pannet",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Pannet, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    264,
+    113,
+    2981,
+    2151
+   ],
+   "square": [
+    604,
+    113,
+    2641,
+    2151
+   ],
+   "source_size": [
+    3245,
+    2264
+   ]
+  },
+  "bytes": {
+   "large": 127366,
+   "square": 39814
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 62
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:59Z"
+ },
+ "ice-cream": {
+  "large": "img/dishes/ice-cream.webp",
+  "square": "img/dishes/ice-cream-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Мороженое пломбир",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Day_354_-_Photo365_-_White_(23766206842).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Day_354_-_Photo365_-_White_%2823766206842%29.jpg",
+  "original_title": "File:Day 354 - Photo365 - White (23766206842).jpg",
+  "author": "UnknownNet Photography",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: UnknownNet Photography, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    311,
+    0,
+    5297,
+    3739
+   ],
+   "square": [
+    934,
+    0,
+    4674,
+    3739
+   ],
+   "source_size": [
+    5608,
+    3739
+   ]
+  },
+  "bytes": {
+   "large": 36280,
+   "square": 13960
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:43Z"
+ },
+ "kartoffelsalat": {
+  "large": "img/dishes/kartoffelsalat.webp",
+  "square": "img/dishes/kartoffelsalat-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Картофельный салат",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Potato_salad-2.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/66/Potato_salad-2.jpg",
+  "original_title": "File:Potato salad-2.jpg",
+  "author": "jules",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: jules, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    0,
+    1066,
+    2832,
+    3190
+   ],
+   "square": [
+    0,
+    712,
+    2832,
+    3544
+   ],
+   "source_size": [
+    2832,
+    4256
+   ]
+  },
+  "bytes": {
+   "large": 74362,
+   "square": 29416
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:17Z"
+ },
+ "kazy": {
+  "large": "img/dishes/kazy.webp",
+  "square": "img/dishes/kazy-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Казы",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D0%BA%D1%81%D0%B0%D1%83%D0%BB_%D0%A0%D0%B5%D1%81%D1%82%D0%BE%D1%80%D0%B0%D0%BD,_horse-meat_qaz%C4%B1.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/ba/%D0%A1%D0%B0%D0%BA%D1%81%D0%B0%D1%83%D0%BB_%D0%A0%D0%B5%D1%81%D1%82%D0%BE%D1%80%D0%B0%D0%BD%2C_horse-meat_qaz%C4%B1.jpg",
+  "original_title": "File:Саксаул Ресторан, horse-meat qazı.jpg",
+  "author": "Ser Amantio di Nicolao",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Ser Amantio di Nicolao, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    783,
+    881,
+    2415,
+    2105
+   ],
+   "square": [
+    1020,
+    881,
+    2244,
+    2105
+   ],
+   "source_size": [
+    3264,
+    2448
+   ]
+  },
+  "bytes": {
+   "large": 109814,
+   "square": 28714
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:17:48Z",
+  "note": "кадр по тарелке; бокал и бутылка воды за кадром"
+ },
+ "khachapuri-adjarian": {
+  "large": "img/dishes/khachapuri-adjarian.webp",
+  "square": "img/dishes/khachapuri-adjarian-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Хачапури по-аджарски",
+  "cuisine": "Кавказская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Batumi_-_Khachapuri_amb_ou.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Batumi_-_Khachapuri_amb_ou.jpg",
+  "original_title": "File:Batumi - Khachapuri amb ou.jpg",
+  "author": "Francesc Fort",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Francesc Fort, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    116,
+    89,
+    4508,
+    3383
+   ],
+   "square": [
+    663,
+    87,
+    3961,
+    3385
+   ],
+   "source_size": [
+    4624,
+    3472
+   ]
+  },
+  "bytes": {
+   "large": 108452,
+   "square": 36214
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:25Z"
+ },
+ "khinkali": {
+  "large": "img/dishes/khinkali.webp",
+  "square": "img/dishes/khinkali-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Хинкали",
+  "cuisine": "Кавказская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Khinkali_552.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/02/Khinkali_552.jpg",
+  "original_title": "File:Khinkali 552.jpg",
+  "author": "MIKHEIL",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: MIKHEIL, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    1052,
+    301,
+    4260,
+    2707
+   ],
+   "square": [
+    1453,
+    301,
+    3859,
+    2707
+   ],
+   "source_size": [
+    5312,
+    3008
+   ]
+  },
+  "bytes": {
+   "large": 51090,
+   "square": 17252
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:23Z"
+ },
+ "kurt": {
+  "large": "img/dishes/kurt.webp",
+  "square": "img/dishes/kurt-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Курт",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Yong%27oq_qurut.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Yong%27oq_qurut.jpg",
+  "original_title": "File:Yong'oq qurut.jpg",
+  "author": "Usmonov Gayrat",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Usmonov Gayrat, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    202,
+    151,
+    3830,
+    2873
+   ],
+   "square": [
+    655,
+    151,
+    3377,
+    2873
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 107604,
+   "square": 28242
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:18:46Z"
+ },
+ "lagman": {
+  "large": "img/dishes/lagman.webp",
+  "square": "img/dishes/lagman-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Лагман",
+  "cuisine": "Уйгурская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Lagman_avec_salade_et_chou_ferment%C3%A9,_restaurant_Boukhara,_Lyon_(2021).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Lagman_avec_salade_et_chou_ferment%C3%A9%2C_restaurant_Boukhara%2C_Lyon_%282021%29.jpg",
+  "original_title": "File:Lagman avec salade et chou fermenté, restaurant Boukhara, Lyon (2021).jpg",
+  "author": "Sebleouf",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Sebleouf, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    679,
+    170,
+    3250,
+    2098
+   ],
+   "square": [
+    1001,
+    170,
+    2928,
+    2098
+   ],
+   "source_size": [
+    3572,
+    2268
+   ]
+  },
+  "bytes": {
+   "large": 103372,
+   "square": 31860
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:19:04Z"
+ },
+ "lagman-spicy": {
+  "large": "img/dishes/lagman-spicy.webp",
+  "square": "img/dishes/lagman-spicy-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Лагман острый",
+  "cuisine": "Среднеазиатская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Uzbek_lagman.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Uzbek_lagman.jpg",
+  "original_title": "File:Uzbek lagman.jpg",
+  "author": "赤猫法師",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: 赤猫法師, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    230,
+    162,
+    2611,
+    1949
+   ],
+   "square": [
+    527,
+    162,
+    2314,
+    1949
+   ],
+   "source_size": [
+    2841,
+    2030
+   ]
+  },
+  "bytes": {
+   "large": 86258,
+   "square": 29698
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:19:21Z"
+ },
+ "lasagna": {
+  "large": "img/dishes/lasagna.webp",
+  "square": "img/dishes/lasagna-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Лазанья",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Lasagna_bolognese,_February_2012.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/18/Lasagna_bolognese%2C_February_2012.jpg",
+  "original_title": "File:Lasagna bolognese, February 2012.jpg",
+  "author": "Rebecca Siegel",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Rebecca Siegel, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    457,
+    0,
+    3543,
+    2315
+   ],
+   "square": [
+    842,
+    0,
+    3158,
+    2315
+   ],
+   "source_size": [
+    4000,
+    2315
+   ]
+  },
+  "bytes": {
+   "large": 43152,
+   "square": 19046
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:16Z"
+ },
+ "lemon-tart": {
+  "large": "img/dishes/lemon-tart.webp",
+  "square": "img/dishes/lemon-tart-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Лимонный тарт",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Lemon_tart_dusted_with_powdered_sugar_at_a_restaurant.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Lemon_tart_dusted_with_powdered_sugar_at_a_restaurant.jpg",
+  "original_title": "File:Lemon tart dusted with powdered sugar at a restaurant.jpg",
+  "author": "Prayitno / Thank you for (12 millions +) view from Los Angeles, USA",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Prayitno / Thank you for (12 millions +) view from Los Angeles, USA, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    101,
+    176,
+    3936,
+    3053
+   ],
+   "square": [
+    485,
+    81,
+    3552,
+    3148
+   ],
+   "source_size": [
+    4037,
+    3229
+   ]
+  },
+  "bytes": {
+   "large": 66724,
+   "square": 23324
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:30:16Z"
+ },
+ "lyulya-kebab": {
+  "large": "img/dishes/lyulya-kebab.webp",
+  "square": "img/dishes/lyulya-kebab-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Люля-кебаб",
+  "cuisine": "Кавказская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Lula_kebab.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Lula_kebab.jpg",
+  "original_title": "File:Lula kebab.jpg",
+  "author": "Lesya Dolyk",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: Lesya Dolyk, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    403,
+    86,
+    4781,
+    3370
+   ],
+   "square": [
+    950,
+    86,
+    4234,
+    3370
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 129282,
+   "square": 38828
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 66
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:31Z"
+ },
+ "mac-and-cheese": {
+  "large": "img/dishes/mac-and-cheese.webp",
+  "square": "img/dishes/mac-and-cheese-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Мак-энд-чиз",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Original_Mac_n_Cheese_.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/44/Original_Mac_n_Cheese_.jpg",
+  "original_title": "File:Original Mac n Cheese .jpg",
+  "author": "Texasfoodgawker",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Texasfoodgawker, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    0,
+    306,
+    2448,
+    2142
+   ],
+   "square": [
+    0,
+    0,
+    2448,
+    2448
+   ],
+   "source_size": [
+    2448,
+    2448
+   ]
+  },
+  "bytes": {
+   "large": 97522,
+   "square": 35156
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:33Z"
+ },
+ "manty": {
+  "large": "img/dishes/manty.webp",
+  "square": "img/dishes/manty-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Манты",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Lyon_7e_-_Rue_Renan_-_Restaurant_Boukhara_-_Manti.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/97/Lyon_7e_-_Rue_Renan_-_Restaurant_Boukhara_-_Manti.jpg",
+  "original_title": "File:Lyon 7e - Rue Renan - Restaurant Boukhara - Manti.jpg",
+  "author": "Romainbehar",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Romainbehar, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    748,
+    174,
+    3380,
+    2148
+   ],
+   "square": [
+    1077,
+    174,
+    3051,
+    2148
+   ],
+   "source_size": [
+    4128,
+    2322
+   ]
+  },
+  "bytes": {
+   "large": 121756,
+   "square": 39300
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:19:19Z"
+ },
+ "manty-pumpkin": {
+  "large": "img/dishes/manty-pumpkin.webp",
+  "square": "img/dishes/manty-pumpkin-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Манты с тыквой",
+  "cuisine": "Среднеазиатская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Uzbek_Manti_(bright).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Uzbek_Manti_%28bright%29.jpg",
+  "original_title": "File:Uzbek Manti (bright).jpg",
+  "author": "Ramón from Llanera, España ; brightened by Off-shell",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: Ramón from Llanera, España ; brightened by Off-shell, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    146,
+    173,
+    2757,
+    2131
+   ],
+   "square": [
+    472,
+    173,
+    2431,
+    2131
+   ],
+   "source_size": [
+    3456,
+    2304
+   ]
+  },
+  "bytes": {
+   "large": 97638,
+   "square": 27998
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:19:06Z",
+  "note": "начинка снаружи не видна - обычные манты на узбекской тарелке"
+ },
+ "meat-stew": {
+  "large": "img/dishes/meat-stew.webp",
+  "square": "img/dishes/meat-stew-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Тушёное мясо / сырне / рагу",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Irish_Beef_Stew_(34046928633).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Irish_Beef_Stew_%2834046928633%29.jpg",
+  "original_title": "File:Irish Beef Stew (34046928633).jpg",
+  "author": "A Healthier Michigan from Detroit, United States",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: A Healthier Michigan from Detroit, United States, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    590,
+    193,
+    5212,
+    3659
+   ],
+   "square": [
+    1168,
+    193,
+    4634,
+    3659
+   ],
+   "source_size": [
+    5802,
+    3852
+   ]
+  },
+  "bytes": {
+   "large": 84224,
+   "square": 31490
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:30:19Z"
+ },
+ "medovik": {
+  "large": "img/dishes/medovik.webp",
+  "square": "img/dishes/medovik-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Медовик",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Medovnik_Honey_Cake.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Medovnik_Honey_Cake.jpg",
+  "original_title": "File:Medovnik Honey Cake.jpg",
+  "author": "Sweetlovers",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Sweetlovers, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    0,
+    63,
+    3195,
+    2459
+   ],
+   "square": [
+    84,
+    0,
+    2606,
+    2522
+   ],
+   "source_size": [
+    3842,
+    2522
+   ]
+  },
+  "bytes": {
+   "large": 126710,
+   "square": 31726
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:27:54Z"
+ },
+ "mochi": {
+  "large": "img/dishes/mochi.webp",
+  "square": "img/dishes/mochi-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Моти",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Daifuku_001.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Daifuku_001.jpg",
+  "original_title": "File:Daifuku 001.jpg",
+  "author": "Ocdp",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Ocdp, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    187,
+    141,
+    3555,
+    2666
+   ],
+   "square": [
+    608,
+    140,
+    3134,
+    2667
+   ],
+   "source_size": [
+    3742,
+    2807
+   ]
+  },
+  "bytes": {
+   "large": 77698,
+   "square": 24416
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:56Z"
+ },
+ "mozzarella-sticks": {
+  "large": "img/dishes/mozzarella-sticks.webp",
+  "square": "img/dishes/mozzarella-sticks-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Сырные палочки",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:2023-04-10_17_23_29_Mozzarella_sticks_from_Wawa_in_Westampton_Township,_Burlington_County,_New_Jersey.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5f/2023-04-10_17_23_29_Mozzarella_sticks_from_Wawa_in_Westampton_Township%2C_Burlington_County%2C_New_Jersey.jpg",
+  "original_title": "File:2023-04-10 17 23 29 Mozzarella sticks from Wawa in Westampton Township, Burlington County, New Jersey.jpg",
+  "author": "Famartin",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Famartin, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    101,
+    76,
+    3931,
+    2948
+   ],
+   "square": [
+    580,
+    76,
+    3452,
+    2948
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 70266,
+   "square": 29306
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:26Z"
+ },
+ "mussels-steamed": {
+  "large": "img/dishes/mussels-steamed.webp",
+  "square": "img/dishes/mussels-steamed-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Мидии на пару",
+  "cuisine": "Бельгийская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Normandy_%2710-_Saint-Vaast-la-Hougue_(4826863803).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Normandy_%2710-_Saint-Vaast-la-Hougue_%284826863803%29.jpg",
+  "original_title": "File:Normandy '10- Saint-Vaast-la-Hougue (4826863803).jpg",
+  "author": "Archangel12",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Archangel12, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    1116,
+    580,
+    3858,
+    2637
+   ],
+   "square": [
+    1459,
+    580,
+    3515,
+    2637
+   ],
+   "source_size": [
+    4288,
+    2637
+   ]
+  },
+  "bytes": {
+   "large": 79586,
+   "square": 27866
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:30Z",
+  "note": "бокал с логотипом пивоварни за кадром"
+ },
+ "nachos": {
+  "large": "img/dishes/nachos.webp",
+  "square": "img/dishes/nachos-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Начос",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Plat_de_nachos_a_un_restaurant_del_Port,_X%C3%A0bia.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Plat_de_nachos_a_un_restaurant_del_Port%2C_X%C3%A0bia.jpg",
+  "original_title": "File:Plat de nachos a un restaurant del Port, Xàbia.jpg",
+  "author": "Joanbanjo",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Joanbanjo, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    202,
+    151,
+    3830,
+    2873
+   ],
+   "square": [
+    655,
+    151,
+    3377,
+    2873
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 127802,
+   "square": 38164
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 70
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:14Z"
+ },
+ "napoleon": {
+  "large": "img/dishes/napoleon.webp",
+  "square": "img/dishes/napoleon-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Торт «Наполеон»",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Mille-feuille_008.JPG",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/88/Mille-feuille_008.JPG",
+  "original_title": "File:Mille-feuille 008.JPG",
+  "author": "Bin im Garten",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Bin im Garten, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    769,
+    0,
+    3503,
+    2051
+   ],
+   "square": [
+    1111,
+    0,
+    3161,
+    2051
+   ],
+   "source_size": [
+    4272,
+    2848
+   ]
+  },
+  "bytes": {
+   "large": 84572,
+   "square": 31092
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:27:36Z",
+  "note": "отражение в подносе за кадром"
+ },
+ "nauryz-kozhe": {
+  "large": "img/dishes/nauryz-kozhe.webp",
+  "square": "img/dishes/nauryz-kozhe-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Наурыз-коже",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%9D%D0%B0%D1%83%D1%80%D1%8B%D0%B7_%D0%BA%D0%BE%D0%B6%D0%B5.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/44/%D0%9D%D0%B0%D1%83%D1%80%D1%8B%D0%B7_%D0%BA%D0%BE%D0%B6%D0%B5.jpg",
+  "original_title": "File:Наурыз коже.jpg",
+  "author": "Игорь Улитин",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Игорь Улитин, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    474,
+    316,
+    4269,
+    3162
+   ],
+   "square": [
+    949,
+    316,
+    3794,
+    3162
+   ],
+   "source_size": [
+    4743,
+    3162
+   ]
+  },
+  "bytes": {
+   "large": 119932,
+   "square": 38510
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:02Z"
+ },
+ "okroshka": {
+  "large": "img/dishes/okroshka.webp",
+  "square": "img/dishes/okroshka-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Окрошка",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%9E%D0%BA%D1%80%D0%BE%D1%88%D0%BA%D0%B0_5.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/%D0%9E%D0%BA%D1%80%D0%BE%D1%88%D0%BA%D0%B0_5.jpg",
+  "original_title": "File:Окрошка 5.jpg",
+  "author": "Pannet",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Pannet, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    2464,
+    745,
+    4829,
+    2519
+   ],
+   "square": [
+    2563,
+    531,
+    4829,
+    2798
+   ],
+   "source_size": [
+    4928,
+    3264
+   ]
+  },
+  "bytes": {
+   "large": 161082,
+   "square": 39130
+  },
+  "webp_quality": {
+   "large": 54,
+   "square": 62
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:20:00Z",
+  "note": "правая миска"
+ },
+ "olivier": {
+  "large": "img/dishes/olivier.webp",
+  "square": "img/dishes/olivier-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Оливье",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Ensalada_rusa_argentina.JPG",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/aa/Ensalada_rusa_argentina.JPG",
+  "original_title": "File:Ensalada rusa argentina.JPG",
+  "author": "Carlosdisogra",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Carlosdisogra, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    945,
+    259,
+    4861,
+    3197
+   ],
+   "square": [
+    1434,
+    259,
+    4372,
+    3197
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 69482,
+   "square": 24984
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:45Z"
+ },
+ "oysters-raw": {
+  "large": "img/dishes/oysters-raw.webp",
+  "square": "img/dishes/oysters-raw-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Устрицы сырые",
+  "cuisine": "Французская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Oysters_-_Viktualienmarkt_-_DSC08587.JPG",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/81/Oysters_-_Viktualienmarkt_-_DSC08587.JPG",
+  "original_title": "File:Oysters - Viktualienmarkt - DSC08587.JPG",
+  "author": "Daderot",
+  "license": "Public domain",
+  "license_url": "https://commons.wikimedia.org/wiki/File:Oysters_-_Viktualienmarkt_-_DSC08587.JPG",
+  "attribution_ru": "Фото: Daderot, общественное достояние, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    324,
+    486,
+    3996,
+    3240
+   ],
+   "square": [
+    783,
+    486,
+    3537,
+    3240
+   ],
+   "source_size": [
+    4320,
+    3240
+   ]
+  },
+  "bytes": {
+   "large": 119894,
+   "square": 36566
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:28Z"
+ },
+ "pad-thai": {
+  "large": "img/dishes/pad-thai.webp",
+  "square": "img/dishes/pad-thai-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Пад тай",
+  "cuisine": "Тайская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Pad_Thai_(2433385864).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/04/Pad_Thai_%282433385864%29.jpg",
+  "original_title": "File:Pad Thai (2433385864).jpg",
+  "author": "Mack Male from Edmonton, AB, Canada",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: Mack Male from Edmonton, AB, Canada, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    0,
+    0,
+    3264,
+    2448
+   ],
+   "square": [
+    408,
+    0,
+    2856,
+    2448
+   ],
+   "source_size": [
+    3264,
+    2448
+   ]
+  },
+  "bytes": {
+   "large": 97444,
+   "square": 32944
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:26:34Z"
+ },
+ "paella": {
+  "large": "img/dishes/paella.webp",
+  "square": "img/dishes/paella-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Паэлья",
+  "cuisine": "Испанская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Paella_(2644894109).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/af/Paella_%282644894109%29.jpg",
+  "original_title": "File:Paella (2644894109).jpg",
+  "author": "pelican from Tokyo, Japan",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: pelican from Tokyo, Japan, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    0,
+    0,
+    2848,
+    2136
+   ],
+   "square": [
+    356,
+    0,
+    2492,
+    2136
+   ],
+   "source_size": [
+    2848,
+    2136
+   ]
+  },
+  "bytes": {
+   "large": 111268,
+   "square": 27044
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:26:30Z"
+ },
+ "pelmeni": {
+  "large": "img/dishes/pelmeni.webp",
+  "square": "img/dishes/pelmeni-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Пельмени",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Pelmeni_Russian.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Pelmeni_Russian.jpg",
+  "original_title": "File:Pelmeni Russian.jpg",
+  "author": "Eugene Kim @ Flickr",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Eugene Kim @ Flickr, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    52,
+    44,
+    2281,
+    1716
+   ],
+   "square": [
+    330,
+    44,
+    2002,
+    1716
+   ],
+   "source_size": [
+    2592,
+    1760
+   ]
+  },
+  "bytes": {
+   "large": 72648,
+   "square": 21486
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:15Z"
+ },
+ "philadelphia-roll": {
+  "large": "img/dishes/philadelphia-roll.webp",
+  "square": "img/dishes/philadelphia-roll-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Ролл «Филадельфия»",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Philly_roll.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/29/Philly_roll.jpg",
+  "original_title": "File:Philly roll.jpg",
+  "author": "Quinn Dombrowski",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: Quinn Dombrowski, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    0,
+    283,
+    2262,
+    1979
+   ],
+   "square": [
+    0,
+    0,
+    2262,
+    2262
+   ],
+   "source_size": [
+    2262,
+    2262
+   ]
+  },
+  "bytes": {
+   "large": 60536,
+   "square": 14300
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:45Z"
+ },
+ "pho-bo": {
+  "large": "img/dishes/pho-bo.webp",
+  "square": "img/dishes/pho-bo-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Фо бо",
+  "cuisine": "Вьетнамская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Pho,_beef_brisket,_tendon,_tripe_(30025527004).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Pho%2C_beef_brisket%2C_tendon%2C_tripe_%2830025527004%29.jpg",
+  "original_title": "File:Pho, beef brisket, tendon, tripe (30025527004).jpg",
+  "author": "T.Tseng",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: T.Tseng, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    743,
+    390,
+    3527,
+    2479
+   ],
+   "square": [
+    1086,
+    334,
+    3258,
+    2506
+   ],
+   "source_size": [
+    3713,
+    2785
+   ]
+  },
+  "bytes": {
+   "large": 110236,
+   "square": 35010
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:27:05Z"
+ },
+ "pickles": {
+  "large": "img/dishes/pickles.webp",
+  "square": "img/dishes/pickles-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Соленья (огурцы, капуста, помидоры)",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Polish_style_pickled_cucumbers_IMGP0464.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Polish_style_pickled_cucumbers_IMGP0464.jpg",
+  "original_title": "File:Polish style pickled cucumbers IMGP0464.jpg",
+  "author": "Nikodem Nijaki",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Nikodem Nijaki, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    370,
+    78,
+    4302,
+    3026
+   ],
+   "square": [
+    862,
+    78,
+    3810,
+    3026
+   ],
+   "source_size": [
+    4672,
+    3104
+   ]
+  },
+  "bytes": {
+   "large": 94308,
+   "square": 26116
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:30:26Z"
+ },
+ "pizza-margherita": {
+  "large": "img/dishes/pizza-margherita.webp",
+  "square": "img/dishes/pizza-margherita-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Пицца Маргарита",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Margherita_-_Five50_Aria.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/41/Margherita_-_Five50_Aria.jpg",
+  "original_title": "File:Margherita - Five50 Aria.jpg",
+  "author": "pelican",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+  "attribution_ru": "Фото: pelican, CC BY-SA 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 2.0",
+  "crop": {
+   "large": [
+    1229,
+    640,
+    5389,
+    3760
+   ],
+   "square": [
+    1749,
+    640,
+    4869,
+    3760
+   ],
+   "source_size": [
+    6016,
+    4000
+   ]
+  },
+  "bytes": {
+   "large": 123800,
+   "square": 36906
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:03Z"
+ },
+ "pizza-pepperoni": {
+  "large": "img/dishes/pizza-pepperoni.webp",
+  "square": "img/dishes/pizza-pepperoni-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Пицца пепперони",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:All_Good_pizza_(38501728345).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b0/All_Good_pizza_%2838501728345%29.jpg",
+  "original_title": "File:All Good pizza (38501728345).jpg",
+  "author": "Dale Cruse from San Francisco, CA, USA",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Dale Cruse from San Francisco, CA, USA, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    0,
+    378,
+    3024,
+    2646
+   ],
+   "square": [
+    0,
+    0,
+    3024,
+    3024
+   ],
+   "source_size": [
+    3024,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 127632,
+   "square": 32400
+  },
+  "webp_quality": {
+   "large": 58,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:27:01Z"
+ },
+ "plov": {
+  "large": "img/dishes/plov.webp",
+  "square": "img/dishes/plov-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Плов",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Urazmat-Plov.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Urazmat-Plov.jpg",
+  "original_title": "File:Urazmat-Plov.jpg",
+  "author": "Ji-Elle",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Ji-Elle, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    562,
+    583,
+    4104,
+    3240
+   ],
+   "square": [
+    1004,
+    583,
+    3661,
+    3240
+   ],
+   "source_size": [
+    4320,
+    3240
+   ]
+  },
+  "bytes": {
+   "large": 88920,
+   "square": 39952
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 66
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:18:22Z"
+ },
+ "plov-fergana": {
+  "large": "img/dishes/plov-fergana.webp",
+  "square": "img/dishes/plov-fergana-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Плов ферганский",
+  "cuisine": "Среднеазиатская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Farg%27onacha_osh.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Farg%27onacha_osh.jpg",
+  "original_title": "File:Farg'onacha osh.jpg",
+  "author": "UzbekistanWikiEditor",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: UzbekistanWikiEditor, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    1525,
+    832,
+    5963,
+    4160
+   ],
+   "square": [
+    2080,
+    832,
+    5408,
+    4160
+   ],
+   "source_size": [
+    6240,
+    4160
+   ]
+  },
+  "bytes": {
+   "large": 110964,
+   "square": 39758
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:23Z",
+  "note": "шумовка слева сверху за кадром"
+ },
+ "pork-knuckle": {
+  "large": "img/dishes/pork-knuckle.webp",
+  "square": "img/dishes/pork-knuckle-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Свиная рулька",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Brotzeit_Pork_Knuckle.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Brotzeit_Pork_Knuckle.jpg",
+  "original_title": "File:Brotzeit Pork Knuckle.jpg",
+  "author": "Missylomo",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Missylomo, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    649,
+    1082,
+    6422,
+    5412
+   ],
+   "square": [
+    1443,
+    1082,
+    5665,
+    5304
+   ],
+   "source_size": [
+    7216,
+    5412
+   ]
+  },
+  "bytes": {
+   "large": 120092,
+   "square": 37686
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:31Z",
+  "note": "соусник и бокал сверху за кадром"
+ },
+ "pretzel": {
+  "large": "img/dishes/pretzel.webp",
+  "square": "img/dishes/pretzel-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Брецель",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Zwei_schw%C3%A4bische_Brezeln_1.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/16/Zwei_schw%C3%A4bische_Brezeln_1.jpg",
+  "original_title": "File:Zwei schwäbische Brezeln 1.jpg",
+  "author": "Ursula Jaeger",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Ursula Jaeger, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    1983,
+    0,
+    5486,
+    2628
+   ],
+   "square": [
+    2835,
+    82,
+    5381,
+    2628
+   ],
+   "source_size": [
+    6224,
+    4106
+   ]
+  },
+  "bytes": {
+   "large": 117730,
+   "square": 26072
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:22:49Z",
+  "note": "надпись на салфетке за кадром"
+ },
+ "quesadilla": {
+  "large": "img/dishes/quesadilla.webp",
+  "square": "img/dishes/quesadilla-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Кесадилья",
+  "cuisine": "Мексиканская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Quesadilla_with_tortilla_chips_and_guacamole.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Quesadilla_with_tortilla_chips_and_guacamole.jpg",
+  "original_title": "File:Quesadilla with tortilla chips and guacamole.jpg",
+  "author": "Weetjesman",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Weetjesman, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    187,
+    0,
+    3076,
+    2167
+   ],
+   "square": [
+    548,
+    0,
+    2715,
+    2167
+   ],
+   "source_size": [
+    3263,
+    2167
+   ]
+  },
+  "bytes": {
+   "large": 129818,
+   "square": 39606
+  },
+  "webp_quality": {
+   "large": 62,
+   "square": 62
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:56Z"
+ },
+ "ramen": {
+  "large": "img/dishes/ramen.webp",
+  "square": "img/dishes/ramen-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Рамен",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Tonkotsu_ramen_2.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Tonkotsu_ramen_2.jpg",
+  "original_title": "File:Tonkotsu ramen 2.jpg",
+  "author": "Misaochan2",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Misaochan2, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    564,
+    726,
+    3468,
+    2903
+   ],
+   "square": [
+    1058,
+    786,
+    3054,
+    2782
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 126208,
+   "square": 39586
+  },
+  "webp_quality": {
+   "large": 62,
+   "square": 62
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:41Z",
+  "note": "кадр ниже надписи на ободке миски"
+ },
+ "ribeye-steak": {
+  "large": "img/dishes/ribeye-steak.webp",
+  "square": "img/dishes/ribeye-steak-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Стейк рибай",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:HK_SW_%E4%B8%8A%E7%92%B0_Sheung_Wan_%E7%9A%87%E5%90%8E%E5%A4%A7%E9%81%93%E8%A5%BF_24_Queen%27s_Road_West_Lai_Yan_Lau_shop_Kon_Fusion_Restaurant_%26_Bar_diner_food_Pizza_n_Rib_Eye_Steak_June_2020_SS2_15.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/c/cb/HK_SW_%E4%B8%8A%E7%92%B0_Sheung_Wan_%E7%9A%87%E5%90%8E%E5%A4%A7%E9%81%93%E8%A5%BF_24_Queen%27s_Road_West_Lai_Yan_Lau_shop_Kon_Fusion_Restaurant_%26_Bar_diner_food_Pizza_n_Rib_Eye_Steak_June_2020_SS2_15.jpg",
+  "original_title": "File:HK SW 上環 Sheung Wan 皇后大道西 24 Queen's Road West Lai Yan Lau shop Kon Fusion Restaurant & Bar diner food Pizza n Rib Eye Steak June 2020 SS2 15.jpg",
+  "author": "Tamjai Koafei 2000",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Tamjai Koafei 2000, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    310,
+    387,
+    3818,
+    3019
+   ],
+   "square": [
+    748,
+    387,
+    3380,
+    3019
+   ],
+   "source_size": [
+    4128,
+    3096
+   ]
+  },
+  "bytes": {
+   "large": 123360,
+   "square": 39760
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:26:27Z"
+ },
+ "risotto": {
+  "large": "img/dishes/risotto.webp",
+  "square": "img/dishes/risotto-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Ризотто",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Broad_bean_and_pea_risotto_(5267182554).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Broad_bean_and_pea_risotto_%285267182554%29.jpg",
+  "original_title": "File:Broad bean and pea risotto (5267182554).jpg",
+  "author": "Blue moon in her eyes from Helsinki, Finland",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Blue moon in her eyes from Helsinki, Finland, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    0,
+    66,
+    2968,
+    2292
+   ],
+   "square": [
+    305,
+    0,
+    2663,
+    2358
+   ],
+   "source_size": [
+    2968,
+    2358
+   ]
+  },
+  "bytes": {
+   "large": 67840,
+   "square": 25208
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:14Z"
+ },
+ "roast-chicken": {
+  "large": "img/dishes/roast-chicken.webp",
+  "square": "img/dishes/roast-chicken-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Курица запечённая",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Roasted_Chicken_Dinner_Plate,_Broccoli,_Demi_Glace.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Roasted_Chicken_Dinner_Plate%2C_Broccoli%2C_Demi_Glace.jpg",
+  "original_title": "File:Roasted Chicken Dinner Plate, Broccoli, Demi Glace.jpg",
+  "author": "Michael J. Bennett",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Michael J. Bennett, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    259,
+    173,
+    4406,
+    3283
+   ],
+   "square": [
+    778,
+    173,
+    3888,
+    3283
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 126972,
+   "square": 38512
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 66
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:30:24Z"
+ },
+ "roast-pork": {
+  "large": "img/dishes/roast-pork.webp",
+  "square": "img/dishes/roast-pork-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Свинина запечённая",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Schweinebraten_Goldener_Adler_M%C3%BCrsbach.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Schweinebraten_Goldener_Adler_M%C3%BCrsbach.jpg",
+  "original_title": "File:Schweinebraten Goldener Adler Mürsbach.jpg",
+  "author": "Benreis",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Benreis, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    202,
+    302,
+    3830,
+    3024
+   ],
+   "square": [
+    655,
+    302,
+    3377,
+    3024
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 86868,
+   "square": 30638
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:23Z"
+ },
+ "salmon-grilled": {
+  "large": "img/dishes/salmon-grilled.webp",
+  "square": "img/dishes/salmon-grilled-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Лосось на гриле",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Salmon_Fillet_(30910417061).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Salmon_Fillet_%2830910417061%29.jpg",
+  "original_title": "File:Salmon Fillet (30910417061).jpg",
+  "author": "Prayitno / Thank you for (12 millions +) view from Los Angeles, USA",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Prayitno / Thank you for (12 millions +) view from Los Angeles, USA, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    719,
+    331,
+    4253,
+    2983
+   ],
+   "square": [
+    1160,
+    331,
+    3812,
+    2983
+   ],
+   "source_size": [
+    4972,
+    3314
+   ]
+  },
+  "bytes": {
+   "large": 81736,
+   "square": 28864
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:48Z"
+ },
+ "salted-nuts": {
+  "large": "img/dishes/salted-nuts.webp",
+  "square": "img/dishes/salted-nuts-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Фисташки / арахис",
+  "cuisine": "Интернациональная",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Roasted_%26_Salted_(51994480044).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Roasted_%26_Salted_%2851994480044%29.jpg",
+  "original_title": "File:Roasted & Salted (51994480044).jpg",
+  "author": "Martin Cooper",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Martin Cooper, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    200,
+    150,
+    3800,
+    2850
+   ],
+   "square": [
+    650,
+    150,
+    3350,
+    2850
+   ],
+   "source_size": [
+    4000,
+    3000
+   ]
+  },
+  "bytes": {
+   "large": 119620,
+   "square": 38896
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:27:32Z"
+ },
+ "samsa": {
+  "large": "img/dishes/samsa.webp",
+  "square": "img/dishes/samsa-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Самса",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Uyda_tayyorlangan_somsa.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Uyda_tayyorlangan_somsa.jpg",
+  "original_title": "File:Uyda tayyorlangan somsa.jpg",
+  "author": "Panpanchik",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Panpanchik, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    29,
+    0,
+    2963,
+    2200
+   ],
+   "square": [
+    396,
+    0,
+    2596,
+    2200
+   ],
+   "source_size": [
+    2992,
+    2200
+   ]
+  },
+  "bytes": {
+   "large": 127812,
+   "square": 38272
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 66
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:19:13Z"
+ },
+ "sauerkraut": {
+  "large": "img/dishes/sauerkraut.webp",
+  "square": "img/dishes/sauerkraut-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Квашеная капуста",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Sur%C3%B3wka_z_kiszonej_kapusty_12_IV_2026.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/42/Sur%C3%B3wka_z_kiszonej_kapusty_12_IV_2026.jpg",
+  "original_title": "File:Surówka z kiszonej kapusty 12 IV 2026.jpg",
+  "author": "Aw58",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Aw58, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    100,
+    379,
+    1554,
+    1470
+   ],
+   "square": [
+    251,
+    384,
+    1304,
+    1437
+   ],
+   "source_size": [
+    2507,
+    2719
+   ]
+  },
+  "bytes": {
+   "large": 51334,
+   "square": 18748
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:20Z",
+  "note": "кадр без столовых приборов"
+ },
+ "schnitzel": {
+  "large": "img/dishes/schnitzel.webp",
+  "square": "img/dishes/schnitzel-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Шницель",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Wiener_Schnitzel_2012.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Wiener_Schnitzel_2012.jpg",
+  "original_title": "File:Wiener Schnitzel 2012.jpg",
+  "author": "Holger.Ellgaard",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Holger.Ellgaard, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    0,
+    195,
+    2946,
+    2404
+   ],
+   "square": [
+    301,
+    195,
+    2511,
+    2404
+   ],
+   "source_size": [
+    3700,
+    2599
+   ]
+  },
+  "bytes": {
+   "large": 102990,
+   "square": 29380
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:23:02Z"
+ },
+ "shashlyk": {
+  "large": "img/dishes/shashlyk.webp",
+  "square": "img/dishes/shashlyk-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Шашлык",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Grilled_shashlik.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/47/Grilled_shashlik.jpg",
+  "original_title": "File:Grilled shashlik.jpg",
+  "author": "Alandislands",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Alandislands, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    288,
+    0,
+    4896,
+    3456
+   ],
+   "square": [
+    864,
+    0,
+    4320,
+    3456
+   ],
+   "source_size": [
+    5184,
+    3456
+   ]
+  },
+  "bytes": {
+   "large": 112154,
+   "square": 36208
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:18:08Z"
+ },
+ "shashlyk-chicken": {
+  "large": "img/dishes/shashlyk-chicken.webp",
+  "square": "img/dishes/shashlyk-chicken-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Шашлык из курицы",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Food-dinner-grilled-shashlik_(24244253091).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Food-dinner-grilled-shashlik_%2824244253091%29.jpg",
+  "original_title": "File:Food-dinner-grilled-shashlik (24244253091).jpg",
+  "author": "www.Pixel.la Free Stock Photos",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: www.Pixel.la Free Stock Photos, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    294,
+    65,
+    3578,
+    2527
+   ],
+   "square": [
+    705,
+    65,
+    3167,
+    2527
+   ],
+   "source_size": [
+    3872,
+    2592
+   ]
+  },
+  "bytes": {
+   "large": 67378,
+   "square": 18866
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:28:02Z"
+ },
+ "shawarma": {
+  "large": "img/dishes/shawarma.webp",
+  "square": "img/dishes/shawarma-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Шаурма",
+  "cuisine": "Турецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%A8%D0%B0%D1%83%D1%80%D0%BC%D0%B0_%D0%B2_%D0%BB%D0%B0%D0%B2%D0%B0%D1%88%D0%B5_%D1%81%D1%80%D0%B0%D0%B2%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5_2.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b2/%D0%A8%D0%B0%D1%83%D1%80%D0%BC%D0%B0_%D0%B2_%D0%BB%D0%B0%D0%B2%D0%B0%D1%88%D0%B5_%D1%81%D1%80%D0%B0%D0%B2%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5_2.jpg",
+  "original_title": "File:Шаурма в лаваше сравнение 2.jpg",
+  "author": "Varvara Kless-Kaminskaia",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Varvara Kless-Kaminskaia, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    686,
+    282,
+    4954,
+    3483
+   ],
+   "square": [
+    1220,
+    282,
+    4420,
+    3483
+   ],
+   "source_size": [
+    5640,
+    3765
+   ]
+  },
+  "bytes": {
+   "large": 127966,
+   "square": 36144
+  },
+  "webp_quality": {
+   "large": 66,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:25:28Z"
+ },
+ "smoked-fish": {
+  "large": "img/dishes/smoked-fish.webp",
+  "square": "img/dishes/smoked-fish-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Копчёная рыба (скумбрия, лосось)",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Smoked_mackerel-01.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Smoked_mackerel-01.jpg",
+  "original_title": "File:Smoked mackerel-01.jpg",
+  "author": "Jocian",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "attribution_ru": "Фото: Jocian, CC BY-SA 3.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 3.0",
+  "crop": {
+   "large": [
+    0,
+    0,
+    2702,
+    2026
+   ],
+   "square": [
+    338,
+    0,
+    2364,
+    2026
+   ],
+   "source_size": [
+    2702,
+    2026
+   ]
+  },
+  "bytes": {
+   "large": 117204,
+   "square": 35986
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:30:38Z"
+ },
+ "solyanka": {
+  "large": "img/dishes/solyanka.webp",
+  "square": "img/dishes/solyanka-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Солянка мясная",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Soljanka_food_05.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Soljanka_food_05.jpg",
+  "original_title": "File:Soljanka food 05.jpg",
+  "author": "Pannet",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "attribution_ru": "Фото: Pannet, CC BY 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    239,
+    82,
+    4374,
+    3182
+   ],
+   "square": [
+    756,
+    82,
+    3857,
+    3182
+   ],
+   "source_size": [
+    4613,
+    3264
+   ]
+  },
+  "bytes": {
+   "large": 121354,
+   "square": 39308
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:25:16Z"
+ },
+ "sorpa": {
+  "large": "img/dishes/sorpa.webp",
+  "square": "img/dishes/sorpa-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Сорпа",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B0%D0%BC%D0%B0%D1%80%D0%BA%D0%B0%D0%BD%D0%B4,_%D1%81%D0%BE%D1%80%D0%BF%D0%B0_%D0%B2_%D1%83%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%BC_%D0%BA%D0%B0%D1%84%D0%B5.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/e/e2/%D0%A1%D0%B0%D0%BC%D0%B0%D1%80%D0%BA%D0%B0%D0%BD%D0%B4%2C_%D1%81%D0%BE%D1%80%D0%BF%D0%B0_%D0%B2_%D1%83%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%BC_%D0%BA%D0%B0%D1%84%D0%B5.jpg",
+  "original_title": "File:Самарканд, сорпа в уличном кафе.jpg",
+  "author": "Nikolai Bulykin",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Nikolai Bulykin, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    67,
+    467,
+    3269,
+    2869
+   ],
+   "square": [
+    67,
+    67,
+    3269,
+    3269
+   ],
+   "source_size": [
+    3336,
+    3336
+   ]
+  },
+  "bytes": {
+   "large": 109040,
+   "square": 36282
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:24:19Z"
+ },
+ "steak": {
+  "large": "img/dishes/steak.webp",
+  "square": "img/dishes/steak-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Стейк",
+  "cuisine": "Американская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Beef_steak_with_garlic_butter.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Beef_steak_with_garlic_butter.jpg",
+  "original_title": "File:Beef steak with garlic butter.jpg",
+  "author": "Peachyeung316",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Peachyeung316, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    622,
+    544,
+    3836,
+    2955
+   ],
+   "square": [
+    1024,
+    544,
+    3434,
+    2955
+   ],
+   "source_size": [
+    5184,
+    3888
+   ]
+  },
+  "bytes": {
+   "large": 82130,
+   "square": 26382
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:10Z"
+ },
+ "strudel": {
+  "large": "img/dishes/strudel.webp",
+  "square": "img/dishes/strudel-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Штрудель",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:2015_0723_Apfelstrudel_Gaislachalm_S%C3%B6lden.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/35/2015_0723_Apfelstrudel_Gaislachalm_S%C3%B6lden.jpg",
+  "original_title": "File:2015 0723 Apfelstrudel Gaislachalm Sölden.jpg",
+  "author": "Takeaway",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Takeaway, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    64,
+    96,
+    2496,
+    1920
+   ],
+   "square": [
+    368,
+    96,
+    2192,
+    1920
+   ],
+   "source_size": [
+    2560,
+    1920
+   ]
+  },
+  "bytes": {
+   "large": 78136,
+   "square": 28244
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:23:19Z"
+ },
+ "sushi": {
+  "large": "img/dishes/sushi.webp",
+  "square": "img/dishes/sushi-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Суши",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Nigiri_Sushi_(26478725732).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Nigiri_Sushi_%2826478725732%29.jpg",
+  "original_title": "File:Nigiri Sushi (26478725732).jpg",
+  "author": "Tim Reckmann from Hamm, Deutschland",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: Tim Reckmann from Hamm, Deutschland, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    279,
+    0,
+    4736,
+    3343
+   ],
+   "square": [
+    836,
+    0,
+    4179,
+    3343
+   ],
+   "source_size": [
+    5015,
+    3343
+   ]
+  },
+  "bytes": {
+   "large": 58246,
+   "square": 15310
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:30Z"
+ },
+ "tacos": {
+  "large": "img/dishes/tacos.webp",
+  "square": "img/dishes/tacos-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Тако",
+  "cuisine": "Мексиканская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Tacos_Mexican_Meal.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Tacos_Mexican_Meal.jpg",
+  "original_title": "File:Tacos Mexican Meal.jpg",
+  "author": "VinaConstanze from Pixabay",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: VinaConstanze from Pixabay, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    1059,
+    77,
+    4960,
+    3003
+   ],
+   "square": [
+    1547,
+    77,
+    4473,
+    3003
+   ],
+   "source_size": [
+    5472,
+    3080
+   ]
+  },
+  "bytes": {
+   "large": 116398,
+   "square": 39978
+  },
+  "webp_quality": {
+   "large": 74,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:21:42Z"
+ },
+ "tempura": {
+  "large": "img/dishes/tempura.webp",
+  "square": "img/dishes/tempura-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Темпура",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Tempura_Prawns_at_Southport_Surf_Life_Saving_Club,_Main_Beach,_Queensland.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Tempura_Prawns_at_Southport_Surf_Life_Saving_Club%2C_Main_Beach%2C_Queensland.jpg",
+  "original_title": "File:Tempura Prawns at Southport Surf Life Saving Club, Main Beach, Queensland.jpg",
+  "author": "Kgbo",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Kgbo, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    0,
+    76,
+    3830,
+    2948
+   ],
+   "square": [
+    378,
+    76,
+    3251,
+    2948
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 129822,
+   "square": 39068
+  },
+  "webp_quality": {
+   "large": 66,
+   "square": 70
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:51Z"
+ },
+ "tiramisu": {
+  "large": "img/dishes/tiramisu.webp",
+  "square": "img/dishes/tiramisu-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Тирамису",
+  "cuisine": "Итальянская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Tiramisu_(44864394001).jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Tiramisu_%2844864394001%29.jpg",
+  "original_title": "File:Tiramisu (44864394001).jpg",
+  "author": "CharmaineZoe's Marvelous Melange from England",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "attribution_ru": "Фото: CharmaineZoe's Marvelous Melange from England, CC BY 2.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    68,
+    0,
+    3702,
+    2725
+   ],
+   "square": [
+    522,
+    0,
+    3248,
+    2725
+   ],
+   "source_size": [
+    3770,
+    2725
+   ]
+  },
+  "bytes": {
+   "large": 74978,
+   "square": 26922
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:27Z"
+ },
+ "tom-yum": {
+  "large": "img/dishes/tom-yum.webp",
+  "square": "img/dishes/tom-yum-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Том ям",
+  "cuisine": "Тайская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Tom_Yum_Goong_Noodle_Soup_-_Nok_Nok_Kitchen_at_The_Cow_2024-03-28.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/15/Tom_Yum_Goong_Noodle_Soup_-_Nok_Nok_Kitchen_at_The_Cow_2024-03-28.jpg",
+  "original_title": "File:Tom Yum Goong Noodle Soup - Nok Nok Kitchen at The Cow 2024-03-28.jpg",
+  "author": "Andy Li",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Andy Li, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    524,
+    302,
+    3750,
+    2722
+   ],
+   "square": [
+    927,
+    302,
+    3347,
+    2722
+   ],
+   "source_size": [
+    4032,
+    3024
+   ]
+  },
+  "bytes": {
+   "large": 117268,
+   "square": 37736
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:26:17Z",
+  "note": "бутылка лимонада за кадром"
+ },
+ "tonkatsu": {
+  "large": "img/dishes/tonkatsu.webp",
+  "square": "img/dishes/tonkatsu-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Тонкацу",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%E3%81%A8%E3%82%93%E3%81%8B%E3%82%89%E4%BA%AD%E3%83%AD%E3%83%BC%E3%82%B9%E3%82%AB%E3%83%84%E3%81%A8%E3%82%AB%E3%82%AD%E3%83%95%E3%83%A9%E3%82%A4.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/1a/%E3%81%A8%E3%82%93%E3%81%8B%E3%82%89%E4%BA%AD%E3%83%AD%E3%83%BC%E3%82%B9%E3%82%AB%E3%83%84%E3%81%A8%E3%82%AB%E3%82%AD%E3%83%95%E3%83%A9%E3%82%A4.jpg",
+  "original_title": "File:とんから亭ロースカツとカキフライ.jpg",
+  "author": "Kyu3a",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Kyu3a, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    288,
+    0,
+    3168,
+    2160
+   ],
+   "square": [
+    648,
+    0,
+    2808,
+    2160
+   ],
+   "source_size": [
+    3840,
+    2160
+   ]
+  },
+  "bytes": {
+   "large": 117904,
+   "square": 35316
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:59Z"
+ },
+ "vobla": {
+  "large": "img/dishes/vobla.webp",
+  "square": "img/dishes/vobla-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Вобла (вяленая рыба)",
+  "cuisine": "Русская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Wobla_4.JPG",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Wobla_4.JPG",
+  "original_title": "File:Wobla 4.JPG",
+  "author": "Brücke-Osteuropa",
+  "license": "Public domain",
+  "license_url": "https://commons.wikimedia.org/wiki/File:Wobla_4.JPG",
+  "attribution_ru": "Фото: Brücke-Osteuropa, общественное достояние, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    250,
+    0,
+    2746,
+    1872
+   ],
+   "square": [
+    562,
+    0,
+    2434,
+    1872
+   ],
+   "source_size": [
+    3328,
+    1872
+   ]
+  },
+  "bytes": {
+   "large": 95850,
+   "square": 25266
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 70
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:27:28Z"
+ },
+ "weisswurst": {
+  "large": "img/dishes/weisswurst.webp",
+  "square": "img/dishes/weisswurst-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Вайсвурст",
+  "cuisine": "Немецкая",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Bayerische_Wei%C3%9Fwurst_mit_Breze_und_s%C3%BC%C3%9Fem_Senf.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/17/Bayerische_Wei%C3%9Fwurst_mit_Breze_und_s%C3%BC%C3%9Fem_Senf.jpg",
+  "original_title": "File:Bayerische Weißwurst mit Breze und süßem Senf.jpg",
+  "author": "Jan Czeczotka",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: Jan Czeczotka, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    392,
+    452,
+    5210,
+    4065
+   ],
+   "square": [
+    994,
+    452,
+    4607,
+    4065
+   ],
+   "source_size": [
+    6224,
+    4106
+   ]
+  },
+  "bytes": {
+   "large": 96370,
+   "square": 39066
+  },
+  "webp_quality": {
+   "large": 70,
+   "square": 62
+  },
+  "softened": true,
+  "fetched_at": "2026-09-22T22:22:33Z"
+ },
+ "yakitori": {
+  "large": "img/dishes/yakitori.webp",
+  "square": "img/dishes/yakitori-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Якитори",
+  "cuisine": "Японская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Yakitori_002.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Yakitori_002.jpg",
+  "original_title": "File:Yakitori 002.jpg",
+  "author": "Ocdp",
+  "license": "CC0 1.0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "attribution_ru": "Фото: Ocdp, CC0 1.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": null,
+  "crop": {
+   "large": [
+    340,
+    71,
+    3948,
+    2777
+   ],
+   "square": [
+    791,
+    71,
+    3497,
+    2777
+   ],
+   "source_size": [
+    4288,
+    2848
+   ]
+  },
+  "bytes": {
+   "large": 118844,
+   "square": 35930
+  },
+  "webp_quality": {
+   "large": 78,
+   "square": 74
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:20:54Z"
+ },
+ "zheti-as": {
+  "large": "img/dishes/zheti-as.webp",
+  "square": "img/dishes/zheti-as-sq.webp",
+  "width": 1200,
+  "height": 900,
+  "name": "Жети-ас",
+  "cuisine": "Казахская",
+  "source": "commons",
+  "source_page": "https://commons.wikimedia.org/wiki/File:%D0%9A%D0%B0%D0%B7%D1%8B,_%D0%BA%D1%83%D1%80%D1%83%D1%82_%D0%B8_%D1%82%D0%BE%D0%BA-%D1%87%D0%BE%D0%BA.jpg",
+  "original_url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/%D0%9A%D0%B0%D0%B7%D1%8B%2C_%D0%BA%D1%83%D1%80%D1%83%D1%82_%D0%B8_%D1%82%D0%BE%D0%BA-%D1%87%D0%BE%D0%BA.jpg",
+  "original_title": "File:Казы, курут и ток-чок.jpg",
+  "author": "PolinaTomsk",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "attribution_ru": "Фото: PolinaTomsk, CC BY-SA 4.0, Wikimedia Commons · кадрировано, цветокоррекция",
+  "changes": "кадрирование (4:3 и 1:1), уменьшение, лёгкая единая цветокоррекция (тёплый баланс, контраст, мягкая виньетка), удаление метаданных, конвертация в WebP",
+  "derivative_license": "CC BY-SA 4.0",
+  "crop": {
+   "large": [
+    120,
+    865,
+    2400,
+    2575
+   ],
+   "square": [
+    200,
+    720,
+    2200,
+    2720
+   ],
+   "source_size": [
+    6000,
+    4000
+   ]
+  },
+  "bytes": {
+   "large": 121398,
+   "square": 39654
+  },
+  "webp_quality": {
+   "large": 62,
+   "square": 78
+  },
+  "softened": false,
+  "fetched_at": "2026-09-22T22:18:05Z",
+  "note": "кадр: левая доска - казы, жая и вяленое мясо"
+ }
+}

@@ -1,0 +1,18 @@
+<section class="section" id="ask">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge">Наш Ask</span>
+      <h2 class="section-title">
+        🚀 Что нам <span class="highlight">нужно</span>
+      </h2>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card ask-card" *ngFor="let ask of asks">
+        <div class="card-icon">{{ ask.icon }}</div>
+        <h3 class="card-title">{{ ask.title }}</h3>
+        <p class="card-text">{{ ask.text }}</p>
+      </div>
+    </div>
+  </div>
+</section>

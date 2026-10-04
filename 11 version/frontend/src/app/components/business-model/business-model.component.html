@@ -1,0 +1,34 @@
+<section class="section" id="business">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge">Бизнес-модель</span>
+      <h2 class="section-title">
+        💰 4 потока <span class="highlight">монетизации</span>
+      </h2>
+    </div>
+
+    <!-- Revenue streams table -->
+    <div class="streams-table">
+      <div class="streams-header">
+        <span class="sh">Поток</span>
+        <span class="sh">Модель</span>
+        <span class="sh">Таргет</span>
+      </div>
+      <div class="stream-row" *ngFor="let stream of streams">
+        <span class="stream-name">
+          <span class="stream-icon">{{ stream.icon }}</span> {{ stream.name }}
+        </span>
+        <span class="stream-model">{{ stream.model }}</span>
+        <span class="stream-target">{{ stream.target }}</span>
+      </div>
+    </div>
+
+    <!-- Big stats -->
+    <div class="stats-row">
+      <div class="stat" *ngFor="let stat of stats">
+        <span class="stat-value">{{ stat.value }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+      </div>
+    </div>
+  </div>
+</section>
