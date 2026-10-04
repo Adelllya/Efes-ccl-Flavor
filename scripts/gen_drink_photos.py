@@ -5,7 +5,9 @@ Flavor Tree — фото напитков НЕ из портфеля Efes (efes_
 Два источника, по очереди:
   1. NanoBanana API (nanobananaapi.ai, модель Gemini 2.5 Flash Image): студийный рендер по промпту
      из карточки напитка (название, стиль, производитель, бокал). Ключ — переменная окружения
-     NANOBANANA_API_KEY или --key. Если ключ не принят (401) или кредиты кончились, шаг пропускается.
+     NANOBANANA_API_KEY (nb_…, сервис nanobananaapi.ai) или GEMINI_API_KEY (ключ Google: AIza…/AQ.…,
+     модель gemini-3.1-flash-image напрямую), либо --key. Если ключ не принят или кредиты кончились,
+     шаг пропускается.
   2. Открытые фото: Wikimedia Commons + Openverse (только CC0 / Public domain / CC BY / CC BY-SA),
      кандидат берётся только если в названии/описании файла есть отличительное слово из названия
      напитка (иначе Commons отдаёт случайные «beer»).
@@ -74,10 +76,10 @@ MAX_BYTES = 70_000
 MIN_SIDE_WEB = 500  # минимальная короткая сторона открытого фото
 
 AI_CREDIT = {
-    "author": "ИИ-иллюстрация, NanoBanana (Gemini 2.5 Flash Image)",
+    "author": "ИИ-иллюстрация, Nano Banana (Gemini Flash Image)",
     "license": "сгенерировано, не фото продукта",
     "license_url": "",
-    "source": "https://nanobananaapi.ai",
+    "source": "https://ai.google.dev/gemini-api/docs/image-generation",
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -225,6 +227,70 @@ class NanoBanana:
         req = urllib.request.Request(url, headers={"User-Agent": fdp.UA})
         with urllib.request.urlopen(req, timeout=120) as resp:
             return resp.read()
+
+
+GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta"
+GEMINI_MODEL = "gemini-3.1-flash-image"  # Nano Banana 2; запасной — gemini-2.5-flash-image
+
+
+class Gemini:
+    """Nano Banana напрямую через Gemini API (ключ Google: AIza… или AQ.…). Ответ — PNG в base64."""
+
+    def __init__(self, key: str, model: str = GEMINI_MODEL):
+        self.key, self.model = key, model
+
+    def _call(self, path: str, payload: dict | None = None) -> dict:
+        req = urllib.request.Request(GEMINI_BASE + path, data=json.dumps(payload).encode() if payload else None,
+                                     method="POST" if payload else "GET",
+                                     headers={"x-goog-api-key": self.key, "Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=180) as resp:
+                out = json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            body = e.read()[:400].decode("utf-8", "replace")
+            if e.code in (401, 403):
+                raise NanoBananaError(f"ключ не принят ({e.code}): {body}")
+            if e.code == 429:
+                raise RateLimited(body)
+            raise NanoBananaError(f"Gemini {e.code}: {body}")
+        if "error" in out:
+            raise NanoBananaError(f"Gemini: {out['error'].get('message')}")
+        return out
+
+    def credits(self) -> str:
+        out = self._call(f"/models/{self.model}")
+        return f"модель {out.get('name')} доступна"
+
+    def image(self, prompt: str) -> bytes:
+        import base64
+        cfg = {"responseModalities": ["IMAGE"], "imageConfig": {"aspectRatio": "1:1"}}
+        for attempt in range(4):
+            try:
+                out = self._call(f"/models/{self.model}:generateContent",
+                                 {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": cfg})
+                break
+            except RateLimited:
+                time.sleep(20 * (attempt + 1))
+        else:
+            raise NanoBananaError("Gemini: лимит запросов (429) не отпускает")
+        for cand in out.get("candidates") or []:
+            for part in (cand.get("content") or {}).get("parts") or []:
+                data = (part.get("inlineData") or {}).get("data")
+                if data:
+                    return base64.b64decode(data)
+        reason = (out.get("candidates") or [{}])[0].get("finishReason") or out.get("promptFeedback")
+        raise NanoBananaError(f"Gemini: картинки нет в ответе ({reason})")
+
+
+class RateLimited(Exception):
+    pass
+
+
+def make_provider(key: str, model: str | None = None):
+    """nb_… → NanoBanana API; иначе ключ Google → Gemini напрямую."""
+    if key.startswith("nb_"):
+        return NanoBanana(key)
+    return Gemini(key, model or GEMINI_MODEL)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -484,7 +550,7 @@ def build_credits(drinks: list[dict]) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 # Запуск
 # ─────────────────────────────────────────────────────────────────────────────
-def process_one(d: dict, nb: NanoBanana | None, use_web: bool, only_missing: bool) -> dict:
+def process_one(d: dict, nb, use_web: bool, only_missing: bool) -> dict:
     """→ {"id", "status": ai|web|kept|none|error, "note", "bytes", "result": {...}|None}"""
     out_path = OUT_DIR / f"{d['id']}.webp"
     has = bool(d.get("image"))
@@ -495,7 +561,7 @@ def process_one(d: dict, nb: NanoBanana | None, use_web: bool, only_missing: boo
             return {"id": d["id"], "status": "ai", "bytes": n,
                     "result": {"image": f"img/beers/{d['id']}.webp", "image_credit": dict(AI_CREDIT)}}
         except NanoBananaError as e:
-            if "401" in str(e) or "402" in str(e):
+            if "не принят" in str(e) or "402" in str(e) or "лимит" in str(e):
                 raise  # ключ/кредиты: дальше ИИ бесполезен, сообщаем наверх
             note = f"ИИ: {e}"
         except Exception as e:  # noqa: BLE001
@@ -529,16 +595,16 @@ def cmd_run(args: argparse.Namespace) -> None:
         todo = todo[: args.limit]
     print(f"Напитков к обработке: {len(todo)} (без фото: {sum(1 for d in todo if not d.get('image'))})")
 
-    nb: NanoBanana | None = None
-    key = args.key or os.environ.get("NANOBANANA_API_KEY")
+    nb = None
+    key = args.key or os.environ.get("NANOBANANA_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not args.no_ai:
         if not key:
             print("NanoBanana: ключ не задан (NANOBANANA_API_KEY) — шаг ИИ пропущен")
         else:
             try:
-                cr = NanoBanana(key).credits()
-                print(f"NanoBanana: ключ принят, кредитов: {cr}")
-                nb = NanoBanana(key)
+                prov = make_provider(key, args.model)
+                print(f"{type(prov).__name__}: ключ принят, {prov.credits()}")
+                nb = prov
             except NanoBananaError as e:
                 print(f"NanoBanana: {e} — шаг ИИ пропущен, идём в открытые источники")
             except Exception as e:  # noqa: BLE001
@@ -593,11 +659,12 @@ def cmd_run(args: argparse.Namespace) -> None:
 
 
 def cmd_check_key(args: argparse.Namespace) -> None:
-    key = args.key or os.environ.get("NANOBANANA_API_KEY")
+    key = args.key or os.environ.get("NANOBANANA_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not key:
-        raise SystemExit("ключ не задан: --key или NANOBANANA_API_KEY")
+        raise SystemExit("ключ не задан: --key, NANOBANANA_API_KEY или GEMINI_API_KEY")
     try:
-        print(f"ключ принят, кредитов: {NanoBanana(key).credits()}")
+        prov = make_provider(key, args.model)
+        print(f"{type(prov).__name__}: ключ принят, {prov.credits()}")
     except NanoBananaError as e:
         raise SystemExit(f"NanoBanana: {e}")
 
@@ -704,6 +771,7 @@ def main() -> None:
     r = sub.add_parser("run")
     r.add_argument("ids", nargs="*")
     r.add_argument("--key")
+    r.add_argument("--model", help=f"модель Gemini (по умолчанию {GEMINI_MODEL})")
     r.add_argument("--only-missing", action="store_true")
     r.add_argument("--no-ai", action="store_true")
     r.add_argument("--no-web", action="store_true")
@@ -713,6 +781,7 @@ def main() -> None:
     r.set_defaults(fn=cmd_run)
     k = sub.add_parser("check-key")
     k.add_argument("--key")
+    k.add_argument("--model")
     k.set_defaults(fn=cmd_check_key)
     sub.add_parser("credits").set_defaults(fn=cmd_credits)
     ef = sub.add_parser("efes")
