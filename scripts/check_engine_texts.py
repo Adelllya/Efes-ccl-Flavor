@@ -99,7 +99,8 @@ def fmt(path: JPath) -> str:
 
 
 def is_doc(path: JPath) -> bool:
-    return "_doc" in path
+    """_doc и его варианты вроде _doc_2_3 — пояснения для разработчика, не тексты."""
+    return any(isinstance(k, str) and k.startswith("_doc") for k in path)
 
 
 def is_text(v: Any) -> bool:
@@ -180,7 +181,7 @@ def static_check(lang: str, params: Dict[str, Any], texts: Dict[JPath, str], arr
                 P.add(lang, "русские слова в kk-оверлее", f"{fmt(path)}: {ru_words} — {tr!r}")
     for path, v in walk(overlay):
         if is_doc(path):
-            doc_parent = path[: path.index("_doc") + 1]
+            doc_parent = path[: next(i for i, k in enumerate(path) if isinstance(k, str) and k.startswith("_doc")) + 1]
             try:
                 get(params, doc_parent)
             except KeyError:

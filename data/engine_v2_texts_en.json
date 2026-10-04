@@ -96,7 +96,8 @@
       "plus": "Protein and fat in the {protein_src} bind the {cat_gen}'s tannins — the drink turns softer and fruitier (WSET; Madrigal-Galan 2006)",
       "fish": "Fish oil + the {cat_gen}'s tannins = a metallic taste (CMS)",
       "green": "Iron-rich greens (asparagus, artichoke) leave a metallic finish with tannins (CMS)",
-      "dry": "The dish has little protein or fat — the {cat_gen}'s tannins have nothing to grip"
+      "dry": "The dish has little protein or fat — the {cat_gen}'s tannins have nothing to grip",
+      "plus_soft": "Protein and fat in the {protein_src} bind the {cat_gen}'s tannins, the drink turns softer"
     }
   },
   "R9": {
@@ -146,7 +147,8 @@
   "R14": {
     "texts": {
       "bitter": "Bitter on bitter: the dish's bitterness and the {cat_gen}'s add up",
-      "sweet": "A sweet drink with a sweetish main course — sugar on sugar"
+      "sweet": "A sweet drink with a sweetish main course — sugar on sugar",
+      "savory_sweet": "A frankly sweet drink with a savoury main tastes cloying: sugar with no salt or heat to balance it"
     }
   },
   "R15": {
@@ -524,7 +526,10 @@
       "tatar": "Tatar cuisine",
       "international": "international cuisine"
     },
-    "cuisine_default": "the same cuisine"
+    "cuisine_default": "the same cuisine",
+    "family_gen": {
+      "COCOA": "cocoa"
+    }
   },
   "rules_summary": {
     "R1": "The drink and the dish should be equally matched: light with light, rich with rich. If the drink is much louder than the dish, it drowns it out, and the pairing's other strengths barely count (BA, CMS).",
