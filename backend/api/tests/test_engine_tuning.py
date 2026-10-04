@@ -69,3 +69,21 @@ class EngineTuningTests(TestCase):
     def test_plain_user_cannot_save(self):
         r = client_for(self.plain).post("/api/v2/tuning/save/", {"overrides": {}}, format="json")
         self.assertIn(r.status_code, (401, 403))
+
+    # --- кнопка «Рекомендовать Efes»: окно приоритета портфеля ---
+    def test_efes_promote_window_is_a_knob_and_reaches_policy(self):
+        c = client_for(self.somm)
+        j = c.get("/api/v2/tuning/").json()
+        self.assertEqual(j["efes_promote"]["path"], "recommend.partner_tie_window")
+        self.assertFalse(j["efes_promote"]["active"])
+        base_window = c.get("/api/v2/pairing/dish/beshbarmak/").json()["policy"]["partner_tie_window"]
+        self.assertEqual(j["efes_promote"]["base"], base_window)
+        window = j["efes_promote"]["window"]
+        r = c.post("/api/v2/tuning/save/", {"overrides": {"recommend.partner_tie_window": window}}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()["efes_promote"]["active"])
+        policy = c.get("/api/v2/pairing/dish/beshbarmak/").json()["policy"]
+        self.assertEqual(policy["partner_tie_window"], window)   # окно дошло до подбора
+        self.assertIn(str(window), policy["note"])
+        c.post("/api/v2/tuning/reset/", {}, format="json")
+        self.assertEqual(c.get("/api/v2/pairing/dish/beshbarmak/").json()["policy"]["partner_tie_window"], base_window)

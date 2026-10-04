@@ -25,7 +25,13 @@ KNOBS = [
     ("R6.k_forgive", "Прощение горечи солью", "Насколько соль блюда смягчает горечь напитка.", 0, 16, 1),
     ("R7.k_neg", "Жёсткость умами без соли", "Штраф за жёсткость, когда умами не поддержано солью и кислотой.", 0, 24, 1),
     ("R8.k_plus", "Бонус танин и белок", "Бонус за пару насыщенного танина с белковым блюдом.", 0, 30, 1),
+    ("recommend.partner_tie_window", "Приоритет портфеля Efes",
+     "Напиток Efes встаёт выше чужого, если уступает ему не больше чем на столько баллов. Баллы не меняются. "
+     "0 выключает приоритет.", 0, 30, 1),
 ]
+# Кнопка «Рекомендовать Efes» в админке: окно, с которым напитки Efes почти всегда идут первыми.
+EFES_PROMOTE_PATH = "recommend.partner_tie_window"
+EFES_PROMOTE_WINDOW = 12
 KNOB_PATHS = [k[0] for k in KNOBS]
 KNOB_RANGE = {k[0]: (k[3], k[4]) for k in KNOBS}
 
@@ -76,9 +82,14 @@ def knobs_state(data_dir=None):
         b = _get_path(base, path)
         items.append({"path": path, "label": label, "hint": hint, "min": lo, "max": hi,
                       "step": step, "base": b, "value": ov.get(path, b)})
+    window = ov.get(EFES_PROMOTE_PATH, _get_path(base, EFES_PROMOTE_PATH))
     return {"version": row.version, "updated_by": row.updated_by,
             "updated_at": row.updated_at.isoformat() if row.updated_at else None,
-            "has_overrides": bool(ov), "knobs": items}
+            "has_overrides": bool(ov), "knobs": items,
+            # кнопка «Рекомендовать Efes»: включена, если окно не меньше EFES_PROMOTE_WINDOW
+            "efes_promote": {"path": EFES_PROMOTE_PATH, "window": EFES_PROMOTE_WINDOW,
+                             "base": _get_path(base, EFES_PROMOTE_PATH),
+                             "active": window is not None and window >= EFES_PROMOTE_WINDOW}}
 
 
 def save_overrides(overrides: Dict[str, Any], username: str = "") -> None:
