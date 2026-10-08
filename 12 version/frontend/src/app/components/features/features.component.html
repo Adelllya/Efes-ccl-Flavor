@@ -1,0 +1,31 @@
+<section class="section bg-pattern" id="features">
+  <div class="container">
+    <div class="section-header">
+      <span class="badge">Уникальные фичи</span>
+      <h2 class="section-title">
+        Что делает нас <span class="highlight">особенными</span>
+      </h2>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card feature-card" *ngFor="let feature of features">
+        <div class="card-icon">{{ feature.icon }}</div>
+        <h3 class="card-title">{{ feature.title }}</h3>
+        <p class="card-text">{{ feature.text }}</p>
+      </div>
+    </div>
+
+    <!-- Comparison -->
+    <div class="comparison">
+      <div class="comp-item comp-left">
+        <span class="comp-name">Untappd</span>
+        <span class="comp-desc">«8 лет, ставки 4/5»</span>
+      </div>
+      <span class="comp-vs">VS</span>
+      <div class="comp-item comp-right">
+        <span class="comp-name">Flavor Tree</span>
+        <span class="comp-desc">«Я знаю это пиво»</span>
+      </div>
+    </div>
+  </div>
+</section>

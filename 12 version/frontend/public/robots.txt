@@ -1,0 +1,17 @@
+# Flavor Tree: справочник для гостей заведений по QR-коду, а не публичная витрина.
+# Поисковикам страницы не отдаём (в index.html ещё meta robots noindex),
+# а сервисам превью ссылок в мессенджерах и соцсетях открываем.
+User-agent: TelegramBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: *
+Disallow: /

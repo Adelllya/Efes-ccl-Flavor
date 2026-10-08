@@ -15,6 +15,7 @@
           "2 version/**",
           "5 version/**",
           "11 version/**",
+          "12 version/**",
           "flavor-tree-backend-development-2/**",
           "backend/staticfiles/**",
           "*.md",
