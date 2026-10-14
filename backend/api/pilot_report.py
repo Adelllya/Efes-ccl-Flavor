@@ -31,12 +31,12 @@ RECENT_FEEDBACK = 20
 EXPORT_KINDS = ('events', 'orders', 'feedback')
 
 FUNNEL = (
-    ('scan', 'Отсканировали QR'),
-    ('menu_open', 'Открыли меню'),
-    ('pair_open', 'Открыли подбор напитка'),
-    ('pair_add', 'Добавили напиток из подбора'),
-    ('order', 'Отправили заказ'),
-    ('order_with_pairing', 'Заказали напиток из подбора'),
+    ('scan', 'Scanned the QR code'),
+    ('menu_open', 'Opened the menu'),
+    ('pair_open', 'Opened drink pairing'),
+    ('pair_add', 'Added a drink from pairing'),
+    ('order', 'Placed an order'),
+    ('order_with_pairing', 'Ordered a drink from pairing'),
 )
 
 
@@ -61,7 +61,7 @@ def _parse_date(value, name):
     try:
         return date.fromisoformat(str(value).strip())
     except ValueError:
-        raise ValueError('{}: дата в формате ГГГГ-ММ-ДД'.format(name))
+        raise ValueError('{}: date must be in YYYY-MM-DD format'.format(name))
 
 
 def first_activity(venue):
@@ -89,9 +89,9 @@ def parse_period(raw_from, raw_to, venue):
         date_from = first_activity(venue) or date_to
         date_from = min(max(date_from, date_to - timedelta(days=MAX_DAYS - 1)), date_to)
     if date_from > date_to:
-        raise ValueError('Дата from позже даты to')
+        raise ValueError('The from date is later than the to date')
     if (date_to - date_from).days + 1 > MAX_DAYS:
-        raise ValueError('Период не длиннее {} дней'.format(MAX_DAYS))
+        raise ValueError('The period must not exceed {} days'.format(MAX_DAYS))
     return date_from, date_to
 
 
@@ -445,8 +445,8 @@ def export_rows(kind, venue, date_from, date_to, decimal_comma=True):
     start, end = bounds(date_from, date_to)
     labels = Labels()
     if kind == 'events':
-        header = ['Время', 'Заведение', 'Сессия', 'Событие', 'Код события', 'Стол',
-                  'Блюдо', 'Напиток', 'Место в подборе', 'Источник', 'Подробности']
+        header = ['Time', 'Venue', 'Session', 'Event', 'Event code', 'Table',
+                  'Dish', 'Drink', 'Pairing rank', 'Source', 'Details']
         rows = [[
             local_stamp(e.created_at), e.venue.slug if e.venue_id and e.venue else '', e.session,
             e.get_kind_display(), e.kind, e.table_number if e.table_number is not None else '',
@@ -455,15 +455,15 @@ def export_rows(kind, venue, date_from, date_to, decimal_comma=True):
         ] for e in load_events(venue, start, end)]
         return header, rows
     if kind == 'orders':
-        header = ['Время', 'Заведение', 'Заказ №', 'Статус', 'Стол', 'Сессия', 'Возраст подтверждён',
-                  'Сумма заказа', 'Тип позиции', 'Позиция', 'Кол-во', 'Цена', 'Откуда', 'Подобрано к блюду',
-                  'Место в подборе']
+        header = ['Time', 'Venue', 'Order #', 'Status', 'Table', 'Session', 'Age confirmed',
+                  'Order total', 'Item type', 'Item', 'Qty', 'Price', 'Source', 'Paired with dish',
+                  'Pairing rank']
         rows = []
         for order in load_orders(venue, start, end):
             for line in order.items.all():
                 rows.append([
                     local_stamp(order.created_at), order.venue.slug, order.number, order.get_status_display(),
-                    order.table_number, order.session, 'да' if order.age_confirmed else 'нет',
+                    order.table_number, order.session, 'yes' if order.age_confirmed else 'no',
                     num_cell(order.total, decimal_comma), line.get_kind_display(), line.title, line.qty,
                     num_cell(line.price, decimal_comma), line.get_source_display(),
                     line.paired_menu_item.dish.name if line.paired_menu_item is not None else '',
@@ -471,7 +471,7 @@ def export_rows(kind, venue, date_from, date_to, decimal_comma=True):
                 ])
         return header, rows
     if kind == 'feedback':
-        header = ['Время', 'Заведение', 'Заказ №', 'Стол', 'Сессия', 'Блюдо', 'Напиток', 'Оценка', 'Комментарий']
+        header = ['Time', 'Venue', 'Order #', 'Table', 'Session', 'Dish', 'Drink', 'Rating', 'Comment']
         rows = [[
             local_stamp(f.created_at), f.venue.slug if f.venue_id and f.venue else '',
             f.order.number if f.order_id and f.order else '',
@@ -479,7 +479,7 @@ def export_rows(kind, venue, date_from, date_to, decimal_comma=True):
             labels.dish(f.dish_ref), labels.drink(f.drink_ref), f.rating, f.comment,
         ] for f in reversed(load_feedback(venue, start, end))]
         return header, rows
-    raise ValueError('kind: events, orders или feedback')
+    raise ValueError('kind: events, orders or feedback')
 
 
 def csv_text(header, rows, delimiter=';'):
@@ -494,12 +494,12 @@ def csv_text(header, rows, delimiter=';'):
 
 def summary_rows(report, decimal_comma=True):
     """Дни и лучшие пары из отчёта - для CSV команды pilot_report."""
-    days = (['Дата', 'Гостей', 'Сканов', 'Открыли подбор', 'Добавили из подбора', 'Заказов',
-             'Заказов с подбором', 'Средний чек', 'Выручка'],
+    days = (['Date', 'Guests', 'Scans', 'Opened pairing', 'Added from pairing', 'Orders',
+             'Orders with pairing', 'Average check', 'Revenue'],
             [[d['date'], d['sessions'], d['scans'], d['pair_opens'], d['pair_adds'], d['orders'],
               d['orders_with_pairing'], num_cell(d['avg_check'], decimal_comma), num_cell(d['revenue'], decimal_comma)]
              for d in report['by_day']])
-    pairs = (['Блюдо', 'Напиток', 'Открыли', 'Добавили', 'Заказали', 'Средняя оценка', 'Оценок'],
+    pairs = (['Dish', 'Drink', 'Opened', 'Added', 'Ordered', 'Average rating', 'Ratings'],
              [[p['dish'], p['drink'], p['opens'], p['adds'], p['ordered'],
                num_cell(p['avg_rating'], decimal_comma), p['ratings']]
               for p in report['top_pairs']])

@@ -26,14 +26,22 @@ GENERIC_TERMS = frozenset({
     'рагу', 'запеканка', 'паста', 'спагетти', 'макароны', 'капуста', 'соленья', 'отбивная', 'бобы', 'кебаб',
     'авокадо', 'томаты', 'моцарелла', 'креветки', 'шоколад', 'мороженое', 'сыр', 'бульон', 'орехи', 'колбаски',
     'сосиски', 'говядина', 'курица', 'дамплинги', 'печень', 'потроха', 'жаркое', 'чипсы', 'пирожок',
+    'meat', 'salad', 'soup', 'fish', 'snack', 'snacks', 'dessert', 'pastry', 'bread', 'sausage', 'cheese', 'cheeses',
+    'noodles', 'grill', 'bbq', 'barbecue', 'pie', 'cake', 'rice', 'donuts', 'potato', 'potatoes', 'fries', 'roll',
+    'dip', 'stew', 'pasta', 'spaghetti', 'cabbage', 'pickles', 'beans', 'kebab', 'avocado', 'tomatoes', 'shrimp',
+    'prawns', 'chocolate', 'broth', 'nuts', 'sausages', 'beef', 'chicken', 'dumplings', 'liver',
+    'chips', 'food', 'dish',
 })
-STOP_WORDS = frozenset({'и', 'с', 'со', 'в', 'на', 'к', 'по', 'под', 'из', 'для', 'а', 'the', 'a', 'with', 'and', 'of'})
+STOP_WORDS = frozenset({'и', 'с', 'со', 'в', 'на', 'к', 'по', 'под', 'из', 'для', 'а', 'the', 'a', 'with', 'and', 'of',
+                        'an', 'to', 'for', 'in', 'on'})
 # Слова вопроса, которые никогда не считаются названием блюда или напитка («такое» не «тако», «это» не «эт»).
 QUESTION_SKIP = STOP_WORDS | frozenset({
     'такое', 'такой', 'такая', 'такие', 'такого', 'такую', 'таких', 'также', 'это', 'этот', 'эта', 'эти', 'этого',
     'что', 'чем', 'как', 'или', 'есть', 'ли', 'мне', 'нам', 'вам', 'вы', 'ты', 'же', 'бы', 'вот', 'еще', 'самое',
     'самый', 'самая', 'самые', 'нет', 'да', 'ну', 'не', 'уже', 'очень', 'можно', 'хочу', 'хотим', 'нас', 'меня',
     'what', 'which', 'this', 'that', 'some', 'something', 'about',
+    'is', 'are', 'how', 'do', 'does', 'you', 'me', 'my', 'we', 'have', 'any', 'can', 'want', 'would', 'like',
+    'please', 'it',
 })
 # Как гости пишут бренды по-русски.
 ALIASES = {
@@ -78,9 +86,9 @@ def data_dir():
     return str(getattr(settings, 'FLAVOR_DATA_DIR', '')) or None
 
 
-def dataset(lang='ru'):
+def dataset(lang='en'):
     """Набор движка с весами из админки и объяснениями на языке гостя. None, если данных нет."""
-    locale = lang if lang in ('kk', 'en') else 'ru'
+    locale = lang if lang in ('kk', 'en', 'ru') else 'en'
     try:
         from . import engine_tuning
         return engine_tuning.tuned_dataset(data_dir(), locale)

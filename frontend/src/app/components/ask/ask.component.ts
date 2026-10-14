@@ -10,8 +10,8 @@ import { CommonModule } from '@angular/common';
 })
 export class AskComponent {
   asks = [
-    { icon: '📊', title: 'Данные', text: 'Доступ к вкусовым профилям продуктов Efes' },
-    { icon: '🏛️', title: 'Пилот', text: 'Школа сомелье на одном мероприятии Efes' },
-    { icon: '🤝', title: 'Менторство', text: 'Поддержка маркетинг-команды Efes' },
+    { icon: '📊', title: 'Data', text: 'Access to the flavor profiles of Efes products' },
+    { icon: '🏛️', title: 'Pilot', text: 'A sommelier school at one Efes event' },
+    { icon: '🤝', title: 'Mentorship', text: 'Support from the Efes marketing team' },
   ];
 }

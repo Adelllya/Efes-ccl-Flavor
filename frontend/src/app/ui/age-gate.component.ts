@@ -33,47 +33,47 @@ interface SoftGroup {
       <div class="ag-card">
         @if (step() === 'ask') {
           <div class="ag-badge" aria-hidden="true">21+</div>
-          <h2 id="ag-title" class="ag-title">Вам исполнился 21 год?</h2>
+          <h2 id="ag-title" class="ag-title">Are you 21 or older?</h2>
           @if (venueMenu) {
-            <p class="ag-text">В меню есть алкоголь, его подают только гостям старше 21 года. Если вам меньше, покажем блюда и безалкогольные напитки.</p>
+            <p class="ag-text">This menu includes alcohol, which is served only to guests aged 21 and over. If you are under 21, we will show you the food and non-alcoholic drinks.</p>
           } @else {
-            <p class="ag-text">На сайте есть информация об алкогольных напитках, она предназначена только для гостей старше 21 года.</p>
+            <p class="ag-text">This site contains information about alcoholic drinks and is intended only for guests aged 21 and over.</p>
           }
           <div class="ag-actions">
-            <button type="button" class="btn-amber" (click)="yes()">Да</button>
-            <button type="button" class="btn-outline" (click)="no()">Нет</button>
+            <button type="button" class="btn-amber" (click)="yes()">Yes</button>
+            <button type="button" class="btn-outline" (click)="no()">No</button>
           </div>
           <p class="ag-note">
-            Чрезмерное употребление алкоголя вредит вашему здоровью.
-            <a href="/privacy" (click)="openPrivacy($event)">Конфиденциальность</a>
+            Excessive alcohol consumption is harmful to your health.
+            <a href="/privacy" (click)="openPrivacy($event)">Privacy</a>
           </p>
         } @else {
           <div class="ag-badge ag-badge-soft" aria-hidden="true">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M6 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/></svg>
           </div>
-          <h2 id="ag-title" class="ag-title">Спасибо за честный ответ</h2>
+          <h2 id="ag-title" class="ag-title">Thank you for your honest answer</h2>
           <p class="ag-text">
-            Материалы об алкогольных напитках открыты только гостям старше 21 года.
-            Можно посмотреть безалкогольные напитки: чай, кофе, лимонады, айран и воду.
+            Content about alcoholic drinks is available only to guests aged 21 and over.
+            You can still browse non-alcoholic drinks: tea, coffee, lemonades, ayran and water.
           </p>
 
           @switch (softState()) {
             @case ('idle') {
               <div class="ag-actions">
-                <button type="button" class="btn-amber" (click)="showSoft()">Безалкогольные напитки</button>
+                <button type="button" class="btn-amber" (click)="showSoft()">Non-alcoholic drinks</button>
               </div>
             }
             @case ('loading') {
-              <p class="ag-text text-sm" aria-busy="true">Загружаем напитки...</p>
+              <p class="ag-text text-sm" aria-busy="true">Loading drinks...</p>
             }
             @case ('error') {
-              <p class="ag-text text-sm">Не получилось загрузить список. Проверьте интернет и попробуйте ещё раз.</p>
+              <p class="ag-text text-sm">Could not load the list. Check your connection and try again.</p>
               <div class="ag-actions">
-                <button type="button" class="btn-outline" (click)="showSoft()">Повторить</button>
+                <button type="button" class="btn-outline" (click)="showSoft()">Try again</button>
               </div>
             }
             @case ('ready') {
-              <div class="ag-soft" tabindex="0" aria-label="Безалкогольные напитки">
+              <div class="ag-soft" tabindex="0" aria-label="Non-alcoholic drinks">
                 @for (g of soft(); track g.id) {
                   <h3 class="ag-soft-title">{{ g.label }}</h3>
                   <ul class="ag-soft-list">
@@ -90,8 +90,8 @@ interface SoftGroup {
           }
 
           <p class="ag-note">
-            <button type="button" class="ag-link" (click)="back()">Мне есть 21, ответить заново</button>
-            <a href="/privacy" (click)="openPrivacy($event)">Конфиденциальность</a>
+            <button type="button" class="ag-link" (click)="back()">I am 21 or older, answer again</button>
+            <a href="/privacy" (click)="openPrivacy($event)">Privacy</a>
           </p>
         }
       </div>
@@ -185,30 +185,6 @@ interface SoftGroup {
     .ag-soft-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
     .ag-soft-list li { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; line-height: 1.35; }
 
-    /* Телефон и низкий сенсорный экран: одна прокрутка вместо двух. Список безалкогольного занимает место,
-       что осталось в окне, а ссылки под ним всегда на виду. Ссылки высотой 40px под палец.
-       Низкое окно ноутбука (мышь) остаётся с десктопным окном */
-    @media (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
-      .ag-dialog[open] { display: flex; flex-direction: column; }
-      .ag-card { display: flex; flex-direction: column; min-height: 0; }
-      .ag-soft { flex: 1 1 auto; min-height: 96px; max-height: none; }
-      .ag-note { row-gap: 0; }
-      .ag-note a, .ag-link { display: inline-flex; align-items: center; min-height: 40px; }
-    }
-    @media (max-height: 640px) and (max-width: 768px), (max-height: 640px) and (pointer: coarse) {
-      .ag-badge-soft { display: none; }
-    }
-    /* Сенсорный экран: подписи групп не мельче 12px */
-    @media (max-width: 768px), (pointer: coarse) {
-      .ag-soft-title { font-size: 0.75rem; }
-    }
-    /* Телефон боком: окно шире и плотнее, чтобы списку осталась не одна строка */
-    @media (max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
-      .ag-dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 16px); }
-      .ag-card { padding: var(--space-xl) var(--space-2xl) var(--space-lg); }
-      .ag-text, .ag-actions, .ag-soft { margin-bottom: var(--space-md); }
-    }
-
     @media (prefers-reduced-motion: reduce) { .ag-dialog { animation: none; } }
   `]
 })
@@ -283,7 +259,7 @@ export class AgeGateComponent implements AfterViewInit {
         const groups = SOFT_ORDER
           .map(id => ({
             id,
-            label: id === 'cocktail' ? 'Коктейли без алкоголя' : labels.get(id) ?? id,
+            label: id === 'cocktail' ? 'Alcohol-free cocktails' : labels.get(id) ?? id,
             drinks: drinks.filter(d => d.category === id && d.abv === 0
               && !ENERGY.test(`${d.name} ${d.style?.name ?? ''}`))
           }))

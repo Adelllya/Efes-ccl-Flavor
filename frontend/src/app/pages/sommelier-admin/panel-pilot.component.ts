@@ -41,10 +41,10 @@ function almatyDay(offsetDays = 0): string {
         <div class="wa-card">
           <div class="wa-card-head">
             <div class="wa-card-head-text">
-              <h3 class="wa-card-title">Пилот в заведении</h3>
+              <h3 class="wa-card-title">Venue pilot</h3>
               <p class="wa-card-sub">{{ subtitle() }}</p>
             </div>
-            <button type="button" class="wa-iconbtn" title="Обновить" [disabled]="loading()" (click)="load()">
+            <button type="button" class="wa-iconbtn" title="Refresh" [disabled]="loading()" (click)="load()">
               <panel-icon name="refresh" />
             </button>
           </div>
@@ -52,14 +52,14 @@ function almatyDay(offsetDays = 0): string {
           <div class="wa-pilot-controls">
             @if (isModerator()) {
               <div class="wa-field wa-pilot-venue">
-                <span class="wa-label">Заведение</span>
-                <ft-select [options]="venueOptions()" [searchable]="true" placeholder="Все заведения"
-                           searchPlaceholder="Название заведения" emptyText="Заведений пока нет"
+                <span class="wa-label">Venue</span>
+                <ft-select [options]="venueOptions()" [searchable]="true" placeholder="All venues"
+                           searchPlaceholder="Venue name" emptyText="No venues yet"
                            [ngModel]="venue()" (ngModelChange)="pickVenue($event)" />
               </div>
             }
             <div class="wa-field">
-              <span class="wa-label">Период</span>
+              <span class="wa-label">Period</span>
               <div class="wa-pills wa-pilot-pills">
                 @for (p of presets; track p.value) {
                   <button type="button" class="wa-pill" [class.active]="preset() === p.value" (click)="setPreset(p.value)">{{ p.label }}</button>
@@ -68,26 +68,26 @@ function almatyDay(offsetDays = 0): string {
             </div>
             <div class="wa-pilot-dates">
               <label class="wa-field">
-                <span class="wa-label">С</span>
+                <span class="wa-label">From</span>
                 <input class="input" type="date" [ngModel]="from()" (ngModelChange)="setDate('from', $event)" />
               </label>
               <label class="wa-field">
-                <span class="wa-label">По</span>
+                <span class="wa-label">To</span>
                 <input class="input" type="date" [ngModel]="to()" (ngModelChange)="setDate('to', $event)" />
               </label>
             </div>
           </div>
 
           <div class="wa-actions">
-            <span class="wa-label">Выгрузка для Excel:</span>
+            <span class="wa-label">Export for Excel:</span>
             @for (c of csvKinds; track c.value) {
               <button type="button" class="btn-outline" [disabled]="!report() || downloading() === c.value" (click)="download(c.value)">
-                <panel-icon name="download" /> {{ downloading() === c.value ? 'Готовим...' : c.label }}
+                <panel-icon name="download" /> {{ downloading() === c.value ? 'Preparing...' : c.label }}
               </button>
             }
             @if (venue()) {
               <button type="button" class="btn-outline" [disabled]="qrOpening()" (click)="openQr()">
-                <panel-icon name="qr" /> QR для столов
+                <panel-icon name="qr" /> Table QR codes
               </button>
             }
           </div>
@@ -100,12 +100,12 @@ function almatyDay(offsetDays = 0): string {
           <div class="wa-loadbar">
             <panel-icon name="alert" />
             <span>{{ error() }}</span>
-            <button type="button" class="btn-outline" (click)="load()"><panel-icon name="refresh" /> Обновить</button>
+            <button type="button" class="btn-outline" (click)="load()"><panel-icon name="refresh" /> Refresh</button>
           </div>
         }
 
         @if (!report() && loading()) {
-          <p class="wa-muted">Загрузка...</p>
+          <p class="wa-muted">Loading...</p>
         }
 
         @if (report(); as r) {
@@ -120,8 +120,8 @@ function almatyDay(offsetDays = 0): string {
           </div>
 
           <div class="wa-card">
-            <h3 class="wa-card-title"><panel-icon name="filter" />Воронка гостя</h3>
-            <p class="wa-muted wa-pilot-note">Уникальные гости (сессии браузера), дошедшие до шага. Процент от предыдущего шага.</p>
+            <h3 class="wa-card-title"><panel-icon name="filter" />Guest funnel</h3>
+            <p class="wa-muted wa-pilot-note">Unique guests (browser sessions) who reached each step. Percentage is relative to the previous step.</p>
             <ol class="wa-funnel">
               @for (f of funnel(); track f.step) {
                 <li class="wa-funnel-row" [title]="f.label + ': ' + f.count">
@@ -135,12 +135,12 @@ function almatyDay(offsetDays = 0): string {
           </div>
 
           <div class="wa-card">
-            <h3 class="wa-card-title"><panel-icon name="pairings" />Лучшие пары</h3>
+            <h3 class="wa-card-title"><panel-icon name="pairings" />Top pairings</h3>
             @if (r.top_pairs.length) {
               <div class="wa-data-wrap">
                 <table class="wa-data">
                   <thead>
-                    <tr><th>Блюдо</th><th>Напиток</th><th class="num">Открыли</th><th class="num">Добавили</th><th class="num">Заказали</th><th class="num">Оценка</th></tr>
+                    <tr><th>Dish</th><th>Drink</th><th class="num">Opened</th><th class="num">Added</th><th class="num">Ordered</th><th class="num">Rating</th></tr>
                   </thead>
                   <tbody>
                     @for (p of r.top_pairs; track $index) {
@@ -157,16 +157,16 @@ function almatyDay(offsetDays = 0): string {
                 </table>
               </div>
             } @else {
-              <p class="wa-muted">Пока никто не открывал подбор к блюдам за этот период.</p>
+              <p class="wa-muted">No one has opened dish pairings during this period yet.</p>
             }
           </div>
 
           <div class="wa-card">
-            <h3 class="wa-card-title"><panel-icon name="clock" />По дням</h3>
+            <h3 class="wa-card-title"><panel-icon name="clock" />By day</h3>
             <div class="wa-data-wrap wa-data-scroll">
               <table class="wa-data">
                 <thead>
-                  <tr><th>День</th><th class="num">Гости</th><th class="num">Сканы</th><th class="num">Подбор</th><th class="num">Заказы</th><th class="num">С подбором</th><th class="num">Средний чек</th></tr>
+                  <tr><th>Day</th><th class="num">Guests</th><th class="num">Scans</th><th class="num">Pairings</th><th class="num">Orders</th><th class="num">With pairing</th><th class="num">Avg. check</th></tr>
                 </thead>
                 <tbody>
                   @for (d of days(); track d.date) {
@@ -187,14 +187,14 @@ function almatyDay(offsetDays = 0): string {
 
           @if (r.by_table.length) {
             <div class="wa-card">
-              <h3 class="wa-card-title"><panel-icon name="store" />По столам</h3>
+              <h3 class="wa-card-title"><panel-icon name="store" />By table</h3>
               <div class="wa-data-wrap wa-data-scroll">
                 <table class="wa-data">
-                  <thead><tr><th>Стол</th><th class="num">Гости</th><th class="num">Сканы</th><th class="num">Заказы</th></tr></thead>
+                  <thead><tr><th>Table</th><th class="num">Guests</th><th class="num">Scans</th><th class="num">Orders</th></tr></thead>
                   <tbody>
                     @for (t of r.by_table; track t.table) {
                       <tr>
-                        <td>{{ t.table > 0 ? 'Стол ' + t.table : 'С собой' }}</td>
+                        <td>{{ t.table > 0 ? 'Table ' + t.table : 'Takeaway' }}</td>
                         <td class="num">{{ t.sessions }}</td>
                         <td class="num">{{ t.scans ?? '-' }}</td>
                         <td class="num">{{ t.orders }}</td>
@@ -207,19 +207,19 @@ function almatyDay(offsetDays = 0): string {
           }
 
           <div class="wa-card">
-            <h3 class="wa-card-title"><panel-icon name="star" />Оценки гостей</h3>
+            <h3 class="wa-card-title"><panel-icon name="star" />Guest ratings</h3>
             @for (f of r.feedback ?? []; track $index) {
               <div class="wa-quote wa-pilot-quote">
-                <span class="wa-label">{{ stars(f.rating) }} · {{ f.dish || 'блюдо не указано' }} и {{ f.drink || 'напиток не указан' }}@if (f.order_number) { · заказ №{{ f.order_number }} } · {{ when(f.created_at) }}</span>
+                <span class="wa-label">{{ stars(f.rating) }} · {{ f.dish || 'no dish given' }} and {{ f.drink || 'no drink given' }}@if (f.order_number) { · order #{{ f.order_number }} } · {{ when(f.created_at) }}</span>
                 @if (f.comment) { <p>{{ f.comment }}</p> }
               </div>
             } @empty {
-              <p class="wa-muted">Оценок пока нет. Гость видит вопрос о паре на экране заказа.</p>
+              <p class="wa-muted">No ratings yet. Guests are asked about the pairing on the order screen.</p>
             }
           </div>
 
-          <p class="wa-hint">Период {{ dayLabel(r.period.from) }} - {{ dayLabel(r.period.to) }} по времени Алматы. Отменённые заказы не считаются.
-            «Из подбора» - напиток добавлен кнопкой в панели «Подобрать напиток» или из чата ИИ-сомелье.</p>
+          <p class="wa-hint">Period {{ dayLabel(r.period.from) }} - {{ dayLabel(r.period.to) }}, Almaty time. Cancelled orders aren't counted.
+            "From pairing" means the drink was added with the button in the "Find a drink" panel or from the AI sommelier chat.</p>
         }
       </div>
     </div>
@@ -237,15 +237,15 @@ export class PanelPilotComponent implements OnInit {
   isError = isErrorText;
 
   readonly presets: { value: Preset; label: string }[] = [
-    { value: 'all', label: 'Весь пилот' },
-    { value: 'today', label: 'Сегодня' },
-    { value: 'week', label: '7 дней' },
-    { value: 'month', label: '30 дней' }
+    { value: 'all', label: 'Whole pilot' },
+    { value: 'today', label: 'Today' },
+    { value: 'week', label: '7 days' },
+    { value: 'month', label: '30 days' }
   ];
   readonly csvKinds: { value: CsvKind; label: string }[] = [
-    { value: 'orders', label: 'Заказы' },
-    { value: 'events', label: 'События' },
-    { value: 'feedback', label: 'Оценки' }
+    { value: 'orders', label: 'Orders' },
+    { value: 'events', label: 'Events' },
+    { value: 'feedback', label: 'Ratings' }
   ];
 
   isModerator = computed(() => this.auth.role() === 'moderator');
@@ -267,13 +267,13 @@ export class PanelPilotComponent implements OnInit {
   private loadSeq = 0;
 
   venueOptions = computed<SelectOption[]>(() => [
-    { value: '', label: 'Все заведения' },
+    { value: '', label: 'All venues' },
     ...this.venues().map(v => ({ value: v.slug, label: v.name, hint: v.city || '' }))
   ]);
 
   readonly subtitle = computed(() => {
     const r = this.report();
-    const name = r?.venue?.name ?? (this.isModerator() && !this.venue() ? 'Все заведения' : this.auth.user()?.venue?.name ?? '');
+    const name = r?.venue?.name ?? (this.isModerator() && !this.venue() ? 'All venues' : this.auth.user()?.venue?.name ?? '');
     if (!r) return name;
     return `${name}${name ? ', ' : ''}${this.dayLabel(r.period.from)} - ${this.dayLabel(r.period.to)}`;
   });
@@ -281,25 +281,25 @@ export class PanelPilotComponent implements OnInit {
   readonly kpis = computed<Kpi[]>(() => {
     const t = this.report()?.totals;
     if (!t) return [];
-    const cancelled = t.orders_cancelled ? `, отменено: ${t.orders_cancelled}` : '';
+    const cancelled = t.orders_cancelled ? `, cancelled: ${t.orders_cancelled}` : '';
     return [
-      { id: 'sessions', label: 'Гостей', value: String(t.sessions), sub: 'по сессиям браузера' },
-      { id: 'scans', label: 'Сканов QR', value: String(t.scans), sub: `открытий меню: ${t.menu_opens}` },
-      { id: 'pair', label: 'Открыли подбор', value: String(t.pair_opens), sub: `добавили из подбора: ${t.pair_adds}` },
-      { id: 'orders', label: 'Заказов', value: String(t.orders), sub: `с напитком из подбора: ${t.orders_with_pairing}${cancelled}` },
+      { id: 'sessions', label: 'Guests', value: String(t.sessions), sub: 'by browser session' },
+      { id: 'scans', label: 'QR scans', value: String(t.scans), sub: `menu opens: ${t.menu_opens}` },
+      { id: 'pair', label: 'Pairings opened', value: String(t.pair_opens), sub: `added from pairing: ${t.pair_adds}` },
+      { id: 'orders', label: 'Orders', value: String(t.orders), sub: `with a paired drink: ${t.orders_with_pairing}${cancelled}` },
       {
-        id: 'share', label: 'Позиций из подбора', value: this.percent(t.share_items_from_pairing), accent: true,
-        sub: `${t.items_from_pairing} из ${t.items}`
+        id: 'share', label: 'Items from pairing', value: this.percent(t.share_items_from_pairing), accent: true,
+        sub: `${t.items_from_pairing} of ${t.items}`
       },
       {
-        id: 'check', label: 'Средний чек', value: t.avg_check !== null ? this.money(t.avg_check) : '-',
-        sub: `с подбором ${this.moneyOrDash(t.avg_check_with_pairing)}, без ${this.moneyOrDash(t.avg_check_without_pairing)}`
+        id: 'check', label: 'Average check', value: t.avg_check !== null ? this.money(t.avg_check) : '-',
+        sub: `with pairing ${this.moneyOrDash(t.avg_check_with_pairing)}, without ${this.moneyOrDash(t.avg_check_without_pairing)}`
       },
       {
-        id: 'rating', label: 'Оценка пар', value: t.avg_rating !== null ? `${this.rating(t.avg_rating)} из 5` : '-',
-        sub: `оценок: ${t.feedback_count}`
+        id: 'rating', label: 'Pairing rating', value: t.avg_rating !== null ? `${this.rating(t.avg_rating)} of 5` : '-',
+        sub: `ratings: ${t.feedback_count}`
       },
-      { id: 'ai', label: 'Вопросов ИИ-сомелье', value: String(t.ai_asks), sub: `добавили из чата: ${t.ai_adds}` }
+      { id: 'ai', label: 'AI sommelier questions', value: String(t.ai_asks), sub: `added from chat: ${t.ai_adds}` }
     ];
   });
 
@@ -367,7 +367,7 @@ export class PanelPilotComponent implements OnInit {
       error: err => {
         if (seq !== this.loadSeq) return;
         this.loading.set(false);
-        this.error.set('Не удалось загрузить отчёт: ' + AuthService.errorText(err));
+        this.error.set('Couldn\'t load the report: ' + AuthService.errorText(err));
       }
     });
   }
@@ -392,7 +392,7 @@ export class PanelPilotComponent implements OnInit {
       },
       error: err => {
         this.downloading.set(null);
-        flash(this.msg, 'Ошибка: ' + AuthService.errorText(err));
+        flash(this.msg, 'Error: ' + AuthService.errorText(err));
       }
     });
   }
@@ -408,7 +408,7 @@ export class PanelPilotComponent implements OnInit {
       },
       error: err => {
         this.qrOpening.set(false);
-        flash(this.msg, 'Ошибка: ' + AuthService.errorText(err));
+        flash(this.msg, 'Error: ' + AuthService.errorText(err));
       }
     });
   }
@@ -416,11 +416,11 @@ export class PanelPilotComponent implements OnInit {
   percent(share: number | null | undefined): string {
     if (share === null || share === undefined || !isFinite(share)) return '-';
     const p = share * 100;
-    return `${p < 10 && p % 1 ? p.toFixed(1).replace('.', ',') : Math.round(p)}%`;
+    return `${p < 10 && p % 1 ? p.toFixed(1) : Math.round(p)}%`;
   }
 
   rating(value: number): string {
-    return value.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
+    return value.toLocaleString('en-US', { maximumFractionDigits: 1 });
   }
 
   stars(n: number): string {
@@ -430,13 +430,13 @@ export class PanelPilotComponent implements OnInit {
   /** "2026-10-01" как "01.10.2026". */
   dayLabel(iso: string): string {
     const [y, m, d] = (iso || '').split('-');
-    return y && m && d ? `${d}.${m}.${y}` : iso;
+    return y && m && d ? `${m}/${d}/${y}` : iso;
   }
 
   when(iso: string): string {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return '';
-    return d.toLocaleString('ru-RU', { timeZone: 'Asia/Almaty', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleString('en-US', { timeZone: 'Asia/Almaty', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   }
 
   private moneyOrDash(value: number | null): string {

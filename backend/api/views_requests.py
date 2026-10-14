@@ -14,7 +14,7 @@ from .permissions import ROLE_MODERATOR, has_role, IsModerator, IsSommelierOrMod
 from .serializers import ChangeRequestSerializer, parse_uuid
 from .views import pyramid_payload
 
-ALREADY_REVIEWED = 'Запрос уже рассмотрен'
+ALREADY_REVIEWED = 'This request has already been reviewed'
 
 
 def apply_change(req):
@@ -24,14 +24,14 @@ def apply_change(req):
         note_id = parse_uuid(payload.get('flavor_note_id'))
         note = FlavorNote.objects.filter(pk=note_id).first() if note_id else None
         if note is None:
-            return 'Нота не найдена, запрос применить нельзя'
+            return 'Note not found, the request cannot be applied'
         if req.kind == ChangeRequest.KIND_NOTE_DELETE:
             FlavorProfile.objects.filter(brand=req.brand, flavor_note=note).delete()
             return None
         try:
             intensity = int(payload.get('intensity'))
         except (TypeError, ValueError):
-            return 'В запросе нет интенсивности'
+            return 'The request has no intensity'
         layer = payload.get('layer') if payload.get('layer') in ('TOP', 'HEART', 'BASE') else note.category
         FlavorProfile.objects.update_or_create(
             brand=req.brand, flavor_note=note,
@@ -48,7 +48,7 @@ def apply_change(req):
             temp_min = float(payload.get('serving_temp_min'))
             temp_max = float(payload.get('serving_temp_max'))
         except (TypeError, ValueError):
-            return 'В запросе нет температуры подачи'
+            return 'The request has no serving temperature'
         ServingRecommendation.objects.update_or_create(
             brand=req.brand,
             defaults={
@@ -59,7 +59,7 @@ def apply_change(req):
             },
         )
         return None
-    return 'Неизвестный тип запроса'
+    return 'Unknown request type'
 
 
 class ChangeRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -99,9 +99,9 @@ class ChangeRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         user = self.request.user
         if not has_role(user, ROLE_MODERATOR):
             if instance.author_id != user.id:
-                raise PermissionDenied('Это не ваш запрос')
+                raise PermissionDenied('This is not your request')
             if instance.status != ChangeRequest.STATUS_PENDING:
-                raise PermissionDenied('Рассмотренный запрос отозвать нельзя')
+                raise PermissionDenied('A reviewed request cannot be withdrawn')
         instance.delete()
 
     def _finish(self, req, request, new_status):
@@ -111,12 +111,17 @@ class ChangeRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         req.review_comment = str(request.data.get('review_comment') or '').strip()
         req.save(update_fields=['status', 'reviewer', 'reviewed_at', 'review_comment'])
 
+    @staticmethod
+    def _locked(pk):
+        """Запрос под блокировкой строки: два модератора сразу не примут и не отклонят его оба."""
+        return ChangeRequest.objects.select_for_update().get(pk=pk)
+
     @action(detail=True, methods=['post'], permission_classes=[IsModerator])
     def approve(self, request, pk=None):
-        req = self.get_object()
-        if req.status != ChangeRequest.STATUS_PENDING:
-            return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
         with transaction.atomic():
+            req = self._locked(self.get_object().pk)
+            if req.status != ChangeRequest.STATUS_PENDING:
+                return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
             error = apply_change(req)
             if error:
                 return Response({'detail': error}, status=status.HTTP_400_BAD_REQUEST)
@@ -127,10 +132,11 @@ class ChangeRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     @action(detail=True, methods=['post'], permission_classes=[IsModerator])
     def reject(self, request, pk=None):
-        req = self.get_object()
-        if req.status != ChangeRequest.STATUS_PENDING:
-            return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
-        self._finish(req, request, ChangeRequest.STATUS_REJECTED)
+        with transaction.atomic():
+            req = self._locked(self.get_object().pk)
+            if req.status != ChangeRequest.STATUS_PENDING:
+                return Response({'detail': ALREADY_REVIEWED}, status=status.HTTP_400_BAD_REQUEST)
+            self._finish(req, request, ChangeRequest.STATUS_REJECTED)
         return Response(self.get_serializer(req).data)
 
     @action(detail=False, methods=['get'], url_path='pending-count', permission_classes=[IsModerator])

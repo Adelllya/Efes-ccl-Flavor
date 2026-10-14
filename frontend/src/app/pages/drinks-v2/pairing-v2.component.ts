@@ -1,9 +1,9 @@
-import { Component, ElementRef, Injector, OnInit, afterNextRender, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { V2ApiService } from './v2-api.service';
 import { V2CategoryBest, V2Dish, V2Meta, V2Pair, V2PairingResult } from './v2.models';
-import { TapHintDirective, V2GlassComponent, drinkLine, drinkTitle, firstWarning, isEfes, isEnergy, loadErrorText, priceLabel, reasonLines } from './v2-ui';
+import { V2GlassComponent, drinkLine, drinkTitle, firstWarning, isEfes, isEnergy, loadErrorText, priceLabel, reasonLines } from './v2-ui';
 import { PAIRINGS_PATH, setUrlParams, urlParam } from './v2-url';
 import { countOf } from '../venue-menu/plural';
 
@@ -19,12 +19,11 @@ const DISHES_PREVIEW = 24;
 @Component({
   selector: 'app-pairing-v2',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet, V2GlassComponent, TapHintDirective],
+  imports: [FormsModule, NgTemplateOutlet, V2GlassComponent],
   template: `
     <div class="glass-panel v2-intro mb-2xl">
       <p>
-        <strong>Подбор из {{ meta()?.drinks ?? 412 }} напитков:</strong> пиво, вино, крепкое, коктейли,
-        безалкогольное, чай и кофе. Для каждого блюда сравниваем вкус со всеми напитками и ставим балл от 0 до 99.
+        <strong>Efes beers for your dish.</strong> For every dish we compare its flavor with each beer and give a score from 0 to 99.
       </p>
       @if (meta(); as m) {
         <p class="text-muted text-sm">{{ m.policy.note }}</p>
@@ -32,12 +31,12 @@ const DISHES_PREVIEW = 24;
     </div>
 
     <div class="flex justify-between items-center gap-lg flex-wrap mb-lg">
-      <h3 class="v2-h3">Выберите блюдо</h3>
+      <h3 class="v2-h3">Choose a dish</h3>
       <div class="v2-search">
         <input class="input" type="text" [ngModel]="query()" (ngModelChange)="query.set($event)"
-               placeholder="Плов, суши, стейк..." aria-label="Поиск блюда" />
+               placeholder="Plov, sushi, steak..." aria-label="Search dishes" />
         @if (query()) {
-          <button class="v2-clear" (click)="query.set('')" title="Очистить">&#x2715;</button>
+          <button class="v2-clear" (click)="query.set('')" title="Clear">&#x2715;</button>
         }
       </div>
     </div>
@@ -45,24 +44,24 @@ const DISHES_PREVIEW = 24;
     @if (dishesError(); as err) {
       <!-- Сбой API не выдаём за «такого блюда нет»: пишем, что не загрузилось, и даём повторить -->
       <div class="glass-panel text-center p-2xl mb-2xl" role="alert">
-        <p class="font-semibold mb-sm">Не удалось загрузить список блюд</p>
+        <p class="font-semibold mb-sm">Couldn't load the dish list</p>
         <p class="text-muted text-sm mb-lg">{{ err }}</p>
-        <button class="btn-amber" (click)="loadDishes()">Повторить</button>
+        <button class="btn-amber" (click)="loadDishes()">Try again</button>
       </div>
     } @else {
-      <div class="v2-chips mb-xl" #chips>
+      <div class="v2-chips mb-xl">
         @for (d of visibleDishes(); track d.id) {
           <button class="btn-outline v2-chip" [class.active]="d.id === selectedId()" (click)="select(d.id)">
             <span aria-hidden="true">{{ d.emoji }}</span> {{ d.name }}
           </button>
         } @empty {
           @if (dishesLoaded()) {
-            <p class="text-muted">Такого блюда пока нет в базе.</p>
+            <p class="text-muted">We don't have this dish yet.</p>
           }
         }
         @if (!showAll() && filteredDishes().length > visibleDishes().length) {
           <button class="btn-outline v2-chip v2-more" (click)="showAll.set(true)">
-            Все блюда ({{ filteredDishes().length }})
+            All dishes ({{ filteredDishes().length }})
           </button>
         }
       </div>
@@ -71,38 +70,38 @@ const DISHES_PREVIEW = 24;
         <button type="button" class="btn-outline" [class.active]="efesOnly()" [attr.aria-pressed]="efesOnly()"
                 (click)="efesOnly.set(!efesOnly())">
           <span [style.color]="efesOnly() ? 'var(--beer-accent)' : 'inherit'">★</span>
-          Только портфель Efes
+          Efes portfolio only
         </button>
         <button type="button" class="btn-outline" [class.active]="nonAlcoholic()" [attr.aria-pressed]="nonAlcoholic()"
                 (click)="toggleNonAlcoholic()">
-          Безалкогольное
+          Non-alcoholic
         </button>
       </div>
     }
 
     @if (loading()) {
-      <div class="skeleton-grid" aria-busy="true" aria-label="Подбираем напитки">
+      <div class="skeleton-grid" aria-busy="true" aria-label="Finding drinks">
         @for (i of [1, 2, 3]; track i) {
           <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
         }
       </div>
     } @else if (error()) {
       <div class="glass-panel text-center p-2xl" role="alert">
-        <p class="font-semibold mb-sm">Не удалось получить подбор</p>
+        <p class="font-semibold mb-sm">Couldn't load the pairings</p>
         <p class="text-muted text-sm mb-lg">{{ error() }}</p>
-        <button class="btn-amber" (click)="retry()">Повторить</button>
+        <button class="btn-amber" (click)="retry()">Try again</button>
       </div>
     } @else {
     @if (result(); as r) {
       @if (efesOnly()) {
         <div class="mb-xl">
-          <h2 class="section-header v2-title">{{ r.dish.emoji }} {{ r.dish.name }}: портфель Efes</h2>
+          <h2 class="section-header v2-title">{{ r.dish.emoji }} {{ r.dish.name }}: Efes portfolio</h2>
           <p class="text-muted text-sm">
-            Лучший напиток Efes к блюду и лучший из портфеля в каждой категории. Баллы те же, что в общем рейтинге:
-            проверено {{ countOf(r.n_candidates, 'напиток', 'напитка', 'напитков') }}.
+            The best Efes drink for this dish and the best portfolio pick in each category. Scores match the overall ranking:
+            {{ countOf(r.n_candidates, 'drink', 'drinks') }} checked.
           </p>
           @if (nonAlcoholic() && r.excluded_non_alcoholic?.length) {
-            <p class="text-muted text-sm">Без алкоголя: убрали {{ countOf(r.excluded_non_alcoholic!.length, 'напиток', 'напитка', 'напитков') }} с алкоголем.</p>
+            <p class="text-muted text-sm">Non-alcoholic: removed {{ countOf(r.excluded_non_alcoholic!.length, 'alcoholic drink', 'alcoholic drinks') }}.</p>
           }
         </div>
 
@@ -111,19 +110,16 @@ const DISHES_PREVIEW = 24;
             <ng-container *ngTemplateOutlet="pairCard; context: { $implicit: p, rank: null, partner: i === 0 && p.drink_id === r.best_partner?.drink_id, promoted: false }" />
           } @empty {
             <div class="glass-panel text-center p-2xl">
-              <p class="text-muted">Из портфеля Efes к этому блюду подходящих напитков нет.</p>
+              <p class="text-muted">No drinks from the Efes portfolio suit this dish.</p>
             </div>
           }
         </div>
-        <div class="text-center mb-3xl">
-          <button class="btn-outline" (click)="efesOnly.set(false)">Показать весь рынок: лучшие из всех напитков</button>
-        </div>
       } @else {
         <div class="mb-xl">
-          <h2 class="section-header v2-title">{{ r.dish.emoji }} {{ r.dish.name }}: лучшие пары</h2>
-          <p class="text-muted text-sm">Проверено {{ countOf(r.n_candidates, 'напиток', 'напитка', 'напитков') }}</p>
+          <h2 class="section-header v2-title">{{ r.dish.emoji }} {{ r.dish.name }}: best pairings</h2>
+          <p class="text-muted text-sm">{{ countOf(r.n_candidates, 'drink', 'drinks') }} checked</p>
           @if (nonAlcoholic() && r.excluded_non_alcoholic?.length) {
-            <p class="text-muted text-sm">Без алкоголя: убрали {{ countOf(r.excluded_non_alcoholic!.length, 'напиток', 'напитка', 'напитков') }} с алкоголем.</p>
+            <p class="text-muted text-sm">Non-alcoholic: removed {{ countOf(r.excluded_non_alcoholic!.length, 'alcoholic drink', 'alcoholic drinks') }}.</p>
           }
         </div>
 
@@ -134,13 +130,13 @@ const DISHES_PREVIEW = 24;
         </div>
 
         @if (partnerOutsideTop(r); as bp) {
-          <h3 class="v2-h3 mb-lg">Лучший вариант из портфеля Efes</h3>
+          <h3 class="v2-h3 mb-lg">Best pick from the Efes portfolio</h3>
           <div class="mb-3xl">
             <ng-container *ngTemplateOutlet="pairCard; context: { $implicit: bp, rank: 'E', partner: true, promoted: false }" />
           </div>
         }
 
-        <h3 class="v2-h3 mb-lg">Лучшее в каждой категории</h3>
+        <h3 class="v2-h3 mb-lg">Best in each category</h3>
         <div class="v2-cats">
           @for (c of r.categories; track c.category) {
             @if (categoryBest(c); as b) {
@@ -168,16 +164,16 @@ const DISHES_PREVIEW = 24;
           <div class="v2-badges">
             <span class="badge">{{ categoryLabel(p.category) }}</span>
             @if (isEfes(p.efes_relation)) {
-              <span class="badge v2-efes">Портфель Efes</span>
+              <span class="badge v2-efes">Efes portfolio</span>
             }
             @if (promoted) {
-              <span class="badge v2-promoted" [title]="note?.note">выше по правилу Efes, разница до {{ note?.partner_tie_window }} баллов</span>
+              <span class="badge v2-promoted" [title]="note?.note">ranked higher by the Efes rule, within {{ note?.partner_tie_window }} points</span>
             }
           </div>
           <h3 class="v2-name">{{ drinkTitle(p.drink_name) }}</h3>
           <p class="text-muted text-sm">{{ drinkLine(p.drink) }}</p>
           <ul class="v2-reasons">
-            @for (t of reasonLines(p); track t.text) { <li [attr.title]="t.source || null" [ftHint]="t.source">{{ t.text }}</li> }
+            @for (t of reasonLines(p); track t.text) { <li [attr.title]="t.source || null">{{ t.text }}</li> }
           </ul>
           @if (firstWarning(p); as w) { <p class="v2-warning">{{ w }}</p> }
           @if (priceLabel(p.drink?.price_kzt); as price) { <p class="text-xs text-muted">{{ price }}</p> }
@@ -229,42 +225,21 @@ const DISHES_PREVIEW = 24;
     .v2-cat-score { font-family: var(--font-heading); font-weight: 800; font-size: 1.2rem; color: var(--beer-mid); }
     .v2-cat-score[data-band="ideal"] { color: var(--success); }
 
-    /* Телефон, в том числе боком (шире 768px), и планшет */
-    @media (max-width: 768px), (pointer: coarse) {
-      /* Блюда, переключатели и «Показать весь рынок» под палец: не ниже 44px, крестик поиска тоже */
-      .btn-outline { min-height: 44px; }
-      .v2-search .input { padding-right: 48px; }
-      .v2-clear { right: 2px; width: 44px; height: 44px; padding: 0; }
-    }
-
     @media (max-width: 640px) {
       .v2-search { max-width: none; }
       /* Блюда одной строкой с прокруткой, поиск над ними находит любое из 114 */
       .v2-chips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 2px 16px 6px; scrollbar-width: none; }
       .v2-chips::-webkit-scrollbar { display: none; }
       .v2-chip { flex-shrink: 0; white-space: nowrap; }
-      /* Колонка под бокал в его размер (48px), иначе бокал заходит на текст */
-      .v2-pair, .v2-pair.v2-norank { grid-template-columns: 48px 1fr; gap: 12px; padding: 16px; }
+      .v2-pair, .v2-pair.v2-norank { grid-template-columns: 40px 1fr; gap: 12px; padding: 16px; }
       .v2-rank { display: none; }
-      /* Длинный бейдж правила Efes переносится внутри карточки, а не уходит за край экрана */
-      .v2-promoted { white-space: normal; border-radius: var(--radius-md); }
       .v2-score { grid-column: 1 / -1; flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 8px; }
       .v2-score strong { font-size: 1.6rem; }
-      /* Длинные названия в «Лучшее в каждой категории» в две строки, а не обрыв на двадцатом знаке */
-      .v2-cat-body strong { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
-    }
-
-    @media (max-width: 480px) {
-      /* Переключатели заполняют строку, а не висят лесенкой разной ширины */
-      .v2-toggles .btn-outline { flex: 1 1 auto; justify-content: center; }
     }
   `],
 })
 export class PairingV2Component implements OnInit {
   private api = inject(V2ApiService);
-  private injector = inject(Injector);
-  /** Полоса блюд: на телефоне она прокручивается вбок. */
-  private readonly chipsRow = viewChild<ElementRef<HTMLElement>>('chips');
 
   meta = signal<V2Meta | null>(null);
   dishes = signal<V2Dish[]>([]);
@@ -321,27 +296,6 @@ export class PairingV2Component implements OnInit {
       na: this.nonAlcoholic() ? '1' : null,
       efes: this.efesOnly() ? null : '0',
     }));
-
-    // Выбранное блюдо всегда видно в полосе блюд: блюдо из ссылки стоит в её конце, за краем экрана телефона
-    effect(() => {
-      this.selectedId();
-      const row = this.chipsRow()?.nativeElement;
-      if (row) untracked(() => afterNextRender(() => this.revealActiveChip(row), { injector: this.injector }));
-    });
-  }
-
-  /** Докручивает полосу блюд вбок до выбранного; если оно уже видно (или полоса не прокручивается), ничего не делает. */
-  private revealActiveChip(row: HTMLElement): void {
-    const chip = row.querySelector<HTMLElement>('.v2-chip.active');
-    if (!chip) return;
-    const pad = 16;
-    const rowBox = row.getBoundingClientRect();
-    const box = chip.getBoundingClientRect();
-    let left = row.scrollLeft;
-    if (box.left < rowBox.left + pad) left += box.left - rowBox.left - pad;
-    else if (box.right > rowBox.right - pad) left += box.right - rowBox.right + pad;
-    else return;
-    row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
   }
 
   ngOnInit() {

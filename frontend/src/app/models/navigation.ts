@@ -13,6 +13,7 @@ export type ActiveTab =
   | 'login'
   | 'register'
   | 'profile'
+  | 'passport'
   | 'privacy';
 
 /**
@@ -30,13 +31,17 @@ export type PanelTab =
   | 'menu'
   | 'orders'
   | 'pilot'
+  | 'engine'
+  | 'analytics'
+  | 'rewards'
+  | 'quiz'
   | 'users'
   | 'settings'
-  | 'engine'
   | 'pyramid'
   | 'serving';
 
 /** Порядок вкладок в панели. */
 export const PANEL_TABS: readonly PanelTab[] = [
-  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'pilot', 'engine', 'users', 'settings'
+  'overview', 'brands', 'requests', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'pilot', 'engine',
+  'analytics', 'rewards', 'quiz', 'users', 'settings'
 ];

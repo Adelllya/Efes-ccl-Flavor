@@ -3,6 +3,7 @@ import os
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse
+from django.views.decorators.http import require_safe
 from django.views.static import serve
 
 from .models import StoredFile
@@ -17,6 +18,7 @@ CACHE_UPLOADED = 'public, max-age=31536000, s-maxage=31536000, immutable'
 CACHE_BUNDLED = 'public, max-age=86400, s-maxage=604800'
 
 
+@require_safe
 def serve_media(request, path):
     """GET /media/<путь>: сначала файл из базы (если включён media_db), иначе файл из media/."""
     if os.path.splitext(path)[1].lower() not in IMAGE_EXTENSIONS:

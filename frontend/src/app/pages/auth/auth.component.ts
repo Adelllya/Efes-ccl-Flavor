@@ -21,15 +21,15 @@ export type AuthMode = 'login' | 'register';
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
             }
           </div>
-          <h1>{{ isLogin ? 'Вход' : 'Регистрация' }}</h1>
+          <h1>{{ isLogin ? 'Sign in' : 'Sign up' }}</h1>
           <p class="text-muted text-sm">
-            {{ isLogin ? 'Войдите, чтобы открыть профиль и панель' : 'Создайте аккаунт, чтобы сохранять настройки профиля' }}
+            {{ isLogin ? 'Sign in to open your profile and dashboard' : 'Create an account to save your profile settings' }}
           </p>
         </div>
 
         <form (ngSubmit)="submit()" novalidate>
           <div class="auth-field">
-            <label class="auth-label" for="auth-username">{{ isLogin ? 'Логин или email' : 'Логин' }}</label>
+            <label class="auth-label" for="auth-username">{{ isLogin ? 'Username or email' : 'Username' }}</label>
             <input id="auth-username" class="input" name="username" [(ngModel)]="username"
                    autocomplete="username" autocapitalize="off" spellcheck="false" required />
           </div>
@@ -41,23 +41,23 @@ export type AuthMode = 'login' | 'register';
                      autocomplete="email" required />
             </div>
             <div class="auth-field">
-              <label class="auth-label" for="auth-first-name">Имя <span class="text-muted">(необязательно)</span></label>
+              <label class="auth-label" for="auth-first-name">First name <span class="text-muted">(optional)</span></label>
               <input id="auth-first-name" class="input" name="firstName" [(ngModel)]="firstName" autocomplete="given-name" />
             </div>
           }
 
           <div class="auth-field">
-            <label class="auth-label" for="auth-password">Пароль</label>
+            <label class="auth-label" for="auth-password">Password</label>
             <input id="auth-password" class="input" name="password" type="password" [(ngModel)]="password"
                    [attr.autocomplete]="isLogin ? 'current-password' : 'new-password'" required />
             @if (!isLogin) {
-              <span class="text-xs text-muted">Не короче 8 символов, не только цифры</span>
+              <span class="text-xs text-muted">At least 8 characters, not only digits</span>
             }
           </div>
 
           @if (!isLogin) {
             <div class="auth-field">
-              <label class="auth-label" for="auth-confirm">Повторите пароль</label>
+              <label class="auth-label" for="auth-confirm">Confirm password</label>
               <input id="auth-confirm" class="input" name="confirm" type="password" [(ngModel)]="confirm"
                      autocomplete="new-password" required />
             </div>
@@ -66,8 +66,8 @@ export type AuthMode = 'login' | 'register';
             <label class="auth-consent">
               <input type="checkbox" name="consent" [(ngModel)]="consent" required />
               <span>
-                Даю согласие на обработку персональных данных и принимаю
-                <a href="/privacy" target="_blank" rel="noopener">политику конфиденциальности</a>
+                I consent to the processing of my personal data and accept the
+                <a href="/privacy" target="_blank" rel="noopener">privacy policy</a>
               </span>
             </label>
           }
@@ -77,23 +77,23 @@ export type AuthMode = 'login' | 'register';
           }
 
           <button type="submit" class="btn-amber btn-block" [disabled]="loading()">
-            {{ loading() ? 'Подождите...' : (isLogin ? 'Войти' : 'Создать аккаунт') }}
+            {{ loading() ? 'Please wait...' : (isLogin ? 'Sign in' : 'Create account') }}
           </button>
         </form>
 
         <p class="auth-switch">
           @if (isLogin) {
-            Нет аккаунта?
-            <button type="button" class="auth-link" (click)="switchMode.emit('register')">Зарегистрироваться</button>
+            Don't have an account?
+            <button type="button" class="auth-link" (click)="switchMode.emit('register')">Sign up</button>
           } @else {
-            Уже есть аккаунт?
-            <button type="button" class="auth-link" (click)="switchMode.emit('login')">Войти</button>
+            Already have an account?
+            <button type="button" class="auth-link" (click)="switchMode.emit('login')">Sign in</button>
           }
         </p>
 
         @if (isLogin && showDemo) {
           <div class="auth-demo">
-            <div class="auth-demo-title">Тестовые аккаунты</div>
+            <div class="auth-demo-title">Demo accounts</div>
             @for (a of demo; track a.username) {
               <button type="button" class="auth-demo-row" (click)="fill(a)">
                 <span class="auth-demo-role">{{ a.role }} <span class="text-muted">{{ a.hint }}</span></span>
@@ -101,7 +101,7 @@ export type AuthMode = 'login' | 'register';
               </button>
             }
             <p class="text-xs text-muted auth-demo-note">
-              Нажмите на строку, чтобы подставить данные. Аккаунты создаёт команда seed_roles на бэкенде.
+              Tap a row to fill in the credentials. The accounts are created by the seed_roles command on the backend.
             </p>
           </div>
         }
@@ -174,12 +174,12 @@ export class AuthComponent {
 
   /** Проверки до запроса: пустые поля и совпадение паролей. Остальное скажет сервер. */
   private validate(): string {
-    if (!this.username.trim() || !this.password) return 'Введите логин и пароль';
+    if (!this.username.trim() || !this.password) return 'Enter your username and password';
     if (this.isLogin) return '';
-    if (!this.email.trim()) return 'Введите email';
-    if (this.password.length < 8) return 'Пароль должен быть не короче 8 символов';
-    if (this.password !== this.confirm) return 'Пароли не совпадают';
-    if (!this.consent) return 'Подтвердите согласие на обработку персональных данных';
+    if (!this.email.trim()) return 'Enter your email';
+    if (this.password.length < 8) return 'Password must be at least 8 characters';
+    if (this.password !== this.confirm) return 'Passwords do not match';
+    if (!this.consent) return 'Please consent to the processing of your personal data';
     return '';
   }
 }

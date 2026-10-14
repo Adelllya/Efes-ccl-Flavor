@@ -1,11 +1,15 @@
-import { Component, EventEmitter, OnInit, Output, afterNextRender, computed, effect, inject, signal } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
 import { SelectionService } from '../../services/selection.service';
-import { backLeadsToCatalog, markCatalogReturn } from '../drinks-v2/v2-url';
-import { TapHintDirective } from '../drinks-v2/v2-ui';
-import { Brand, Dish, FoodPairing, PAIRING_LABELS, PairingType, PyramidNoteItem } from '../../models/flavor-tree.models';
-import { CATEGORIES, COOKING, TASTES, bigImage, smallImage } from '../landing/pairing-engine.data';
+import { AuthService } from '../../services/auth.service';
+import { PreferencesService } from '../../services/preferences.service';
+import {
+  Brand, Dish, FoodPairing, GuestsHeard, PAIRING_LABELS, PairingType, PyramidNoteItem, TasteKey
+} from '../../models/flavor-tree.models';
+import { TastingDialogComponent } from '../../ui/tasting-dialog.component';
+import { CATEGORIES, COOKING, TASTES, beerProfile, bigImage, decimal, smallImage } from '../landing/pairing-engine.data';
+import { TASTE_SCALES, matchLabel } from '../../services/preferences.service';
 import { ABV_ESTIMATE_HINT, abvText } from '../../models/abv';
 
 /**
@@ -60,6 +64,16 @@ const ORBIT_LAYOUTS: Record<number, { top: number; left: number; sway: number }[
 
 const MAX_ORBIT = 6;
 
+/** Чем похожий сорт отличается от открытого: [меньше по шкале, больше по шкале]. */
+const DIFF_WORDS: Record<TasteKey, [string, string]> = {
+  body: ['lighter body', 'fuller body'],
+  bitterness: ['softer, less bitter', 'more bitter'],
+  freshness: ['smoother', 'crisper'],
+  sweetness: ['drier', 'sweeter'],
+  roast: ['lighter tasting', 'more caramel and toast'],
+  strength: ['less strong', 'stronger'],
+};
+
 /**
  * Страница одного сорта.
  *
@@ -71,10 +85,10 @@ const MAX_ORBIT = 6;
 @Component({
   selector: 'app-beer-detail',
   standalone: true,
-  imports: [TapHintDirective],
+  imports: [TastingDialogComponent],
   template: `
     @if (!brandLoaded()) {
-      <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сорт">
+      <div class="skeleton-grid" aria-busy="true" aria-label="Loading beer">
         @for (i of skeletonCards; track i) {
           <div class="skeleton-card">
             <div class="skeleton-line"></div>
@@ -85,9 +99,9 @@ const MAX_ORBIT = 6;
       </div>
     } @else {
       @if (brand(); as b) {
-      <button type="button" class="bd-back" (click)="goBack()">
+      <button type="button" class="bd-back" (click)="back.emit()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        Все сорта
+        {{ backLabel() }}
       </button>
 
       <!-- ── Витрина сорта ── -->
@@ -95,38 +109,54 @@ const MAX_ORBIT = 6;
         <div class="bd-body">
           <span class="badge badge-accent mb-xs">{{ b.tagline || b.brand_owner || 'Flavor Tree' }}</span>
           <h1 class="bd-title">{{ b.name }}</h1>
+          @if (matchPct(); as pct) {
+            <p class="bd-match">Match with your taste: <b>{{ pct }}%</b> · {{ matchLabel(pct) }}</p>
+          }
 
           @if (b.description) { <p class="bd-desc text-dim">{{ b.description }}</p> }
 
           <dl class="bd-specs">
-            <div class="bd-row"><dt>Тип</dt><dd>{{ b.packaging_type_display || b.packaging_type }}</dd></div>
-            <div class="bd-row"><dt>Стиль</dt><dd>{{ b.style }}</dd></div>
+            <div class="bd-row"><dt>Type</dt><dd>{{ b.packaging_type_display || b.packaging_type }}</dd></div>
+            <div class="bd-row"><dt>Style</dt><dd>{{ b.style }}</dd></div>
             @if (abvText(b.abv, b.abv_estimated); as abv) {
-              <div class="bd-row"><dt>Крепость</dt><dd [attr.title]="b.abv_estimated ? abvHint : null" [ftHint]="b.abv_estimated ? abvHint : null">{{ abv }}</dd></div>
+              <div class="bd-row"><dt>ABV</dt><dd [attr.title]="b.abv_estimated ? abvHint : null">{{ abv }}</dd></div>
             }
-            @if (b.density) { <div class="bd-row"><dt>Плотность</dt><dd>{{ b.density }}</dd></div> }
-            @if (b.fermentation_type) { <div class="bd-row"><dt>Брожение</dt><dd>{{ b.fermentation_type }}</dd></div> }
+            @if (b.density) { <div class="bd-row"><dt>Gravity</dt><dd>{{ b.density }}</dd></div> }
+            @if (b.fermentation_type) { <div class="bd-row"><dt>Fermentation</dt><dd>{{ b.fermentation_type }}</dd></div> }
           </dl>
 
           @if (b.serving_recommendation; as rec) {
             <div class="bd-serve">
-              <div><span class="bd-serve-label">Температура</span><span class="bd-serve-value">{{ rec.serving_temp_min }}-{{ rec.serving_temp_max }} °C</span></div>
-              <div><span class="bd-serve-label">Бокал</span><span class="bd-serve-value">{{ rec.glass_type }}</span></div>
+              <div><span class="bd-serve-label">Temperature</span><span class="bd-serve-value">{{ num(rec.serving_temp_min) }}-{{ num(rec.serving_temp_max) }} °C</span></div>
+              <div><span class="bd-serve-label">Glass</span><span class="bd-serve-value">{{ rec.glass_type }}</span></div>
               @if (rec.seasonality) {
-                <div><span class="bd-serve-label">Сезон</span><span class="bd-serve-value">{{ rec.seasonality }}</span></div>
+                <div><span class="bd-serve-label">Season</span><span class="bd-serve-value">{{ rec.seasonality }}</span></div>
               }
             </div>
           }
 
-          @if (b.is_horeca_only) { <span class="badge badge-horeca">Только в заведениях</span> }
+          @if (b.is_horeca_only) { <span class="badge badge-horeca">On-trade only</span> }
+
+          <div class="bd-fav">
+            <button type="button" class="btn-outline" [class.active]="prefs.isFavorite(b.id)"
+                    [attr.aria-pressed]="prefs.isFavorite(b.id)" (click)="toggleFavorite(b.id)">
+              <svg width="16" height="16" viewBox="0 0 24 24" [attr.fill]="prefs.isFavorite(b.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              {{ prefs.isFavorite(b.id) ? 'In favorites' : 'Add to favorites' }}
+            </button>
+            <button type="button" class="btn-amber btn-sm bd-taste-btn" (click)="tasting.open(b.id, b.name)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 15 8.5l7 1-5 4.9 1.2 7L12 18l-6.2 3.4 1.2-7-5-4.9 7-1L12 2Z"/></svg>
+              {{ tasted() ? 'Edit your rating' : 'Log in passport' }}
+            </button>
+            @if (favNote(); as note) { <span class="text-sm text-muted">{{ note }}</span> }
+          </div>
         </div>
 
-        <div class="bd-visual" [class.bd-crowded]="orbit().length > 4">
+        <div class="bd-visual">
           <span class="bd-halo" aria-hidden="true"></span>
 
           <span class="bd-bottle">
             @if (photo(b); as src) {
-              <img [src]="src" [alt]="'Бутылка ' + b.name" />
+              <img [src]="src" [alt]="'Bottle of ' + b.name" />
             } @else {
               <span class="bd-fallback" aria-hidden="true">🍺</span>
             }
@@ -156,11 +186,11 @@ const MAX_ORBIT = 6;
 
       <!-- ── Пирамида ── -->
       <section class="bd-section">
-        <span class="badge mb-xs">Вкусовая пирамида</span>
-        <h2 class="section-header">Как раскрывается глоток</h2>
+        <span class="badge mb-xs">Flavor pyramid</span>
+        <h2 class="section-header">How each sip unfolds</h2>
         <p class="section-subtitle">
-          Три слоя по времени: аромат, тело и послевкусие. Цифра - насколько нота выражена, от 1 до 10.
-          @if (pyramidIsDraft()) { Пирамида пока черновик команды Flavor Tree: ноты подобраны по стилю и описанию сорта, без дегустации. }
+          Three layers over time: aroma, body and finish. The number shows how pronounced a note is, from 1 to 10.
+          @if (pyramidIsDraft()) { This pyramid is a Flavor Tree team draft for now: notes were picked from the style and description, not from a tasting. }
         </p>
 
         @if (hasPyramid()) {
@@ -180,7 +210,7 @@ const MAX_ORBIT = 6;
                           <span class="font-bold">{{ n.name }}</span>
                           <span class="text-sm text-beer font-bold">{{ n.intensity }}/10</span>
                         </div>
-                        <div class="progress-track" role="img" [attr.aria-label]="n.name + ': интенсивность ' + n.intensity + ' из 10'">
+                        <div class="progress-track" role="img" [attr.aria-label]="n.name + ': intensity ' + n.intensity + ' out of 10'">
                           <div class="progress-fill" [style.width.%]="n.intensity * 10"></div>
                         </div>
                         @if (n.sommelier_note) { <span class="text-sm text-dim">«{{ n.sommelier_note }}»</span> }
@@ -188,25 +218,68 @@ const MAX_ORBIT = 6;
                     }
                   </ul>
                 } @else {
-                  <p class="text-sm text-muted">Этот слой ещё не заполнен.</p>
+                  <p class="text-sm text-muted">This layer has not been filled in yet.</p>
                 }
               </article>
             }
           </div>
         } @else {
           <div class="glass-card bd-empty">
-            <p class="text-dim">Пирамида этого сорта ещё не заполнена.</p>
+            <p class="text-dim">The pyramid for this beer has not been filled in yet.</p>
           </div>
+        }
+      </section>
+
+      <!-- ── Что слышат гости: сводка отметок из паспортов вкуса ── -->
+      <section class="bd-section">
+        <span class="badge mb-xs">Taste passport</span>
+        <h2 class="section-header">What guests taste</h2>
+        <p class="section-subtitle">The notes guests mention most often when they log this beer in their taste passport</p>
+        @if (guests(); as g) {
+          @if (g.enough) {
+            <div class="glass-card bd-guests">
+              <p class="bd-guests-sum">
+                <b>{{ g.rating_avg }}</b> out of 5 from {{ g.count }} {{ marksWord(g.count) }}
+              </p>
+              <ul class="bd-heard">
+                @for (n of g.notes; track n.id) {
+                  <li>
+                    <span class="bd-heard-name">
+                      {{ n.name }}
+                      @if (n.in_pyramid) { <i title="Also in the sommelier's pyramid">in pyramid</i> }
+                    </span>
+                    <span class="bd-heard-bar" aria-hidden="true"><span [style.width.%]="n.share"></span></span>
+                    <span class="bd-heard-share">{{ n.share }}%</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          } @else {
+            <div class="glass-card bd-empty">
+              <p class="text-dim mb-lg">
+                Not enough ratings yet: {{ g.count }} of {{ g.min }}. Tried this beer? Log the notes you picked up
+                and see how you compare with the sommelier.
+              </p>
+              <button type="button" class="btn-amber btn-sm" (click)="tasting.open(b.id, b.name)">Rate this beer</button>
+            </div>
+          }
+        } @else {
+          <div class="glass-card bd-empty"><p class="text-dim">Loading guest ratings...</p></div>
         }
       </section>
 
       <!-- ── Пары ── -->
       <section class="bd-section">
-        <span class="badge mb-xs">Сочетания</span>
-        <h2 class="section-header">С чем подавать</h2>
+        <span class="badge mb-xs">Pairings</span>
+        <h2 class="section-header">What to serve it with</h2>
 
-        @if (!pairingsLoaded()) {
-          <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сочетания">
+        @if (pairingsFailed()) {
+          <div class="glass-card bd-empty" role="alert">
+            <p class="text-dim mb-lg">Couldn't load pairings. Check your connection and try again.</p>
+            <button type="button" class="btn-amber btn-sm" (click)="loadPairings(b.id)">Retry</button>
+          </div>
+        } @else if (!pairingsLoaded()) {
+          <div class="skeleton-grid" aria-busy="true" aria-label="Loading pairings">
             @for (i of skeletonCards; track i) {
               <div class="skeleton-card">
                 <div class="skeleton-line"></div>
@@ -248,26 +321,55 @@ const MAX_ORBIT = 6;
           </div>
         } @else {
           <div class="glass-card bd-empty">
-            <p class="text-dim">Для этого сорта пары пока не описаны.</p>
+            <p class="text-dim">No pairings have been described for this beer yet.</p>
           </div>
         }
       </section>
+
+      @if (similar().length) {
+        <!-- ── Похожие сорта: шаг от привычного к новому ── -->
+        <section class="bd-section">
+          <span class="badge mb-xs">What to try next</span>
+          <h2 class="section-header">If you like {{ b.name }}</h2>
+          <p class="section-subtitle">Beers with the closest taste across six scales: body, bitterness, freshness, sweetness, roast and strength</p>
+          <ul class="bd-similar">
+            @for (sim of similar(); track sim.brand.id) {
+              <li>
+                <button type="button" class="glass-card bd-sim" (click)="openSimilar(sim.brand.id)">
+                  <span class="bd-sim-img" aria-hidden="true">
+                    @if (thumb(sim.brand); as src) { <img [src]="src" alt="" loading="lazy" /> }
+                  </span>
+                  <span class="bd-sim-body">
+                    <b>{{ sim.brand.name }}</b>
+                    <small>{{ sim.brand.style }}</small>
+                    <small class="bd-sim-diff">{{ sim.diff }}</small>
+                  </span>
+                  <span class="bd-sim-pct">{{ sim.percent }}%<small>similar</small></span>
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
       } @else {
         <div class="glass-card bd-empty">
           @if (notFound()) {
-            <p class="text-dim">Такого сорта нет или он снят с публикации.</p>
+            <p class="text-dim">This beer doesn't exist or is no longer published.</p>
           } @else if (loadFailed()) {
-            <p class="text-dim">Не удалось загрузить сорт. Попробуйте обновить страницу.</p>
+            <p class="text-dim mb-lg" role="alert">Couldn't load this beer. Check your connection and try again.</p>
+            <p class="mb-lg"><button type="button" class="btn-amber btn-sm" (click)="retry()">Retry</button></p>
           } @else {
-            <p class="text-dim">Сорт не выбран - откройте его из каталога или подбора.</p>
+            <p class="text-dim">No beer selected. Open one from the catalog or your matches.</p>
           }
-          <button type="button" class="bd-back" (click)="goBack()">
+          <button type="button" class="bd-back" (click)="back.emit()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            Все сорта
+            {{ backLabel() }}
           </button>
         </div>
       }
     }
+
+    <app-tasting-dialog #tasting (saved)="onTasted()" (login)="login.emit()" />
   `,
   styles: [`
     :host { display: block; }
@@ -313,6 +415,8 @@ const MAX_ORBIT = 6;
     .bd-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-lg); }
     .bd-title { font-size: clamp(2.2rem, 5vw, 3.6rem); }
     .bd-desc { line-height: 1.65; }
+    .bd-fav { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-md); }
+    .bd-fav .btn-outline { display: inline-flex; align-items: center; gap: 8px; }
 
     .bd-specs { width: 100%; display: flex; flex-direction: column; }
     .bd-row {
@@ -416,10 +520,7 @@ const MAX_ORBIT = 6;
     }
     .bd-taste-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .bd-taste-emoji { font-size: 2rem; line-height: 1; }
-    /* Только мышь: на телефоне :hover залипает после касания, и кружок остаётся увеличенным */
-    @media (hover: hover) {
-      .bd-taste:hover .bd-taste-face { transform: scale(1.14); box-shadow: var(--shadow-hover); }
-    }
+    .bd-taste:hover .bd-taste-face { transform: scale(1.14); box-shadow: var(--shadow-hover); }
 
     .bd-taste-label {
       display: flex;
@@ -509,40 +610,61 @@ const MAX_ORBIT = 6;
     .bd-empty { padding: var(--space-5xl); text-align: center; }
 
     @media (max-width: 900px) {
-      /* minmax(0, 1fr): длинное слово в названии не раздвигает колонку шире экрана */
       .bd-hero { grid-template-columns: minmax(0, 1fr); padding: var(--space-2xl); gap: var(--space-2xl); }
-      .bd-title { overflow-wrap: anywhere; }
-      .bd-back { min-height: 44px; }
       .bd-visual { min-height: 340px; }
-      /* 5-6 нот стоят в три ряда: без запаса по высоте подписи наезжают на кружки ниже */
-      .bd-visual.bd-crowded { min-height: 440px; }
       .bd-taste { width: 84px; margin-left: -42px; }
       .bd-taste-face { width: 58px; height: 58px; }
       .bd-taste-emoji { font-size: 1.5rem; }
-      /* Подписи на телефоне не мельче 12px */
-      .bd-taste-name, .bd-taste-int, .bd-row dt, .bd-serve-label { font-size: 0.75rem; }
-    }
-
-    /* Сенсорный экран шире 900px (телефон боком, планшет): подписи тоже не мельче 12px */
-    @media (pointer: coarse) {
-      .bd-taste-name, .bd-taste-int, .bd-row dt, .bd-serve-label { font-size: 0.75rem; }
+      /* Подписи на телефоне не мельче 11px */
+      .bd-taste-int { font-size: 0.7rem; }
+      .bd-serve-label { font-size: 0.72rem; }
     }
 
     @media (max-width: 480px) {
       .bd-hero { padding: var(--space-xl); }
       .bd-layer { padding: var(--space-xl); }
       .bd-section { margin-bottom: var(--space-5xl); }
-      .bd-empty { padding: var(--space-2xl) var(--space-xl); }
-      /* «Карагандинское» целиком помещается и на 320px */
-      .bd-title { font-size: clamp(1.75rem, 9.1vw, 2.2rem); }
-      /* Длинная нота («Сбалансированный финиш») переносится по слогам внутри кружка, а не вылезает за экран.
-         Подписи от этого выше, поэтому витрина выше, а кольцо чуть уже, чтобы крайние кружки не упирались в рамку */
-      .bd-visual { min-height: 400px; }
-      .bd-visual.bd-crowded { min-height: 460px; }
-      .bd-orbit { inset: 0 12px; }
-      .bd-taste { width: 92px; margin-left: -46px; }
-      .bd-taste-label { max-width: 100%; padding: 4px 6px; hyphens: auto; overflow-wrap: anywhere; }
     }
+
+    /* Телефон: вкусы встают сеткой под бутылкой. По кругу на узком экране они наезжают друг на друга */
+    @media (max-width: 600px) {
+      .bd-hero { padding: var(--space-xl); gap: var(--space-xl); margin-bottom: var(--space-4xl); }
+      .bd-visual { display: flex; flex-direction: column; align-items: center; min-height: 0; }
+      .bd-halo { top: 0; }
+      .bd-bottle { height: 260px; }
+      .bd-orbit { position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md) var(--space-sm); width: 100%; margin-top: var(--space-lg); }
+      .bd-taste { position: static; width: auto; margin-left: 0; }
+      .bd-section { margin-bottom: var(--space-4xl); }
+      .bd-serve { gap: var(--space-lg) var(--space-2xl); }
+      .bd-empty { padding: var(--space-3xl) var(--space-xl); }
+    }
+
+    .bd-match { margin: 0 0 var(--space-md); font-size: 0.9375rem; color: var(--foam-dim); }
+    .bd-match b { color: var(--beer-deep); font-variant-numeric: tabular-nums; }
+    .bd-similar { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); }
+    .bd-sim { width: 100%; display: flex; align-items: center; gap: var(--space-md); padding: var(--space-lg); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    .bd-sim:focus-visible { outline: 3px solid var(--beer-light); outline-offset: 2px; }
+    .bd-sim-img { flex-shrink: 0; width: 44px; height: 64px; display: grid; place-content: center; }
+    .bd-sim-img img { max-width: 44px; max-height: 64px; object-fit: contain; }
+    .bd-sim-body { flex: 1; min-width: 0; display: grid; gap: 2px; }
+    .bd-sim-body small { color: var(--muted); font-size: 0.8125rem; }
+    .bd-sim-diff { color: var(--foam-dim) !important; }
+    .bd-sim-pct { flex-shrink: 0; display: grid; justify-items: end; font-family: var(--font-heading); font-size: 1.2rem; font-weight: 800; color: var(--beer-deep); font-variant-numeric: tabular-nums; }
+    .bd-sim-pct small { font-family: var(--font-body); font-size: 0.6875rem; font-weight: 600; color: var(--muted); }
+
+    /* Кнопки под паспортом сорта и сводка отметок гостей */
+    .bd-fav { flex-wrap: wrap; }
+    .bd-taste-btn { min-height: 40px; }
+    .bd-guests { padding: var(--space-xl); }
+    .bd-guests-sum { margin: 0 0 var(--space-lg); color: var(--foam-dim); }
+    .bd-guests-sum b { font-family: var(--font-heading); font-size: 1.5rem; color: var(--foam); }
+    .bd-heard { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-md); }
+    .bd-heard li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 44px; align-items: center; gap: var(--space-md); }
+    .bd-heard-name { font-weight: 600; overflow-wrap: anywhere; }
+    .bd-heard-name i { margin-left: 6px; padding: 2px 8px; border-radius: var(--radius-full); background: var(--success-bg); color: #166534; font-style: normal; font-size: 0.6875rem; font-weight: 700; white-space: nowrap; }
+    .bd-heard-bar { height: 8px; border-radius: var(--radius-full); background: rgba(180, 83, 9, 0.12); overflow: hidden; }
+    .bd-heard-bar span { display: block; height: 100%; border-radius: inherit; background: var(--beer-light); }
+    .bd-heard-share { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--beer-deep); }
 
     @media (prefers-reduced-motion: reduce) {
       .bd-hero, .bd-bottle, .bd-taste, .bd-halo, .bd-pair { animation: none; }
@@ -552,11 +674,28 @@ const MAX_ORBIT = 6;
 export class BeerDetailComponent implements OnInit {
   private api = inject(ApiService);
   private selection = inject(SelectionService);
+  private auth = inject(AuthService);
+  readonly prefs = inject(PreferencesService);
+  /** Подсказка рядом с сердечком: гостю - про вход, при ошибке - что не сохранилось. */
+  readonly favNote = signal<string | null>(null);
 
-  /** «Все сорта» - возврат в каталог, маршрут выбирает AppComponent. */
+  /** Кнопка возврата: куда она ведёт, выбирает AppComponent. */
   @Output() back = new EventEmitter<void>();
+  /** Гость без входа захотел сохранить отметку сорта. */
+  @Output() login = new EventEmitter<void>();
+
+  readonly tasting = viewChild.required<TastingDialogComponent>('tasting');
+  /** Сводка отметок гостей: средняя оценка и самые частые ноты. */
+  readonly guests = signal<GuestsHeard | null>(null);
+  /** Отметка поставлена в этом заходе: кнопка предлагает её изменить. */
+  readonly tasted = signal(false);
+  /** Подпись кнопки возврата: AppComponent меняет её, когда сорт открыт не из каталога. */
+  backLabel = input('All beers');
 
   brand = signal<Brand | null>(null);
+  /** Весь каталог: из него выбираем похожие сорта. */
+  private catalog = signal<Brand[]>([]);
+  readonly matchLabel = matchLabel;
   pairings = signal<FoodPairing[]>([]);
   dishes = signal<Dish[]>([]);
   /** Пока false - скелет; пустые состояния показываем только после загрузки. */
@@ -564,32 +703,28 @@ export class BeerDetailComponent implements OnInit {
   pairingsLoaded = signal(false);
   /** Сервер ответил 404: сорта нет или он снят с публикации. */
   notFound = signal(false);
-  /** Другая ошибка загрузки (5xx): сорт не показываем, но и "нет" не утверждаем. */
+  /** Другая ошибка загрузки (сеть, 5xx): сорт не показываем, но и "нет" не утверждаем. */
   loadFailed = signal(false);
+  /** Сочетания не загрузились: вместо "пары не описаны" ошибка с кнопкой "Обновить". */
+  pairingsFailed = signal(false);
+  /** Номер последней загрузки: ответ по прежнему сорту, пришедший позже, отбрасываем. */
+  private loadSeq = 0;
 
   readonly photo = bigImage;
   readonly thumb = smallImage;
   readonly abvText = abvText;
   readonly abvHint = ABV_ESTIMATE_HINT;
+  readonly num = decimal;
   readonly skeletonCards = [1, 2, 3];
 
   constructor() {
     // Сорт можно сменить, не покидая страницу, - перезагружаем данные.
+    // untracked: запрос читает сигнал токена в интерцепторе, и без него вход
+    // или выход перезапускали бы эффект и загрузку.
     effect(() => {
       const id = this.selection.brandId();
-      if (id) this.load(id);
+      if (id) untracked(() => this.load(id));
     }, { allowSignalWrites: true });
-    // К первой отрисовке AppComponent уже положил запись сорта в историю: помечаем её, если открыли из каталога
-    afterNextRender(() => markCatalogReturn(this.selection.brandId()));
-  }
-
-  /**
-   * «Все сорта». Открыли из каталога - шаг назад, как «Назад» браузера: каталог с теми же фильтрами
-   * и той же прокруткой. Иначе (ссылка, меню заведения, чат) каталог открывается заново.
-   */
-  goBack(): void {
-    if (backLeadsToCatalog()) history.back();
-    else this.back.emit();
   }
 
   ngOnInit(): void {
@@ -597,7 +732,10 @@ export class BeerDetailComponent implements OnInit {
       this.brandLoaded.set(true);
       this.pairingsLoaded.set(true);
     }
-    this.api.getDishes().subscribe(d => this.dishes.set(d));
+    // Блюда нужны только ради фото в парах: без них остаются значки
+    this.api.getDishes().subscribe({ next: d => this.dishes.set(d), error: () => undefined });
+    // Каталог нужен только блоку «похожие сорта»: без него блока просто нет
+    this.api.getBrandsStrict().subscribe({ next: list => this.catalog.set(list.filter(b => b.is_active !== false)), error: () => undefined });
   }
 
   /** Фото блюда для пары - в самой паре приходит только id и название. */
@@ -616,14 +754,14 @@ export class BeerDetailComponent implements OnInit {
 
     const text = `${dish.name} ${dish.category ?? ''}`.toLowerCase();
     const byCategory: [string, RegExp][] = [
-      ['MEAT', /мяс|стейк|шашлык|рёбр|ребр|колбас|шницел/],
-      ['SEAFOOD', /рыб|морепрод|суши|креветк|лосос/],
-      ['DESSERT', /десерт|торт|пирож|шокол|тирамису|штрудел/],
-      ['SALAD', /салат|овощ/],
-      ['SOUP', /суп|рагу|бульон|лапша/],
-      ['PIZZA', /пицц|паст|спагетт/],
-      ['STREET', /бургер|тако|шаурм|самса|начос/],
-      ['SNACK', /снек|тапас|сыр|орех|брецел|крендел/],
+      ['MEAT', /мяс|стейк|шашлык|рёбр|ребр|колбас|шницел|meat|steak|kebab|rib|sausage|schnitzel|beef|pork|lamb/],
+      ['SEAFOOD', /рыб|морепрод|суши|креветк|лосос|fish|seafood|sushi|shrimp|prawn|salmon/],
+      ['DESSERT', /десерт|торт|пирож|шокол|тирамису|штрудел|dessert|cake|pie|chocolate|tiramisu|strudel/],
+      ['SALAD', /салат|овощ|salad|vegetable|veggie/],
+      ['SOUP', /суп|рагу|бульон|лапша|soup|stew|broth|noodle/],
+      ['PIZZA', /пицц|паст|спагетт|pizza|pasta|spaghetti/],
+      ['STREET', /бургер|тако|шаурм|самса|начос|burger|taco|shawarma|samsa|nachos/],
+      ['SNACK', /снек|тапас|сыр|орех|брецел|крендел|snack|tapas|cheese|nut|pretzel/],
     ];
     const cat = byCategory.find(([, re]) => re.test(text))?.[0];
     if (cat) return CATEGORIES.find(c => c.id === cat)?.emoji ?? '🍽️';
@@ -634,32 +772,112 @@ export class BeerDetailComponent implements OnInit {
   }
 
   private load(id: string): void {
+    const seq = ++this.loadSeq;
     this.brandLoaded.set(false);
-    this.pairingsLoaded.set(false);
     this.notFound.set(false);
     this.loadFailed.set(false);
+    this.favNote.set(null);
+    this.tasted.set(false);
+    this.loadGuests(id);
     this.api.getBrandDetail(id).subscribe({
       next: b => {
+        if (seq !== this.loadSeq) return;
         // Снятый с публикации сорт показываем как ненайденный
         if (b.is_active === false) { this.brand.set(null); this.notFound.set(true); }
         else this.brand.set(b);
         this.brandLoaded.set(true);
       },
       error: (err: unknown) => {
-        // Заглушка остаётся только без сети; 404 и 5xx доходят сюда
+        if (seq !== this.loadSeq) return;
+        // Заглушка остаётся только без сети в сборке для разработки; 404 и 5xx доходят сюда
         this.brand.set(null);
         if (err instanceof HttpErrorResponse && err.status === 404) this.notFound.set(true);
         else this.loadFailed.set(true);
         this.brandLoaded.set(true);
       },
     });
+    this.loadPairings(id);
+  }
+
+  /** Сочетания сорта; отдельно от сорта, чтобы "Обновить" в их блоке не перезагружал всю страницу. */
+  loadPairings(id: string): void {
+    const seq = this.loadSeq;
+    this.pairingsLoaded.set(false);
+    this.pairingsFailed.set(false);
     this.api.getPairings({ brand_id: id }).subscribe({
       next: p => {
+        if (seq !== this.loadSeq) return;
         this.pairings.set([...p].sort((a, b) => b.compatibility_score - a.compatibility_score));
         this.pairingsLoaded.set(true);
       },
-      error: () => this.pairingsLoaded.set(true),
+      error: () => {
+        if (seq !== this.loadSeq) return;
+        this.pairingsFailed.set(true);
+        this.pairingsLoaded.set(true);
+      },
     });
+  }
+
+  /** Совпадение сорта с вкусом гостя (из аккаунта или короткого опроса); null, если вкус не задан. */
+  readonly matchPct = computed(() => {
+    const b = this.brand();
+    return b ? this.prefs.percentFor(b) : null;
+  });
+
+  /**
+   * Три сорта с самым близким вкусом. Рядом пишем, чем сосед отличается сильнее всего:
+   * так гость понимает, на какой шаг он уходит от привычного.
+   */
+  readonly similar = computed(() => {
+    const b = this.brand();
+    if (!b) return [];
+    const base = beerProfile(b);
+    return this.catalog()
+      .filter(other => other.id !== b.id)
+      .map(other => {
+        const p = beerProfile(other);
+        const gaps = TASTE_SCALES.map(scale => ({ scale, gap: p[scale.key] - base[scale.key] }));
+        const distance = gaps.reduce((sum, g) => sum + Math.abs(g.gap), 0) / gaps.length;
+        const top = [...gaps].sort((x, y) => Math.abs(y.gap) - Math.abs(x.gap))[0];
+        const diff = Math.abs(top.gap) < 1 ? 'almost the same character' : 'difference: ' + DIFF_WORDS[top.scale.key][top.gap > 0 ? 1 : 0];
+        return { brand: other, percent: Math.max(0, Math.round(100 - distance * 10)), diff };
+      })
+      .sort((x, y) => y.percent - x.percent)
+      .slice(0, 3);
+  });
+
+  /** Похожий сорт открывается на этой же странице. */
+  openSimilar(id: string): void {
+    this.selection.open(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /** Что слышат гости. Ошибку показываем как «мало отметок»: блок не главный на странице. */
+  loadGuests(id: string): void {
+    const seq = this.loadSeq;
+    this.guests.set(null);
+    this.api.getGuestsHeard(id).subscribe({
+      next: g => { if (seq === this.loadSeq) this.guests.set(g); },
+      error: () => { if (seq === this.loadSeq) this.guests.set({ count: 0, min: 3, enough: false, rating_avg: null, notes: [] }); },
+    });
+  }
+
+  /** Отметка сохранена: обновляем сводку гостей. */
+  onTasted(): void {
+    this.tasted.set(true);
+    const id = this.selection.brandId();
+    if (id) this.loadGuests(id);
+  }
+
+  /** «по 5 отметкам», «по 21 отметке». */
+  marksWord(count: number): string {
+    return count === 1 ? 'rating' : 'ratings';
+  }
+
+  /** "Обновить" после ошибки: тот же сорт ещё раз. */
+  retry(): void {
+    const id = this.selection.brandId();
+    if (id) this.load(id);
   }
 
   /** Цвет сорта из админки, полупрозрачный - для свечения за бутылкой. */
@@ -702,11 +920,22 @@ export class BeerDetailComponent implements OnInit {
   layers = computed<{ key: string; name: string; time: string; notes: PyramidNoteItem[] }[]>(() => {
     const p = this.brand()?.pyramid;
     return [
-      { key: 'TOP', name: 'Верхние ноты', time: '0-3 сек', notes: p?.top ?? [] },
-      { key: 'HEART', name: 'Ноты сердца', time: '3-15 сек', notes: p?.heart ?? [] },
-      { key: 'BASE', name: 'Базовые ноты', time: '15+ сек', notes: p?.base ?? [] },
+      { key: 'TOP', name: 'Top notes', time: '0-3 sec', notes: p?.top ?? [] },
+      { key: 'HEART', name: 'Heart notes', time: '3-15 sec', notes: p?.heart ?? [] },
+      { key: 'BASE', name: 'Base notes', time: '15+ sec', notes: p?.base ?? [] },
     ];
   });
 
   label(type: PairingType): string { return PAIRING_LABELS[type] ?? type; }
+
+  toggleFavorite(id: string) {
+    if (!this.auth.isLoggedIn()) {
+      this.favNote.set('Sign in to save your favorite beers');
+      return;
+    }
+    this.favNote.set(null);
+    this.prefs.toggleFavorite(id).subscribe({
+      error: () => this.favNote.set("Couldn't save, please try again")
+    });
+  }
 }

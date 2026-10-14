@@ -4,6 +4,7 @@
 """
 import io
 import os
+import uuid
 
 from django.core.files.base import ContentFile
 from PIL import Image, ImageOps
@@ -13,7 +14,10 @@ IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
 IMAGE_FORMATS = {'JPEG', 'MPO', 'PNG', 'WEBP'}
 # Vercel не принимает запрос больше 4,5 МБ, поэтому предел 4 МБ с запасом на остальную форму.
 IMAGE_MAX_BYTES = 4 * 1024 * 1024
+# Маленький по весу файл может развернуться в сотни мегабайт памяти: больше 40 мегапикселей не берём.
+IMAGE_MAX_PIXELS = 40 * 1000 * 1000
 THUMB_MAX_SIDE = 480
+EXTENSIONS = {'JPEG': '.jpg', 'MPO': '.jpg', 'PNG': '.png', 'WEBP': '.webp'}
 
 
 def read_image_upload(request):
@@ -23,23 +27,28 @@ def read_image_upload(request):
     """
     file_obj = request.FILES.get('image') or request.FILES.get('file')
     if not file_obj:
-        return None, 'Файл изображения (поле image или file) не передан'
+        return None, 'No image file provided (image or file field)'
     if (file_obj.content_type or '').lower() not in IMAGE_TYPES:
-        return None, 'Подходят только PNG, JPG или WebP'
+        return None, 'Only PNG, JPG or WebP images are supported'
     if file_obj.size > IMAGE_MAX_BYTES:
-        return None, 'Файл больше 4 МБ'
+        return None, 'The file is larger than 4 MB'
     try:
         image = Image.open(file_obj)
         image_format = image.format
+        width, height = image.size
+        if width * height > IMAGE_MAX_PIXELS:
+            return None, 'The photo dimensions are too large. Resize it and try again'
         image.verify()
         # verify() у JPEG и WebP почти ничего не проверяет, поэтому файл ещё и честно декодируем.
         file_obj.seek(0)
         Image.open(file_obj).load()
     except Exception:
-        return None, 'Файл повреждён или не является изображением'
+        return None, 'The file is corrupted or is not an image'
     if image_format not in IMAGE_FORMATS:
-        return None, 'Подходят только PNG, JPG или WebP'
+        return None, 'Only PNG, JPG or WebP images are supported'
     file_obj.seek(0)
+    # Имя от клиента не храним: файл "x.html" с картинкой внутри отдавался бы как страница.
+    file_obj.name = uuid.uuid4().hex + EXTENSIONS[image_format]
     return file_obj, None
 
 
@@ -95,7 +104,7 @@ def set_brand_photo(brand, file_obj):
     try:
         thumb = make_thumbnail(file_obj, 'thumb')
     except Exception:
-        return 'Файл повреждён или не является изображением'
+        return 'The file is corrupted or is not an image'
     file_obj.seek(0)
     replace_image(brand, 'image_hd', file_obj)
     # Имя миниатюры повторяет имя сохранённого оригинала, как в regen_brand_thumbs.

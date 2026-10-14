@@ -10,97 +10,97 @@ import { Component } from '@angular/core';
   template: `
     <article class="pv">
       <header class="mb-3xl">
-        <h1 class="section-header">Конфиденциальность и правила</h1>
-        <p class="text-muted">Как Flavor Tree обращается с данными гостей и что важно знать об алкоголе. Обновлено 26 сентября 2026 года.</p>
+        <h1 class="section-header">Privacy and terms</h1>
+        <p class="text-muted">How Flavor Tree handles guest data and what you should know about alcohol. Last updated September 26, 2026.</p>
       </header>
 
       <section class="glass-panel pv-section">
-        <h2>Что это за сервис</h2>
+        <h2>About the service</h2>
         <p>
-          Flavor Tree помогает разобраться во вкусах напитков и подобрать напиток к блюду.
-          В заведениях он работает как электронное меню: гость открывает его по QR-коду на столе и может отправить заказ персоналу.
-          Сервис сделала команда проекта Flavor Tree для чемпионата OneIdea Championship 2026, сейчас он работает в пилотном режиме.
+          Flavor Tree helps you explore drink flavors and find the right drink for a dish.
+          In venues it works as a digital menu: guests open it with the QR code on the table and can send an order to the staff.
+          The service was built by the Flavor Tree project team for OneIdea Championship 2026 and is currently running as a pilot.
         </p>
         <p>
-          Это информационный справочник. Мы не продаём алкоголь и не занимаемся его рекламой.
-          Заказ из меню получает персонал заведения, а оплата, подача напитков и проверка документов остаются за заведением.
-          Цены и наличие в меню устанавливает заведение, цены в каталоге справочные.
+          This is an information guide. We do not sell alcohol or advertise it.
+          Orders from the menu go to the venue staff, while payment, serving drinks and checking ID remain the venue's responsibility.
+          Menu prices and availability are set by the venue; prices in the catalog are for reference only.
         </p>
       </section>
 
       <section class="glass-panel pv-section">
-        <h2>Какие данные мы получаем</h2>
+        <h2>What data we collect</h2>
         <ul class="pv-list">
-          <li><strong>Аккаунт</strong>, если вы зарегистрировались: логин, email и имя, если вы его указали. Пароль хранится только в виде хеша, прочитать его нельзя.</li>
-          <li><strong>Анонимный идентификатор сессии</strong>: случайная строка, которую сайт создаёт в вашем браузере. По ней видно, что несколько действий сделал один гость, но не видно, кто он.</li>
-          <li><strong>Действия в меню и каталоге</strong>: какие страницы и подборы вы открыли, что добавили в заказ, номер стола из QR-кода, ответ на вопрос о возрасте.</li>
-          <li><strong>Заказ</strong>: состав, сумма, номер стола и время, а также имя и комментарий, если вы их написали.</li>
-          <li><strong>Оценки пар</strong>: оценка от 1 до 5 и комментарий, если вы его оставили.</li>
+          <li><strong>Account</strong>, if you sign up: your username, email and first name, if you provided one. Your password is stored only as a hash and cannot be read.</li>
+          <li><strong>Anonymous session ID</strong>: a random string the site creates in your browser. It shows that several actions were taken by the same guest, but not who that guest is.</li>
+          <li><strong>Activity in the menu and catalog</strong>: which pages and pairings you opened, what you added to your order, the table number from the QR code, and your answer to the age question.</li>
+          <li><strong>Orders</strong>: items, total, table number and time, plus your name and comment if you entered them.</li>
+          <li><strong>Pairing ratings</strong>: a rating from 1 to 5 and a comment, if you left one.</li>
           <li>
-            <strong>Вопросы ИИ-сомелье</strong>: текст ваших вопросов в чате. Если к сервису подключена внешняя языковая модель
-            (Claude от Anthropic), вопрос передаётся ей, чтобы получить ответ. Не пишите в чат имя, телефон и другие личные данные.
+            <strong>Questions to the AI sommelier</strong>: the text of your questions in the chat. If an external language model
+            (Claude by Anthropic) is connected to the service, your question is sent to it to get an answer. Please do not share your name, phone number or other personal details in the chat.
           </li>
         </ul>
         <p>
-          Мы не просим телефон и адрес, не определяем геолокацию и не подключаем рекламные счётчики.
-          Шрифты сайта загружаются с Google Fonts, поэтому Google получает технический запрос от вашего браузера.
+          We do not ask for your phone number or address, do not determine your location and do not use advertising trackers.
+          The site's fonts are loaded from Google Fonts, so Google receives a technical request from your browser.
         </p>
         <p>
-          В самом браузере сайт хранит вход в аккаунт, корзину, номер стола, ответ на вопрос о возрасте, идентификатор сессии
-          и историю чата до закрытия вкладки. Всё это удаляется, если очистить данные сайта в настройках браузера.
+          In your browser, the site stores your sign-in, cart, table number, answer to the age question, session ID
+          and chat history until you close the tab. All of this is deleted when you clear the site data in your browser settings.
         </p>
       </section>
 
       <section class="glass-panel pv-section">
-        <h2>Зачем</h2>
+        <h2>Why we collect it</h2>
         <ul class="pv-list">
-          <li>Чтобы сервис работал: вход в аккаунт, передача заказа персоналу, подбор напитков и ответы в чате.</li>
+          <li>To make the service work: signing in, sending orders to the staff, matching drinks and answering in the chat.</li>
           <li>
-            Для статистики пилота: сколько гостей открыли меню, как часто пользуются подбором, сколько заказов сделано с подобранной парой,
-            какой средний чек и как гости оценивают пары. Эти цифры в сводном виде видит заведение, и они нужны команде для защиты проекта.
+            For pilot statistics: how many guests opened the menu, how often they use pairing, how many orders included a suggested pairing,
+            the average order value and how guests rate the pairings. The venue sees these figures in aggregate, and the team needs them to present the project.
           </li>
         </ul>
-        <p>Данные не продаём и не передаём рекламодателям.</p>
+        <p>We do not sell data or share it with advertisers.</p>
       </section>
 
       <section class="glass-panel pv-section">
-        <h2>Кто видит и где хранится</h2>
+        <h2>Who can see it and where it is stored</h2>
         <p>
-          Персонал заведения видит заказы и статистику только своего заведения. Модератор проекта видит заказы всех заведений пилота.
+          Venue staff see orders and statistics for their own venue only. The project moderator sees orders from all pilot venues.
         </p>
         <p>
-          Сервер сервиса и его данные сейчас находятся у облачного провайдера Vercel, за пределами Казахстана.
-          Для постоянной работы после пилота базу данных нужно перенести на серверы в Казахстане, как требует закон РК
-          «О персональных данных и их защите».
-        </p>
-      </section>
-
-      <section class="glass-panel pv-section">
-        <h2>Сколько храним</h2>
-        <p>
-          Данные пилота (действия в меню, заказы, оценки, вопросы в чате) удаляем после окончания чемпионата OneIdea Championship 2026
-          или раньше, если вы попросите. Аккаунт хранится, пока он вам нужен, и удаляется по запросу.
+          The service's server and data are currently hosted by the cloud provider Vercel, outside Kazakhstan.
+          For permanent operation after the pilot, the database must be moved to servers in Kazakhstan, as required by the Law of the Republic of Kazakhstan
+          "On Personal Data and Their Protection".
         </p>
       </section>
 
       <section class="glass-panel pv-section">
-        <h2>Как удалить данные или задать вопрос</h2>
+        <h2>How long we keep it</h2>
         <p>
-          Отдельной почты для обращений у сервиса пока нет. Запрос можно передать через персонал заведения, где вы пользовались меню,
-          или команде сайта Flavor Tree. Чтобы мы нашли ваши данные, назовите заведение, номер стола и примерное время заказа.
+          Pilot data (menu activity, orders, ratings, chat questions) will be deleted after OneIdea Championship 2026 ends,
+          or sooner if you ask. Your account is kept for as long as you need it and is deleted on request.
         </p>
-        <p>Имя и email в аккаунте можно изменить самостоятельно в профиле.</p>
+      </section>
+
+      <section class="glass-panel pv-section">
+        <h2>How to delete your data or ask a question</h2>
+        <p>
+          The service does not yet have a dedicated email for requests. You can pass your request through the staff of the venue where you used the menu,
+          or to the Flavor Tree team. To help us find your data, tell us the venue, table number and approximate time of your order.
+        </p>
+        <p>You can change the name and email in your account yourself in your profile.</p>
       </section>
 
       <section class="glass-panel pv-section pv-warning">
-        <h2>Возраст и мера</h2>
+        <h2>Age and moderation</h2>
         <p>
-          Сервис предназначен для гостей старше 21 года: в Казахстане алкоголь продают только с 21 года.
-          Персонал заведения может попросить документ и отказать в алкоголе.
+          The service is intended for guests aged 21 and over: in Kazakhstan, alcohol may only be sold to people aged 21 and over.
+          Venue staff may ask for ID and refuse to serve alcohol.
         </p>
         <p>
-          <strong>Чрезмерное употребление алкоголя вредит вашему здоровью.</strong>
-          Если вы за рулём, ждёте ребёнка или вам нет 21 года, выбирайте безалкогольные напитки: чай, лимонады, воду.
+          <strong>Excessive alcohol consumption is harmful to your health.</strong>
+          If you are driving, pregnant or under 21, choose non-alcoholic drinks: tea, lemonades, water.
         </p>
       </section>
     </article>

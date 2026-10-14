@@ -98,13 +98,12 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'api.middleware.RejectNulMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Анонимные GET каталога кэшируются в браузере гостя на минуту (api/http_cache.py)
-    'api.http_cache.CatalogBrowserCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'flavor_tree.urls'
@@ -128,19 +127,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'flavor_tree.wsgi.application'
 
 # Database - PostgreSQL.
-# На проде (Railway) подключаемся по DATABASE_URL, который выдаёт плагин Postgres.
-# Локально — по отдельным переменным DB_* или их значениям по умолчанию.
-# DATABASE_URL — общий стандарт; Vercel Postgres кладёт строку в POSTGRES_URL.
-DATABASE_URL = (
+# На проде подключаемся по строке из окружения: DATABASE_URL - общий стандарт,
+# Vercel Postgres кладёт строку в POSTGRES_URL. Локально - по отдельным переменным DB_*.
+# Имя со строчной буквы: так строку с паролем не видит страница отладки Django.
+_database_url = (
     os.environ.get('DATABASE_URL')
     or os.environ.get('POSTGRES_URL_NON_POOLING')
     or os.environ.get('POSTGRES_URL')
 )
-if DATABASE_URL:
+if _database_url:
     import dj_database_url
     DATABASES = {
         # conn_health_checks: соединение, которое база закрыла за время простоя, заменяется новым, а не даёт 500
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True, ssl_require=False)
+        'default': dj_database_url.parse(_database_url, conn_max_age=600, conn_health_checks=True, ssl_require=False)
     }
 else:
     DATABASES = {
@@ -161,7 +160,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LANGUAGE_CODE = 'ru-ru'
+LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Almaty'
 USE_I18N = True
 USE_TZ = True
@@ -203,15 +202,19 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:4201',
     'http://127.0.0.1:4201',
+    'https://flavor-tree-frontend.vercel.app',
 ]
 _extra_cors = os.environ.get('DJANGO_CORS_ALLOWED_ORIGINS', '')
 CORS_ALLOWED_ORIGINS += [o.strip() for o in _extra_cors.split(',') if o.strip()]
+# Пробные выкладки фронтенда на Vercel получают адреса вида flavor-tree-<хвост>.vercel.app.
+CORS_ALLOWED_ORIGIN_REGEXES = [r'^https://flavor-tree-[a-z0-9-]+\.vercel\.app$']
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 # CSRF: домены, которым доверяем для форм админки и session-запросов на проде (https).
 # Задаются через запятую, каждый со схемой, напр. https://myapp.up.railway.app,https://myfront.vercel.app
 _csrf_origins = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '')
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
+CSRF_TRUSTED_ORIGINS = ['https://flavor-tree-backend.vercel.app']
+CSRF_TRUSTED_ORIGINS += [o.strip() for o in _csrf_origins.split(',') if o.strip()]
 
 # За обратным прокси Railway/Vercel запрос приходит по https — сообщаем об этом Django,
 # иначе ломаются CSRF-проверка админки и secure-cookie.
@@ -219,17 +222,6 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    # HSTS: браузер два года открывает сайт только по https (столько же ставит сам Vercel на *.vercel.app).
-    # Django шлёт заголовок лишь на https-запросы (за прокси это X-Forwarded-Proto), поэтому http
-    # на своей машине он не трогает. preload не включаем: это заявка своего домена в списки браузеров,
-    # её делает владелец домена.
-    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365 * 2
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-if ON_VERCEL:
-    # Vercel сам уводит http на https (308) ещё до функции и для *.vercel.app сам отдаёт HSTS с preload.
-    # Поэтому SECURE_SSL_REDIRECT (W008) и SECURE_HSTS_PRELOAD (W021) здесь не нужны. Остальные проверки
-    # check --deploy включены: тест test_deploy_checks_clean_on_vercel требует, чтобы они проходили чисто.
-    SILENCED_SYSTEM_CHECKS = ['security.W008', 'security.W021']
 
 # Счётчики лимитов запросов (вход, регистрация, заказы, ИИ) живут в кэше. На Vercel у каждого
 # инстанса функции своя память, поэтому там кэш общий, в таблице базы ft_cache.
@@ -249,6 +241,12 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 THROTTLE_RATES = {
     'ai': '30/min',
     'ai_user': '60/min',
+    # Фото дороже текста: гостю по фото, панели по распознаванию и подбору.
+    'ai_photo': '12/hour',
+    'ai_photo_user': '40/hour',
+    'ai_vision': '90/hour',
+    # Оценки пар в каталоге: гость голосует без входа.
+    'feedback': '40/min',
 }
 if not DEBUG and not TESTING:
     THROTTLE_RATES.update({
@@ -272,10 +270,11 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    # Общий OrderingFilter не подключаем: он принимал в ?ordering= любое поле сериализатора
+    # и падал с 500 на вычисляемых. Сортировку каждая view разбирает сама.
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
     ],
     # Глобальное ограничение не включаем: классы throttle указаны в самих view.
     'DEFAULT_THROTTLE_RATES': THROTTLE_RATES,
@@ -303,13 +302,19 @@ FT_AI_DAILY_LIMIT = os.environ.get('FT_AI_DAILY_LIMIT', '300')
 # с которого открыли картинку QR (Origin или Referer), а в DEBUG - http://localhost:4200.
 FT_PUBLIC_SITE_URL = os.environ.get('FT_PUBLIC_SITE_URL', '').strip().rstrip('/')
 
-# На сервере предупреждения и ошибки, в том числе трейсбеки ответов 500, пишутся в stderr: это логи
-# функции Vercel. Стандартный LOGGING Django выводит их в консоль только при DEBUG, а письма админам
-# не настроены, поэтому без этого блока ошибки на проде нигде не видны.
-if not DEBUG and not TESTING:
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {'stderr': {'class': 'logging.StreamHandler', 'level': 'WARNING'}},
-        'root': {'handlers': ['stderr'], 'level': 'WARNING'},
-    }
+# Журнал: без него ошибки 500 на сервере не оставляют следа, кроме кода ответа.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'short': {'format': '%(levelname)s %(name)s: %(message)s'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'short'},
+    },
+    'loggers': {
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        'api': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'flavor_tree': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+    },
+}

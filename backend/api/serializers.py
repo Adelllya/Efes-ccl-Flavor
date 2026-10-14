@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.db.models.functions import Coalesce
 from rest_framework import serializers
@@ -17,8 +17,10 @@ from .models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
     Course, TeamMember, Dish, FoodPairing, Venue, QRCode, AnonymousSession,
     FoodIcon, SiteSettings, MenuItem, MenuDrink, Order, OrderItem, ChangeRequest,
+    UserPreferences, QuizQuestion,
 )
-from .permissions import has_role, user_role, ROLE_LABELS, ROLE_MODERATOR, ROLE_USER
+from . import pairing_rules
+from .permissions import has_role, user_role, ROLE_LABELS, ROLE_MODERATOR, ROLE_SOMMELIER, ROLE_USER
 from .pilot import clean_rank, clean_session
 from .public_content import abv_is_estimate
 
@@ -49,6 +51,14 @@ def parse_uuid(value):
         return uuid.UUID(str(value))
     except (TypeError, ValueError):
         return None
+
+
+def taste_profile(brand):
+    """
+    Вкус сорта в шести шкалах 0-10 (тело, горечь, свежесть, сладость, обжарка, крепость).
+    Считается из стиля, крепости и пирамиды: подбору на сайте хватает списка сортов без самих нот.
+    """
+    return {key: round(value, 1) for key, value in pairing_rules.beer_profile(brand).items()}
 
 
 # FlavorNote
@@ -100,6 +110,7 @@ class BrandListSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     image_hd = serializers.SerializerMethodField()
     abv_estimated = serializers.SerializerMethodField()
+    taste_profile = serializers.SerializerMethodField()
 
     def get_image_hd(self, obj):
         return absolute_media(self, obj.image_hd)
@@ -107,13 +118,16 @@ class BrandListSerializer(serializers.ModelSerializer):
     def get_abv_estimated(self, obj):
         return abv_is_estimate(obj)
 
+    def get_taste_profile(self, obj):
+        return taste_profile(obj)
+
     class Meta:
         model = Brand
         fields = [
             'id', 'name', 'brand_owner', 'style', 'abv', 'abv_estimated',
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
             'is_horeca_only', 'description', 'image', 'image_hd', 'accent_color', 'tagline',
-            'is_active', 'note_count', 'profile', 'serving_recommendation',
+            'is_active', 'note_count', 'profile', 'serving_recommendation', 'taste_profile',
         ]
 
     def get_image(self, obj):
@@ -127,12 +141,13 @@ class BrandListSerializer(serializers.ModelSerializer):
         return obj.image.url
 
     def get_note_count(self, obj):
-        return obj.flavor_profiles.count()
+        # len по уже загруженным нотам: count() делал бы запрос на каждый сорт списка.
+        return len(obj.flavor_profiles.all())
 
     def get_profile(self, obj):
-        profiles = obj.flavor_profiles.all()
+        profiles = list(obj.flavor_profiles.all())
         layers = set(p.layer for p in profiles)
-        total = profiles.count()
+        total = len(profiles)
         top = sum(1 for p in profiles if p.layer == 'TOP')
         heart = sum(1 for p in profiles if p.layer == 'HEART')
         base = sum(1 for p in profiles if p.layer == 'BASE')
@@ -161,6 +176,7 @@ class BrandDetailSerializer(serializers.ModelSerializer):
     image_hd = serializers.SerializerMethodField()
     pyramid = serializers.SerializerMethodField()
     abv_estimated = serializers.SerializerMethodField()
+    taste_profile = serializers.SerializerMethodField()
 
     def get_image_hd(self, obj):
         return absolute_media(self, obj.image_hd)
@@ -168,13 +184,16 @@ class BrandDetailSerializer(serializers.ModelSerializer):
     def get_abv_estimated(self, obj):
         return abv_is_estimate(obj)
 
+    def get_taste_profile(self, obj):
+        return taste_profile(obj)
+
     class Meta:
         model = Brand
         fields = [
             'id', 'name', 'brand_owner', 'style', 'abv', 'abv_estimated',
             'density', 'fermentation_type', 'packaging_type', 'packaging_type_display',
             'is_horeca_only', 'description', 'image', 'image_hd', 'accent_color', 'tagline',
-            'is_active', 'serving_recommendation', 'pyramid',
+            'is_active', 'serving_recommendation', 'pyramid', 'taste_profile',
         ]
 
     def get_image(self, obj):
@@ -205,14 +224,18 @@ class BrandDetailSerializer(serializers.ModelSerializer):
 
 
 class BrandCreateUpdateSerializer(serializers.ModelSerializer):
-    """Для создания и обновления бренда."""
+    """
+    Для создания и обновления бренда. Фото здесь нет: оно идёт через upload-image,
+    где файл проверяется и получает безопасное имя.
+    """
     class Meta:
         model = Brand
         fields = [
             'name', 'brand_owner', 'style', 'abv',
             'density', 'fermentation_type', 'packaging_type', 'is_horeca_only',
-            'description', 'image', 'image_hd', 'accent_color', 'tagline', 'is_active',
+            'description', 'accent_color', 'tagline', 'is_active',
         ]
+        extra_kwargs = {'abv': {'min_value': 0, 'max_value': 80}}
 
 
 # FlavorProfile
@@ -321,13 +344,29 @@ class FoodPairingSerializer(serializers.ModelSerializer):
     brand_name = serializers.CharField(source='brand.name', read_only=True)
     dish_name = serializers.CharField(source='dish.name', read_only=True)
     pairing_type_display = serializers.CharField(source='get_pairing_type_display', read_only=True)
+    source_display = serializers.CharField(source='get_source_display', read_only=True)
 
     class Meta:
         model = FoodPairing
         fields = [
             'id', 'brand', 'brand_name', 'dish', 'dish_name',
             'compatibility_score', 'pairing_type', 'pairing_type_display', 'explanation',
+            'source', 'source_display',
         ]
+        # Источник задаёт сервер: пара из панели считается парой сомелье, ИИ-пары создаёт только ИИ-подбор.
+        read_only_fields = ['source']
+        extra_kwargs = {'compatibility_score': {'min_value': 1, 'max_value': 5}}
+
+    def validate(self, attrs):
+        brand = attrs.get('brand', getattr(self.instance, 'brand', None))
+        dish = attrs.get('dish', getattr(self.instance, 'dish', None))
+        if brand is not None and dish is not None:
+            same = FoodPairing.objects.filter(brand=brand, dish=dish)
+            if self.instance is not None:
+                same = same.exclude(pk=self.instance.pk)
+            if same.exists():
+                raise serializers.ValidationError({'dish': ['This beer is already paired with this dish']})
+        return attrs
 
 
 # Admin flavor profiles (bulk PUT)
@@ -353,10 +392,16 @@ class FlavorProfileBulkSerializer(serializers.Serializer):
 class ServingRecommendationUpsertSerializer(serializers.Serializer):
     """Тело запроса для PUT /api/admin/serving-recommendations/."""
     brand_id = serializers.UUIDField()
-    serving_temp_min = serializers.FloatField()
-    serving_temp_max = serializers.FloatField()
-    glass_type = serializers.CharField()
-    seasonality = serializers.CharField(required=False, allow_blank=True, default='')
+    serving_temp_min = serializers.FloatField(min_value=-5, max_value=40)
+    serving_temp_max = serializers.FloatField(min_value=-5, max_value=40)
+    # Длина как у колонок в базе: длинный текст раньше доходил до базы и давал 500.
+    glass_type = serializers.CharField(max_length=100)
+    seasonality = serializers.CharField(required=False, allow_blank=True, default='', max_length=100)
+
+    def validate(self, attrs):
+        if attrs['serving_temp_min'] > attrs['serving_temp_max']:
+            raise serializers.ValidationError({'serving_temp_min': ['Minimum temperature is higher than maximum']})
+        return attrs
 
 
 # FoodIcon и настройки витрины
@@ -376,7 +421,11 @@ class FoodIconSerializer(serializers.ModelSerializer):
 class SiteSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteSettings
-        fields = ['alternatives_count', 'min_score_to_show', 'show_wheat_decor', 'pairing_intro']
+        fields = ['alternatives_count', 'min_score_to_show', 'show_wheat_decor', 'pairing_intro', 'show_team']
+        extra_kwargs = {
+            'alternatives_count': {'min_value': 0, 'max_value': 10},
+            'min_score_to_show': {'min_value': 1, 'max_value': 5},
+        }
 
 
 # Пользователи и роли
@@ -427,15 +476,15 @@ class RegisterSerializer(serializers.Serializer):
     def validate_username(self, value):
         value = value.strip()
         if not value:
-            raise serializers.ValidationError('Введите логин')
+            raise serializers.ValidationError('Enter a username')
         if User.objects.filter(username__iexact=value).exists():
-            raise serializers.ValidationError('Такой логин уже занят')
+            raise serializers.ValidationError('This username is already taken')
         return value
 
     def validate_email(self, value):
         value = value.strip().lower()
         if User.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError('Пользователь с такой почтой уже есть')
+            raise serializers.ValidationError('A user with this email already exists')
         return value
 
     def validate_password(self, value):
@@ -450,12 +499,17 @@ class RegisterSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        return User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-        )
+        try:
+            with transaction.atomic():
+                return User.objects.create_user(
+                    username=validated_data['username'],
+                    email=validated_data['email'],
+                    password=validated_data['password'],
+                    first_name=validated_data.get('first_name', ''),
+                )
+        except IntegrityError:
+            # Две регистрации с одним логином сразу: вторая упирается в уникальность в базе.
+            raise serializers.ValidationError({'username': ['This username is already taken']})
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
@@ -468,7 +522,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         value = (value or '').strip().lower()
         if value and User.objects.filter(email__iexact=value).exclude(pk=self.instance.pk).exists():
-            raise serializers.ValidationError('Пользователь с такой почтой уже есть')
+            raise serializers.ValidationError('A user with this email already exists')
         return value
 
 
@@ -521,7 +575,7 @@ class VenueSerializer(serializers.ModelSerializer):
         if self.instance is not None:
             others = others.exclude(pk=self.instance.pk)
         if others.exists():
-            raise serializers.ValidationError('У этого пользователя уже есть заведение')
+            raise serializers.ValidationError('This user already has a venue')
         return owner
 
     def to_representation(self, instance):
@@ -619,11 +673,11 @@ class MenuDrinkSerializer(serializers.ModelSerializer):
         if 'engine_drink_id' in attrs:
             attrs['engine_drink_id'] = engine_id
         if brand is None and not engine_id:
-            raise serializers.ValidationError({'brand': ['Выберите сорт из каталога или напиток из базы подбора']})
+            raise serializers.ValidationError({'brand': ['Choose a beer from the catalog or a drink from the pairing database']})
         if engine_id:
             raw = engine_drink(engine_id)
             if raw is None:
-                raise serializers.ValidationError({'engine_drink_id': ['Такого напитка нет в базе подбора']})
+                raise serializers.ValidationError({'engine_drink_id': ['This drink is not in the pairing database']})
             name = attrs.get('name', getattr(instance, 'name', '') if 'engine_drink_id' not in attrs else '')
             if brand is None and not (name or '').strip():
                 attrs['name'] = (raw.get('display_name') or raw.get('name') or engine_id)[:120]
@@ -632,10 +686,17 @@ class MenuDrinkSerializer(serializers.ModelSerializer):
             if instance is not None:
                 others = others.exclude(pk=instance.pk)
             if brand is not None and others.filter(brand=brand).exists():
-                raise serializers.ValidationError({'brand': ['Этот сорт уже есть в карте заведения']})
+                raise serializers.ValidationError({'brand': ['This beer is already on the venue drinks list']})
             if engine_id and others.filter(engine_drink_id=engine_id).exists():
-                raise serializers.ValidationError({'engine_drink_id': ['Этот напиток уже есть в карте заведения']})
+                raise serializers.ValidationError({'engine_drink_id': ['This drink is already on the venue drinks list']})
         return attrs
+
+    def validate_brand(self, brand):
+        # Снятый с публикации сорт гость не увидит: в карту бара его не ставим.
+        current = getattr(self.instance, 'brand_id', None)
+        if not brand.is_active and brand.pk != current:
+            raise serializers.ValidationError('This beer has been unpublished')
+        return brand
 
 
 def money(value):
@@ -656,6 +717,8 @@ def pairing_payload(pairing, request, menu_drink=None):
     """Сочетание для позиции меню: сорт, оценка, тип, объяснение сомелье и позиция в карте бара."""
     brand = pairing.brand
     return {
+        # id пары: по нему гость оценивает сочетание после заказа
+        'id': str(pairing.id),
         'brand': str(brand.id),
         'brand_name': brand.name,
         'brand_image': media_url(request, brand.image or brand.image_hd),
@@ -665,6 +728,7 @@ def pairing_payload(pairing, request, menu_drink=None):
         'pairing_type': pairing.pairing_type,
         'pairing_type_display': pairing.get_pairing_type_display(),
         'explanation': pairing.explanation,
+        'source': pairing.source,
         'menu_drink': menu_drink_payload(menu_drink) if menu_drink else None,
     }
 
@@ -767,6 +831,9 @@ def build_venue_menu(venue, request, minor=False):
         if minor_brands is not None and pairing.brand_id not in minor_brands:
             continue
         by_dish.setdefault(pairing.dish_id, []).append(pairing)
+    # Оценка человека важнее расчёта: пары сомелье идут раньше пар ИИ, внутри по оценке.
+    for dish_pairings in by_dish.values():
+        dish_pairings.sort(key=lambda p: p.source != FoodPairing.SOURCE_SOMMELIER)
 
     picks = venue_pairing.recommend_menu(items, drinks, by_dish)
 
@@ -825,17 +892,192 @@ def build_venue_menu(venue, request, minor=False):
     return data
 
 
+# Импорт блюд пачкой: после распознавания по фото администратор подтверждает список
+
+def normalize_dish_name(name):
+    """Название для сравнения: регистр, ё и знаки препинания не важны."""
+    text = ''.join(ch if ch.isalnum() or ch.isspace() else ' ' for ch in (name or '').lower().replace('ё', 'е'))
+    return ' '.join(text.split())
+
+
+class DishImportPairingSerializer(serializers.Serializer):
+    brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.filter(is_active=True))
+    compatibility_score = serializers.IntegerField(min_value=1, max_value=5)
+    pairing_type = serializers.ChoiceField(choices=FoodPairing.PAIRING_TYPE_CHOICES)
+    explanation = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
+
+
+class DishImportMenuSerializer(serializers.Serializer):
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0'),
+                                     required=False, default=Decimal('0'))
+    section = serializers.CharField(max_length=80, required=False, allow_blank=True, default='')
+    portion = serializers.CharField(max_length=60, required=False, allow_blank=True, default='')
+
+
+class DishImportItemSerializer(serializers.Serializer):
+    """Строка импорта: блюдо из каталога (dish) или поля нового блюда, плюс цена для меню и пары."""
+    MAX_PAIRINGS = 5
+
+    dish = serializers.PrimaryKeyRelatedField(queryset=Dish.objects.all(), required=False, allow_null=True, default=None)
+    name = serializers.CharField(max_length=200, required=False, allow_blank=True, default='')
+    category = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
+    cuisine = serializers.ChoiceField(choices=Dish.CUISINE_CHOICES, required=False, default='OTHER')
+    dominant_taste = serializers.ChoiceField(choices=Dish.TASTE_CHOICES, required=False, default='MIXED')
+    weight = serializers.ChoiceField(choices=Dish.WEIGHT_CHOICES, required=False, default='MEDIUM')
+    fat_level = serializers.ChoiceField(choices=Dish.FAT_CHOICES, required=False, default='MEDIUM')
+    cooking_method = serializers.ChoiceField(choices=Dish.COOKING_METHOD_CHOICES, required=False, default='OTHER')
+    description = serializers.CharField(max_length=2000, required=False, allow_blank=True, default='')
+    menu = DishImportMenuSerializer(required=False, allow_null=True, default=None)
+    pairings = DishImportPairingSerializer(many=True, required=False, default=list)
+
+    def validate(self, attrs):
+        if attrs.get('dish') is None and not (attrs.get('name') or '').strip():
+            raise serializers.ValidationError({'name': ['Enter the dish name']})
+        if len(attrs.get('pairings') or []) > self.MAX_PAIRINGS:
+            raise serializers.ValidationError({'pairings': ['No more than {} pairings per dish'.format(self.MAX_PAIRINGS)]})
+        return attrs
+
+
+class DishImportSerializer(serializers.Serializer):
+    """
+    POST /api/dishes/import/: блюда пачкой.
+
+    Новые блюда попадают в каталог; блюдо с таким же названием второй раз не создаётся.
+    С venue блюда встают в меню этого заведения с ценой, разделом и порцией.
+    Пары сохраняются с пометкой "ИИ-подбор": к новым блюдам от любого, кто может импортировать,
+    к уже существующим только от сомелье и модератора.
+    """
+    MAX_ITEMS = 60
+    DEFAULT_SECTION = 'Основное'
+
+    venue = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None)
+    items = DishImportItemSerializer(many=True)
+
+    def validate_venue(self, value):
+        value = (value or '').strip()
+        if not value:
+            return None
+        venue_id = parse_uuid(value)
+        venue = Venue.objects.filter(pk=venue_id).first() if venue_id else Venue.objects.filter(slug=value).first()
+        if venue is None:
+            raise serializers.ValidationError('Venue not found')
+        user = self.context['request'].user
+        if not (has_role(user, ROLE_MODERATOR) or venue.owner_id == user.id):
+            raise serializers.ValidationError('This venue does not belong to you')
+        return venue
+
+    def validate_items(self, value):
+        if not value:
+            raise serializers.ValidationError('Add at least one dish')
+        if len(value) > self.MAX_ITEMS:
+            raise serializers.ValidationError('No more than {} dishes at a time'.format(self.MAX_ITEMS))
+        return value
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        venue = validated_data.get('venue')
+        can_pair_existing = has_role(user, ROLE_SOMMELIER)
+        warnings = []
+        counts = {'created': 0, 'reused': 0, 'menu_items': 0, 'pairings': 0}
+        dishes = []
+        seen = set()
+        new_ids = set()
+        skipped_pairings = 0
+
+        with transaction.atomic():
+            by_name = {}
+            for dish in Dish.objects.all():
+                by_name.setdefault(normalize_dish_name(dish.name), dish)
+
+            in_menu = set()
+            section_max = {}
+            last_order = -1
+            if venue is not None:
+                # Блокируем заведение: два импорта подряд не должны дать одинаковый порядок и дубли позиций.
+                Venue.objects.select_for_update().get(pk=venue.pk)
+                for dish_id, section, order in venue.menu_items.values_list('dish_id', 'section', 'sort_order'):
+                    in_menu.add(dish_id)
+                    section_max[section] = max(section_max.get(section, order), order)
+                    last_order = max(last_order, order)
+
+            for item in validated_data['items']:
+                dish = item['dish']
+                if dish is None:
+                    name = ' '.join(item['name'].split())
+                    key = normalize_dish_name(name)
+                    dish = by_name.get(key)
+                    if dish is None:
+                        dish = Dish.objects.create(
+                            name=name, category=item['category'].strip() or 'Основное', cuisine=item['cuisine'],
+                            dominant_taste=item['dominant_taste'], weight=item['weight'],
+                            fat_level=item['fat_level'], cooking_method=item['cooking_method'],
+                            description=item['description'].strip(),
+                        )
+                        by_name[key] = dish
+                        new_ids.add(dish.id)
+                        counts['created'] += 1
+                    elif dish.id not in new_ids:
+                        counts['reused'] += 1
+                        warnings.append('Dish "{}" is already in the catalog, no duplicate was created'.format(dish.name))
+                else:
+                    counts['reused'] += 1
+                if dish.id not in seen:
+                    seen.add(dish.id)
+                    dishes.append(dish)
+
+                menu = item.get('menu')
+                if venue is not None and menu is not None:
+                    if dish.id in in_menu:
+                        warnings.append('Dish "{}" is already on the menu, the price was not changed'.format(dish.name))
+                    else:
+                        section = menu['section'].strip() or self.DEFAULT_SECTION
+                        # Новая позиция встаёт в конец своего раздела, новый раздел в конец меню.
+                        order = section_max[section] + 1 if section in section_max else last_order + 1
+                        MenuItem.objects.create(
+                            venue=venue, dish=dish, price=menu['price'], section=section,
+                            portion=menu['portion'].strip(), sort_order=order,
+                        )
+                        in_menu.add(dish.id)
+                        section_max[section] = order
+                        last_order = max(last_order, order)
+                        counts['menu_items'] += 1
+
+                for pairing in item.get('pairings') or []:
+                    if dish.id not in new_ids and not can_pair_existing:
+                        skipped_pairings += 1
+                        continue
+                    # exists, а не get_or_create: в старых данных одна пара может быть записана дважды.
+                    if FoodPairing.objects.filter(brand=pairing['brand'], dish=dish).exists():
+                        continue
+                    FoodPairing.objects.create(
+                        brand=pairing['brand'], dish=dish,
+                        compatibility_score=pairing['compatibility_score'],
+                        pairing_type=pairing['pairing_type'],
+                        explanation=pairing['explanation'].strip() or 'AI pairing based on the flavor profile of the dish and the beer',
+                        source=FoodPairing.SOURCE_AI,
+                    )
+                    counts['pairings'] += 1
+
+        if skipped_pairings:
+            warnings.append('Pairings for dishes from the shared catalog are added by a sommelier: skipped {}'.format(skipped_pairings))
+        result = dict(counts)
+        result.update({'dishes': dishes, 'warnings': warnings})
+        return result
+
+
 # Заказы гостей
 
 class OrderItemSerializer(serializers.ModelSerializer):
     kind_display = serializers.CharField(source='get_kind_display', read_only=True)
     source_display = serializers.CharField(source='get_source_display', read_only=True)
+    # То же, что source: под этим именем поле читает фронт версии 11.
+    via = serializers.CharField(source='source', read_only=True)
 
     class Meta:
         model = OrderItem
         fields = [
             'id', 'kind', 'kind_display', 'menu_item', 'menu_drink', 'title', 'price', 'qty', 'note',
-            'source', 'source_display', 'paired_menu_item', 'rec_rank',
+            'source', 'source_display', 'paired_menu_item', 'rec_rank', 'via',
         ]
 
 
@@ -858,13 +1100,13 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrdersClosed(APIException):
     status_code = 409
-    default_detail = 'Заведение сейчас не принимает заказы через приложение'
+    default_detail = 'This venue is not accepting orders through the app right now'
     default_code = 'orders_closed'
 
 
 class AgeConfirmationRequired(APIException):
     status_code = 400
-    default_detail = 'Подтвердите, что вам исполнился 21 год'
+    default_detail = 'Please confirm that you are 21 or older'
     default_code = 'age_confirmation_required'
 
 
@@ -904,9 +1146,17 @@ class OrderItemInputSerializer(serializers.Serializer):
     qty = serializers.IntegerField(min_value=1, max_value=20)
     note = serializers.CharField(max_length=200, required=False, allow_blank=True, default='')
     # Метки пилота: откуда позиция (MENU, PAIRING, AI), к какому блюду подобран напиток и его место в подборе.
-    source = LenientField(clean_item_source, default=OrderItem.SOURCE_MENU)
+    source = LenientField(clean_item_source, default=None)
     paired_with = LenientField(parse_uuid, default=None)
     rank = LenientField(clean_rank, default=None)
+    # Версия 11 присылала откуда позиция под именем via. Принимаем оба, source важнее.
+    via = serializers.ChoiceField(choices=[c[0] for c in OrderItem.SOURCE_CHOICES], required=False)
+
+    def validate(self, attrs):
+        via = attrs.pop('via', None)
+        if attrs.get('source') is None:
+            attrs['source'] = via or OrderItem.SOURCE_MENU
+        return attrs
 
 
 class OrderCreateSerializer(serializers.Serializer):
@@ -929,16 +1179,16 @@ class OrderCreateSerializer(serializers.Serializer):
         venue_id = parse_uuid(value)
         venue = Venue.objects.filter(pk=venue_id).first() if venue_id else Venue.objects.filter(slug=value).first()
         if venue is None or not venue.is_published:
-            raise serializers.ValidationError('Заведение не найдено')
+            raise serializers.ValidationError('Venue not found')
         if not venue.accepts_orders:
             raise OrdersClosed()
         return venue
 
     def validate_items(self, value):
         if not value:
-            raise serializers.ValidationError('Добавьте хотя бы одну позицию')
+            raise serializers.ValidationError('Add at least one item')
         if len(value) > self.MAX_ITEMS:
-            raise serializers.ValidationError('В одном заказе не больше {} позиций'.format(self.MAX_ITEMS))
+            raise serializers.ValidationError('No more than {} items per order'.format(self.MAX_ITEMS))
         return value
 
     def validate(self, attrs):
@@ -948,7 +1198,7 @@ class OrderCreateSerializer(serializers.Serializer):
         table = attrs['table_number']
         # 0 - заказ с собой, без стола.
         if table < 0 or table > venue.tables_count:
-            raise serializers.ValidationError({'table_number': ['Стол от 1 до {}'.format(venue.tables_count)]})
+            raise serializers.ValidationError({'table_number': ['Table must be from 1 to {}'.format(venue.tables_count)]})
 
         errors = []
         lines = []
@@ -963,14 +1213,14 @@ class OrderCreateSerializer(serializers.Serializer):
                 title = facts['name'] if facts else None
                 has_alcohol = has_alcohol or bool(facts and facts['is_alcoholic'])
             if source is None:
-                errors.append('Позиция {} не найдена в меню заведения'.format(raw['id']))
+                errors.append('Item {} was not found on the venue menu'.format(raw['id']))
                 continue
             if not source.is_available:
-                errors.append('«{}» сейчас нет в наличии'.format(title))
+                errors.append('"{}" is currently unavailable'.format(title))
                 continue
-            # Отрицательную цену API в меню не пускает, но заказ с ней всё равно не считаем.
-            if source.price < 0:
-                errors.append('У позиции «{}» неверная цена'.format(title))
+            # Позиция без цены ещё не готова к продаже: администратор добавил её и не успел указать цену.
+            if source.price <= 0:
+                errors.append('Item "{}" has no price'.format(title))
                 continue
             lines.append((raw, source, title))
         if errors:
@@ -1100,17 +1350,17 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
         brand = obj.brand.name
         payload = obj.payload or {}
         if obj.kind == ChangeRequest.KIND_SERVING:
-            text = '{}: подача {}-{} °C'.format(
+            text = '{}: serving {}-{} °C'.format(
                 brand, format_temp(payload.get('serving_temp_min')), format_temp(payload.get('serving_temp_max')))
             if payload.get('glass_type'):
-                text += ', бокал {}'.format(payload['glass_type'])
+                text += ', glass {}'.format(payload['glass_type'])
             return text
         note = self._note(payload.get('flavor_note_id'))
-        name = note.name if note else 'нота удалена'
+        name = note.name if note else 'note deleted'
         if obj.kind == ChangeRequest.KIND_NOTE_DELETE:
-            return '{}: удалить ноту {}'.format(brand, name)
+            return '{}: remove note {}'.format(brand, name)
         layer = LAYER_SHORT.get(payload.get('layer'), payload.get('layer') or '?')
-        return '{}: нота {} ({}), интенсивность {}/10'.format(brand, name, layer, payload.get('intensity', '?'))
+        return '{}: note {} ({}), intensity {}/10'.format(brand, name, layer, payload.get('intensity', '?'))
 
     def get_current(self, obj):
         payload = obj.payload or {}
@@ -1134,7 +1384,7 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
         kind = attrs.get('kind', getattr(self.instance, 'kind', None))
         payload = attrs.get('payload', getattr(self.instance, 'payload', None))
         if not isinstance(payload, dict):
-            raise serializers.ValidationError({'payload': ['Ожидается объект с данными изменения']})
+            raise serializers.ValidationError({'payload': ['Expected an object with the change data']})
         attrs['payload'] = self._clean_payload(kind, payload)
         return attrs
 
@@ -1144,13 +1394,13 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
         if kind in (ChangeRequest.KIND_NOTE_UPSERT, ChangeRequest.KIND_NOTE_DELETE):
             note = self._note(payload.get('flavor_note_id'))
             if note is None:
-                errors['flavor_note_id'] = ['Нота не найдена']
+                errors['flavor_note_id'] = ['Note not found']
             else:
                 clean['flavor_note_id'] = str(note.id)
         if kind == ChangeRequest.KIND_NOTE_UPSERT:
             layer = payload.get('layer')
             if layer not in LAYER_SHORT:
-                errors['layer'] = ['Слой должен быть TOP, HEART или BASE']
+                errors['layer'] = ['Layer must be TOP, HEART or BASE']
             else:
                 clean['layer'] = layer
             raw = payload.get('intensity')
@@ -1163,7 +1413,7 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
                 except (TypeError, ValueError):
                     intensity = None
             if intensity is None or not 1 <= intensity <= 10:
-                errors['intensity'] = ['Интенсивность от 1 до 10']
+                errors['intensity'] = ['Intensity must be from 1 to 10']
             else:
                 clean['intensity'] = intensity
             clean['sommelier_note'] = str(payload.get('sommelier_note') or '')
@@ -1176,16 +1426,93 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
                         raise ValueError
                     temps[key] = float(raw)
                 except (TypeError, ValueError):
-                    errors[key] = ['Укажите температуру числом']
+                    errors[key] = ['Enter the temperature as a number']
             if len(temps) == 2 and temps['serving_temp_min'] > temps['serving_temp_max']:
-                errors['serving_temp_min'] = ['Минимальная температура больше максимальной']
+                errors['serving_temp_min'] = ['Minimum temperature is higher than maximum']
             clean.update(temps)
             glass = str(payload.get('glass_type') or '').strip()
             if not glass:
-                errors['glass_type'] = ['Укажите бокал']
+                errors['glass_type'] = ['Specify the glass']
             else:
                 clean['glass_type'] = glass[:100]
             clean['seasonality'] = str(payload.get('seasonality') or '').strip()[:100]
         if errors:
             raise serializers.ValidationError({'payload': errors})
         return clean
+
+
+# Предпочтения и Школа сомелье
+
+class UserPreferencesSerializer(serializers.ModelSerializer):
+    """GET/PATCH /api/auth/preferences/: вкус, любимые кухни и сорта, ступень Школы."""
+
+    favorite_brands = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Brand.objects.all(), required=False)
+    passed_levels = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserPreferences
+        fields = ['taste', 'cuisines', 'favorite_brands', 'sommelier_level', 'passed_levels', 'updated_at']
+        read_only_fields = ['sommelier_level', 'passed_levels', 'updated_at']
+
+    def get_passed_levels(self, obj):
+        levels = obj.user.quiz_attempts.filter(passed=True).values_list('level', flat=True)
+        return sorted(set(levels))
+
+    def validate_taste(self, value):
+        if not isinstance(value, dict):
+            raise serializers.ValidationError('Expected an object of scales')
+        clean = {}
+        for key, raw in value.items():
+            if key not in UserPreferences.TASTE_KEYS:
+                raise serializers.ValidationError(f'Unknown scale: {key}')
+            if raw is None or raw == '':
+                continue
+            if isinstance(raw, bool) or not isinstance(raw, (int, float)) or not 0 <= raw <= 10:
+                raise serializers.ValidationError(f'Scale {key}: a number from 0 to 10')
+            clean[key] = int(round(raw))
+        return clean
+
+    def validate_cuisines(self, value):
+        allowed = {code for code, _ in Dish.CUISINE_CHOICES}
+        if not isinstance(value, list) or any(not isinstance(c, str) or c not in allowed for c in value):
+            raise serializers.ValidationError('Unknown cuisine')
+        return sorted(set(value))
+
+
+class QuizQuestionSerializer(serializers.ModelSerializer):
+    """Вопрос целиком, с верным ответом: только для панели."""
+
+    level_display = serializers.CharField(source='get_level_display', read_only=True)
+
+    class Meta:
+        model = QuizQuestion
+        fields = ['id', 'level', 'level_display', 'text', 'options', 'correct_index',
+                  'explanation', 'sort_order', 'is_active', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate_options(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError('Expected a list of options')
+        return [str(o).strip() for o in value]
+
+    def validate(self, attrs):
+        probe = QuizQuestion(**{**self._current(), **attrs})
+        try:
+            probe.clean()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
+        return attrs
+
+    def _current(self):
+        if not self.instance:
+            return {}
+        return {f: getattr(self.instance, f) for f in ('level', 'text', 'options', 'correct_index')}
+
+
+class QuizPublicQuestionSerializer(serializers.ModelSerializer):
+    """Вопрос для гостя: без верного ответа и пояснения."""
+
+    class Meta:
+        model = QuizQuestion
+        fields = ['id', 'text', 'options']

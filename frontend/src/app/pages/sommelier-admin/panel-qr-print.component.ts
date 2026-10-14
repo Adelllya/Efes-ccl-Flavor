@@ -29,65 +29,62 @@ const PARALLEL = 4;
   standalone: true,
   imports: [FormsModule, PanelIconComponent],
   encapsulation: ViewEncapsulation.None,
-  host: { class: 'qrp-root', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'QR для столов' },
+  host: { class: 'qrp-root', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Table QR codes' },
   template: `
     <div class="qrp-screen">
       <div class="wa-card qrp-bar">
         <div class="qrp-bar-text">
-          <h3 class="wa-card-title">QR для столов</h3>
-          <p class="wa-card-sub">{{ venue().name }}: таблички A6, по четыре на листе A4</p>
+          <h3 class="wa-card-title">Table QR codes</h3>
+          <p class="wa-card-sub">{{ venue().name }}: A6 table cards, four per A4 sheet</p>
         </div>
         <div class="qrp-range">
-          <!-- Пока набирают, число в поле не трогаем, кроме номера больше числа столов; при выходе из поля в нём то, что уйдёт в печать -->
           <label class="wa-field">
-            <span class="wa-label">Столы с</span>
-            <input #fromInput class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="from()" (ngModelChange)="setFrom($event, fromInput)"
-                   (blur)="showRange(fromInput, from())" (keydown.enter)="showRange(fromInput, from())" />
+            <span class="wa-label">Tables from</span>
+            <input class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="from()" (ngModelChange)="setFrom($event)" />
           </label>
           <label class="wa-field">
-            <span class="wa-label">по</span>
-            <input #toInput class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="to()" (ngModelChange)="setTo($event, toInput)"
-                   (blur)="commitTo(toInput)" (keydown.enter)="commitTo(toInput)" />
+            <span class="wa-label">to</span>
+            <input class="input" type="number" min="1" [max]="tablesCount()" [ngModel]="to()" (ngModelChange)="setTo($event)" />
           </label>
         </div>
         <div class="wa-actions qrp-actions">
           <button type="button" class="btn-amber" (click)="print()" [disabled]="!tables().length">
-            <panel-icon name="printer" /> Печать
+            <panel-icon name="printer" /> Print
           </button>
           <button type="button" class="btn-outline" (click)="closed.emit()">
-            <panel-icon name="close" /> Закрыть
+            <panel-icon name="close" /> Close
           </button>
         </div>
       </div>
 
       <div class="wa-card qrp-check">
         @if (link(); as l) {
-          <p class="wa-muted">В QR стола {{ from() }} зашита ссылка:</p>
+          <p class="wa-muted">The QR code for table {{ from() }} contains this link:</p>
           <code class="qrp-url">{{ l.url }}</code>
           @if (l.local) {
-            <p class="wa-error"><panel-icon name="alert" /> Это адрес компьютера или локальной сети, с телефонов гостей он не откроется.
-              Откройте панель на рабочем сайте или задайте на сервере FT_PUBLIC_SITE_URL.</p>
+            <p class="wa-error"><panel-icon name="alert" /> This is a computer or local network address, so it won't open on guests' phones.
+              Open the panel on the live site or set FT_PUBLIC_SITE_URL on the server.</p>
           } @else if (!isHttps(l.url)) {
-            <p class="wa-error"><panel-icon name="alert" /> Ссылка без https: часть телефонов покажет предупреждение.</p>
+            <p class="wa-error"><panel-icon name="alert" /> The link isn't https, so some phones will show a warning.</p>
           } @else if (!l.configured) {
-            <p class="wa-muted">Адрес взят из адреса этой страницы. Чтобы таблички не зависели от того, откуда открыта панель,
-              задайте FT_PUBLIC_SITE_URL на сервере. Если домен сайта сменится, таблички придётся печатать заново.</p>
+            <p class="wa-muted">The address is taken from this page's URL. To make the cards independent of where the panel is opened,
+              set FT_PUBLIC_SITE_URL on the server. If the site's domain changes, the cards will need to be reprinted.</p>
           } @else {
-            <p class="wa-muted">Адрес задан на сервере. Если домен сайта сменится, таблички придётся печатать заново.</p>
+            <p class="wa-muted">The address is set on the server. If the site's domain changes, the cards will need to be reprinted.</p>
           }
         } @else if (linkError()) {
           <p class="wa-error"><panel-icon name="alert" /> {{ linkError() }}</p>
         } @else {
-          <p class="wa-muted">Проверяем ссылку в QR...</p>
+          <p class="wa-muted">Checking the QR link...</p>
         }
         @if (!venue().is_published) {
-          <p class="wa-error"><panel-icon name="alert" /> Меню скрыто от гостей: включите «Показывать гостям» во вкладке «Меню», иначе QR откроет ошибку.</p>
+          <p class="wa-error"><panel-icon name="alert" /> The menu is hidden from guests: turn on "Show to guests" in the "Menu" tab, otherwise the QR code will open an error.</p>
         }
         @if (failedCount()) {
-          <p class="wa-error">Не загрузилось QR: {{ failedCount() }}. <button type="button" class="wa-link-btn" (click)="retryFailed()">Повторить</button></p>
+          <p class="wa-error">QR codes that failed to load: {{ failedCount() }}. <button type="button" class="wa-link-btn" (click)="retryFailed()">Retry</button></p>
         }
-        <p class="wa-hint">В окне печати: бумага A4, масштаб 100%, поля «нет» или «минимальные». Режьте по пунктиру.
-          Перед печатью всех табличек отсканируйте один код телефоном.</p>
+        <p class="wa-hint">In the print dialog: A4 paper, 100% scale, margins "None" or "Minimum". Cut along the dotted lines.
+          Before printing all the cards, scan one code with your phone.</p>
       </div>
     </div>
 
@@ -97,19 +94,19 @@ const PARALLEL = 4;
           @for (t of page; track t) {
             <article class="qrp-card">
               <p class="qrp-venue">{{ venue().name }}</p>
-              <p class="qrp-table">Стол {{ t }}</p>
+              <p class="qrp-table">Table {{ t }}</p>
               <div class="qrp-code">
                 @if (qr()[t]; as src) {
-                  <img [src]="src" [alt]="'QR-код меню, стол ' + t" />
+                  <img [src]="src" [alt]="'Menu QR code, table ' + t" />
                 } @else if (failed()[t]) {
-                  <span class="qrp-code-empty">QR не загрузился</span>
+                  <span class="qrp-code-empty">QR code failed to load</span>
                 } @else {
-                  <span class="qrp-code-empty">Загружаем...</span>
+                  <span class="qrp-code-empty">Loading...</span>
                 }
               </div>
-              <p class="qrp-cta">Наведите камеру телефона на код</p>
+              <p class="qrp-cta">Point your phone camera at the code</p>
               <p class="qrp-sub">{{ subline() }}</p>
-              <p class="qrp-foot">Алкоголь подаём гостям старше 21 года</p>
+              <p class="qrp-foot">Alcohol is served to guests 21 and over only</p>
             </article>
           }
         </section>
@@ -124,9 +121,7 @@ const PARALLEL = 4;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      /* viewport-fit=cover: на iPhone окно не уходит под вырез и полоску «Домой» */
-      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
-        max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      padding: 16px;
       overflow: auto;
       background: #F5F5F4;
       font-size: 0.92rem;
@@ -190,17 +185,6 @@ const PARALLEL = 4;
       body.qrp-printing { overflow: hidden; }
     }
 
-    /* Телефон и низкий сенсорный экран: листается всё окно, а не узкое окошко предпросмотра.
-       Низкое окно десктопа с мышью остаётся как было */
-    @media screen and (max-width: 768px), screen and (max-height: 560px) and (pointer: coarse) {
-      .qrp-sheets { flex: none; overflow: visible; }
-    }
-    /* Предпросмотр A4 (210 мм = 794px) уменьшаем до ширины экрана, печать остаётся в натуральную величину */
-    @media screen and (max-width: 840px) { .qrp-page { zoom: 0.8; } }
-    @media screen and (max-width: 666px) { .qrp-page { zoom: 0.5; } }
-    @media screen and (max-width: 430px) { .qrp-page { zoom: 0.4; } }
-    @media screen and (max-width: 359px) { .qrp-page { zoom: 0.35; } }
-
     @media print {
       @page { size: A4; margin: 0; }
       body.qrp-printing { background: #fff !important; overflow: visible !important; }
@@ -250,8 +234,8 @@ export class PanelQrPrintComponent implements OnInit, OnDestroy {
   readonly failedCount = computed(() => this.tables().filter(t => this.failed()[t]).length);
 
   readonly subline = computed(() => this.venue().accepts_orders === false
-    ? 'Меню и напиток к вашему блюду'
-    : 'Меню, напиток к вашему блюду и заказ прямо со стола');
+    ? 'The menu and a drink to match your dish'
+    : 'The menu, a drink to match your dish, and ordering right from your table');
 
   private loading = new Set<number>();
   private subs = new Subscription();
@@ -283,44 +267,19 @@ export class PanelQrPrintComponent implements OnInit, OnDestroy {
     return url.startsWith('https://');
   }
 
-  setFrom(value: unknown, input?: HTMLInputElement) {
+  setFrom(value: unknown) {
     const n = this.clamp(value);
     if (n === null) return;
-    this.showOverMax(input, value, n);
     this.from.set(n);
     if (this.to() < n) this.to.set(n);
     this.loadCodes();
   }
 
-  setTo(value: unknown, input?: HTMLInputElement) {
+  setTo(value: unknown) {
     const n = this.clamp(value);
     if (n === null) return;
-    this.showOverMax(input, value, n);
-    // Конец раньше начала поправляем при выходе из поля: иначе «15» при «с 10» не набрать, первая цифра станет 10
-    this.to.set(n);
+    this.to.set(Math.max(n, this.from()));
     this.loadCodes();
-  }
-
-  /** Выход из поля «по»: конец не раньше начала, в поле то, что напечатается. */
-  commitTo(input: HTMLInputElement) {
-    if (this.to() < this.from()) {
-      this.to.set(this.from());
-      this.loadCodes();
-    }
-    this.showRange(input, this.to());
-  }
-
-  /**
-   * Поле диапазона показывает то, что напечатается. ngModel этого не сделает: если введённое
-   * обрезали до прежнего значения (30 -> 24 при 24 столах), модель не изменилась и поле не перерисуется.
-   */
-  showRange(input: HTMLInputElement, value: number) {
-    if (input.value !== String(value)) input.value = String(value);
-  }
-
-  /** Столов больше, чем в заведении (вставили 240 при 24): сразу показываем последний стол, дальше набирать некуда. */
-  private showOverMax(input: HTMLInputElement | undefined, typed: unknown, n: number) {
-    if (input && Math.trunc(Number(typed)) > n) this.showRange(input, n);
   }
 
   print() {
@@ -342,7 +301,7 @@ export class PanelQrPrintComponent implements OnInit, OnDestroy {
     const v = this.venue();
     this.api.getQrLink(v.slug, 1).subscribe({
       next: l => this.link.set(l),
-      error: err => this.linkError.set('Не удалось проверить ссылку в QR: ' + AuthService.errorText(err))
+      error: err => this.linkError.set('Couldn\'t check the QR link: ' + AuthService.errorText(err))
     });
   }
 

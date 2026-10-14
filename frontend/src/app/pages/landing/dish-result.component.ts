@@ -5,17 +5,17 @@ import { ApiService } from '../../services/api.service';
 import { Brand, Dish, FoodIcon, FoodPairing, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { V2Drink, V2Pair, V2PairingResult } from '../drinks-v2/v2.models';
 import {
-  CATEGORIES, COOKING, TASTES, WEIGHTS, FATS, STRONG_WINDOW,
+  BODY_MATCH_GAP, CATEGORIES, COOKING, TASTES, WEIGHTS, FATS, STRONG_WINDOW,
   DishProfile, Recommendation, bigImage, smallImage, bodyLabel, profileTitle, recommend,
 } from './pairing-engine.data';
 import { DishPick } from './dish-search';
 import { abvOf, brandForPair, curatedFor, efesBeers, efesOnly, pairReasons, pairWarning } from './engine-picks';
 
 const PAIRING_HINT: Record<string, string> = {
-  COMPLEMENT: 'Похожие вкусы усиливают друг друга',
-  CONTRAST: 'Противоположности уравновешиваются',
-  CLEANSE: 'Пиво освежает после тяжёлого или острого',
-  BRIDGE: 'У пива и блюда есть общая нота',
+  COMPLEMENT: 'Similar flavors amplify each other',
+  CONTRAST: 'Opposites balance each other out',
+  CLEANSE: 'Beer refreshes after rich or spicy food',
+  BRIDGE: 'The beer and the dish share a common note',
 };
 
 /** Ниже этого балла движок не рекомендует пару: такие сорта в «Ещё подойдут» и «Без алкоголя» не берём. */
@@ -93,20 +93,20 @@ interface EngineView {
         @if (dish()) {
           <button type="button" class="dr-back" (click)="otherDish.emit()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            Другое блюдо
+            Another dish
           </button>
         } @else {
           <button type="button" class="dr-back" (click)="back.emit()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            Изменить ответы
+            Edit answers
           </button>
         }
-        <button type="button" class="dr-back" (click)="restart.emit()">Начать заново</button>
+        <button type="button" class="dr-back" (click)="restart.emit()">Start over</button>
       </div>
 
       <header class="dr-ask">
-        <span class="badge mb-xs">Результат подбора</span>
-        <h2 class="section-header">К блюду <span class="dr-accent">{{ title() }}</span></h2>
+        <span class="badge mb-xs">Your match</span>
+        <h2 class="section-header">For <span class="dr-accent">{{ title() }}</span></h2>
       </header>
 
       @if (answers().length) {
@@ -118,8 +118,8 @@ interface EngineView {
       }
 
       @if (also().length) {
-        <div class="dr-also" aria-label="Другие блюда по запросу">
-          <span class="text-xs text-muted">Ещё по запросу:</span>
+        <div class="dr-also" aria-label="Other dishes for this search">
+          <span class="text-xs text-muted">Also matching:</span>
           @for (d of also(); track d.name) {
             <button type="button" class="dr-also-chip" (click)="pickDish.emit(d)">
               @if (d.emoji) { <span aria-hidden="true">{{ d.emoji }}</span> }{{ d.name }}
@@ -130,7 +130,7 @@ interface EngineView {
 
       @switch (mode()) {
         @case ('loading') {
-          <div class="skeleton-grid" aria-busy="true" aria-label="Подбираем сорта">
+          <div class="skeleton-grid" aria-busy="true" aria-label="Finding beers">
             @for (i of skeletonCards; track i) {
               <div class="skeleton-card">
                 <div class="skeleton-line"></div>
@@ -143,10 +143,10 @@ interface EngineView {
 
         @case ('error') {
           <div class="dr-none">
-            <p class="text-dim mb-lg">Сервер подбора сейчас не отвечает, поэтому посчитать пары к этому блюду не получилось.</p>
+            <p class="text-dim mb-lg">The pairing server isn't responding right now, so we couldn't score pairings for this dish.</p>
             <div class="dr-none-acts">
-              <button type="button" class="btn-amber" (click)="retry()">Попробовать ещё раз</button>
-              <button type="button" class="btn-ghost" (click)="otherDish.emit()">Подобрать по вопросам</button>
+              <button type="button" class="btn-amber" (click)="retry()">Try again</button>
+              <button type="button" class="btn-ghost" (click)="otherDish.emit()">Match by questions</button>
             </div>
           </div>
         }
@@ -156,27 +156,27 @@ interface EngineView {
             @if (v.best; as best) {
               @if (v.weak) {
                 <p class="dr-note mb-xl">
-                  Пиво к этому блюду раскрывается слабо: у лучшего сорта Efes {{ best.pair.score }} из 99.
-                  В разделе «К блюду» движок сравнит блюдо и с другими напитками, в том числе безалкогольными.
+                  Beer is a weak match for this dish: the best Efes beer scores {{ best.pair.score }} out of 99.
+                  In the “By dish” section, the engine compares it with other drinks too, including non-alcoholic ones.
                 </p>
               }
 
               <article class="glass-card dr-best">
                 <div class="dr-best-visual">
                   @if (best.image; as src) {
-                    <img [src]="src" [alt]="'Бутылка ' + best.name" />
+                    <img [src]="src" [alt]="'Bottle of ' + best.name" />
                   } @else {
                     <span class="dr-fallback" aria-hidden="true">🍺</span>
                   }
                 </div>
 
                 <div class="dr-best-body">
-                  <span class="badge badge-dark">{{ v.poor ? 'Ближе всего из пива Efes' : 'Лучший выбор' }}</span>
+                  <span class="badge badge-dark">{{ v.poor ? 'Closest Efes beer' : 'Best match' }}</span>
                   <h3 class="dr-best-name">{{ best.name }}</h3>
                   @if (best.line) { <p class="text-sm text-muted">{{ best.line }}</p> }
                   @if (best.credit; as c) {
                     <p class="dr-credit">
-                      Фото: <a [href]="c.source" target="_blank" rel="noopener">{{ c.author || 'Wikimedia Commons' }}</a>,
+                      Photo: <a [href]="c.source" target="_blank" rel="noopener">{{ c.author || 'Wikimedia Commons' }}</a>,
                       @if (c.license_url) {
                         <a [href]="c.license_url" target="_blank" rel="noopener license">{{ c.license }}</a>
                       } @else {
@@ -185,28 +185,28 @@ interface EngineView {
                     </p>
                   }
 
-                  <div class="dr-points" [attr.data-band]="best.pair.band" [attr.aria-label]="'Совместимость ' + best.pair.score + ' из 99'">
+                  <div class="dr-points" [attr.data-band]="best.pair.band" [attr.aria-label]="'Compatibility ' + best.pair.score + ' out of 99'">
                     <strong>{{ best.pair.score }}</strong>
                     <span>{{ best.pair.band_label }}</span>
                   </div>
 
                   @if (best.curated; as c) {
                     <div class="dr-why">
-                      <span class="badge">Выбор сомелье</span>
+                      <span class="badge">Sommelier's pick</span>
                       <p class="dr-why-text">«{{ c.explanation }}»</p>
-                      <div class="dr-score" [attr.aria-label]="'Оценка сомелье ' + c.compatibility_score + ' из 5'">
+                      <div class="dr-score" [attr.aria-label]="'Sommelier rating ' + c.compatibility_score + ' out of 5'">
                         @for (s of pips; track s) {
                           <span class="dr-pip" [class.on]="s <= c.compatibility_score"></span>
                         }
                         <span class="dr-score-num">{{ c.compatibility_score }}/5</span>
                       </div>
-                      <p class="text-xs text-muted">Оценка сомелье к этому блюду</p>
+                      <p class="text-xs text-muted">Sommelier rating for this dish</p>
                     </div>
                   }
 
                   @if (best.reasons.length) {
                     <div class="dr-why dr-why-engine">
-                      <span class="badge">{{ v.poor ? 'Что их сближает' : 'Почему подходит' }}</span>
+                      <span class="badge">{{ v.poor ? 'What they share' : 'Why it works' }}</span>
                       <ul class="dr-reasons">
                         @for (t of best.reasons; track t) { <li>{{ t }}</li> }
                       </ul>
@@ -218,7 +218,7 @@ interface EngineView {
 
                   @if (best.brand; as b) {
                     <button type="button" class="btn-amber" (click)="openBrand.emit(b.id)">
-                      Узнать больше о напитке
+                      Learn more about this beer
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
                     </button>
                   }
@@ -227,14 +227,14 @@ interface EngineView {
             } @else {
               <div class="dr-none mb-xl">
                 <p class="text-dim">
-                  К этому блюду движок подбора не советует ни один сорт пива Efes.
-                  В разделе «К блюду» можно сравнить его и с другими напитками.
+                  The pairing engine doesn't recommend any Efes beer for this dish.
+                  In the “By dish” section you can compare it with other drinks.
                 </p>
               </div>
             }
 
             @if (v.others.length) {
-              <h4 class="dr-alt-title">Ещё подойдут</h4>
+              <h4 class="dr-alt-title">Also great</h4>
               <div class="dr-alts">
                 @for (c of v.others; track c.pair.drink_id; let i = $index) {
                   @if (c.brand; as b) {
@@ -252,11 +252,11 @@ interface EngineView {
 
             @if (v.nonAlcoholic; as na) {
               <div class="glass-card dr-na">
-                <span class="badge">Без алкоголя</span>
+                <span class="badge">Non-alcoholic</span>
                 <div class="dr-na-body">
                   <span class="dr-alt-top">
                     <span class="dr-alt-name">{{ na.name }}</span>
-                    <span class="dr-points dr-points-sm" [attr.data-band]="na.pair.band" [attr.aria-label]="'Совместимость ' + na.pair.score + ' из 99'">
+                    <span class="dr-points dr-points-sm" [attr.data-band]="na.pair.band" [attr.aria-label]="'Compatibility ' + na.pair.score + ' out of 99'">
                       <strong>{{ na.pair.score }}</strong><span>{{ na.pair.band_label }}</span>
                     </span>
                   </span>
@@ -268,8 +268,8 @@ interface EngineView {
 
             @if (v.best) {
               <p class="dr-note">
-                Сорта портфеля Efes по расчёту движка подбора: баллы от 0 до 99 те же, что в разделе «К блюду».
-                Если баллы отличаются не больше чем на {{ strongWindow }}, первым идёт сорт обычной крепости, а не крепкий.
+                Efes portfolio beers scored by the pairing engine: the same 0–99 scores as in the “By dish” section.
+                When scores are within {{ strongWindow }} points, a regular-strength beer is ranked ahead of a strong one.
               </p>
             }
           }
@@ -278,13 +278,18 @@ interface EngineView {
         @default {
           @if (engineFailed()) {
             <div class="dr-offline">
-              <p class="text-sm text-dim">Сервер подбора не ответил, поэтому пока показываем оценки сомелье из каталога.</p>
-              <button type="button" class="btn-ghost" (click)="retry()">Обновить подбор</button>
+              <p class="text-sm text-dim">The pairing server didn't respond, so for now we're showing sommelier ratings from the catalog.</p>
+              <button type="button" class="btn-ghost" (click)="retry()">Refresh match</button>
             </div>
           }
 
-          @if (!loaded()) {
-            <div class="skeleton-grid" aria-busy="true" aria-label="Подбираем сорта">
+          @if (failed()) {
+            <div class="dr-none" role="alert">
+              <p class="text-dim mb-lg">Couldn't load beers and pairings. Check your connection and try again.</p>
+              <button type="button" class="btn-amber btn-sm" (click)="reload.emit()">Refresh</button>
+            </div>
+          } @else if (!loaded()) {
+            <div class="skeleton-grid" aria-busy="true" aria-label="Finding beers">
               @for (i of skeletonCards; track i) {
                 <div class="skeleton-card">
                   <div class="skeleton-line"></div>
@@ -295,25 +300,25 @@ interface EngineView {
             </div>
           } @else if (!list().length) {
             <div class="dr-none">
-              <p class="text-dim">Каталог сортов пока пуст - подбирать не из чего.</p>
+              <p class="text-dim">The beer catalog is empty for now, so there's nothing to match.</p>
             </div>
           } @else {
             @if (list()[0]; as best) {
               <article class="glass-card dr-best">
                 <div class="dr-best-visual">
                   @if (big(best.brand); as src) {
-                    <img [src]="src" [alt]="'Бутылка ' + best.brand.name" />
+                    <img [src]="src" [alt]="'Bottle of ' + best.brand.name" />
                   } @else {
                     <span class="dr-fallback" aria-hidden="true">🍺</span>
                   }
                 </div>
 
                 <div class="dr-best-body">
-                  <span class="badge badge-dark">Лучший выбор</span>
+                  <span class="badge badge-dark">Best match</span>
                   <h3 class="dr-best-name">{{ best.brand.name }}</h3>
-                  <p class="text-sm text-muted">{{ best.brand.style }}@if (best.brand.abv) { · {{ best.brand.abv }}% алк. }</p>
+                  <p class="text-sm text-muted">{{ best.brand.style }}@if (best.brand.abv) { · {{ best.brand.abv }}% ABV }</p>
 
-                  <div class="dr-score" [attr.aria-label]="(best.bySommelier ? 'Оценка сомелье ' : 'Совместимость ') + best.rating + ' из 5'">
+                  <div class="dr-score" [attr.aria-label]="(best.bySommelier ? 'Sommelier rating ' : best.byAi ? 'AI rating ' : 'Compatibility ') + best.rating + ' out of 5'">
                     @for (s of pips; track s) {
                       <span class="dr-pip" [class.on]="s <= best.rating"></span>
                     }
@@ -322,7 +327,7 @@ interface EngineView {
 
                   <div class="dr-why">
                     <span class="badge">{{ label(best.type) }}</span>
-                    @if (best.bySommelier) {
+                    @if (best.bySommelier || best.byAi) {
                       <p class="dr-why-text">«{{ best.explanation }}»</p>
                     } @else {
                       <p class="dr-why-plain">{{ best.explanation }}</p>
@@ -333,18 +338,18 @@ interface EngineView {
 
                   @if (best.targetBody !== null) {
                     <div class="dr-weight">
-                      <p class="dr-weight-title">Сытность блюда и плотность сорта</p>
+                      <p class="dr-weight-title">Dish weight vs. beer body</p>
 
                       <div class="dr-scale">
-                        <span class="dr-scale-label">Блюдо</span>
+                        <span class="dr-scale-label">Dish</span>
                         <span class="progress-track"><span class="progress-fill" [style.width.%]="best.targetBody * 10"></span></span>
                         <span class="dr-scale-value">{{ weightLabel() }}</span>
                       </div>
 
                       <div class="dr-scale">
-                        <span class="dr-scale-label">Сорт</span>
+                        <span class="dr-scale-label">Beer</span>
                         <span class="progress-track"><span class="progress-fill alt" [style.width.%]="best.body * 10"></span></span>
-                        <span class="dr-scale-value">{{ body(best.body) }} тело</span>
+                        <span class="dr-scale-value">{{ body(best.body) }} body</span>
                       </div>
 
                       <p class="text-xs text-muted">{{ matchNote(best) }}</p>
@@ -353,12 +358,12 @@ interface EngineView {
 
                   @if (best.brand.serving_recommendation; as rec) {
                     <p class="text-sm text-dim">
-                      Подавать при {{ rec.serving_temp_min }}-{{ rec.serving_temp_max }} °C, {{ rec.glass_type }}
+                      Serve at {{ rec.serving_temp_min }}–{{ rec.serving_temp_max }} °C, {{ rec.glass_type }}
                     </p>
                   }
 
                   <button type="button" class="btn-amber" (click)="openBrand.emit(best.brand.id)">
-                    Узнать больше о напитке
+                    Learn more about this beer
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
                   </button>
                 </div>
@@ -366,7 +371,7 @@ interface EngineView {
             }
 
             @if (others().length) {
-              <h4 class="dr-alt-title">Ещё подойдут</h4>
+              <h4 class="dr-alt-title">Also great</h4>
               <div class="dr-alts">
                 @for (alt of others(); track alt.brand.id; let i = $index) {
                   <button type="button" class="glass-card dr-alt" [style.--i]="i" (click)="openBrand.emit(alt.brand.id)">
@@ -381,7 +386,7 @@ interface EngineView {
                     <span class="dr-alt-body">
                       <span class="dr-alt-top">
                         <span class="dr-alt-name">{{ alt.brand.name }}</span>
-                        <span class="dr-score" [attr.aria-label]="(alt.bySommelier ? 'Оценка сомелье ' : 'Совместимость ') + alt.rating + ' из 5'">
+                        <span class="dr-score" [attr.aria-label]="(alt.bySommelier ? 'Sommelier rating ' : alt.byAi ? 'AI rating ' : 'Compatibility ') + alt.rating + ' out of 5'">
                           @for (s of pips; track s) {
                             <span class="dr-pip" [class.on]="s <= alt.rating"></span>
                           }
@@ -390,7 +395,7 @@ interface EngineView {
                       <span class="text-xs text-muted">{{ alt.brand.style }}@if (alt.brand.abv) { · {{ alt.brand.abv }}% }</span>
                       <span class="badge">{{ label(alt.type) }}</span>
                       <span class="text-sm text-dim">{{ alt.explanation }}</span>
-                      @if (alt.bySommelier) {
+                      @if (alt.bySommelier || alt.byAi) {
                         <span class="text-xs text-muted">{{ source(alt) }}</span>
                       }
                     </span>
@@ -415,14 +420,14 @@ interface EngineView {
       <span class="dr-alt-body">
         <span class="dr-alt-top">
           <span class="dr-alt-name">{{ c.name }}</span>
-          <span class="dr-points dr-points-sm" [attr.data-band]="c.pair.band" [attr.aria-label]="'Совместимость ' + c.pair.score + ' из 99'">
+          <span class="dr-points dr-points-sm" [attr.data-band]="c.pair.band" [attr.aria-label]="'Compatibility ' + c.pair.score + ' out of 99'">
             <strong>{{ c.pair.score }}</strong><span>{{ c.pair.band_label }}</span>
           </span>
         </span>
         @if (c.line) { <span class="text-xs text-muted">{{ c.line }}</span> }
-        @if (c.credit) { <span class="dr-credit">Фото: {{ c.credit.author || 'Wikimedia Commons' }}, {{ c.credit.license }}</span> }
+        @if (c.credit) { <span class="dr-credit">Photo: {{ c.credit.author || 'Wikimedia Commons' }}, {{ c.credit.license }}</span> }
         @if (c.curated) {
-          <span class="badge">Выбор сомелье: {{ c.curated.compatibility_score }}/5</span>
+          <span class="badge">Sommelier's pick: {{ c.curated.compatibility_score }}/5</span>
           <span class="text-sm text-dim">«{{ c.curated.explanation }}»</span>
         } @else if (c.reasons.length) {
           <span class="text-sm text-dim">{{ c.reasons[0] }}</span>
@@ -490,7 +495,7 @@ interface EngineView {
     .dr-best-visual img { position: absolute; inset: 6px; width: auto; height: auto; max-width: calc(100% - 12px); max-height: calc(100% - 12px); margin: auto; object-fit: contain; }
     .dr-fallback { font-size: 3.4rem; line-height: 1; }
 
-    .dr-best-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-md); }
+    .dr-best-body { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-md); min-width: 0; }
     .dr-best-name { font-size: clamp(1.8rem, 3.4vw, 2.6rem); }
 
     .dr-score { display: flex; align-items: center; gap: 5px; }
@@ -626,22 +631,22 @@ interface EngineView {
 
     .dr-none { padding: var(--space-5xl); text-align: center; border: 1.5px dashed var(--line); border-radius: var(--radius-xl); }
 
-    /* Сенсорный экран: чипы от 40px, служебные подписи от 12px */
-    @media (max-width: 768px), (pointer: coarse) {
-      .dr-also-chip { min-height: 40px; }
-      .dr-offline .btn-ghost, .dr-none-acts .btn-ghost { min-height: 44px; padding: 0 var(--space-lg); }
-      .dr-alt-title, .dr-weight-title, .dr-credit, .dr-points-sm span { font-size: 0.75rem; }
-    }
-
     @media (max-width: 760px) {
-      .dr-none { padding: var(--space-3xl) var(--space-lg); }
-      /* Без фото emoji встаёт в центр рамки, а не в её угол */
-      .dr-best-visual, .dr-alt-visual { display: grid; place-items: center; }
-      .dr-best { grid-template-columns: 1fr; gap: var(--space-xl); padding: var(--space-xl); }
+      .dr-best { grid-template-columns: minmax(0, 1fr); gap: var(--space-xl); padding: var(--space-xl); }
       .dr-best-visual { height: 220px; }
-      .dr-alt { grid-template-columns: 1fr; }
+      .dr-alt { grid-template-columns: minmax(0, 1fr); }
       .dr-alt-visual { width: 100%; }
       .dr-alt-top { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 480px) {
+      .dr-head { margin-bottom: var(--space-md); }
+      .dr-back { padding: 0 10px; }
+      .dr-best { padding: var(--space-lg); }
+      .dr-scale { grid-template-columns: 48px 1fr auto; gap: var(--space-sm); }
+      /* Длинное название сорта и шкала оценки не влезают в одну строку на узком экране */
+      .dr-alt-top { flex-wrap: wrap; row-gap: var(--space-xs); }
+      .dr-pip { width: 20px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -665,6 +670,8 @@ export class DishResultComponent {
   icons = input<FoodIcon[]>([]);
   /** false, пока родитель грузит каталог: показываем скелет, а не промежуточный подбор без оценок сомелье. */
   loaded = input(true);
+  /** Каталог не загрузился: вместо "пусто" показываем ошибку с кнопкой "Обновить". */
+  failed = input(false);
   /** Сколько сортов показывать кроме лучшего - из настроек витрины. */
   alternatives = input(3);
 
@@ -675,6 +682,8 @@ export class DishResultComponent {
   @Output() otherDish = new EventEmitter<void>();
   /** Выбрано другое блюдо из подсказок под заголовком. */
   @Output() pickDish = new EventEmitter<DishPick>();
+  /** Гость нажал "Обновить" после ошибки загрузки каталога (retry() - это повтор запроса к движку). */
+  @Output() reload = new EventEmitter<void>();
 
   readonly big = bigImage;
   readonly small = smallImage;
@@ -798,7 +807,7 @@ export class DishResultComponent {
     return {
       pair,
       name: brand?.name || drink?.display_name || drink?.name || pair.drink_name,
-      line: [style, abv !== null ? `${String(abv).replace('.', ',')}% алк.` : ''].filter(Boolean).join(' · '),
+      line: [style, abv !== null ? `${abv}% ABV` : ''].filter(Boolean).join(' · '),
       brand,
       image: own || drink?.image || null,
       credit: !own && drink?.image ? drink.image_credit ?? null : null,
@@ -806,28 +815,29 @@ export class DishResultComponent {
       warning: pairWarning(pair),
       curated: curatedFor(v1DishId, brand, this.pairings()),
       serving: serving
-        ? `Подавать при ${serving.serving_temp_min}-${serving.serving_temp_max} °C, ${serving.glass_type}`
+        ? `Serve at ${serving.serving_temp_min}–${serving.serving_temp_max} °C, ${serving.glass_type}`
         : drink?.serving?.temp_min_c != null
-          ? `Подавать при ${drink.serving.temp_min_c}-${drink.serving.temp_max_c} °C${drink.serving.glass ? ', ' + drink.serving.glass : ''}`
+          ? `Serve at ${drink.serving.temp_min_c}–${drink.serving.temp_max_c} °C${drink.serving.glass ? ', ' + drink.serving.glass : ''}`
           : '',
     };
   }
 
-  /** Подпись под объяснением: чья это оценка и к какому блюду. */
+  /** Подпись под объяснением: чья это оценка и к какому блюду. Пару ИИ, которую сомелье ещё не подтвердил, оценкой сомелье не называем. */
   source(rec: Recommendation): string {
-    if (!rec.bySommelier) return this.hint(rec.type);
-    return rec.basedOn ? `Оценка сомелье по похожему блюду «${rec.basedOn}»` : 'Оценка сомелье к этому блюду';
+    if (!rec.bySommelier && !rec.byAi) return this.hint(rec.type);
+    const who = rec.byAi ? 'AI pick' : 'Sommelier rating';
+    return rec.basedOn ? `${who} based on a similar dish, “${rec.basedOn}”` : `${who} for this dish`;
   }
 
   /** Одна фраза о том, сошлись вес блюда и тело сорта или нет. */
   matchNote(rec: Recommendation): string {
     if (rec.targetBody === null) return '';
     const gap = Math.abs(rec.body - rec.targetBody);
-    if (gap <= 1.2) return 'Тело сорта совпало с весом блюда - ни один не перетягивает внимание.';
-    if (gap <= 2.5) return 'Небольшая разница в плотности: сорт чуть ' + (rec.body > rec.targetBody ? 'плотнее' : 'легче') + ' блюда.';
+    if (gap <= BODY_MATCH_GAP) return 'The beer\'s body matches the dish\'s weight, so neither one takes over.';
+    if (gap <= 2.5) return 'A slight difference in weight: the beer is a touch ' + (rec.body > rec.targetBody ? 'heavier' : 'lighter') + ' than the dish.';
     return rec.body > rec.targetBody
-      ? 'Сорт заметно плотнее блюда - держите его на второй глоток, после еды.'
-      : 'Сорт легче блюда: он освежит, но не составит ему компанию по плотности.';
+      ? 'The beer is noticeably heavier than the dish. Save it for after the meal.'
+      : 'The beer is lighter than the dish: it refreshes, but won\'t match its weight.';
   }
 
   readonly skeletonCards = [1, 2, 3];

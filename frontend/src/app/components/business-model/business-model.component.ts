@@ -10,15 +10,15 @@ import { CommonModule } from '@angular/common';
 })
 export class BusinessModelComponent {
   streams = [
-    { icon: '📊', name: 'B2B Data', model: 'Вкусовая аналитика для R&D', target: 'Efes' },
-    { icon: '🎓', name: 'B2B Education', model: 'Обучение персонала HoReCa', target: 'Бары, рестораны' },
-    { icon: '📢', name: 'Promoted', model: 'Нативные рекомендации брендов', target: 'Бренды Efes KZ' },
-    { icon: '💎', name: 'Freemium', model: 'Бесплатно + Premium AI-сомелье', target: 'Потребители' },
+    { icon: '📊', name: 'B2B Data', model: 'Flavor analytics for R&D', target: 'Efes' },
+    { icon: '🎓', name: 'B2B Education', model: 'HoReCa staff training', target: 'Bars, restaurants' },
+    { icon: '📢', name: 'Promoted', model: 'Native brand recommendations', target: 'Efes KZ brands' },
+    { icon: '💎', name: 'Freemium', model: 'Free + Premium AI sommelier', target: 'Consumers' },
   ];
 
   stats = [
-    { value: '$1.8B', label: 'рынок пива KZ' },
-    { value: '15+', label: 'брендов Efes KZ' },
-    { value: '∞', label: 'масштаб: кофе, вино, Турция' },
+    { value: '690M L', label: 'of beer sold in Kazakhstan in 2025' },
+    { value: '15+', label: 'Efes KZ brands' },
+    { value: '∞', label: 'scale: coffee, wine, Türkiye' },
   ];
 }

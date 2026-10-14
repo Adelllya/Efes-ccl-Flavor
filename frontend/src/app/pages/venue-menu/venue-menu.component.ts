@@ -1,5 +1,5 @@
 import {
-  Component, DestroyRef, ElementRef, EventEmitter, Injector, NgZone, OnDestroy, Output, afterNextRender, computed, effect, inject,
+  Component, DestroyRef, ElementRef, EventEmitter, Injector, OnDestroy, Output, afterNextRender, computed, effect, inject,
   signal, untracked, viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,31 +17,39 @@ import {
 import { DishProfile, Recommendation, recommend, smallImage } from '../landing/pairing-engine.data';
 import { countOf, plural } from './plural';
 import {
-  CART_CHANGED_EVENT, CartLine, MAX_QTY, cartKey, orderKey, readCart, readJson, withSource, writeJson
+  CART_CHANGED_EVENT, CartLine, MAX_QTY, cartKey, deviceId, notifyCartChanged, orderKey, readCart, readJson, withSource,
+  writeCart, writeJson
 } from './cart-storage';
 import { allowedForMinor, drinkIsAlcoholic } from './drink-rules';
+import { WaiterSheetComponent } from './waiter-sheet.component';
 
 const VENUE_LABEL: Record<VenueType, string> = {
-  BAR: 'Бар', RESTAURANT: 'Ресторан', PUB: 'Паб', CAFE: 'Кафе', OTHER: 'Заведение',
+  BAR: 'Bar', RESTAURANT: 'Restaurant', PUB: 'Pub', CAFE: 'Cafe', OTHER: 'Venue',
 };
 
 /** Шаги на экране заказа; закрытие и отмена показываем отдельно. */
 const TIMELINE: readonly OrderStatus[] = ['NEW', 'ACCEPTED', 'COOKING', 'SERVED'];
 const ORDER_HINT: Record<OrderStatus, string> = {
-  NEW: 'Заказ ушёл в заведение. Как только его примут, статус обновится.',
-  ACCEPTED: 'Заведение приняло заказ и скоро начнёт готовить.',
-  COOKING: 'Уже готовим. Осталось немного.',
-  SERVED: 'Заказ подан. Приятного аппетита!',
-  DONE: 'Заказ закрыт. Спасибо, что были у нас.',
-  CANCELLED: 'Заказ отменён. Если это ошибка, позовите официанта.',
+  NEW: 'Your order is with the venue. The status updates as soon as they accept it.',
+  ACCEPTED: 'The venue accepted your order and will start on it shortly.',
+  COOKING: 'In the kitchen now. Almost there.',
+  SERVED: 'Your order is served. Enjoy!',
+  DONE: 'Order closed. Thanks for stopping by.',
+  CANCELLED: 'Order cancelled. If that’s a mistake, call your server.',
 };
 
 const POLL_MS = 15000;
+/** Поданный заказ гость видит ещё три часа, любой другой - сутки: дальше страница открывает меню, а не старый заказ. */
+const SERVED_TTL_MS = 3 * 60 * 60 * 1000;
+const ORDER_TTL_MS = 24 * 60 * 60 * 1000;
 /** Псевдораздел в полосе разделов: только карта напитков. */
 const DRINKS_SECTION = '__drinks__';
+/** Default section name stored by the backend; shown to guests in English. */
+export const SECTION_LABELS: Record<string, string> = { 'Основное': 'Main' };
+export const sectionLabel = (name: string): string => SECTION_LABELS[name] ?? name;
 
-/** Напиток к позиции: пара команды Flavor Tree или подбор движка, всегда из карты бара. */
-interface MenuRec {
+/** Напиток к позиции: пара команды Flavor Tree (сомелье или ИИ) или подбор движка, всегда из карты бара. */
+export interface MenuRec {
   /** Позиция карты бара, иначе сорт: ключ для списка. */
   key: string;
   /** Сорт каталога для страницы «О напитке»; null у напитка из базы подбора. */
@@ -58,6 +66,10 @@ interface MenuRec {
   type: PairingType | null;
   explanation: string;
   curated: boolean;
+  /** Пару команды предложил ИИ, сомелье её ещё не подтвердил. */
+  byAi: boolean;
+  /** id пары в каталоге (FoodPairing); у подбора движка его нет. */
+  pairingId?: string;
   basedOn?: string;
   /** Место в подборе, 1 - лучший. */
   rank: number;
@@ -71,13 +83,13 @@ interface MenuRec {
  */
 type RecState = 'ok' | 'weak' | 'none' | 'loading';
 
-interface MenuRow extends MenuEntry {
+export interface MenuRow extends MenuEntry {
   rec: MenuRec | null;
   alts: MenuRec[];
   recState: RecState;
 }
 
-interface MenuSection {
+export interface MenuSection {
   name: string;
   items: MenuRow[];
 }
@@ -92,6 +104,8 @@ interface BarDrinks {
 interface StoredOrder {
   id: string;
   token: string;
+  /** Когда заказ отправлен, мс по часам гостя. У записей старого формата поля нет. */
+  at?: number;
 }
 
 interface TimelineStep {
@@ -169,7 +183,7 @@ function writeView(slug: string, view: MenuView | null): void {
 @Component({
   selector: 'app-venue-menu',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, WaiterSheetComponent],
   template: `
     <!-- Кружка пива: lucide beer -->
     <ng-template #mug let-size>
@@ -178,30 +192,30 @@ function writeView(slug: string, view: MenuView | null): void {
 
     <!-- Степпер напитка: "+ В заказ" или "- n +". В панели подбора ещё item, rec и rank: откуда напиток -->
     <ng-template #drinkStep let-d let-it="item" let-r="rec" let-rank="rank">
-      @if (d.is_available) {
+      @if (d.is_available && hasPrice(d.price)) {
         <div class="vm-stepper" [class.vm-stepper-on]="qtyOf('DRINK', d.id) > 0">
           @if (qtyOf('DRINK', d.id) > 0) {
-            <button type="button" class="vm-step" data-fab-avoid (click)="dec('DRINK', d.id)" aria-label="Убрать одну">-</button>
+            <button type="button" class="vm-step" (click)="dec('DRINK', d.id)" aria-label="Remove one">-</button>
             <span class="vm-step-n" aria-live="polite">{{ qtyOf('DRINK', d.id) }}</span>
-            <button type="button" class="vm-step" data-fab-avoid (click)="addDrink(d, it, r, rank)" [disabled]="qtyOf('DRINK', d.id) >= maxQty" aria-label="Добавить ещё">+</button>
+            <button type="button" class="vm-step" (click)="addDrink(d, it, r, rank)" [disabled]="qtyOf('DRINK', d.id) >= maxQty" aria-label="Add one more">+</button>
           } @else {
-            <button type="button" class="vm-step vm-step-add" data-fab-avoid (click)="addDrink(d, it, r, rank)">Добавить в заказ</button>
+            <button type="button" class="vm-step vm-step-add" (click)="addDrink(d, it, r, rank)">Add to order</button>
           }
         </div>
-      } @else {
-        <span class="badge vm-badge-off">Нет в наличии</span>
+      } @else if (!d.is_available) {
+        <span class="badge vm-badge-off">Out of stock</span>
       }
     </ng-template>
 
     @if (slug()) {
       @if (!menuLoaded()) {
-        <div class="vm-strip glass-panel-strong" aria-hidden="true">
-          <button type="button" class="vm-strip-back" (click)="backToList()" aria-label="Все заведения">
+        <div class="vm-strip glass-panel-strong">
+          <button type="button" class="vm-strip-back" (click)="backToList()" aria-label="All venues">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </button>
-          <div class="skeleton-line short"></div>
+          <div class="skeleton-line short" aria-hidden="true"></div>
         </div>
-        <div class="vm-skeleton" aria-busy="true" aria-label="Загружаем меню">
+        <div class="vm-skeleton" aria-busy="true" aria-label="Loading menu">
           <div class="skeleton-card">
             <div class="skeleton-line"></div>
             <div class="skeleton-line"></div>
@@ -221,17 +235,19 @@ function writeView(slug: string, view: MenuView | null): void {
         <div class="glass-card vm-empty">
           <p class="text-dim">{{ menuError() }}</p>
           <div class="flex items-center justify-center gap-md flex-wrap">
-            <button type="button" class="btn-amber btn-sm" (click)="retry()">Повторить</button>
-            <button type="button" class="btn-outline" (click)="backToList()">К списку заведений</button>
+            <button type="button" class="btn-amber btn-sm" (click)="retry()">Try again</button>
+            <button type="button" class="btn-outline" (click)="backToList()">Back to venues</button>
           </div>
         </div>
       } @else {
         @if (menu(); as m) {
-        @if (step() === 'order') {
+        @if (staff()) {
+          <app-waiter-sheet [venue]="m.venue.name" [sections]="sections()" [priceLabel]="priceText" (exit)="closeStaff()" />
+        } @else if (step() === 'order') {
           <!-- Экран заказа -->
           <section class="vm-order">
             @if (!orderLoaded()) {
-              <div class="skeleton-card" aria-busy="true" aria-label="Загружаем заказ">
+              <div class="skeleton-card" aria-busy="true" aria-label="Loading order">
                 <div class="skeleton-line"></div>
                 <div class="skeleton-line"></div>
                 <div class="skeleton-line"></div>
@@ -247,7 +263,7 @@ function writeView(slug: string, view: MenuView | null): void {
                 <p class="text-dim vm-order-hint">{{ orderHint() }}</p>
 
                 @if (o.status !== 'CANCELLED') {
-                  <ol class="vm-timeline" aria-label="Статус заказа">
+                  <ol class="vm-timeline" aria-label="Order status">
                     @for (s of timeline(); track s.label) {
                       <li [class.done]="s.done" [class.current]="s.current" [attr.aria-current]="s.current ? 'step' : null">
                         <span class="vm-tl-dot" aria-hidden="true"></span>
@@ -268,9 +284,9 @@ function writeView(slug: string, view: MenuView | null): void {
                 </ul>
 
                 <dl class="vm-order-facts">
-                  <div><dt>Стол</dt><dd>{{ tableText(o.table_number) }}</dd></div>
-                  @if (o.guest_name) { <div><dt>Имя</dt><dd>{{ o.guest_name }}</dd></div> }
-                  <div><dt>Итого</dt><dd class="vm-total-sum">{{ price(o.total) }}</dd></div>
+                  <div><dt>Table</dt><dd>{{ tableText(o.table_number) }}</dd></div>
+                  @if (o.guest_name) { <div><dt>Name</dt><dd>{{ o.guest_name }}</dd></div> }
+                  <div><dt>Total</dt><dd class="vm-total-sum">{{ price(o.total) }}</dd></div>
                 </dl>
                 @if (o.comment) { <p class="vm-order-comment text-sm text-dim">{{ o.comment }}</p> }
                 @if (orderError()) { <p class="vm-form-error">{{ orderError() }}</p> }
@@ -278,46 +294,46 @@ function writeView(slug: string, view: MenuView | null): void {
                 <!-- Оценка пары: звезда сразу сохраняет оценку, комментарий дописывается в ту же запись -->
                 @if (ratePair(); as p) {
                   <div class="vm-rate">
-                    <p class="vm-rate-title">Как вам пара {{ p.dish }} и {{ p.drink }}?</p>
-                    <div class="vm-stars" role="group" aria-label="Оценка пары от 1 до 5">
+                    <p class="vm-rate-title">How did {{ p.dish }} and {{ p.drink }} go together?</p>
+                    <div class="vm-stars" role="group" aria-label="Rate the pairing from 1 to 5">
                       @for (n of pips; track n) {
                         <button type="button" class="vm-star" [class.on]="n <= ratingOf(o.id)" [attr.aria-pressed]="n === ratingOf(o.id)"
-                                [attr.aria-label]="n + ' из 5'" [disabled]="rateSending()" (click)="rate(o, p, n)">
+                                [attr.aria-label]="n + ' of 5'" [disabled]="rateSending()" (click)="rate(o, p, n)">
                           <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                         </button>
                       }
                     </div>
                     @if (ratingOf(o.id)) {
                       @if (commentSent(o.id)) {
-                        <p class="text-sm text-dim" role="status">Спасибо за отзыв!</p>
+                        <p class="text-sm text-dim" role="status">Thanks for the feedback!</p>
                       } @else {
-                        <p class="text-sm text-dim" role="status">Спасибо, оценка сохранена. Можно добавить пару слов.</p>
+                        <p class="text-sm text-dim" role="status">Thanks, rating saved. Want to add a few words?</p>
                         <div class="vm-rate-row">
-                          <input class="input" type="text" maxlength="500" placeholder="Что понравилось или нет" aria-label="Комментарий к паре"
+                          <input class="input" type="text" maxlength="500" placeholder="What worked, what didn't" aria-label="Pairing comment"
                                  [value]="rateComment()" (input)="rateComment.set($any($event.target).value)" (keydown.enter)="sendRateComment(o, p)" />
-                          <button type="button" class="btn-outline btn-sm" [disabled]="rateSending() || !rateComment().trim()" (click)="sendRateComment(o, p)">Отправить</button>
+                          <button type="button" class="btn-outline btn-sm" [disabled]="rateSending() || !rateComment().trim()" (click)="sendRateComment(o, p)">Send</button>
                         </div>
                       }
                     } @else {
-                      <p class="text-xs text-muted">Можно оценить сразу или когда попробуете.</p>
+                      <p class="text-xs text-muted">Rate now or after you try it.</p>
                     }
                     @if (rateError()) { <p class="vm-form-error" role="alert">{{ rateError() }}</p> }
-                    <p class="text-xs text-muted">Оценка анонимна. Комментарий без имени может попасть в отчёт о пилоте Flavor Tree.</p>
+                    <p class="text-xs text-muted">Ratings are anonymous. Comments may appear, unnamed, in the Flavor Tree pilot report.</p>
                   </div>
                 }
 
                 <div class="vm-order-actions">
-                  <button type="button" class="btn-amber" (click)="backToMenu()">Вернуться к меню</button>
-                  <button type="button" class="btn-outline" (click)="repeatOrder()">Повторить заказ</button>
+                  <button type="button" class="btn-amber" (click)="backToMenu()">Back to menu</button>
+                  <button type="button" class="btn-outline" (click)="repeatOrder()">Order again</button>
                 </div>
-                @if (!closed(o)) { <p class="text-xs text-muted">Статус обновляется сам каждые 15 секунд.</p> }
+                @if (!closed(o)) { <p class="text-xs text-muted">Status refreshes automatically every 15 seconds.</p> }
               </div>
             } @else {
               <div class="glass-card vm-empty">
-                <p class="text-dim">{{ orderError() || 'Не удалось открыть заказ.' }}</p>
+                <p class="text-dim">{{ orderError() || 'Could not open the order.' }}</p>
                 <div class="flex items-center justify-center gap-md flex-wrap">
-                  <button type="button" class="btn-amber btn-sm" (click)="refreshOrder()">Повторить</button>
-                  <button type="button" class="btn-outline" (click)="backToMenu()">К меню</button>
+                  <button type="button" class="btn-amber btn-sm" (click)="refreshOrder()">Try again</button>
+                  <button type="button" class="btn-outline" (click)="backToMenu()">Back to menu</button>
                 </div>
               </div>
             }
@@ -327,23 +343,23 @@ function writeView(slug: string, view: MenuView | null): void {
         <div class="vm-page">
           <!-- Липкая полоса: назад, название, стол, корзина -->
           <div class="vm-strip glass-panel-strong">
-            <button type="button" class="vm-strip-back" (click)="backToList()" aria-label="Все заведения" title="Все заведения">
+            <button type="button" class="vm-strip-back" (click)="backToList()" aria-label="All venues" title="All venues">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </button>
             <span class="vm-strip-name">{{ m.venue.name }}</span>
             @if (order(); as o) {
               @if (!closed(o)) {
-                <button type="button" class="vm-chip vm-chip-order" (click)="openOrder()" [attr.aria-label]="'Заказ ' + o.number + ', ' + statusLabel(o.status)">
+                <button type="button" class="vm-chip vm-chip-order" (click)="openOrder()" [attr.aria-label]="'Order ' + o.number + ', ' + statusLabel(o.status)">
                   <span class="vm-chip-dot" aria-hidden="true"></span>
-                  <span class="vm-chip-text">№{{ o.number }} · {{ statusLabel(o.status) }}</span>
+                  <span class="vm-chip-text">#{{ o.number }}<span class="vm-chip-status"> · {{ statusLabel(o.status) }}</span></span>
                 </button>
               }
             }
             <button type="button" class="vm-chip" [class.vm-chip-empty]="tableNumber() === null" (click)="openTable()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h18"/><path d="M5 10v8"/><path d="M19 10v8"/><path d="M8 10V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4"/></svg>
-              {{ tableLabel() }}
+              <span class="vm-chip-text">{{ tableLabel() }}</span>
             </button>
-            <button type="button" class="vm-cart-btn" (click)="openCart()" [attr.aria-label]="'Корзина: ' + countOf(cartCount(), 'позиция', 'позиции', 'позиций')">
+            <button type="button" class="vm-cart-btn" (click)="openCart()" [attr.aria-label]="'Cart: ' + countOf(cartCount(), 'item', 'items')">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               @if (cartCount() > 0) { <span class="vm-cart-n">{{ cartCount() }}</span> }
             </button>
@@ -352,7 +368,7 @@ function writeView(slug: string, view: MenuView | null): void {
           @if (orderNote()) {
             <div class="vm-note" role="status">
               <span>{{ orderNote() }}</span>
-              <button type="button" class="btn-ghost vm-note-close" (click)="orderNote.set('')" aria-label="Скрыть">
+              <button type="button" class="btn-ghost vm-note-close" (click)="orderNote.set('')" aria-label="Dismiss">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
             </div>
@@ -361,8 +377,8 @@ function writeView(slug: string, view: MenuView | null): void {
           <!-- Гость ответил, что ему нет 21: алкоголь скрыт, блюда и безалкогольное можно заказать -->
           @if (under21()) {
             <div class="vm-note vm-note-age" role="status">
-              <span>Вы ответили, что вам нет 21 года, поэтому алкоголь в меню скрыт. Блюда и безалкогольные напитки можно заказать.</span>
-              <button type="button" class="vm-link vm-note-link" (click)="answerAgeAgain()">Мне есть 21</button>
+              <span>You said you're under 21, so alcohol is hidden. You can still order food and alcohol-free drinks.</span>
+              <button type="button" class="vm-link vm-note-link" (click)="answerAgeAgain()">I'm 21 or older</button>
             </div>
           }
 
@@ -378,6 +394,10 @@ function writeView(slug: string, view: MenuView | null): void {
               <span class="badge">{{ venueType(m.venue) }}</span>
               <h1 class="vm-title">{{ m.venue.name }}</h1>
               @if (m.venue.description) { <p class="vm-desc text-dim">{{ m.venue.description }}</p> }
+              <button type="button" class="vm-link vm-staff-link" (click)="openStaff()">
+                Waiter cheat sheet
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
               <ul class="vm-facts">
                 @if (m.venue.address) {
                   <li>
@@ -402,44 +422,40 @@ function writeView(slug: string, view: MenuView | null): void {
           </section>
 
           @if (sections().length || drinks().length) {
-            <nav class="vm-pills" aria-label="Разделы меню" #pills>
+            <nav class="vm-pills" aria-label="Menu sections" #pills>
               <button type="button" class="vm-pill" [class.active]="activeSection() === ''" (click)="selectSection('')">
-                Все <span class="vm-pill-n">{{ totalItems() + drinks().length }}</span>
+                All <span class="vm-pill-n">{{ totalItems() + drinks().length }}</span>
               </button>
               @for (s of sectionNames(); track s.name) {
                 <button type="button" class="vm-pill" [class.active]="activeSection() === s.name" (click)="selectSection(s.name)">
-                  {{ s.name }} <span class="vm-pill-n">{{ s.count }}</span>
+                  {{ sectionLabel(s.name) }} <span class="vm-pill-n">{{ s.count }}</span>
                 </button>
               }
               @if (drinks().length) {
                 <button type="button" class="vm-pill" [class.active]="activeSection() === drinksSection" (click)="selectSection(drinksSection)">
-                  Напитки <span class="vm-pill-n">{{ drinks().length }}</span>
+                  Drinks <span class="vm-pill-n">{{ drinks().length }}</span>
                 </button>
               }
             </nav>
 
             @for (s of visibleSections(); track s.name) {
               <section class="vm-section">
-                <h2 class="vm-section-title">{{ s.name }}</h2>
+                <h2 class="vm-section-title">{{ sectionLabel(s.name) }}</h2>
                 <div class="vm-items">
                   @for (it of s.items; track it.id) {
                     <article class="glass-card vm-dish" [class.vm-item-off]="!it.is_available">
                       <div class="vm-dish-photo">
-                        <!-- Фото первого блюда видно сразу при открытии и обычно самое крупное на экране: грузим его без очереди.
-                             loading в разметке, а не привязкой: так он стоит у img раньше src, и остальные фото ждут прокрутки -->
-                        @if (it.dish.image && it.id === firstDishId()) {
-                          <img [src]="it.dish.image" alt="" loading="eager" fetchpriority="high" />
-                        } @else if (it.dish.image) {
+                        @if (it.dish.image) {
                           <img [src]="it.dish.image" alt="" loading="lazy" />
                         } @else {
                           <span class="vm-dish-initial" aria-hidden="true">{{ initialOf(it.dish.name) }}</span>
                         }
-                        @if (!it.is_available) { <span class="badge badge-dark vm-dish-off">Нет в наличии</span> }
+                        @if (!it.is_available) { <span class="badge badge-dark vm-dish-off">Out of stock</span> }
                       </div>
                       <div class="vm-dish-body">
                         <div class="vm-item-head">
                           <h3 class="vm-dish-name">{{ it.dish.name }}</h3>
-                          <span class="vm-price">{{ price(it.price) }}</span>
+                          <span class="vm-price" [class.vm-price-ask]="!hasPrice(it.price)">{{ priceLabel(it.price) }}</span>
                         </div>
                         @if (it.portion || it.dish.cuisine_display) {
                           <div class="vm-item-meta">
@@ -455,22 +471,22 @@ function writeView(slug: string, view: MenuView | null): void {
                           </p>
                         }
                         <div class="vm-actions">
-                          @if (it.is_available) {
+                          @if (it.is_available && hasPrice(it.price)) {
                             <div class="vm-stepper" [class.vm-stepper-on]="qtyOf('DISH', it.id) > 0">
                               @if (qtyOf('DISH', it.id) > 0) {
-                                <button type="button" class="vm-step" data-fab-avoid (click)="dec('DISH', it.id)" aria-label="Убрать одну">-</button>
+                                <button type="button" class="vm-step" (click)="dec('DISH', it.id)" aria-label="Remove one">-</button>
                                 <span class="vm-step-n" aria-live="polite">{{ qtyOf('DISH', it.id) }}</span>
-                                <button type="button" class="vm-step" data-fab-avoid (click)="addDish(it)" [disabled]="qtyOf('DISH', it.id) >= maxQty" aria-label="Добавить ещё">+</button>
+                                <button type="button" class="vm-step" (click)="addDish(it)" [disabled]="qtyOf('DISH', it.id) >= maxQty" aria-label="Add one more">+</button>
                               } @else {
-                                <button type="button" class="vm-step vm-step-add" data-fab-avoid (click)="addDish(it)">+ В заказ</button>
+                                <button type="button" class="vm-step vm-step-add" (click)="addDish(it)">+ Add</button>
                               }
                             </div>
-                          } @else {
-                            <span class="text-xs text-muted">Сегодня не готовим</span>
+                          } @else if (!it.is_available) {
+                            <span class="text-xs text-muted">Not available today</span>
                           }
-                          <button type="button" class="vm-rec-toggle" data-fab-avoid [class.active]="isOpen(it.id)" (click)="toggleRec(it.id)" [attr.aria-expanded]="isOpen(it.id)">
+                          <button type="button" class="vm-rec-toggle" [class.active]="isOpen(it.id)" (click)="toggleRec(it.id)" [attr.aria-expanded]="isOpen(it.id)">
                             <ng-container *ngTemplateOutlet="mug; context: { $implicit: 18 }" />
-                            Подобрать напиток
+                            Find a drink
                             <svg class="vm-rec-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
                           </button>
                         </div>
@@ -480,7 +496,7 @@ function writeView(slug: string, view: MenuView | null): void {
                         <div class="vm-rec-panel">
                           @if (it.rec; as r) {
                             @if (it.recState === 'weak') {
-                              <p class="vm-rec-note text-sm">Сильной пары к этому блюду в карте бара нет. Ближе всего по вкусу:</p>
+                              <p class="vm-rec-note text-sm">No strong match on the bar list for this dish. Closest in flavor:</p>
                             }
                             <div class="vm-rec">
                               <div class="vm-rec-thumb" aria-hidden="true">
@@ -492,7 +508,7 @@ function writeView(slug: string, view: MenuView | null): void {
                               </div>
                               <div class="vm-rec-body">
                                 <div class="vm-rec-top">
-                                  <span class="vm-rec-kind" [class.vm-rec-engine]="!r.curated">{{ r.curated ? 'Подбор команды Flavor Tree' : 'Подбор движка' }}</span>
+                                  <span class="vm-rec-kind" [class.vm-rec-engine]="!r.curated">{{ recKind(r) }}</span>
                                   @if (r.type) { <span class="badge">{{ label(r.type) }}</span> }
                                 </div>
                                 <p class="vm-rec-name">
@@ -500,41 +516,41 @@ function writeView(slug: string, view: MenuView | null): void {
                                   <span class="text-muted">{{ r.style }}@if (r.abv) { · {{ r.abv }}% }</span>
                                 </p>
                                 @if (r.curated || r.score === null) {
-                                  <div class="vm-score" role="img" [attr.aria-label]="'Совместимость ' + r.rating + ' из 5'">
+                                  <div class="vm-score" role="img" [attr.aria-label]="'Compatibility ' + r.rating + ' of 5'">
                                     @for (p of pips; track p) {
                                       <span class="vm-pip" [class.on]="p <= r.rating"></span>
                                     }
                                     <span class="vm-score-num">{{ r.rating }}/5</span>
                                   </div>
                                 } @else {
-                                  <p class="vm-score" [attr.aria-label]="'Балл движка ' + r.score + ' из 100'">
+                                  <p class="vm-score" [attr.aria-label]="'Engine score ' + r.score + ' of 100'">
                                     <span class="vm-score-big">{{ r.score }}</span>
-                                    <span class="text-xs text-muted">из 100@if (r.bandLabel) { · {{ r.bandLabel }} }</span>
+                                    <span class="text-xs text-muted">of 100@if (r.bandLabel) { · {{ r.bandLabel }} }</span>
                                   </p>
                                 }
                                 @if (r.explanation) { <p class="vm-rec-text text-sm text-dim">{{ r.explanation }}</p> }
                                 @if (r.basedOn && r.basedOn !== it.dish.name) {
-                                  <p class="text-xs text-muted">По похожему блюду «{{ r.basedOn }}»</p>
+                                  <p class="text-xs text-muted">Based on a similar dish: {{ r.basedOn }}</p>
                                 }
                                 @if (r.drink; as d) {
                                   <div class="vm-rec-buy">
-                                    <span class="vm-price">{{ price(d.price) }}</span>
+                                    <span class="vm-price" [class.vm-price-ask]="!hasPrice(d.price)">{{ priceLabel(d.price) }}</span>
                                     @if (d.volume) { <span class="text-xs text-muted">{{ d.volume }}</span> }
                                     <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d, item: it, rec: r, rank: 1 }" />
                                   </div>
                                 } @else {
-                                  <p class="vm-rec-missing text-sm">Заведение пока не добавило напитки в меню. Спросите официанта, что есть похожего.</p>
+                                  <p class="vm-rec-missing text-sm">The venue hasn't added drinks yet. Ask your server for something similar.</p>
                                 }
                                 @if (r.brandId) {
                                   <button type="button" class="vm-link" (click)="openDrink(r.brandId)">
-                                    О напитке
+                                    About this drink
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                   </button>
                                 }
                               </div>
                             </div>
                             @if (it.alts.length) {
-                              <p class="vm-alts-title">Ещё из карты бара</p>
+                              <p class="vm-alts-title">More from the bar</p>
                               <ul class="vm-alts">
                                 @for (a of it.alts; track a.key; let ai = $index) {
                                   <li class="vm-alt">
@@ -547,14 +563,14 @@ function writeView(slug: string, view: MenuView | null): void {
                                     </div>
                                     <div class="vm-alt-body">
                                       @if (a.brandId) {
-                                        <button type="button" class="vm-alt-name" (click)="openDrink(a.brandId)" title="О напитке">{{ a.name }}</button>
+                                        <button type="button" class="vm-alt-name" (click)="openDrink(a.brandId)" title="About this drink">{{ a.name }}</button>
                                       } @else {
                                         <span class="vm-alt-name vm-name-plain">{{ a.name }}</span>
                                       }
                                       <span class="text-xs text-muted">{{ altMeta(a) }}</span>
                                       @if (a.drink; as d) {
                                         <div class="vm-rec-buy">
-                                          <span class="vm-price">{{ price(d.price) }}</span>
+                                          <span class="vm-price" [class.vm-price-ask]="!hasPrice(d.price)">{{ priceLabel(d.price) }}</span>
                                           @if (d.volume) { <span class="text-xs text-muted">{{ d.volume }}</span> }
                                           <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d, item: it, rec: a, rank: ai + 2 }" />
                                         </div>
@@ -565,19 +581,19 @@ function writeView(slug: string, view: MenuView | null): void {
                               </ul>
                             }
                           } @else if (it.recState === 'loading') {
-                            <p class="vm-rec-none text-sm text-muted">Подбираем напиток...</p>
+                            <p class="vm-rec-none text-sm text-muted">Finding a drink...</p>
                           } @else if (drinks().length) {
                             <div class="vm-rec-none">
-                              <p class="text-sm text-muted">Сильной пары к этому блюду в карте бара нет. Выберите напиток по вкусу из карты.</p>
+                              <p class="text-sm text-muted">No strong match on the bar list for this dish. Pick any drink you like from the list.</p>
                               <button type="button" class="vm-link" (click)="showBarDrinks()">
-                                Все напитки бара
+                                All bar drinks
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                               </button>
                             </div>
                           } @else if (under21()) {
-                            <p class="vm-rec-none text-sm text-muted">Безалкогольных напитков в карте бара пока нет. Спросите официанта, что можно взять.</p>
+                            <p class="vm-rec-none text-sm text-muted">No alcohol-free drinks on the bar list yet. Ask your server what's available.</p>
                           } @else {
-                            <p class="vm-rec-none text-sm text-muted">Заведение пока не добавило напитки в меню.</p>
+                            <p class="vm-rec-none text-sm text-muted">The venue hasn't added drinks yet.</p>
                           }
                         </div>
                       }
@@ -589,7 +605,7 @@ function writeView(slug: string, view: MenuView | null): void {
 
             @if (showDrinks()) {
               <section class="vm-section" id="vm-bar-drinks">
-                <h2 class="vm-section-title">{{ under21() ? 'Безалкогольные напитки' : 'Напитки бара' }}</h2>
+                <h2 class="vm-section-title">{{ under21() ? 'Alcohol-free drinks' : 'Bar drinks' }}</h2>
                 <div class="vm-drinks">
                   @for (d of drinks(); track d.id) {
                     <article class="glass-card vm-drink" [class.vm-item-off]="!d.is_available">
@@ -602,13 +618,13 @@ function writeView(slug: string, view: MenuView | null): void {
                       </div>
                       <div class="vm-drink-body">
                         @if (d.brand) {
-                          <button type="button" class="vm-drink-name" (click)="openDrink(d.brand)" title="О напитке">{{ d.brand_name }}</button>
+                          <button type="button" class="vm-drink-name" (click)="openDrink(d.brand)" title="About this drink">{{ d.brand_name }}</button>
                         } @else {
                           <span class="vm-drink-name vm-name-plain">{{ d.brand_name }}</span>
                         }
                         <p class="text-xs text-muted vm-drink-meta">{{ d.brand_style }}@if (d.abv) { · {{ d.abv }}% }@if (d.volume) { · {{ d.volume }} }</p>
                         <div class="vm-drink-foot">
-                          <span class="vm-price">{{ price(d.price) }}</span>
+                          <span class="vm-price" [class.vm-price-ask]="!hasPrice(d.price)">{{ priceLabel(d.price) }}</span>
                           <ng-container *ngTemplateOutlet="drinkStep; context: { $implicit: d }" />
                         </div>
                       </div>
@@ -619,25 +635,25 @@ function writeView(slug: string, view: MenuView | null): void {
             }
           } @else {
             <div class="glass-card vm-empty">
-              <p class="text-dim">Меню пока пустое.</p>
-              <p class="text-sm text-muted">Заведение ещё не добавило блюда.</p>
+              <p class="text-dim">The menu is empty for now.</p>
+              <p class="text-sm text-muted">The venue hasn't added any dishes yet.</p>
             </div>
           }
 
           <section class="glass-panel vm-share">
             <div>
-              <h2 class="vm-share-title">Поделиться меню</h2>
-              <p class="text-sm text-muted">Ссылку можно отправить гостям или вывести в QR-код на столе.</p>
+              <h2 class="vm-share-title">Share the menu</h2>
+              <p class="text-sm text-muted">Send the link to guests or put it in a table QR code.</p>
             </div>
             <div class="vm-share-row">
-              <input class="input vm-share-url" type="text" readonly [value]="shareUrl()" (focus)="$any($event.target).select()" aria-label="Ссылка на меню" />
+              <input class="input vm-share-url" type="text" readonly [value]="shareUrl()" (focus)="$any($event.target).select()" aria-label="Menu link" />
               <button type="button" class="btn-amber btn-sm" (click)="copyLink()">
                 @if (copied()) {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  Скопировано
+                  Copied
                 } @else {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                  Скопировать ссылку
+                  Copy link
                 }
               </button>
             </div>
@@ -645,12 +661,12 @@ function writeView(slug: string, view: MenuView | null): void {
 
           <!-- Нижняя полоса корзины -->
           @if (cartCount() > 0) {
-            <div class="vm-cart-bar" role="region" aria-label="Корзина">
+            <div class="vm-cart-bar" role="region" aria-label="Cart">
               <button type="button" class="vm-cart-bar-info" (click)="openCart()">
-                <span class="vm-cart-bar-n">{{ countOf(cartCount(), 'позиция', 'позиции', 'позиций') }}</span>
+                <span class="vm-cart-bar-n">{{ countOf(cartCount(), 'item', 'items') }}</span>
                 <span class="vm-cart-bar-sum">{{ price(cartTotal()) }}</span>
               </button>
-              <button type="button" class="btn-amber btn-sm vm-cart-bar-go" (click)="openCart()">Оформить</button>
+              <button type="button" class="btn-amber btn-sm vm-cart-bar-go" (click)="openCart()">Checkout</button>
             </div>
           }
         </div>
@@ -663,10 +679,10 @@ function writeView(slug: string, view: MenuView | null): void {
             @if (tableOpen()) {
               <div class="vm-sheet-head">
                 <div>
-                  <h2 id="vm-table-title" class="vm-sheet-title">Какой у вас стол?</h2>
-                  <p class="text-sm text-muted">Номер есть на табличке или в QR-коде на столе.</p>
+                  <h2 id="vm-table-title" class="vm-sheet-title">Which table are you at?</h2>
+                  <p class="text-sm text-muted">The number is on the table sign or QR code.</p>
                 </div>
-                <button type="button" class="btn-ghost vm-sheet-close" (click)="closeTable()" aria-label="Закрыть">
+                <button type="button" class="btn-ghost vm-sheet-close" (click)="closeTable()" aria-label="Close">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
               </div>
@@ -677,7 +693,7 @@ function writeView(slug: string, view: MenuView | null): void {
               </div>
               <button type="button" class="vm-table-takeaway" [class.active]="tableNumber() === 0" (click)="pickTable(0)" [attr.aria-pressed]="tableNumber() === 0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                Без стола (с собой)
+                No table (takeaway)
               </button>
             }
           </div>
@@ -688,8 +704,8 @@ function writeView(slug: string, view: MenuView | null): void {
           <div class="vm-sheet-body">
             @if (cartOpen()) {
               <div class="vm-sheet-head">
-                <h2 id="vm-cart-title" class="vm-sheet-title">Ваш заказ</h2>
-                <button type="button" class="btn-ghost vm-sheet-close" (click)="closeCart()" aria-label="Закрыть">
+                <h2 id="vm-cart-title" class="vm-sheet-title">Your order</h2>
+                <button type="button" class="btn-ghost vm-sheet-close" (click)="closeCart()" aria-label="Close">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
               </div>
@@ -702,12 +718,12 @@ function writeView(slug: string, view: MenuView | null): void {
                         <span class="text-xs text-muted">{{ lineMeta(l) }}</span>
                       </div>
                       <div class="vm-stepper vm-stepper-on vm-stepper-sm">
-                        <button type="button" class="vm-step" data-fab-avoid (click)="dec(l.kind, l.id)" aria-label="Убрать одну">-</button>
+                        <button type="button" class="vm-step" (click)="dec(l.kind, l.id)" aria-label="Remove one">-</button>
                         <span class="vm-step-n">{{ l.qty }}</span>
-                        <button type="button" class="vm-step" data-fab-avoid (click)="inc(l.kind, l.id)" [disabled]="l.qty >= maxQty" aria-label="Добавить ещё">+</button>
+                        <button type="button" class="vm-step" (click)="inc(l.kind, l.id)" [disabled]="l.qty >= maxQty" aria-label="Add one more">+</button>
                       </div>
                       <span class="vm-cart-line-sum">{{ price(lineSum(l)) }}</span>
-                      <button type="button" class="btn-ghost vm-cart-remove" (click)="remove(l)" aria-label="Убрать из заказа">
+                      <button type="button" class="btn-ghost vm-cart-remove" (click)="remove(l)" aria-label="Remove from order">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                       </button>
                     </li>
@@ -715,50 +731,58 @@ function writeView(slug: string, view: MenuView | null): void {
                 </ul>
 
                 <div class="vm-cart-table">
-                  <span class="text-sm text-dim">Куда нести</span>
+                  <span class="text-sm text-dim">Deliver to</span>
                   <button type="button" class="vm-chip" [class.vm-chip-empty]="tableNumber() === null" (click)="openTable()">{{ tableLabel() }}</button>
                 </div>
-                @if (tableHint()) { <p class="vm-form-error">Выберите стол, чтобы мы знали, куда нести заказ.</p> }
+                @if (tableHint()) { <p class="vm-form-error">Pick a table so we know where to bring your order.</p> }
                 @if (takeawayAlcohol()) {
-                  <p class="vm-form-error">Алкоголь с собой через приложение не оформляем. Выберите стол или уберите алкоголь из заказа.</p>
+                  <p class="vm-form-error">Alcohol can't be ordered for takeaway in the app. Pick a table or remove the alcohol.</p>
                 }
 
                 <label class="vm-field">
-                  <span>Ваше имя <em>необязательно</em></span>
-                  <input class="input" type="text" maxlength="80" placeholder="Как к вам обращаться" [value]="guestName()" (input)="guestName.set($any($event.target).value)" />
+                  <span>Your name <em>optional</em></span>
+                  <input class="input" type="text" maxlength="80" placeholder="What should we call you?" [value]="guestName()" (input)="guestName.set($any($event.target).value)" />
                 </label>
                 <label class="vm-field">
-                  <span>Комментарий к заказу</span>
-                  <textarea class="input" rows="2" maxlength="500" placeholder="Без лука, поострее, принести всё сразу..." [value]="comment()" (input)="comment.set($any($event.target).value)"></textarea>
+                  <span>Order notes</span>
+                  <textarea class="input" rows="2" maxlength="500" placeholder="No onions, extra spicy, bring everything at once..." [value]="comment()" (input)="comment.set($any($event.target).value)"></textarea>
                 </label>
                 @if (cartHasAlcohol() && !ordersClosed()) {
                   <label class="vm-age" [class.vm-age-missing]="ageHint()">
                     <input type="checkbox" [checked]="ageOk()" (change)="setAgeOk($any($event.target).checked)" />
-                    <span>Мне исполнился 21 год</span>
+                    <span>I'm 21 or older</span>
                   </label>
-                  <p class="text-xs text-muted vm-age-note">В заказе есть алкоголь. Официант может попросить документ.</p>
-                  @if (ageHint()) { <p class="vm-form-error" role="alert">Отметьте, что вам исполнился 21 год, или уберите алкоголь из заказа.</p> }
+                  <p class="text-xs text-muted vm-age-note">Your order includes alcohol. Your server may ask for ID.</p>
+                  @if (ageHint()) { <p class="vm-form-error" role="alert">Confirm you're 21 or older, or remove the alcohol from your order.</p> }
                 }
                 @if (sendError()) { <p class="vm-form-error" role="alert">{{ sendError() }}</p> }
 
+                @if (cartHasAlcohol()) {
+                  <!-- Ответственное потребление: в заказе есть алкоголь -->
+                  <p class="vm-care">
+                    <span class="vm-care-age" aria-hidden="true">21+</span>
+                    <span>Don't drink and drive: take a taxi or book a designated driver.</span>
+                  </p>
+                }
+
                 <div class="vm-sheet-foot">
                   <div class="vm-total">
-                    <span class="text-sm text-dim">Итого</span>
+                    <span class="text-sm text-dim">Total</span>
                     <span class="vm-total-sum">{{ price(cartTotal()) }}</span>
                   </div>
                   @if (ordersClosed()) {
                     <div class="vm-closed" role="status">
-                      <strong>Сейчас заказ через приложение не принимается.</strong>
-                      <span>Покажите этот список официанту, он примет заказ.</span>
+                      <strong>In-app ordering is paused right now.</strong>
+                      <span>Show this list to your server and they'll take your order.</span>
                     </div>
                   } @else {
-                    <button type="button" class="btn-amber btn-block" (click)="send()" [disabled]="sending()">{{ sending() ? 'Отправляем...' : 'Отправить заказ' }}</button>
+                    <button type="button" class="btn-amber btn-block" (click)="send()" [disabled]="sending()">{{ sending() ? 'Sending...' : 'Place order' }}</button>
                   }
                 </div>
               } @else {
                 @if (sendError()) { <p class="vm-form-error" role="alert">{{ sendError() }}</p> }
-                <p class="vm-sheet-empty text-dim">Корзина пуста. Добавьте блюда или напитки из меню.</p>
-                <button type="button" class="btn-outline" (click)="closeCart()">К меню</button>
+                <p class="vm-sheet-empty text-dim">Your cart is empty. Add dishes or drinks from the menu.</p>
+                <button type="button" class="btn-outline" (click)="closeCart()">Back to menu</button>
               }
             }
           </div>
@@ -767,13 +791,13 @@ function writeView(slug: string, view: MenuView | null): void {
       }
     } @else {
       <header class="vm-head">
-        <span class="badge mb-sm">Для гостей</span>
-        <h1 class="section-header">Электронное меню</h1>
-        <p class="section-subtitle">Блюда заведений, напиток к каждому из них и заказ прямо со стола.</p>
+        <span class="badge mb-sm">For guests</span>
+        <h1 class="section-header">Digital menu</h1>
+        <p class="section-subtitle">Every dish, the right drink for it, and ordering straight from your table.</p>
       </header>
 
       @if (!venuesLoaded()) {
-        <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем заведения">
+        <div class="skeleton-grid" aria-busy="true" aria-label="Loading venues">
           @for (i of skeletonRows; track i) {
             <div class="skeleton-card">
               <div class="skeleton-line"></div>
@@ -785,7 +809,7 @@ function writeView(slug: string, view: MenuView | null): void {
       } @else if (venuesError()) {
         <div class="glass-card vm-empty">
           <p class="text-dim">{{ venuesError() }}</p>
-          <button type="button" class="btn-amber btn-sm" (click)="retry()">Повторить</button>
+          <button type="button" class="btn-amber btn-sm" (click)="retry()">Try again</button>
         </div>
       } @else if (venues().length) {
         <div class="grid grid-cards-sm">
@@ -801,20 +825,20 @@ function writeView(slug: string, view: MenuView | null): void {
               <div class="vm-venue-body">
                 <div class="flex items-center gap-sm flex-wrap">
                   <span class="badge">{{ venueType(v) }}</span>
-                  @if (!v.is_published) { <span class="badge vm-badge-off">Скрыто</span> }
+                  @if (!v.is_published) { <span class="badge vm-badge-off">Hidden</span> }
                 </div>
                 <h2 class="vm-venue-name">{{ v.name }}</h2>
                 @if (venueLine(v)) { <p class="text-sm text-muted">{{ venueLine(v) }}</p> }
-                <p class="text-xs text-muted">{{ v.items_count ?? 0 }} {{ plural(v.items_count ?? 0, 'позиция', 'позиции', 'позиций') }} в меню</p>
+                <p class="text-xs text-muted">{{ v.items_count ?? 0 }} {{ plural(v.items_count ?? 0, 'item', 'items') }} on the menu</p>
               </div>
-              <button type="button" class="btn-amber btn-sm vm-venue-btn" (click)="$event.stopPropagation(); openVenue(v)">Открыть меню</button>
+              <button type="button" class="btn-amber btn-sm vm-venue-btn" (click)="$event.stopPropagation(); openVenue(v)">Open menu</button>
             </article>
           }
         </div>
       } @else {
         <div class="glass-card vm-empty">
-          <p class="text-dim">Заведений пока нет.</p>
-          <p class="text-sm text-muted">Меню появится, как только заведение опубликует его в панели.</p>
+          <p class="text-dim">No venues yet.</p>
+          <p class="text-sm text-muted">Menus appear here once a venue publishes theirs.</p>
         </div>
       }
     }
@@ -828,7 +852,6 @@ export class VenueMenuComponent implements OnDestroy {
   private track = inject(TrackService);
   private destroyRef = inject(DestroyRef);
   private injector = inject(Injector);
-  private zone = inject(NgZone);
   /** После ngOnDestroy опрос заказа не перезапускаем. */
   private destroyed = false;
 
@@ -840,6 +863,10 @@ export class VenueMenuComponent implements OnDestroy {
   readonly tableNumber = this.selection.tableNumber;
   /** Гость ответил, что ему нет 21: блюда и безалкогольное, алкоголь скрыт и в заказ не попадает. */
   readonly under21 = this.age.under21;
+  /** Режим официанта: вместо меню гостя шпаргалка «блюдо, сорт, фраза». */
+  readonly staff = this.selection.staffMode;
+  /** Цена для шпаргалки: та же запись, что в меню гостя. */
+  readonly priceText = (value: string | number) => this.priceLabel(value);
 
   venues = signal<Venue[]>([]);
   /** Пока false - скелет; пустое состояние показываем только после загрузки. */
@@ -853,6 +880,7 @@ export class VenueMenuComponent implements OnDestroy {
   readonly skeletonRows = [1, 2, 3];
   readonly plural = plural;
   readonly countOf = countOf;
+  readonly sectionLabel = sectionLabel;
   readonly maxQty = MAX_QTY;
   readonly drinksSection = DRINKS_SECTION;
   readonly pips = [1, 2, 3, 4, 5];
@@ -911,15 +939,8 @@ export class VenueMenuComponent implements OnDestroy {
   private entrySrc = '';
   /** Прокрутка, которую вернём, когда меню отрисуется (назад со страницы напитка, перезагрузка). */
   private pendingScroll: number | null = null;
-  /** Меню открылось из сохранённого вида: гость здесь уже был и выбор стола видел, второй раз его не открываем. */
-  private viewRestored = false;
-  /**
-   * Прокрутка страницы по последнему событию scroll. В ngOnDestroy scrollY читать поздно: меню уже снято
-   * со страницы, короткая страница сбросила прокрутку к началу, и «Назад» со страницы напитка (из карточки
-   * подбора, чата сомелье или нижней панели) вернул бы гостя в начало меню.
-   */
-  private lastY = window.scrollY;
-  private readonly onScroll = () => { this.lastY = window.scrollY; };
+  /** Прокрутку страницы сейчас держит эта страница (открыт лист снизу). */
+  private scrollLocked = false;
 
   /** Листы снизу: native dialog, showModal кладёт их в top layer поверх всего. */
   private readonly tableDlg = viewChild<ElementRef<HTMLDialogElement>>('tableDlg');
@@ -939,17 +960,12 @@ export class VenueMenuComponent implements OnDestroy {
     effect(() => this.syncDialog(this.cartDlg()?.nativeElement, this.cartOpen()));
 
     // Пока открыт лист снизу, страница под ним не листается
-    effect(() => {
-      const open = this.tableOpen() || this.cartOpen();
-      document.body.style.overflow = open ? 'hidden' : '';
-    });
+    effect(() => this.lockScroll(this.tableOpen() || this.cartOpen()));
 
     // ИИ-сомелье кладёт позиции в ту же запись корзины и шлёт это событие
     window.addEventListener(CART_CHANGED_EVENT, this.onCartChanged);
     // Уход со страницы или перезагрузка: запоминаем, где гость был в меню
     window.addEventListener('pagehide', this.onPageHide);
-    // Прокрутку для этого запоминаем вне зоны Angular: событие scroll не запускает проверку изменений
-    this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
 
     // Панель подбора открыли раньше, чем запасной подбор посчитал напиток: записываем открытие, когда он готов
     effect(() => {
@@ -988,7 +1004,20 @@ export class VenueMenuComponent implements OnDestroy {
     this.cart.set(readCart(slug));
     const m = this.menu();
     if (m) this.reconcileCart(m);
+    // Ответ на заказ, отправленный до ухода со страницы, мог прийти только сейчас
+    if (!this.stored) this.restoreOrder(slug);
   };
+
+  /**
+   * Блокировка прокрутки страницы: класс на html, потому что overflow на body
+   * не срабатывает при overflow-x: clip у html. Тем же классом управляет мобильное
+   * меню в AppComponent, поэтому трогаем его только при смене своего состояния.
+   */
+  private lockScroll(on: boolean): void {
+    if (on === this.scrollLocked) return;
+    this.scrollLocked = on;
+    document.documentElement.classList.toggle('ft-no-scroll', on);
+  }
 
   /**
    * Клик по подложке приходит в сам dialog; клики по содержимому не закрывают лист.
@@ -1020,8 +1049,7 @@ export class VenueMenuComponent implements OnDestroy {
     if (this.autoTableTimer) clearTimeout(this.autoTableTimer);
     window.removeEventListener(CART_CHANGED_EVENT, this.onCartChanged);
     window.removeEventListener('pagehide', this.onPageHide);
-    window.removeEventListener('scroll', this.onScroll);
-    document.body.style.overflow = '';
+    this.lockScroll(false);
   }
 
   private readonly onPageHide = () => this.saveView();
@@ -1033,7 +1061,7 @@ export class VenueMenuComponent implements OnDestroy {
     writeView(slug, {
       step: this.step(),
       // Меню ещё не вернуло прокрутку (гость ушёл сразу): сохраняем ту, что ждала своей очереди
-      y: this.pendingScroll ?? Math.round(this.lastY),
+      y: this.pendingScroll ?? Math.round(window.scrollY),
       open: Object.keys(this.expanded()).filter(id => this.expanded()[id]),
       section: this.activeSection(),
       sent: [...this.pairOpensSent],
@@ -1068,8 +1096,6 @@ export class VenueMenuComponent implements OnDestroy {
   });
 
   readonly sectionNames = computed(() => this.sections().map(s => ({ name: s.name, count: s.items.length })));
-  /** Первое блюдо меню: его фото грузим сразу. Не зависит от выбранного раздела, чтобы img не пересоздавался. */
-  readonly firstDishId = computed(() => this.menu()?.sections[0]?.items[0]?.id ?? '');
   readonly totalItems = computed(() => this.sections().reduce((n, s) => n + s.items.length, 0));
 
   readonly visibleSections = computed(() => {
@@ -1093,7 +1119,7 @@ export class VenueMenuComponent implements OnDestroy {
 
   readonly tableLabel = computed(() => {
     const t = this.tableNumber();
-    return t === null ? 'Выбрать стол' : this.tableText(t);
+    return t === null ? 'Pick a table' : this.tableText(t);
   });
 
   private readonly qtyByKey = computed(() => new Map(this.cart().map(l => [`${l.kind}:${l.id}`, l.qty])));
@@ -1142,10 +1168,10 @@ export class VenueMenuComponent implements OnDestroy {
     const o = this.order();
     if (!o) return '';
     switch (o.status) {
-      case 'NEW': return `Заказ №${o.number} отправлен, ждём подтверждения`;
-      case 'CANCELLED': return `Заказ №${o.number} отменён`;
-      case 'DONE': return `Заказ №${o.number} закрыт`;
-      default: return `Заказ №${o.number} принят`;
+      case 'NEW': return `Order #${o.number} sent, waiting for confirmation`;
+      case 'CANCELLED': return `Order #${o.number} cancelled`;
+      case 'DONE': return `Order #${o.number} closed`;
+      default: return `Order #${o.number} accepted`;
     }
   });
   readonly orderHint = computed(() => {
@@ -1185,21 +1211,6 @@ export class VenueMenuComponent implements OnDestroy {
 
   selectSection(name: string): void {
     this.activeSection.set(name);
-    // Список стал короче, и браузер мог оставить гостя внизу страницы, выше которой ушёл выбранный раздел
-    afterNextRender(() => this.revealSections(), { injector: this.injector });
-  }
-
-  /**
-   * Заголовок первого показанного раздела ушёл под липкие полосы или за нижний край экрана:
-   * ставим его сразу под полосу разделов. Отступ сверху задаёт scroll-margin-top у .vm-section в menu.css.
-   */
-  private revealSections(): void {
-    const first = this.pillsNav()?.nativeElement.parentElement?.querySelector<HTMLElement>('.vm-section');
-    if (!first) return;
-    const top = first.getBoundingClientRect().top;
-    const margin = parseFloat(getComputedStyle(first).scrollMarginTop) || 0;
-    if (top >= margin - 2 && top <= window.innerHeight - 120) return;
-    first.scrollIntoView({ block: 'start', behavior: 'instant' });
   }
 
   openDrink(brandId: string): void {
@@ -1252,9 +1263,22 @@ export class VenueMenuComponent implements OnDestroy {
     });
   }
 
-  /** «Все напитки бара» из панели подбора: только карта напитков, прокрутку к ней делает selectSection. */
+  /** Шпаргалке нужны пары ко всем блюдам; у старого бэкенда без recommendations - и расчёт движка. */
+  openStaff(): void {
+    if (this.needsLocalEngine()) this.ensureEngineData();
+    this.selection.staffMode.set(true);
+    window.scrollTo({ top: 0 });
+  }
+
+  closeStaff(): void {
+    this.selection.staffMode.set(false);
+    window.scrollTo({ top: 0 });
+  }
+
+  /** «Все напитки бара» из панели подбора: только карта напитков, прокрутка к ней. */
   showBarDrinks(): void {
     this.selectSection(DRINKS_SECTION);
+    setTimeout(() => document.getElementById('vm-bar-drinks')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   /** Прокручивает полосу разделов (только её, не страницу), чтобы активный раздел был виден целиком. */
@@ -1273,7 +1297,7 @@ export class VenueMenuComponent implements OnDestroy {
 
   /** «Czech Lager · 4% · 80 из 100» у варианта в списке «Ещё из карты бара». */
   altMeta(a: MenuRec): string {
-    const score = a.curated || a.score === null ? `${a.rating}/5` : `${a.score} из 100`;
+    const score = a.curated || a.score === null ? `${a.rating}/5` : `${a.score}/100`;
     return [a.style, a.abv ? `${a.abv}%` : '', a.type ? this.label(a.type) : '', score].filter(Boolean).join(' · ');
   }
 
@@ -1301,7 +1325,7 @@ export class VenueMenuComponent implements OnDestroy {
   }
 
   tableText(n: number): string {
-    return n === 0 ? 'С собой' : `Стол ${n}`;
+    return n === 0 ? 'Takeaway' : `Table ${n}`;
   }
 
   // Корзина
@@ -1311,8 +1335,23 @@ export class VenueMenuComponent implements OnDestroy {
   }
 
   addDish(it: MenuEntry): void {
-    if (!it.is_available) return;
+    if (!it.is_available || !this.hasPrice(it.price)) return;
+    const first = this.qtyOf('DISH', it.id) === 0;
     this.inc('DISH', it.id, { title: it.dish.name, sub: it.portion || '', price: it.price });
+    // Блюдо только что выбрано: это лучший момент показать, что к нему взять из карты бара
+    if (first && !this.isOpen(it.id)) this.suggestPair(it.id);
+  }
+
+  /**
+   * Раскрывает подбор к блюду, если лучший напиток к нему есть в карте бара и его ещё нет в корзине.
+   * Панель показана гостю, поэтому PAIR_OPEN пишем так же, как при нажатии «Подобрать напиток».
+   */
+  private suggestPair(itemId: string): void {
+    const row = this.sections().flatMap(sec => sec.items).find(i => i.id === itemId);
+    const drink = row?.rec?.drink;
+    if (!row || !drink || !drink.is_available || !this.hasPrice(drink.price) || this.qtyOf('DRINK', drink.id) > 0) return;
+    this.expanded.update(e => ({ ...e, [itemId]: true }));
+    this.trackPairOpen(row);
   }
 
   /**
@@ -1321,7 +1360,7 @@ export class VenueMenuComponent implements OnDestroy {
    */
   addDrink(d: MenuDrink, item?: MenuEntry, rec?: MenuRec, rank?: number): void {
     // Гостю младше 21 алкоголь в заказ не кладём, даже если кнопка как-то оказалась на экране
-    if (!d.is_available || (this.under21() && !allowedForMinor(d))) return;
+    if (!d.is_available || !this.hasPrice(d.price) || (this.under21() && !allowedForMinor(d))) return;
     const from: Pick<CartLine, 'source' | 'pairedWith' | 'rank'> = item ? { source: 'PAIRING', pairedWith: item.id, rank } : {};
     this.inc('DRINK', d.id, { title: d.brand_name, sub: d.volume || '', price: d.price, ...from });
     if (!item) return;
@@ -1407,14 +1446,10 @@ export class VenueMenuComponent implements OnDestroy {
       this.tableOpen.set(true);
       return;
     }
-    if (this.takeawayAlcohol()) {
-      this.revealCartNotice();
-      return;
-    }
+    if (this.takeawayAlcohol()) return;
     const alcohol = this.cartHasAlcohol();
     if (alcohol && !this.ageOk()) {
       this.ageHint.set(true);
-      this.revealCartNotice();
       return;
     }
     this.sending.set(true);
@@ -1440,15 +1475,22 @@ export class VenueMenuComponent implements OnDestroy {
     const comment = this.comment().trim();
     if (comment) body.comment = comment;
 
-    this.api.createOrder(body).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    // Запрос не привязан к жизни страницы: сервер мог уже создать заказ, и без ответа
+    // гость остался бы с полной корзиной и без номера заказа
+    this.api.createOrder(body).subscribe({
       next: o => {
-        this.sending.set(false);
-        // Заказ создан: запоминаем его под исходным slug, даже если гость уже открыл другое заведение
-        const stored: StoredOrder = { id: o.id, token: o.guest_token ?? '' };
+        // Заказ создан: запоминаем его и чистим корзину под исходным slug, что бы ни было сейчас на экране
+        const stored: StoredOrder = { id: o.id, token: o.guest_token ?? '', at: Date.now() };
         writeJson(orderKey(slug), stored);
-        if (this.slug() !== slug) return;
+        writeCart(slug, []);
+        if (this.destroyed || this.slug() !== slug) {
+          // Страницу закрыли или открыли другое заведение: если меню этого заведения снова на экране, оно подхватит заказ
+          notifyCartChanged(slug);
+          return;
+        }
+        this.sending.set(false);
         this.stored = stored;
-        this.setCart([]);
+        this.cart.set([]);
         this.comment.set('');
         this.ageOk.set(false);
         this.ageHint.set(false);
@@ -1458,45 +1500,16 @@ export class VenueMenuComponent implements OnDestroy {
         this.showOrder(o);
       },
       error: (err: unknown) => {
+        if (this.destroyed || this.slug() !== slug) return;
         this.sending.set(false);
-        if (this.slug() !== slug) return;
         const status = err instanceof HttpErrorResponse ? err.status : 0;
         const itemsRejected = err instanceof HttpErrorResponse && status === 400 && !!err.error?.items;
         if (status === 409) this.closedByServer.set(true);
-        else if (status === 429) this.sendError.set('Слишком много заказов подряд. Подождите пару минут или позовите официанта.');
+        else if (status === 429) this.sendError.set('Too many orders in a row. Wait a couple of minutes or call your server.');
         else if (itemsRejected) this.refreshCartAfterReject(slug);
         else this.sendError.set(AuthService.errorText(err));
-        this.revealCartNotice();
       },
     });
-  }
-
-  /**
-   * Галочка 21+ или ошибка в листе корзины могли остаться под липким итогом (длинный заказ, телефон боком),
-   * и нажатие «Отправить заказ» выглядело бы так, будто ничего не произошло. Прокручиваем лист так,
-   * чтобы всё от первой такой строки до последней встало над итогом. Если всё и так видно, лист стоит на месте.
-   */
-  private revealCartNotice(): void {
-    afterNextRender(() => {
-      const dlg = this.cartDlg()?.nativeElement;
-      if (!dlg?.open) return;
-      // Алкоголь с собой: вместе с ошибкой показываем и строку «Куда нести», там меняют стол
-      const sel = '.vm-age-missing, .vm-form-error' + (this.takeawayAlcohol() ? ', .vm-cart-table' : '');
-      const marks = Array.from(dlg.querySelectorAll<HTMLElement>(sel), el => el.getBoundingClientRect());
-      if (!marks.length) return;
-      const box = dlg.getBoundingClientRect();
-      const foot = dlg.querySelector<HTMLElement>('.vm-sheet-foot')?.getBoundingClientRect();
-      const gap = 12;
-      const from = box.top + gap;
-      const to = (foot ? foot.top : box.bottom) - gap;
-      const top = Math.min(...marks.map(r => r.top));
-      const bottom = Math.max(...marks.map(r => r.bottom));
-      // Не помещается целиком: важнее начало, там галочка или стол
-      const dy = top < from || bottom - top > to - from ? top - from : Math.max(0, bottom - to);
-      if (Math.abs(dy) < 1) return;
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      dlg.scrollBy({ top: dy, behavior: reduce ? 'instant' : 'smooth' });
-    }, { injector: this.injector });
   }
 
   /** Сервер отверг позиции: пока гость выбирал, меню изменилось. Обновляем меню и корзину. */
@@ -1508,13 +1521,11 @@ export class VenueMenuComponent implements OnDestroy {
         this.menuUnder21 = under21;
         this.menu.set(m);
         this.reconcileCart(m);
-        this.sendError.set('Часть позиций уже недоступна, мы обновили корзину. Проверьте заказ и отправьте снова.');
-        this.revealCartNotice();
+        this.sendError.set('Some items are no longer available, so we updated your cart. Check your order and send it again.');
       },
       error: () => {
         if (this.slug() !== slug) return;
-        this.sendError.set('Часть позиций уже недоступна. Обновите страницу и соберите заказ снова.');
-        this.revealCartNotice();
+        this.sendError.set('Some items are no longer available. Refresh the page and rebuild your order.');
       },
     });
   }
@@ -1542,7 +1553,8 @@ export class VenueMenuComponent implements OnDestroy {
   }
 
   /**
-   * Те же позиции снова в корзину: только те, что ещё есть в меню и в наличии.
+   * Те же позиции снова в корзину. То, что гость уже успел набрать, остаётся: количество складывается.
+   * Позиции, которых больше нет в меню или в наличии, перечисляем в сообщении, чтобы пропажа не была молчаливой.
    * Метку подбора не переносим: повтор - выбор самого гостя, так доля подбора в отчёте не завышается.
    */
   repeatOrder(): void {
@@ -1551,20 +1563,34 @@ export class VenueMenuComponent implements OnDestroy {
     if (!o || !m) return;
     const entries = new Map(m.sections.flatMap(s => s.items).map(i => [i.id, i]));
     const drinks = this.drinkById();
-    const lines: CartLine[] = [];
+    const lines = [...this.cart()];
+    const missing: string[] = [];
+    let added = 0;
+    const put = (line: Omit<CartLine, 'qty'>, qty: number) => {
+      const at = lines.findIndex(l => l.kind === line.kind && l.id === line.id);
+      if (at < 0) lines.push({ ...line, qty });
+      else lines[at] = { ...lines[at], ...line, qty: Math.min(MAX_QTY, lines[at].qty + qty) };
+      added++;
+    };
     for (const i of o.items) {
       const qty = Math.min(MAX_QTY, Math.max(1, i.qty));
-      if (i.kind === 'DISH' && i.menu_item) {
-        const e = entries.get(i.menu_item);
-        if (e?.is_available) lines.push({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price, qty });
-      } else if (i.kind === 'DRINK' && i.menu_drink) {
-        const d = drinks.get(i.menu_drink);
-        if (d?.is_available) lines.push({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price, qty });
+      const e = i.kind === 'DISH' && i.menu_item ? entries.get(i.menu_item) : undefined;
+      const d = i.kind === 'DRINK' && i.menu_drink ? drinks.get(i.menu_drink) : undefined;
+      if (e?.is_available && this.hasPrice(e.price)) {
+        put({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price }, qty);
+      } else if (d?.is_available && this.hasPrice(d.price)) {
+        put({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price }, qty);
+      } else if (!missing.includes(i.title)) {
+        missing.push(i.title);
       }
     }
     this.setCart(lines);
     this.step.set('menu');
-    this.cartOpen.set(lines.length > 0);
+    this.sendError.set(missing.length
+      ? `Not on the menu right now: ${missing.join(', ')}.${added ? ' Everything else is in your cart.' : ''}`
+      : '');
+    // Корзину открываем и тогда, когда добавить было нечего: в ней видно, чего не хватило
+    this.cartOpen.set(lines.length > 0 || missing.length > 0);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1581,6 +1607,18 @@ export class VenueMenuComponent implements OnDestroy {
   /** Звезда сразу сохраняет оценку; повторное нажатие меняет её в той же записи на сервере. */
   rate(o: Order, p: RatePair, rating: number): void {
     this.postFeedback(o, p, rating, '');
+    this.votePair(p, rating);
+  }
+
+  /**
+   * Та же оценка уходит голосом за пару каталога (4-5 звёзд - подошло): так сомелье видит её
+   * во вкладке «Аналитика». Только для пар команды с id; ошибку не показываем, оценка не должна мешать.
+   */
+  private votePair(p: RatePair, rating: number): void {
+    const row = this.sections().flatMap(sec => sec.items).find(i => i.id === p.dishRef);
+    const rec = row && [row.rec, ...row.alts].find(r => r?.pairingId && r.drink?.id === p.drinkRef);
+    if (!rec?.pairingId) return;
+    this.api.votePairing(rec.pairingId, rating >= 4, deviceId(), this.slug()).subscribe({ error: () => undefined });
   }
 
   sendRateComment(o: Order, p: RatePair): void {
@@ -1611,9 +1649,21 @@ export class VenueMenuComponent implements OnDestroy {
       },
       error: (err: unknown) => {
         this.rateSending.set(false);
-        this.rateError.set('Не удалось сохранить оценку. ' + AuthService.errorText(err));
+        this.rateError.set('Couldn\'t save your rating. ' + AuthService.errorText(err));
       },
     });
+  }
+
+  /**
+   * Заказ для гостя завершён: закрыт, отменён, подан больше трёх часов назад
+   * или просто старше суток. Такой заказ не опрашиваем и после перезагрузки
+   * не показываем. Возраст считаем по часам гостя, если запись их помнит.
+   */
+  private finished(o: Order): boolean {
+    if (isOrderClosed(o.status)) return true;
+    const since = this.stored?.at ?? Date.parse(o.created_at);
+    const age = Number.isFinite(since) ? Date.now() - since : 0;
+    return age > ORDER_TTL_MS || (o.status === 'SERVED' && age > SERVED_TTL_MS);
   }
 
   refreshOrder(): void {
@@ -1623,16 +1673,28 @@ export class VenueMenuComponent implements OnDestroy {
     this.api.getGuestOrder(s.id, s.token).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: o => {
         if (this.stored?.id !== o.id) return;
-        this.order.set(o);
         this.orderLoaded.set(true);
         this.orderError.set('');
-        if (isOrderClosed(o.status)) {
-          // Закрытый заказ показываем ещё раз, но после перезагрузки гость попадёт в меню
-          this.stopPolling();
-          this.stored = null;
-          writeJson(orderKey(slug), null);
-        } else if (!this.pollTimer) {
-          this.startPolling();
+        if (!this.finished(o)) {
+          this.order.set(o);
+          if (!this.pollTimer) this.startPolling();
+          return;
+        }
+        // Заказ для гостя завершён: опрос не нужен, после перезагрузки откроется меню
+        const seen = this.order()?.id === o.id;
+        this.stopPolling();
+        this.stored = null;
+        writeJson(orderKey(slug), null);
+        if (seen && isOrderClosed(o.status)) {
+          // Заказ закрыли или отменили на глазах у гостя: итог показываем
+          this.order.set(o);
+          return;
+        }
+        // Давний заказ или заказ, закрытый до захода на страницу: вместо его экрана показываем меню
+        this.order.set(null);
+        this.step.set('menu');
+        if (o.status === 'CANCELLED') {
+          this.orderNote.set(`Order #${o.number} was cancelled. If that’s a mistake, call your server.`);
         }
       },
       error: (err: unknown) => {
@@ -1647,7 +1709,7 @@ export class VenueMenuComponent implements OnDestroy {
           this.order.set(null);
           this.orderError.set('');
           this.step.set('menu');
-          this.orderNote.set('Ваш прошлый заказ больше не найден. Если это ошибка, позовите официанта.');
+          this.orderNote.set('We can\'t find your previous order. If that\'s a mistake, call your server.');
           return;
         }
         this.orderError.set(AuthService.errorText(err));
@@ -1675,13 +1737,13 @@ export class VenueMenuComponent implements OnDestroy {
     const abs = Math.abs(n);
     const whole = Math.trunc(abs);
     const frac = Math.round((abs - whole) * 100);
-    const grouped = String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    const grouped = String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     const sign = n < 0 ? '-' : '';
-    return frac ? `${sign}${grouped},${String(frac).padStart(2, '0')} ₸` : `${sign}${grouped} ₸`;
+    return frac ? `${sign}${grouped}.${String(frac).padStart(2, '0')} ₸` : `${sign}${grouped} ₸`;
   }
 
   venueType(v: Venue): string {
-    return v.venue_type_display || VENUE_LABEL[v.venue_type] || 'Заведение';
+    return VENUE_LABEL[v.venue_type] || v.venue_type_display || 'Venue';
   }
 
   /** "Алматы, пр. Достык 100" без лишних пробелов, если чего-то нет. */
@@ -1699,6 +1761,23 @@ export class VenueMenuComponent implements OnDestroy {
 
   telHref(phone: string): string {
     return 'tel:' + phone.replace(/[^\d+]/g, '');
+  }
+
+  /** Подпись над рекомендацией: кто её дал. */
+  recKind(r: MenuRec): string {
+    if (!r.curated) return 'Engine pick';
+    return r.byAi ? 'AI pick' : 'Flavor Tree team pick';
+  }
+
+  /** Цена задана и больше нуля: только такую позицию можно заказать. */
+  hasPrice(value: string | number): boolean {
+    const n = typeof value === 'number' ? value : parseFloat(value);
+    return isFinite(n) && n > 0;
+  }
+
+  /** Цена для карточки; у позиции без цены вместо "0 ₸" честное "цена уточняется". */
+  priceLabel(value: string | number): string {
+    return this.hasPrice(value) ? this.price(value) : 'price on request';
   }
 
   label(type: PairingType | null): string {
@@ -1753,7 +1832,6 @@ export class VenueMenuComponent implements OnDestroy {
     // и перезагрузка возвращают экран, прокрутку и открытые панели подбора
     const view = entry ? null : readView(slug);
     if (entry) writeView(slug, null);
-    this.viewRestored = !!view;
     if (view) {
       this.expanded.set(Object.fromEntries(view.open.map(id => [id, true])));
       this.activeSection.set(view.section);
@@ -1762,16 +1840,27 @@ export class VenueMenuComponent implements OnDestroy {
     }
 
     this.cart.set(readCart(slug));
-    this.stored = readJson<StoredOrder>(orderKey(slug));
-    if (this.stored?.id) {
-      // После «Вернуться к меню» гость остаётся в меню, заказ открывается с полосы наверху
-      this.step.set(view?.step === 'menu' ? 'menu' : 'order');
-      this.orderLoaded.set(false);
-      this.refreshOrder();
-    } else {
-      this.stored = null;
-    }
+    this.restoreOrder(slug, view?.step);
     this.fetchMenu(slug, true);
+  }
+
+  /**
+   * Незакрытый заказ из хранилища: открываем его экран и сверяем статус с сервером.
+   * После «Вернуться к меню» (viewStep menu) гость остаётся в меню, заказ открывается с полосы наверху.
+   */
+  private restoreOrder(slug: string, viewStep?: 'menu' | 'order'): void {
+    const saved = readJson<StoredOrder>(orderKey(slug));
+    // Запись старше суток на сервере не проверяем: такой заказ гостю уже не нужен
+    const stale = !!saved?.at && Date.now() - saved.at > ORDER_TTL_MS;
+    if (!saved?.id || stale) {
+      if (saved) writeJson(orderKey(slug), null);
+      this.stored = null;
+      return;
+    }
+    this.stored = saved;
+    this.step.set(viewStep === 'menu' ? 'menu' : 'order');
+    this.orderLoaded.set(false);
+    this.refreshOrder();
   }
 
   /**
@@ -1796,17 +1885,22 @@ export class VenueMenuComponent implements OnDestroy {
         // Стол из QR или из хранилища может быть больше, чем столов у заведения: сбрасываем, ниже откроется выбор
         const table = this.tableNumber();
         if (table !== null && table > this.tablesCount()) this.selection.setTable(slug, null);
-        if (m.sections.some(s => s.items.some(i => !i.recommendations && !i.pairing))) this.ensureEngineData();
+        // Старый бэкенд: движок нужен блюдам без пары и блюдам, чья пара не продаётся в этом баре
+        const needsEngine = (i: MenuEntry) => !i.recommendations && (!i.pairing
+          || (!i.pairing.menu_drink && !(i.alternatives ?? []).some(a => a.menu_drink)));
+        if (m.sections.some(s => s.items.some(needsEngine))) this.ensureEngineData();
         // Стол ещё не выбран: предложим выбрать, когда меню на экране и гость ответил на вопрос о возрасте.
-        // Возврат со страницы напитка и перезагрузка не в счёт: выбор стола гость уже видел и мог закрыть
-        if (first && !this.viewRestored && this.tableNumber() === null && this.step() === 'menu') this.tablePromptPending = true;
+        // Официанту в режиме шпаргалки стол не нужен
+        if (first && this.tableNumber() === null && this.step() === 'menu' && !this.staff()) this.tablePromptPending = true;
+        // Шпаргалку открыли прямой ссылкой: у старого бэкенда ей нужен расчёт движка для блюд без пары
+        if (this.staff() && this.needsLocalEngine()) this.ensureEngineData();
         this.restoreScroll();
         this.afterMenuShown(slug);
       },
       error: (err: unknown) => {
         if (this.selection.venueSlug() !== slug || (!first && this.menu())) return;
         const notFound = err instanceof HttpErrorResponse && err.status === 404;
-        this.menuError.set(notFound ? 'Такого заведения нет или его меню скрыто.' : AuthService.errorText(err));
+        this.menuError.set(notFound ? 'This venue doesn\'t exist or its menu is hidden.' : AuthService.errorText(err));
         this.menuLoaded.set(true);
       },
     });
@@ -1842,7 +1936,8 @@ export class VenueMenuComponent implements OnDestroy {
     if (this.autoTableTimer) clearTimeout(this.autoTableTimer);
     this.autoTableTimer = setTimeout(() => {
       this.autoTableTimer = null;
-      if (this.selection.venueSlug() === slug && this.tableNumber() === null && this.step() === 'menu' && this.age.answered()) {
+      if (this.selection.venueSlug() === slug && this.tableNumber() === null && this.step() === 'menu' && this.age.answered()
+        && !this.staff()) {
         this.tableOpen.set(true);
       }
     }, 350);
@@ -1865,7 +1960,6 @@ export class VenueMenuComponent implements OnDestroy {
     }
     this.tablePromptPending = false;
     this.pendingScroll = null;
-    this.viewRestored = false;
     this.entrySrc = '';
     this.activeSection.set('');
     this.expanded.set({});
@@ -1899,7 +1993,7 @@ export class VenueMenuComponent implements OnDestroy {
   }
 
   /**
-   * Корзина из хранилища против свежего меню: цены обновляем, пропавшее и недоступное убираем.
+   * Корзина из хранилища против свежего меню: цены обновляем, пропавшее, недоступное и без цены убираем.
    * Гостю младше 21 алкоголь из корзины тоже уходит (и тот, что положил чат).
    */
   private reconcileCart(m: VenueMenu): void {
@@ -1912,10 +2006,14 @@ export class VenueMenuComponent implements OnDestroy {
       const tags = withSource({}, l);
       if (l.kind === 'DISH') {
         const e = entries.get(l.id);
-        if (e?.is_available) lines.push({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price, qty, ...tags });
+        if (e?.is_available && this.hasPrice(e.price)) {
+          lines.push({ kind: 'DISH', id: e.id, title: e.dish.name, sub: e.portion || '', price: e.price, qty, ...tags });
+        }
       } else if (l.kind === 'DRINK') {
         const d = drinks.get(l.id);
-        if (d?.is_available) lines.push({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price, qty, ...tags });
+        if (d?.is_available && this.hasPrice(d.price)) {
+          lines.push({ kind: 'DRINK', id: d.id, title: d.brand_name, sub: d.volume || '', price: d.price, qty, ...tags });
+        }
       }
     }
     this.setCart(lines);
@@ -1933,7 +2031,7 @@ export class VenueMenuComponent implements OnDestroy {
   private startPolling(): void {
     this.stopPolling();
     const o = this.order();
-    if (this.destroyed || !o || isOrderClosed(o.status) || !this.stored) return;
+    if (this.destroyed || !o || this.finished(o) || !this.stored) return;
     this.pollTimer = setInterval(() => this.refreshOrder(), POLL_MS);
   }
 
@@ -1954,7 +2052,11 @@ export class VenueMenuComponent implements OnDestroy {
       },
       error: () => this.engineLoaded.set(true),
     });
-    this.api.getPairings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(p => this.pairings.set(p));
+    // Без сочетаний движок считает по правилам: ошибку этого запроса гостю не показываем
+    this.api.getPairings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: p => this.pairings.set(p),
+      error: () => undefined,
+    });
   }
 
   private recsFor(
@@ -2020,6 +2122,8 @@ export class VenueMenuComponent implements OnDestroy {
       ?? null;
     // У старого бэкенда в ответе были только пары команды.
     const curated = p.curated ?? true;
+    // Пара каталога: id для оценки и кто её поставил (pairing_source AI - подбор ИИ без подтверждения сомелье)
+    const team = p as MenuPairing & { id?: string; pairing_source?: string };
     return {
       key: drink?.id ?? p.brand ?? p.brand_name,
       brandId: p.brand,
@@ -2033,6 +2137,8 @@ export class VenueMenuComponent implements OnDestroy {
       type: p.pairing_type,
       explanation: p.explanation,
       curated,
+      byAi: curated && team.pairing_source === 'AI',
+      pairingId: curated ? team.id : undefined,
       basedOn: curated ? undefined : basedOn,
       rank: p.rank ?? rank,
       drink,
@@ -2054,6 +2160,7 @@ export class VenueMenuComponent implements OnDestroy {
       type: r.type,
       explanation: r.explanation,
       curated: false,
+      byAi: false,
       basedOn: r.basedOn,
       rank,
       drink,

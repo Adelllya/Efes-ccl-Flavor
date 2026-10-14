@@ -6,7 +6,7 @@ python manage.py seed_roles [--reset-passwords]
 
 Пароль ставится только новой учётке (или всем с --reset-passwords). Публичные пароли
 из DEMO_USERS работают только на своей машине; на сервере пароль берётся из
-FT_PASSWORD_MODERATOR, FT_PASSWORD_SOMMELIER, FT_PASSWORD_RESTAURANT, FT_PASSWORD_GUEST,
+FT_PASSWORD_MODERATOR, FT_PASSWORD_SOMMELIER, FT_PASSWORD_RESTAURANT, FT_PASSWORD_GUEST, FT_PASSWORD_WAITER,
 а без переменной вход по паролю закрыт (см. api/demo_accounts.py и rotate_demo_passwords).
 """
 from decimal import Decimal
@@ -18,7 +18,7 @@ from api import public_content
 from api.demo_accounts import apply_password, env_name, initial_password
 from api.engine_catalog import engine_drink
 from api.models import Brand, ChangeRequest, Dish, MenuDrink, MenuItem, ServingRecommendation, Venue
-from api.permissions import GROUP_ROLES, ROLE_MODERATOR, ROLE_RESTAURANT, ROLE_SOMMELIER
+from api.permissions import GROUP_ROLES, ROLE_MODERATOR, ROLE_RESTAURANT, ROLE_SOMMELIER, ROLE_WAITER
 
 DEMO_USERS = [
     # username, пароль, роль, is_staff, имя
@@ -26,6 +26,7 @@ DEMO_USERS = [
     ('sommelier', 'sommelier12345', ROLE_SOMMELIER, False, 'Сомелье'),
     ('restaurant', 'restaurant12345', ROLE_RESTAURANT, False, public_content.DEMO_VENUE_NAME),
     ('guest', 'guest12345', None, False, 'Гость'),
+    ('waiter', 'waiter12345', ROLE_WAITER, False, 'Waiter'),
 ]
 
 # Демо без выдуманных адреса и телефона: в меню гостя пустые поля не показываются.

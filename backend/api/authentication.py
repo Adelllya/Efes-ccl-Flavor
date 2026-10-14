@@ -9,7 +9,7 @@ from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-EXPIRED_MESSAGE = 'Сессия истекла, войдите снова'
+EXPIRED_MESSAGE = 'Your session has expired, please sign in again'
 
 
 def token_expired(token):

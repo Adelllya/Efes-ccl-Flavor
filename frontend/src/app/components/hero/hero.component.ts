@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class HeroComponent {
   team = [
-    { name: 'Ералы', role: 'Co-founder', initials: 'ЕА' },
-    { name: 'Аделия', role: 'Co-founder', initials: 'АА' },
+    { name: 'Yeraly', role: 'Co-founder', initials: 'YA' },
+    { name: 'Adelia', role: 'Co-founder', initials: 'AA' },
   ];
 }

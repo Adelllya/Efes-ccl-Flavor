@@ -4,7 +4,7 @@ import { PanelIconComponent } from './panel-icons';
 import { checkImageFile, confirmTwice } from './panel-shared';
 
 export const DEFAULT_PHOTO_HINT =
-  'PNG, JPG или WebP, до 4 МБ. Лучше квадратное фото 800×800, блюдо по центру на светлом фоне.';
+  'PNG, JPG or WebP, up to 4 MB. A square 800×800 photo works best, with the dish centered on a light background.';
 
 /**
  * Блок фото для карточек блюда, заведения и сорта.
@@ -23,14 +23,14 @@ export const DEFAULT_PHOTO_HINT =
     <div class="wa-photo" [class.wa-photo-wide]="shape === 'wide'">
       <div class="wa-photo-box">
         @if (preview(); as p) {
-          <img [src]="p" alt="Новое фото" />
-          <span class="wa-photo-tag">Новое фото</span>
+          <img [src]="p" alt="New photo" />
+          <span class="wa-photo-tag">New photo</span>
         } @else if (currentUrl) {
           <img [src]="currentUrl" [alt]="title" />
         } @else {
           <div class="wa-photo-empty">
             <panel-icon name="image" size="lg" />
-            <span>Фото не загружено</span>
+            <span>No photo uploaded</span>
           </div>
         }
       </div>
@@ -50,8 +50,7 @@ export const DEFAULT_PHOTO_HINT =
           (drop)="onDrop($event)"
         >
           <panel-icon name="upload" />
-          <span class="wa-drop-mouse">Перетащите фото или нажмите, чтобы выбрать</span>
-          <span class="wa-drop-touch">Нажмите, чтобы выбрать фото</span>
+          <span>Drag a photo here or tap to choose one</span>
         </div>
         <input type="file" accept="image/png,image/jpeg,image/webp" #fileInput hidden (change)="onInput($event)" />
         <p class="wa-photo-hint">{{ hint }}</p>
@@ -60,31 +59,36 @@ export const DEFAULT_PHOTO_HINT =
           <p class="wa-photo-file">{{ f.name }} <span class="text-muted">({{ sizeText(f) }})</span></p>
         }
         @if (localError() || error) {
-          <p class="wa-error">{{ localError() || error }}</p>
+          <p class="wa-error" role="alert">{{ localError() || error }}</p>
         }
 
         <div class="wa-actions">
           @if (file() && !deferred) {
             <button type="button" class="btn-amber" [disabled]="busy" (click)="upload()">
-              <panel-icon name="upload" /> {{ busy ? 'Загрузка...' : 'Загрузить' }}
+              <panel-icon name="upload" /> {{ busy ? 'Uploading...' : 'Upload' }}
             </button>
           }
           @if (file()) {
-            <button type="button" class="btn-outline" [disabled]="busy" (click)="reset()">Отмена</button>
+            <button type="button" class="btn-outline" [disabled]="busy" (click)="reset()">Cancel</button>
           }
           @if (currentUrl && removable && !file()) {
             <button type="button" class="btn-outline panel-danger" [disabled]="busy" (click)="askRemove()">
-              <panel-icon name="trash" /> {{ pendingRemove() === 'photo' ? 'Точно удалить?' : 'Удалить фото' }}
+              <panel-icon name="trash" /> {{ pendingRemove() === 'photo' ? 'Delete for sure?' : 'Delete photo' }}
             </button>
           }
         </div>
 
         @if (showUrl) {
-          <button type="button" class="wa-link-btn" (click)="urlOpen.set(!urlOpen())">
-            <panel-icon [name]="urlOpen() ? 'chevron' : 'chevronRight'" /> или укажите ссылку
+          <button type="button" class="wa-link-btn" [attr.aria-expanded]="urlOpen()" (click)="urlOpen.set(!urlOpen())">
+            <panel-icon [name]="urlOpen() ? 'chevron' : 'chevronRight'" /> or paste a link
           </button>
           @if (urlOpen()) {
-            <input class="input" type="url" placeholder="https://..." [ngModel]="url" (ngModelChange)="urlChange.emit($event)" />
+            <input class="input" type="url" placeholder="https://..." [attr.aria-label]="'Link: ' + title"
+                   [ngModel]="url" (ngModelChange)="urlChange.emit($event)" />
+            @if (!deferred) {
+              <!-- У поля нет своей кнопки: ссылку записывает форма карточки, в которую встроен блок -->
+              <p class="wa-photo-hint">The link is saved with the "Save" button in the card above, together with the other fields.</p>
+            }
           }
         }
       </div>
@@ -103,7 +107,7 @@ export class PanelPhotoComponent {
   /** Без кнопки "Загрузить": файл заберёт родитель через fileSelected после создания записи. */
   @Input() deferred = false;
   @Input() hint = DEFAULT_PHOTO_HINT;
-  @Input() title = 'Фото';
+  @Input() title = 'Photo';
   /** square: 1:1 превью, wide: широкий баннер (обложка). */
   @Input() shape: 'square' | 'wide' = 'square';
   /** Свёрнутое поле "или укажите ссылку"; значение живёт у родителя. */
@@ -180,7 +184,7 @@ export class PanelPhotoComponent {
   }
 
   sizeText(f: File): string {
-    return f.size >= 1024 * 1024 ? (f.size / 1024 / 1024).toFixed(1) + ' МБ' : Math.round(f.size / 1024) + ' КБ';
+    return f.size >= 1024 * 1024 ? (f.size / 1024 / 1024).toFixed(1) + ' MB' : Math.round(f.size / 1024) + ' KB';
   }
 
   private take(f: File): void {
@@ -194,8 +198,13 @@ export class PanelPhotoComponent {
     }
     this.localError.set(null);
     this.file.set(f);
+    // Превью прошлого файла убираем сразу, а не когда прочитается новый
+    this.preview.set(null);
     const reader = new FileReader();
-    reader.onload = () => this.preview.set(reader.result as string);
+    // Чтение идёт не мгновенно: за это время могли выбрать другой файл или нажать "Отмена"
+    reader.onload = () => {
+      if (this.file() === f) this.preview.set(reader.result as string);
+    };
     reader.readAsDataURL(f);
     this.fileSelected.emit(f);
   }

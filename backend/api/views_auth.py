@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -24,13 +25,18 @@ from .permissions import ALL_ROLES, GROUP_ROLES, ROLE_MODERATOR, ROLE_USER, IsMo
 from .serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer
 from .throttles import LoginThrottle, PasswordChangeThrottle, RegisterThrottle
 
-LOGIN_ERROR = 'Неверный логин или пароль'
-CONSENT_ERROR = 'Подтвердите согласие на обработку персональных данных'
+LOGIN_ERROR = 'Invalid username or password'
+CONSENT_ERROR = 'Please confirm your consent to the processing of personal data'
 
 
 def _consent_given(value):
     """Согласие с политикой /privacy: true из JSON или 'true'/'on'/'1' из формы."""
     return str(value).strip().lower() in ('true', 'on', '1')
+
+
+def body_of(request):
+    """Тело запроса словарём. Массив или строка вместо объекта раньше давали 500."""
+    return request.data if isinstance(request.data, dict) else {}
 
 
 def auth_payload(user, token):
@@ -56,14 +62,19 @@ def _token_for(user):
 @throttle_classes([RegisterThrottle])
 def register(request):
     """POST /api/auth/register/ {username, email, password, first_name?, consent: true} -> 201 {token, user}."""
-    serializer = RegisterSerializer(data=request.data)
+    data = body_of(request)
+    serializer = RegisterSerializer(data=data)
     errors = {} if serializer.is_valid() else dict(serializer.errors)
     # Без согласия на обработку персональных данных аккаунт не создаём (закон РК № 94-V).
-    if not _consent_given(request.data.get('consent')):
+    if not _consent_given(data.get('consent')):
         errors['consent'] = [CONSENT_ERROR]
     if errors:
         return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
-    user = serializer.save()
+    try:
+        user = serializer.save()
+    except ValidationError as exc:
+        # Логин заняли между проверкой и записью: отвечаем в том же виде, что и на обычную ошибку.
+        return Response({'errors': exc.detail}, status=status.HTTP_400_BAD_REQUEST)
     token, _ = Token.objects.get_or_create(user=user)
     return Response(auth_payload(user, token), status=status.HTTP_201_CREATED)
 
@@ -74,8 +85,9 @@ def register(request):
 @throttle_classes([LoginThrottle])
 def login(request):
     """POST /api/auth/login/ {username, password} -> {token, user}. В username можно передать почту."""
-    username = str(request.data.get('username') or '').strip()
-    password = str(request.data.get('password') or '')
+    data = body_of(request)
+    username = str(data.get('username') or '').strip()
+    password = str(data.get('password') or '')
     if not username or not password:
         return Response({'detail': LOGIN_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -125,14 +137,15 @@ def me(request):
 def change_password(request):
     """POST /api/auth/change-password/ {old_password, new_password} -> {token} (новый токен)."""
     user = request.user
-    old_password = str(request.data.get('old_password') or '')
-    new_password = str(request.data.get('new_password') or '')
+    data = body_of(request)
+    old_password = str(data.get('old_password') or '')
+    new_password = str(data.get('new_password') or '')
 
     errors = {}
     if not user.check_password(old_password):
-        errors['old_password'] = ['Неверный текущий пароль']
+        errors['old_password'] = ['Current password is incorrect']
     if not new_password:
-        errors['new_password'] = ['Введите новый пароль']
+        errors['new_password'] = ['Enter a new password']
     else:
         try:
             validate_password(new_password, user=user)
@@ -172,10 +185,10 @@ def _resolve_venue(raw_venue):
     try:
         venue_id = uuid.UUID(str(raw_venue))
     except ValueError:
-        return None, {'venue': ['Некорректный идентификатор заведения']}
+        return None, {'venue': ['Invalid venue ID']}
     venue = Venue.objects.filter(pk=venue_id).first()
     if venue is None:
-        return None, {'venue': ['Заведение не найдено']}
+        return None, {'venue': ['Venue not found']}
     return venue, None
 
 
@@ -204,28 +217,28 @@ def user_update(request, id):
     Сначала проверяем всё, потом пишем одной транзакцией: при ошибке ничего не меняется.
     """
     user = get_object_or_404(User, pk=id)
-    data = request.data
+    data = body_of(request)
     is_self = user.pk == request.user.pk
 
     if user.is_superuser and not request.user.is_superuser:
-        return Response({'detail': 'Суперпользователя может менять только суперпользователь'},
+        return Response({'detail': 'Only a superuser can modify a superuser'},
                         status=status.HTTP_400_BAD_REQUEST)
 
     role = None
     if 'role' in data:
         role = data.get('role')
         if role not in ALL_ROLES:
-            return Response({'errors': {'role': ['Неизвестная роль']}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors': {'role': ['Unknown role']}}, status=status.HTTP_400_BAD_REQUEST)
         if is_self and role != ROLE_MODERATOR:
-            return Response({'detail': 'Нельзя понизить собственную роль'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'You cannot downgrade your own role'}, status=status.HTTP_400_BAD_REQUEST)
         if user.is_superuser and role != ROLE_MODERATOR:
-            return Response({'detail': 'Роль суперпользователя изменить нельзя'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': "A superuser's role cannot be changed"}, status=status.HTTP_400_BAD_REQUEST)
 
     is_active = None
     if 'is_active' in data:
         is_active = _parse_bool(data.get('is_active'))
         if is_self and not is_active:
-            return Response({'detail': 'Нельзя отключить собственный аккаунт'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'You cannot deactivate your own account'}, status=status.HTTP_400_BAD_REQUEST)
 
     venue = None
     if 'venue' in data:

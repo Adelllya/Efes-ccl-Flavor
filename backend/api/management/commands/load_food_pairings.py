@@ -1,6 +1,9 @@
 """
 Management command: python manage.py load_food_pairings
 Загружает матрицу фуд-пейрингов (51 пару) из fixtures/food_pairings.csv
+
+Пары из файла создаются или обновляются; пары, которых в файле нет (добавленные
+сомелье в панели или подобранные ИИ), остаются. Стереть всё и залить заново: --replace.
 """
 
 import csv
@@ -13,6 +16,10 @@ from api.models import Brand, Dish, FoodPairing
 class Command(BaseCommand):
     help = "Загружает 51 пару food pairing из fixtures/food_pairings.csv"
 
+    def add_arguments(self, parser):
+        parser.add_argument("--replace", action="store_true",
+                            help="Удалить все пары перед загрузкой, включая добавленные в панели")
+
     @transaction.atomic
     def handle(self, *args, **options):
         csv_path = Path(__file__).resolve().parent.parent.parent / "fixtures" / "food_pairings.csv"
@@ -21,8 +28,8 @@ class Command(BaseCommand):
             self.stderr.write(f"Файл {csv_path} не найден!")
             return
 
-        # Очистим старые пары
-        FoodPairing.objects.all().delete()
+        if options.get("replace"):
+            FoodPairing.objects.all().delete()
 
         loaded_count = 0
         skipped = []
@@ -48,13 +55,15 @@ class Command(BaseCommand):
                     skipped.append(f"Пропущено: {brand_name} + {dish_name} (brand: {bool(brand)}, dish: {bool(dish)})")
                     continue
 
-                FoodPairing.objects.create(
-                    brand=brand,
-                    dish=dish,
-                    compatibility_score=score,
-                    pairing_type=pairing_type,
-                    explanation=explanation,
-                )
+                # filter().first(), а не update_or_create: в старых данных одна пара может быть записана дважды.
+                pairing = FoodPairing.objects.filter(brand=brand, dish=dish).order_by("id").first()
+                if pairing is None:
+                    pairing = FoodPairing(brand=brand, dish=dish)
+                pairing.compatibility_score = score
+                pairing.pairing_type = pairing_type
+                pairing.explanation = explanation
+                pairing.source = FoodPairing.SOURCE_SOMMELIER
+                pairing.save()
                 loaded_count += 1
 
         for msg in skipped:

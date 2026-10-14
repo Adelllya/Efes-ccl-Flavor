@@ -1,4 +1,4 @@
-import { Component, Directive, ElementRef, HostListener, Input, OnChanges, OnDestroy, booleanAttribute, inject } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { V2Drink, V2Pair, V2Price, V2Reason } from './v2.models';
 
 /** Связь с Efes по данным каталога: собственные сорта, Coca-Cola İçecek и дистрибуция. */
@@ -34,7 +34,7 @@ export function categoryColor(category: string): string {
   return (CATEGORY_STYLE[category] ?? CATEGORY_STYLE['beer']).color;
 }
 
-const nf = new Intl.NumberFormat('ru-RU');
+const nf = new Intl.NumberFormat('en-US');
 
 /** «в баре ≈ 3 500 ₸» или «в магазине от 2 600 ₸»; пусто, если цены нет. */
 export function priceLabel(p: V2Price | null | undefined): string {
@@ -42,16 +42,16 @@ export function priceLabel(p: V2Price | null | undefined): string {
   const approx = p.is_estimate ? '≈ ' : '';
   if (p.horeca) {
     const max = p.horeca_max && p.horeca_max !== p.horeca ? '-' + nf.format(p.horeca_max) : '';
-    return `в баре ${approx}${nf.format(p.horeca)}${max} ₸`;
+    return `at the bar ${approx}${nf.format(p.horeca)}${max} ₸`;
   }
-  if (p.retail_min) return `в магазине от ${approx}${nf.format(p.retail_min)} ₸`;
+  if (p.retail_min) return `in stores from ${approx}${nf.format(p.retail_min)} ₸`;
   return '';
 }
 
 /** «Czech Pale Lager · Efes Kazakhstan · 4 %». */
 export function drinkLine(d: V2Drink | undefined): string {
   if (!d) return '';
-  const abv = d.abv != null ? `${String(d.abv).replace('.', ',')}\u00a0%` : '';
+  const abv = d.abv != null ? `${d.abv}%` : '';
   return [d.style?.name, d.producer?.name && withoutDashes(d.producer.name), abv].filter(Boolean).join(' · ');
 }
 
@@ -65,9 +65,9 @@ export function isEnergy(p: V2Pair | V2Drink | null | undefined): boolean {
 /** Текст для экрана ошибки загрузки: нет связи, раздела нет на сервере, сервер не ответил. */
 export function loadErrorText(err: unknown): string {
   const status = (err as { status?: number } | null)?.status ?? 0;
-  if (status === 0) return 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.';
-  if (status === 404) return 'Этот раздел сейчас недоступен на сервере. Загляните чуть позже.';
-  return 'Сервер сейчас не отвечает. Попробуйте ещё раз через минуту.';
+  if (status === 0) return 'Can’t reach the server. Check your internet connection and try again.';
+  if (status === 404) return 'This section isn’t available on the server right now. Please check back a bit later.';
+  return 'The server isn’t responding right now. Please try again in a minute.';
 }
 
 /* Тексты объяснений движка для гостя.
@@ -89,6 +89,8 @@ const REPEATED_WORD = /(^|[^\p{L}])(\p{L}+)(?:\s+\2)+(?=[^\p{L}]|$)/giu;
 const SAME_NOTE: Record<string, string> = {
   'фрукт': 'фруктовые ноты перекликаются',
   'умами': 'в напитке тоже есть умами',
+  'fruit': 'the fruity notes echo each other',
+  'umami': 'the drink has umami too',
 };
 
 function withoutDashes(s: string): string {
@@ -98,7 +100,7 @@ function withoutDashes(s: string): string {
 /** Название напитка без служебных пометок каталога и длинных тире. */
 export function drinkTitle(name: string | null | undefined): string {
   if (!name) return '';
-  return withoutDashes(name.replace(TYPICAL_NOTE, ' (например, $1)').replace(TYPICAL_ONLY, '')).trim();
+  return withoutDashes(name.replace(TYPICAL_NOTE, ' (e.g., $1)').replace(TYPICAL_ONLY, '')).trim();
 }
 
 /** Кавычки внутри кавычек по-русски: «Салат „Цезарь“ с курицей». Несбалансированные не трогаем. */
@@ -138,33 +140,37 @@ function replaceDashes(s: string): string {
  */
 export function cleanEngineText(raw: string | null | undefined, names: (string | null | undefined)[] = []): string {
   if (!raw) return '';
-  if (/^Признанная классика/.test(raw)) return 'Признанная классика: такую пару называют в учебниках и гидах по сочетаниям';
+  if (/^(?:Признанная классика|A recogni[sz]ed classic)/.test(raw)) return 'A recognized classic: this pairing appears in textbooks and pairing guides';
   // «Интернациональная кухня» подходит к чему угодно, как довод не звучит
-  if (/^Региональная пара: интернациональная кухня/.test(raw)) return '';
+  if (/^(?:Региональная пара: интернациональная кухня|Regional pairing: international cuisine)/.test(raw)) return '';
 
   const keep = [...new Set(names.filter((n): n is string => !!n && n.length > 2))].sort((a, b) => b.length - a.length);
   let t = raw;
   keep.forEach((name, i) => { t = t.split(name).join(`\uE000${i}\uE001`); });
+  const ru = CYRILLIC.test(t);
 
   // Технические числа движка
-  t = t.replace(/\s*\((?:[\d.,]+\s*↔\s*[\d.,]+)\)/g, '').replace(/:?\s*(?:громкость|насыщенность)\s+[\d.,]+\s+против\s+[\d.,]+/gi, '');
+  t = t.replace(/\s*\((?:[\d.,]+\s*↔\s*[\d.,]+)\)/g, '').replace(/:?\s*(?:громкость\s+[\d.,]+\s+против|loudness\s+[\d.,]+\s+vs)\s+[\d.,]+/gi, '');
   // Хвосты « · фрукт ↔ фрукт» и « · кислота усиливает вяжущесть танинов»
   const [head, ...tails] = t.split(' · ');
   t = [head, ...tails.map(part => {
     const m = part.match(/^(.+?)\s*↔\s*(.+)$/);
     if (!m) return part;
-    return m[1] === m[2] ? SAME_NOTE[m[1]] ?? `общая нота: ${m[1]}` : `${m[1]} и ${m[2]} перекликаются`;
+    return m[1] === m[2] ? SAME_NOTE[m[1]] ?? (ru ? `общая нота: ${m[1]}` : `shared note: ${m[1]}`)
+      : ru ? `${m[1]} и ${m[2]} перекликаются` : `${m[1]} and ${m[2]} echo each other`;
   })].join('; ');
   t = t.replace(/Общие ароматы\s+[\u2014\u2013]\s+(.+?)\s+[\u2014\u2013]\s+строят мост между напитком и блюдом/,
     'Общие ароматы строят мост между напитком и блюдом: $1');
-  t = t.replace(/\s*↔\s*/g, ' и ');
+  t = t.replace(/Shared aromas\s+[\u2014\u2013]\s+(.+?)\s+[\u2014\u2013]\s+build a bridge between the drink and the dish/,
+    'Shared aromas build a bridge between the drink and the dish: $1');
+  t = t.replace(/\s*↔\s*/g, ru ? ' и ' : ' and ');
 
   // Английские цитаты: одна переводится, остальные стоят в скобках источников и уходят вместе с ними
-  t = t.replace(/«palate destruction»/g, 'вкус блюда пропадёт');
+  t = t.replace(/«palate destruction»/g, 'вкус блюда пропадёт').replace(/“palate destruction”/g, 'the dish’s flavor gets lost');
   t = t.replace(/\s*\(([^()]*)\)/g, (whole: string, inner: string) => {
     if (inner.includes('\uE000')) return whole;
     const source = SOURCE_MARK.test(inner) || (LATIN.test(inner) && !CYRILLIC.test(inner));
-    return source || /^мост[\s:]/.test(inner) ? '' : whole;
+    return source || /^(?:мост|bridge)[\s:]/.test(inner) ? '' : whole;
   });
   t = t.replace(/\s*«([^«»\uE000]*)»/g, (whole: string, inner: string) => (LATIN.test(inner) && !CYRILLIC.test(inner) ? '' : whole));
 
@@ -172,6 +178,10 @@ export function cleanEngineText(raw: string | null | undefined, names: (string |
     .replace(/громкост(ь|и|ью)/g, 'насыщенност$1')
     .replace(/громче/g, 'насыщеннее')
     .replace(/перекрикивает/g, 'заглушает')
+    .replace(/Matched flavou?r loudness/g, 'Matched flavor intensity')
+    .replace(/\bloudness\b/g, 'intensity')
+    .replace(/\blouder\b/g, 'more intense')
+    .replace(/\bshouts over\b/g, 'overpowers')
     // «мягче и фруктовее» сказано про вино, к чаю и кофе не подходит
     .replace(/(танины (?:чая|кофе).*?мягче) и фруктовее/, '$1');
   t = replaceDashes(t);
@@ -186,7 +196,7 @@ export function cleanEngineText(raw: string | null | undefined, names: (string |
 /** Источники из скобок фразы движка: для подсказки при наведении, в самом тексте гостю не нужны. */
 export function engineSources(raw: string | null | undefined): string {
   if (!raw) return '';
-  const classic = raw.match(/^Признанная классика:\s*(.+)$/);
+  const classic = raw.match(/^(?:Признанная классика|A recogni[sz]ed classic):\s*(.+)$/);
   if (classic) return classic[1];
   const found: string[] = [];
   for (const m of raw.matchAll(/\(([^()]*)\)/g)) {
@@ -217,7 +227,7 @@ export function reasonLines(p: V2Pair, n = 2, used?: Set<string>): ReasonLine[] 
     const text = cleanEngineText(r.text, names);
     if (!text || used?.has(text) || out.some(x => x.text === text)) continue;
     const src = engineSources(r.text);
-    out.push({ text, source: src ? `Источник: ${src}` : '' });
+    out.push({ text, source: src ? `Source: ${src}` : '' });
     if (out.length >= n) break;
   }
   return out;
@@ -278,91 +288,5 @@ export class V2GlassComponent {
 
   get paths(): string[] {
     return GLASS_PATHS[(CATEGORY_STYLE[this.category] ?? CATEGORY_STYLE['beer']).glass];
-  }
-}
-
-/** Экран без наведения (телефон, планшет): всплывающую подсказку title там не открыть. */
-const NO_HOVER = '(hover: none), (pointer: coarse)';
-
-/** Строка с текстом подсказки: мелкая и приглушённая, шрифт основного текста, а не заголовка вокруг. */
-const HINT_LINE = 'display:block;font:400 0.75rem/1.4 var(--font-body);color:var(--muted);'
-  + 'letter-spacing:normal;text-transform:none;white-space:normal;';
-
-/** Значок «i» (как в lucide), размер от шрифта строки. */
-function hintIcon(): SVGSVGElement {
-  const ns = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  const attrs: Record<string, string> = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2',
-    'stroke-linecap': 'round', 'aria-hidden': 'true' };
-  for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v);
-  svg.style.cssText = 'display:inline-block;width:0.95em;height:0.95em;margin-left:0.3em;vertical-align:-0.12em;opacity:0.6;';
-  const circle = document.createElementNS(ns, 'circle');
-  circle.setAttribute('cx', '12'); circle.setAttribute('cy', '12'); circle.setAttribute('r', '10');
-  svg.appendChild(circle);
-  for (const d of ['M12 16v-4', 'M12 8h.01']) {
-    const path = document.createElementNS(ns, 'path');
-    path.setAttribute('d', d);
-    svg.appendChild(path);
-  }
-  return svg;
-}
-
-/**
- * Подсказка из title, до которой дотянется и палец: источник причины, «около» у крепости.
- * С мышью ничего не меняется: title стоит в шаблоне как был, директива на таком экране разметку не трогает.
- * На сенсорном экране рядом с текстом значок «i», касание показывает подсказку строкой ниже, второе прячет.
- * ftHintAfter: строка встаёт после элемента, а не внутри него (бейдж в строке flex).
- */
-@Directive({ selector: '[ftHint]', standalone: true })
-export class TapHintDirective implements OnChanges, OnDestroy {
-  @Input() ftHint: string | null | undefined;
-  @Input({ transform: booleanAttribute }) ftHintAfter = false;
-
-  private readonly host: HTMLElement = inject(ElementRef).nativeElement;
-  private readonly touch = typeof matchMedia === 'function' && matchMedia(NO_HOVER).matches;
-  private icon: SVGSVGElement | null = null;
-  private line: HTMLElement | null = null;
-
-  ngOnChanges(): void {
-    if (!this.touch) return;
-    if (!this.ftHint) {
-      this.icon?.remove();
-      this.icon = null;
-      this.hide();
-      return;
-    }
-    if (!this.icon) this.host.appendChild(this.icon = hintIcon());
-    if (this.line) this.line.textContent = this.ftHint;
-  }
-
-  @HostListener('click', ['$event'])
-  toggle(event: Event): void {
-    if (!this.touch || !this.ftHint) return;
-    // Касание по подсказке не открывает карточку, в которой она стоит
-    event.stopPropagation();
-    if (this.line) {
-      this.hide();
-      return;
-    }
-    const line = document.createElement('span');
-    line.textContent = this.ftHint;
-    line.style.cssText = HINT_LINE + (this.ftHintAfter ? 'flex-basis:100%;' : 'margin-top:4px;');
-    if (this.ftHintAfter) {
-      // Строка вне элемента: касание по ней тоже прячет подсказку, а не открывает карточку
-      line.addEventListener('click', e => { e.stopPropagation(); this.hide(); });
-      this.host.after(line);
-    } else {
-      this.host.appendChild(line);
-    }
-    this.line = line;
-  }
-
-  ngOnDestroy(): void {
-    this.hide();
-  }
-
-  private hide(): void {
-    this.line?.remove();
-    this.line = null;
   }
 }

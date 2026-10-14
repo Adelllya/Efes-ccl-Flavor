@@ -1,19 +1,22 @@
-import { Component, HostListener, OnInit, inject, signal, computed, Output, EventEmitter, viewChild } from '@angular/core';
+import {
+  Component, DestroyRef, EventEmitter, HostListener, OnInit, Output, computed, inject, signal, viewChild
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SelectionService } from '../../services/selection.service';
+import { PreferencesService } from '../../services/preferences.service';
+import { TasteQuizComponent } from '../../ui/taste-quiz.component';
 import { Brand, Dish, FoodPairing, FoodIcon, SiteSettings } from '../../models/flavor-tree.models';
 import { ActiveTab } from '../../app.component';
 import { V2ApiService } from '../drinks-v2/v2-api.service';
 import { V2Dish } from '../drinks-v2/v2.models';
-import { HeroComponent, HeroPillId } from './hero/hero.component';
-// Мастер, результат и витрина сортов нужны только после нажатия: грузятся отдельным чанком (@defer ниже).
-// Поэтому их классы здесь только в imports компонента и в типах, иначе сборщик вернёт их в основной бандл
-import { DishWizardComponent } from './dish-wizard.component';
-import type { WizardMove } from './dish-wizard.component';
+import { HeroComponent } from './hero/hero.component';
+import { DishWizardComponent, LAST_STEP, WizardMove } from './dish-wizard.component';
 import { DishResultComponent } from './dish-result.component';
 import { BeerPairingsComponent } from './beer-pairings.component';
-import { DishProfile, LAST_STEP, emptyProfile } from './pairing-engine.data';
+import { DishProfile, emptyProfile } from './pairing-engine.data';
 import { DishChoice, DishPick, buildDishIndex, resolveDish } from './dish-search';
 
 type Stage = 'idle' | 'searching' | 'wizard' | 'dish-result' | 'brand';
@@ -39,6 +42,14 @@ interface LandingEntry {
 
 const IDLE: LandingSnap = { stage: 'idle' };
 
+/**
+ * Последний шаг подбора. Роутера нет: при уходе в другой раздел через меню
+ * компонент главной уничтожается, а в новой записи истории шага нет.
+ * Модуль живёт всё время работы приложения, поэтому шаг переживает уход
+ * и возврат, как раньше в PageStateService.
+ */
+let lastSnap: LandingSnap | null = null;
+
 /** Один и тот же экран подбора: этап, шаг мастера, блюдо или сорт. */
 function sameSpot(a: LandingSnap, b: LandingSnap): boolean {
   if (a.stage !== b.stage) return false;
@@ -57,9 +68,12 @@ function landingEntry(): Partial<LandingEntry> {
   }
 }
 
+/** Значок экспресс-сценария: линейный SVG в стиле hero. */
+type MoodIcon = 'bowl' | 'flame' | 'citrus' | 'fish' | 'mug' | 'cake';
+
 interface MoodOption {
   id: string;
-  icon: string;
+  icon: MoodIcon;
   title: string;
   desc: string;
   targetType: 'dish' | 'brand';
@@ -71,33 +85,43 @@ interface MoodOption {
   selector: 'app-landing',
   standalone: true,
   imports: [
-    CommonModule, HeroComponent,
-    DishWizardComponent, DishResultComponent, BeerPairingsComponent,
+    CommonModule, FormsModule, HeroComponent,
+    DishWizardComponent, DishResultComponent, BeerPairingsComponent, TasteQuizComponent,
   ],
   template: `
     <!--
          1. HERO SECTION & VALUE PROPOSITION
          -->
     @if (stage() === 'idle') {
-      <app-hero (choose)="scrollToSelector($event)" (dishSearch)="onHeroSearch($event)" (pill)="onHeroPill($event)" />
+      <app-hero [brandCount]="brands().length" (choose)="scrollToSelector($event)" (dishSearch)="onHeroSearch($event)" />
+
+      <!-- Третий путь: гость не знает, что выбрать. Шесть вопросов о привычках и сорта под его вкус -->
+      <section class="taste-entry mb-4xl" aria-label="Taste profile">
+        <div>
+          <b>{{ prefs.hasTaste() ? 'Your taste profile is ready' : 'Not sure what to pick?' }}</b>
+          <span>{{ prefs.hasTaste() ? 'The catalog now ranks beers by how well they match your taste.' : 'Answer six quick questions about your habits. No sign-up, one minute.' }}</span>
+        </div>
+        <div class="taste-entry-actions">
+          @if (prefs.hasTaste()) {
+            <button type="button" class="btn-amber" (click)="navigate.emit('explorer')">Beers for my taste</button>
+            <button type="button" class="btn-outline" (click)="quiz.open()">Retake the quiz</button>
+          } @else {
+            <button type="button" class="btn-amber" (click)="quiz.open()">Find my taste</button>
+          }
+        </div>
+      </section>
     }
 
     <!--
          2. ПОДБОР: ДВА ПУТИ - ОТ БЛЮДА И ОТ НАПИТКА
          Вход только через две кнопки в hero. Дальше - мастер из четырёх
          вопросов для блюда либо витрина сортов для напитка.
-         Мастер, результат и витрина едут отдельным чанком: главная рисуется без них, а чанк браузер
-         берёт сразу после её первой отрисовки (prefetch on immediate). На медленном телефоне (4x CPU,
-         1.6 Мбит/с) так первый экран на 0.14 с раньше, чем без чанка, а нажатие в первую же секунду
-         ждёт 0.2-0.4 с вместо 0.7 с при prefetch on idle.
-         Не успел: пока чанк грузится, стоит скелетон с тем же id, и прокрутка к подбору находит его.
          -->
-    @defer (when stage() !== 'idle'; prefetch on immediate) {
     @if (stage() !== 'idle') {
-    <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel" [class.pairing-wait]="stage() === 'searching'">
+    <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel">
       @switch (stage()) {
         @case ('searching') {
-          <div class="skeleton-grid" aria-busy="true" aria-label="Ищем блюдо в каталоге">
+          <div class="skeleton-grid" aria-busy="true" aria-label="Searching the catalog for your dish">
             @for (i of [1, 2, 3]; track i) {
               <div class="skeleton-card">
                 <div class="skeleton-line"></div>
@@ -110,7 +134,6 @@ interface MoodOption {
 
         @case ('wizard') {
           <app-dish-wizard
-            #wizard
             [catalog]="dishIndex()"
             [icons]="foodIcons()"
             [restore]="wizardProfile()"
@@ -134,8 +157,10 @@ interface MoodOption {
               [pairings]="pairings()"
               [icons]="foodIcons()"
               [loaded]="dataLoaded()"
+              [failed]="dataFailed()"
               [alternatives]="settings().alternatives_count"
               (openBrand)="openBrandPage($event)"
+              (reload)="reload()"
               (back)="backToAnswers()"
               (restart)="resetFlow()"
               (otherDish)="startDish()"
@@ -146,35 +171,23 @@ interface MoodOption {
 
         @case ('brand') {
           <app-beer-pairings
-            #beerPairings
             [brands]="brands()"
             [pairings]="pairings()"
             [dishes]="dishes()"
             [icons]="foodIcons()"
             [loaded]="dataLoaded()"
+            [failed]="brandsFailed() || pairingsFailed()"
             [intro]="settings().pairing_intro"
             [minScore]="settings().min_score_to_show"
             [initial]="selectedBrand()"
             (openBrand)="openBrandPage($event)"
             (picked)="onBrandPicked($event)"
+            (retry)="reload()"
             (exit)="resetFlow()"
           />
         }
       }
     </section>
-    }
-    } @loading {
-      <section id="pairing-selector-section" class="glass-panel p-4xl mb-4xl pairing-engine-panel pairing-wait">
-        <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем подбор">
-          @for (i of [1, 2, 3]; track i) {
-            <div class="skeleton-card">
-              <div class="skeleton-line"></div>
-              <div class="skeleton-line"></div>
-              <div class="skeleton-line"></div>
-            </div>
-          }
-        </div>
-      </section>
     }
 
     <!--
@@ -182,9 +195,9 @@ interface MoodOption {
          -->
     <section class="page-section mb-4xl">
       <div class="mb-2xl">
-        <span class="badge mb-xs">Экспресс-сценарии</span>
-        <h2 class="section-header">Что выберешь сегодня?</h2>
-        <p class="section-subtitle">Выберите повод или настроение - получите готовую рекомендацию за 1 клик</p>
+        <span class="badge mb-xs">Quick picks</span>
+        <h2 class="section-header">What are you in the mood for?</h2>
+        <p class="section-subtitle">Pick an occasion or a mood and get a ready recommendation in one tap</p>
       </div>
 
       <div class="grid grid-3">
@@ -197,12 +210,35 @@ interface MoodOption {
             (keydown.enter)="applyMoodPreset(mood)"
             (keydown.space)="$event.preventDefault(); applyMoodPreset(mood)"
           >
-            <div class="mood-icon">{{ mood.icon }}</div>
+            <div class="mood-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @switch (mood.icon) {
+                  @case ('bowl') {
+                    <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/>
+                  }
+                  @case ('flame') {
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                  }
+                  @case ('citrus') {
+                    <path d="M21.66 17.67a1.08 1.08 0 0 1-.04 1.6A12 12 0 0 1 4.73 2.38a1.1 1.1 0 0 1 1.61-.04z"/><path d="M19.65 15.66A8 8 0 0 1 8.35 4.34"/><path d="m14 10-5.5 5.5"/><path d="M14 17.85V10H6.15"/>
+                  }
+                  @case ('fish') {
+                    <path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"/><path d="M18 12v.5"/><path d="M16 17.93a9.77 9.77 0 0 1 0-11.86"/><path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"/><path d="M10.46 7.26C10.2 5.88 9.17 4.24 8 3h5.8a2 2 0 0 1 1.98 1.67l.23 1.4"/><path d="m16.01 17.93-.23 1.4A2 2 0 0 1 13.8 21H9.5a5.96 5.96 0 0 0 1.49-3.98"/>
+                  }
+                  @case ('mug') {
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/>
+                  }
+                  @case ('cake') {
+                    <circle cx="9" cy="7" r="2"/><path d="M7.2 7.9 3 11v9c0 .6.4 1 1 1h16c.6 0 1-.4 1-1v-9c0-2-3-6-7-8l-3.6 2.6"/><path d="M16 13H3"/><path d="M16 17H3"/>
+                  }
+                }
+              </svg>
+            </div>
             <h3 class="mb-xs">{{ mood.title }}</h3>
             <p class="text-dim text-sm mb-lg">{{ mood.desc }}</p>
             <div class="flex justify-between items-center mt-auto">
               <span class="badge">{{ mood.badge }}</span>
-              <span class="text-beer font-bold text-sm">Выбрать →</span>
+              <span class="text-beer font-bold text-sm">Choose →</span>
             </div>
           </div>
         }
@@ -212,51 +248,85 @@ interface MoodOption {
     <!--
          4. ХРОНОМЕТРАЖ ГЛОТКА (СЕНСОРНАЯ ПИРАМИДА)
          -->
-    <section id="taste-pyramid" class="glass-panel p-4xl mb-4xl">
+    <section class="glass-panel p-4xl mb-4xl">
       <div class="text-center max-w-2xl mx-auto mb-3xl">
-        <span class="badge badge-accent mb-sm">Методология дегустации</span>
-        <h2 class="section-header">Хронометраж глотка: Вкусовая Пирамида</h2>
-        <p class="text-muted">Стандарт сенсорной деконструкции вкуса напитков по временным слоям</p>
+        <span class="badge badge-accent mb-sm">Tasting method</span>
+        <h2 class="section-header">Anatomy of a sip: the flavor pyramid</h2>
+        <p class="text-muted">How a beer’s flavor unfolds, layer by layer, over time</p>
       </div>
 
       <div class="grid grid-3">
         <div class="glass-card p-2xl stagger-item pyramid-info-card">
-          <div class="pyramid-time-badge top-time">0-3 сек</div>
-          <h3 class="mb-sm">Top Notes · Ароматическая вершина</h3>
-          <p class="text-dim text-sm mb-md">Первое впечатление при поднесении бокала: эфирные масла хмеля, цитрусовые, хвойные и цветочные летучие ароматы.</p>
-          <div class="text-xs font-semibold text-muted">Примеры: Цитрус, Хвоя, Зелёное яблоко, Травы</div>
+          <div class="pyramid-time-badge top-time">0-3 sec</div>
+          <h3 class="mb-sm">Top notes · The aroma</h3>
+          <p class="text-dim text-sm mb-md">The first impression as you raise the glass: hop oils with citrus, pine and floral aromas.</p>
+          <div class="text-xs font-semibold text-muted">Examples: citrus, pine, green apple, herbs</div>
         </div>
 
         <div class="glass-card p-2xl stagger-item pyramid-info-card">
-          <div class="pyramid-time-badge heart-time">3-15 сек</div>
-          <h3 class="mb-sm">Heart Notes · Солодовое сердце</h3>
-          <p class="text-dim text-sm mb-md">Полнота вкуса и тела на языке: баланс солодовой сладости, хлебной корочки, зерновых тонов и текстуры.</p>
-          <div class="text-xs font-semibold text-muted">Примеры: Солод, Карамель, Хлебная корочка, Рис</div>
+          <div class="pyramid-time-badge heart-time">3-15 sec</div>
+          <h3 class="mb-sm">Heart notes · The malt core</h3>
+          <p class="text-dim text-sm mb-md">Body and fullness on the palate: the balance of malt sweetness, bread crust, grain and texture.</p>
+          <div class="text-xs font-semibold text-muted">Examples: malt, caramel, bread crust, rice</div>
         </div>
 
         <div class="glass-card p-2xl stagger-item pyramid-info-card">
-          <div class="pyramid-time-badge base-time">15+ сек</div>
-          <h3 class="mb-sm">Base Notes · База & Послевкусие</h3>
-          <p class="text-dim text-sm mb-md">Финальный шлейф после глотка: благородная горчинка, сухость, обжаренные тона и очищающая свежесть рецепторов.</p>
-          <div class="text-xs font-semibold text-muted">Примеры: Хмелевая горечь, Жжёный солод, Сухой финиш</div>
+          <div class="pyramid-time-badge base-time">15+ sec</div>
+          <h3 class="mb-sm">Base notes · The finish</h3>
+          <p class="text-dim text-sm mb-md">What lingers after the sip: a clean bitterness, dryness, roasted tones and a fresh, palate-cleansing finish.</p>
+          <div class="text-xs font-semibold text-muted">Examples: hop bitterness, roasted malt, dry finish</div>
         </div>
       </div>
     </section>
 
+    <!--
+         5. ЧТО ЕЩЁ ЕСТЬ НА ПЛАТФОРМЕ: ГОСТЮ, ОФИЦИАНТУ, ЗАВЕДЕНИЮ
+         -->
+    <section class="page-section mb-4xl">
+      <div class="mb-2xl">
+        <span class="badge mb-xs">Beyond pairing</span>
+        <h2 class="section-header">Learn to taste</h2>
+        <p class="section-subtitle">Short lessons, a taste passport that rewards what you learn, and venue menus with a pairing for every dish</p>
+      </div>
+      <div class="grid grid-3">
+        <button type="button" class="glass-card more-card" (click)="navigate.emit('academy')">
+          <span class="more-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 10 3 12 0v-5"/></svg>
+          </span>
+          <b>Taste Academy</b>
+          <span>12 lessons of 3-4 minutes each, plus quizzes across four levels. The final level is for servers: recommend a pairing in 15 seconds.</span>
+          <span class="more-go">Open lessons →</span>
+        </button>
+        <button type="button" class="glass-card more-card" (click)="navigate.emit('passport')">
+          <span class="more-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 15 8.5l7 1-5 4.9 1.2 7L12 18l-6.2 3.4 1.2-7-5-4.9 7-1L12 2Z"/></svg>
+          </span>
+          <b>Taste Passport</b>
+          <span>Log the beers and notes you pick up and compare yourself with a sommelier. Points reward knowledge, not volume.</span>
+          <span class="more-go">Open passport →</span>
+        </button>
+        <button type="button" class="glass-card more-card" (click)="navigate.emit('menu')">
+          <span class="more-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </span>
+          <b>Venue menus</b>
+          <span>QR-code menus, no app needed: every dish suggests a beer to go with it, and you can order right from the table.</span>
+          <span class="more-go">Open menus →</span>
+        </button>
+      </div>
+    </section>
+
+    <app-taste-quiz #quiz (openBrand)="openBrandPage($event)" (finished)="navigate.emit('explorer')" />
   `,
   styles: [`
-    /* К пирамиде ведёт пилюля hero: раздел встаёт под липкую шапку */
-    #taste-pyramid { scroll-margin-top: 120px; }
-    /* Телефон: скелетон подбора не короче экрана. Мастер, витрина и результат длиннее экрана,
-       поэтому, когда они приходят, раздел ниже сдвигается уже за нижним краем, а не на глазах */
-    @media (max-width: 768px), (pointer: coarse) {
-      .pairing-wait { min-height: 100vh; }
-    }
     .pairing-engine-panel {
       scroll-margin-top: 120px;
       border: 1px solid var(--beer-light);
       box-shadow: 0 12px 40px -10px rgba(180, 83, 9, 0.15);
     }
+    /* Значок сценария: размер идёт от font-size .mood-icon, на телефоне он меньше */
+    .mood-icon svg { display: block; width: 1em; height: 1em; color: var(--beer-mid); }
+    .mood-card:focus-visible { outline: 2px solid var(--beer-light); outline-offset: 3px; }
     .engine-mode-tabs {
       display: flex;
       background: rgba(0, 0, 0, 0.04);
@@ -531,6 +601,21 @@ interface MoodOption {
       border-radius: var(--radius-full);
       margin-bottom: 12px;
     }
+    /* Вход в опрос вкуса под выбором пути */
+    .taste-entry { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-md) var(--space-xl); max-width: 900px; margin-left: auto; margin-right: auto; padding: var(--space-lg) var(--space-xl); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: var(--radius-xl); background: linear-gradient(135deg, #FFF7EA, #fff); position: relative; z-index: 1; }
+    .taste-entry > div:first-child { flex: 1 1 260px; display: grid; gap: 2px; }
+    .taste-entry b { font-family: var(--font-heading); font-size: 1.1rem; color: var(--foam); }
+    .taste-entry span { font-size: 0.9rem; line-height: 1.5; color: var(--foam-dim); }
+    .taste-entry-actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+    .taste-entry .btn-amber, .taste-entry .btn-outline { min-height: 44px; }
+    /* Карточки разделов внизу главной */
+    .more-card { display: grid; gap: var(--space-sm); align-content: start; padding: var(--space-2xl); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    .more-card:focus-visible { outline: 3px solid var(--beer-light); outline-offset: 2px; }
+    .more-card b { font-family: var(--font-heading); font-size: 1.15rem; color: var(--foam); }
+    .more-card > span { font-size: 0.9rem; line-height: 1.55; color: var(--foam-dim); }
+    .more-icon { width: 48px; height: 48px; display: grid; place-content: center; border-radius: 14px; background: var(--beer-glow); color: var(--beer-deep); }
+    .more-icon svg { width: 24px; height: 24px; }
+    .more-go { margin-top: var(--space-sm); font-weight: 700; color: var(--beer-mid) !important; }
     .top-time { background: #FEF08A; color: #854D0E; }
     .heart-time { background: #FED7AA; color: #9A3412; }
     .base-time { background: #E7E5E4; color: #292524; }
@@ -540,6 +625,8 @@ export class LandingComponent implements OnInit {
   private api = inject(ApiService);
   private v2 = inject(V2ApiService);
   private selection = inject(SelectionService);
+  private destroyRef = inject(DestroyRef);
+  readonly prefs = inject(PreferencesService);
 
   @Output() navigate = new EventEmitter<ActiveTab>();
 
@@ -556,6 +643,12 @@ export class LandingComponent implements OnInit {
   pairingsLoaded = signal(false);
   v2DishesLoaded = signal(false);
   dataLoaded = computed(() => this.brandsLoaded() && this.dishesLoaded() && this.pairingsLoaded());
+
+  /** Список не загрузился: подбор показывает ошибку с кнопкой "Обновить", а не пустой каталог. */
+  brandsFailed = signal(false);
+  dishesFailed = signal(false);
+  pairingsFailed = signal(false);
+  dataFailed = computed(() => this.brandsFailed() || this.dishesFailed() || this.pairingsFailed());
 
   /** Поиск блюда: каталог движка и каталог сомелье одним списком. */
   dishIndex = computed(() => buildDishIndex(this.dishes(), this.v2Dishes()));
@@ -615,99 +708,76 @@ export class LandingComponent implements OnInit {
   private pendingQuery: string | null = null;
   /** Сорт из истории браузера, пока каталог сортов ещё грузится. */
   private pendingBrandId: string | null = null;
-  private readonly beerPairings = viewChild<BeerPairingsComponent>('beerPairings');
-  private readonly wizard = viewChild<DishWizardComponent>('wizard');
+  private readonly beerPairings = viewChild(BeerPairingsComponent);
+  private readonly wizard = viewChild(DishWizardComponent);
 
 
   // Экспресс-сценарии настроения (на основе CustDev-сегментов)
   moodPresets: MoodOption[] = [
     {
       id: 'kazakh',
-      icon: '🥩',
-      title: 'Казахское застолье',
-      desc: 'Бешбармак, казы, куырдак - баланс плотного умами и солода.',
+      icon: 'bowl',
+      title: 'Kazakh feast',
+      desc: 'Beshbarmak, kazy, kuyrdak: rich umami balanced with malt.',
       targetType: 'dish',
       targetName: 'Бешбармак',
-      badge: 'Казахская кухня'
+      badge: 'Kazakh cuisine'
     },
     {
       id: 'steak',
-      icon: '🔥',
-      title: 'Мясо на гриле & BBQ',
-      desc: 'Шашлык, стейк, рёбрышки - высокая горечь гасит жирность.',
+      icon: 'flame',
+      title: 'Grilled meat & BBQ',
+      desc: 'Shashlik, steak, ribs: bold bitterness cuts through the fat.',
       targetType: 'dish',
       targetName: 'Шашлык',
-      badge: 'Мясо & Гриль'
+      badge: 'Meat & grill'
     },
     {
       id: 'fresh',
-      icon: '🍋',
-      title: 'Освежиться в жару',
-      desc: 'Хрустящий хмелевой профиль и чистый сухой финиш.',
+      icon: 'citrus',
+      title: 'Cool off in the heat',
+      desc: 'A crisp hop profile and a clean, dry finish.',
       targetType: 'brand',
       targetName: 'Efes Pilsener',
-      badge: 'Свежесть 5-7°C'
+      badge: 'Served at 5-7°C'
     },
     {
       id: 'sushi',
-      icon: '🍣',
-      title: 'Суши & Азиатский ужин',
-      desc: 'Деликатные морепродукты и легкое рисовое тело без горечи.',
+      icon: 'fish',
+      title: 'Sushi & Asian dinner',
+      desc: 'Delicate seafood and a light rice body, no bitterness.',
       targetType: 'dish',
       targetName: 'Суши (нигири)',
-      badge: 'Японская кухня'
+      badge: 'Japanese cuisine'
     },
     {
       id: 'friends',
-      icon: '🍺',
-      title: 'Разливное с друзьями',
-      desc: 'Свежесть бочки прямо из крана для душевной компании.',
+      icon: 'mug',
+      title: 'Draft with friends',
+      desc: 'Fresh from the tap, made for good company.',
       targetType: 'brand',
       targetName: 'Кружка Свежего',
-      badge: 'Разливное'
+      badge: 'On draft'
     },
     {
       id: 'dessert',
-      icon: '🍰',
-      title: 'Штрудель или BBQ-вечер',
-      desc: 'Карамельный мостик сладости с легким хмелевым послевкусием.',
+      icon: 'cake',
+      title: 'Strudel or a BBQ night',
+      desc: 'A caramel bridge of sweetness with a light hoppy finish.',
       targetType: 'brand',
       targetName: 'Легенда 777',
-      badge: 'Карамельный солод'
+      badge: 'Caramel malt'
     }
   ];
 
 
   ngOnInit() {
-    this.api.getBrands().subscribe({
-      next: brands => {
-        this.brands.set(brands);
-        this.brandsLoaded.set(true);
-        this.applyPendingBrand();
-        this.applyPendingMood();
-      },
-      error: () => this.brandsLoaded.set(true),
-    });
-
-    this.api.getDishes().subscribe({
-      next: dishes => {
-        this.dishes.set(dishes);
-        this.dishesLoaded.set(true);
-        this.runPendingSearch();
-      },
-      error: () => { this.dishesLoaded.set(true); this.runPendingSearch(); },
-    });
-
-    this.api.getPairings().subscribe({
-      next: pairings => {
-        this.pairings.set(pairings);
-        this.pairingsLoaded.set(true);
-      },
-      error: () => this.pairingsLoaded.set(true),
-    });
+    this.loadBrands();
+    this.loadDishes();
+    this.loadPairings();
 
     // Каталог движка нужен поиску; без него ищем по каталогу сомелье
-    this.v2.dishes().subscribe({
+    this.v2.dishes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: list => {
         this.v2Dishes.set(list);
         this.v2DishesLoaded.set(true);
@@ -716,12 +786,63 @@ export class LandingComponent implements OnInit {
       error: () => { this.v2DishesLoaded.set(true); this.runPendingSearch(); },
     });
 
-    this.api.getFoodIcons().subscribe(icons => this.foodIcons.set(icons));
-    this.api.getSettings().subscribe(settings => this.settings.set(settings));
+    this.api.getFoodIcons().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(icons => this.foodIcons.set(icons));
+    this.api.getSettings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(settings => this.settings.set(settings));
 
-    // Вернулись на главную «Назад» со страницы сорта или перезагрузили её: открываем тот же шаг
-    const saved = landingEntry().ftLanding;
+    // Вернулись на главную «Назад» со страницы сорта или перезагрузили её: открываем тот же шаг.
+    // В записи истории шага нет (пришли через меню): берём последний шаг этого сеанса.
+    const saved = landingEntry().ftLanding ?? lastSnap;
     if (saved && saved.stage !== 'idle') this.apply(saved);
+  }
+
+  // Загрузка каталога. Подписки живут не дольше страницы: опоздавший ответ
+  // не должен менять шаг подбора после ухода с главной.
+  // При ошибке список считаем дошедшим (скелет не нужен) и помечаем неудачным.
+
+  private loadBrands(): void {
+    this.brandsLoaded.set(false);
+    this.brandsFailed.set(false);
+    this.api.getBrands().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: brands => {
+        this.brands.set(brands);
+        this.brandsLoaded.set(true);
+        this.applyPendingBrand();
+        this.applyPendingMood();
+      },
+      error: () => { this.brandsFailed.set(true); this.brandsLoaded.set(true); },
+    });
+  }
+
+  private loadDishes(): void {
+    this.dishesLoaded.set(false);
+    this.dishesFailed.set(false);
+    this.api.getDishes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: dishes => {
+        this.dishes.set(dishes);
+        this.dishesLoaded.set(true);
+        this.runPendingSearch();
+      },
+      error: () => { this.dishesFailed.set(true); this.dishesLoaded.set(true); this.runPendingSearch(); },
+    });
+  }
+
+  private loadPairings(): void {
+    this.pairingsLoaded.set(false);
+    this.pairingsFailed.set(false);
+    this.api.getPairings().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: pairings => {
+        this.pairings.set(pairings);
+        this.pairingsLoaded.set(true);
+      },
+      error: () => { this.pairingsFailed.set(true); this.pairingsLoaded.set(true); },
+    });
+  }
+
+  /** Кнопка "Обновить": повторяем только те запросы, что не удались. */
+  reload(): void {
+    if (this.brandsFailed()) this.loadBrands();
+    if (this.dishesFailed()) this.loadDishes();
+    if (this.pairingsFailed()) this.loadPairings();
   }
 
   // Переходы подбора
@@ -796,16 +917,6 @@ export class LandingComponent implements OnInit {
     el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }
 
-  /** Пилюли hero: сорта ведут в каталог, «Школа вкуса» в академию, пирамида к разделу ниже на этой странице. */
-  onHeroPill(id: HeroPillId): void {
-    if (id === 'brands') { this.navigate.emit('explorer'); return; }
-    if (id === 'school') { this.navigate.emit('academy'); return; }
-    if (id === 'pyramid') {
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      document.getElementById('taste-pyramid')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    }
-  }
-
   /** Две кнопки из hero - вход в подбор. */
   scrollToSelector(mode: 'dish' | 'brand') {
     if (mode === 'dish') this.startDish(); else this.startBrand();
@@ -823,8 +934,8 @@ export class LandingComponent implements OnInit {
   applyMoodPreset(mood: MoodOption) {
     this.pendingMood = null;
     if (mood.targetType === 'dish') { this.searchFor(mood.targetName); return; }
-    // Каталог ещё грузится: открываем витрину, а сорт выберем, когда данные придут
-    if (!this.brandsLoaded()) { this.pendingMood = mood; this.startBrand(); return; }
+    // Каталог ещё грузится (или не загрузился): открываем витрину, а сорт выберем, когда данные придут
+    if (!this.brandsLoaded() || this.brandsFailed()) { this.pendingMood = mood; this.startBrand(); return; }
     this.startBrand(this.moodBrand(mood));
   }
 
@@ -860,7 +971,7 @@ export class LandingComponent implements OnInit {
   /** Данные пришли: доигрываем экспресс-сценарий сорта, нажатый во время загрузки. */
   private applyPendingMood(): void {
     const mood = this.pendingMood;
-    if (!mood || !this.brandsLoaded()) return;
+    if (!mood || !this.brandsLoaded() || this.brandsFailed()) return;
     this.pendingMood = null;
     // Витрина уже открыта и лежит в истории: подменяем запись, а не добавляем новую
     if (this.stage() === 'brand') this.replace({ stage: 'brand', brandId: this.moodBrand(mood)?.id ?? null });
@@ -942,6 +1053,7 @@ export class LandingComponent implements OnInit {
 
   /** Показывает шаг подбора из записи истории. */
   private apply(snap: LandingSnap, applied = false): void {
+    lastSnap = snap;
     const before = this.stage();
     switch (snap.stage) {
       case 'wizard': {

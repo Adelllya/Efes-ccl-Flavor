@@ -1,6 +1,10 @@
-import { Component, ElementRef, EventEmitter, Injector, Input, OnDestroy, OnInit, Output, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, computed, signal, viewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { FoodIcon } from '../../models/flavor-tree.models';
-import { FATS, WIZARD_STEPS, DishProfile, emptyProfile } from './pairing-engine.data';
+import {
+  CATEGORIES, COOKING, TASTES, WEIGHTS, FATS,
+  DishProfile, WizardOption, emptyProfile,
+} from './pairing-engine.data';
 import { DishChoice, IndexedDish, resolveDish, searchDishes, toPick } from './dish-search';
 
 /** Шаг мастера и ответы на момент перехода: родитель кладёт их в историю браузера. */
@@ -9,14 +13,43 @@ export interface WizardMove {
   profile: DishProfile;
 }
 
-/** Телефон боком: шапка сайта на таком экране не липнет (styles.css), прокрутку считаем от края экрана. */
-const LOW_SCREEN = '(max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse)';
-/** Отступ от верха экрана после прокрутки на низком экране (--space-md). */
-const TOP_GAP = 12;
+interface StepDef {
+  key: keyof DishProfile;
+  title: string;
+  accent: string;
+  sub: string;
+  options: WizardOption[];
+  /** Первый шаг нельзя пропустить: без категории подбирать не от чего. */
+  skippable: boolean;
+}
+
+const STEPS: StepDef[] = [
+  { key: 'category', title: 'What are you', accent: 'eating?', sub: 'Pick a dish category', options: CATEGORIES, skippable: false },
+  { key: 'cooking', title: 'How is it', accent: 'cooked?', sub: 'Fire, steam or raw: the method shapes flavor more than you think', options: COOKING, skippable: true },
+  { key: 'taste', title: 'What flavor', accent: 'leads?', sub: 'The one you taste first, before anything else', options: TASTES, skippable: true },
+  { key: 'weight', title: 'How', accent: 'filling?', sub: 'The weight of the dish sets the body of the beer: light with light, rich with rich', options: WEIGHTS, skippable: true },
+];
+
+/** Последний шаг мастера: на него возвращает «Изменить ответы» из результата. */
+export const LAST_STEP = STEPS.length - 1;
 
 /** Какому типу картинок из админки соответствует шаг мастера. */
 const STEP_KIND: Record<string, string> = {
   category: 'CATEGORY', cooking: 'COOKING', taste: 'TASTE', weight: 'WEIGHT',
+};
+
+/** Фото категорий первого шага: лежат в public/food, картинка из админки их перекрывает. */
+const CATEGORY_PHOTOS: Record<string, string> = {
+  MEAT: 'food/meat.jpg',
+  SALAD: 'food/salad.jpg',
+  SOUP: 'food/soup.jpg',
+  ASIAN: 'food/asian.jpg',
+  SEAFOOD: 'food/fish.jpg',
+  PIZZA: 'food/pizza.jpg',
+  STREET: 'food/burger.jpg',
+  SIDES: 'food/side.jpg',
+  DESSERT: 'food/dessert.jpg',
+  SNACK: 'food/snack.jpg',
 };
 
 /**
@@ -27,17 +60,16 @@ const STEP_KIND: Record<string, string> = {
 @Component({
   selector: 'app-dish-wizard',
   standalone: true,
-  // FormsModule не подключаем: поле читаем через (input), как в hero. Мастер приходит отдельным чанком
-  // (@defer в landing), и главной не нужно тянуть за ним ещё и чанк форм
+  imports: [FormsModule],
   template: `
     <div class="wiz">
       <div class="wiz-head">
         <button type="button" class="wiz-back" (click)="back()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          Назад
+          Back
         </button>
 
-        <nav class="wiz-bar" aria-label="Шаги подбора">
+        <nav class="wiz-bar" aria-label="Pairing steps">
           @for (s of steps; track s.key; let i = $index) {
             <button
               type="button"
@@ -46,13 +78,13 @@ const STEP_KIND: Record<string, string> = {
               [class.done]="i < index()"
               [disabled]="i > index()"
               [attr.aria-current]="i === index() ? 'step' : null"
-              [attr.aria-label]="'Шаг ' + (i + 1) + ': ' + s.sub"
+              [attr.aria-label]="'Step ' + (i + 1) + ': ' + s.sub"
               (click)="goTo(i)"
             ></button>
           }
         </nav>
 
-        <span class="wiz-step" aria-live="polite">Шаг {{ index() + 1 }} из {{ steps.length }}</span>
+        <span class="wiz-step" aria-live="polite">Step {{ index() + 1 }} of {{ steps.length }}</span>
       </div>
 
       <header class="wiz-ask">
@@ -60,33 +92,34 @@ const STEP_KIND: Record<string, string> = {
         <p class="section-subtitle">{{ step().sub }}</p>
         @if (index() === 0 && profile().freeText) {
           @if (missHints().length) {
-            <p class="wiz-miss">Точно «{{ profile().freeText }}» в каталоге не нашлось. Возможно, вы искали:</p>
-            <div class="wiz-maybe" aria-label="Похожие блюда из каталога">
+            <p class="wiz-miss">We couldn't find “{{ profile().freeText }}” in the catalog. Did you mean:</p>
+            <div class="wiz-maybe" aria-label="Similar dishes from the catalog">
               @for (d of missHints(); track $index) {
                 <button type="button" class="wiz-chip" (click)="pickExact(d)">
                   @if (d.emoji) { <span aria-hidden="true">{{ d.emoji }}</span> }{{ d.name }}
                 </button>
               }
             </div>
-            <p class="wiz-miss">Если нужного блюда нет, ответьте на четыре вопроса, и мы подберём пиво по вкусу блюда.</p>
+            <p class="wiz-miss">Not there? Answer four quick questions and we'll match a beer to your dish's flavor.</p>
           } @else {
-            <p class="wiz-miss">«{{ profile().freeText }}» пока нет в каталоге. Ответьте на четыре вопроса, и мы подберём пиво по вкусу блюда.</p>
+            <p class="wiz-miss">“{{ profile().freeText }}” isn't in our catalog yet. Answer four quick questions and we'll match a beer to your dish's flavor.</p>
           }
         }
       </header>
 
       @if (chosen().length) {
-        <div class="wiz-picked" aria-label="Ваши ответы">
+        <div class="wiz-picked" aria-label="Your answers">
           @for (c of chosen(); track c.key) {
-            <button type="button" class="wiz-chip" (click)="goTo(c.step)" [attr.aria-label]="'Изменить: ' + c.label">
+            <button type="button" class="wiz-chip" (click)="goTo(c.step)" [attr.aria-label]="'Change: ' + c.label">
               <span aria-hidden="true">{{ c.emoji }}</span>{{ c.label }}
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
             </button>
           }
         </div>
       }
+      <div class="wiz-table">
 
-      <div class="wiz-opts" role="radiogroup" [attr.aria-label]="step().sub" (keydown)="onArrows($event)" #grid>
+      <div class="wiz-opts" role="radiogroup" [attr.aria-label]="step().sub" (keydown)="onArrows($event)" #grid [style.--cols]="cols()">
         @for (o of step().options; track o.id; let i = $index) {
           <button
             type="button"
@@ -115,10 +148,11 @@ const STEP_KIND: Record<string, string> = {
           </button>
         }
       </div>
+      </div>
 
       @if (isLast() && profile().weight) {
         <div class="wiz-extra">
-          <p class="wiz-extra-title">Насколько блюдо жирное?</p>
+          <p class="wiz-extra-title">How rich is the dish?</p>
           <div class="wiz-fats">
             @for (f of fats; track f.id) {
               <button type="button" class="wiz-fat" [class.on]="profile().fat === f.id" (click)="setFat(f.id)">
@@ -130,11 +164,11 @@ const STEP_KIND: Record<string, string> = {
       }
 
       @if (index() === 0) {
-        <div class="wiz-or"><span>или напиши своё</span></div>
+        <div class="wiz-or"><span>or type your own</span></div>
 
-        <form class="wiz-free" (submit)="$event.preventDefault(); submitFree()">
+        <form class="wiz-free" (ngSubmit)="submitFree()">
           <div class="wiz-field">
-            <label class="sr-only" for="wiz-dish">Название блюда</label>
+            <label class="sr-only" for="wiz-dish">Dish name</label>
             <svg class="wiz-find-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             <input
               id="wiz-dish"
@@ -142,15 +176,13 @@ const STEP_KIND: Record<string, string> = {
               type="text"
               name="dish"
               autocomplete="off"
-              enterkeyhint="search"
-              placeholder="Например: бешбармак, плов, стейк рибай…"
-              [value]="query()"
-              (input)="query.set($any($event.target).value)"
-              (focus)="liftField($event)"
+              placeholder="e.g. beshbarmak, plov, ribeye steak…"
+              [ngModel]="query()"
+              (ngModelChange)="onQuery($event)"
             />
 
             @if (suggestions().length) {
-              <ul class="wiz-hints" role="listbox" aria-label="Блюда из каталога">
+              <ul class="wiz-hints" role="listbox" aria-label="Dishes from the catalog">
                 @for (d of suggestions(); track $index) {
                   <li>
                     <button type="button" role="option" [attr.aria-selected]="false" (click)="pickExact(d)">
@@ -164,7 +196,7 @@ const STEP_KIND: Record<string, string> = {
           </div>
 
           <button type="submit" class="btn-amber wiz-go" [disabled]="query().trim().length < 2">
-            Подобрать
+            Find a match
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
           </button>
         </form>
@@ -172,11 +204,11 @@ const STEP_KIND: Record<string, string> = {
 
       <div class="wiz-acts">
         @if (step().skippable && !isLast()) {
-          <button type="button" class="btn-ghost" (click)="skip()">Не знаю, пропустить</button>
+          <button type="button" class="btn-ghost" (click)="skip()">Not sure, skip</button>
         }
         @if (isLast()) {
           <button type="button" class="btn-amber" (click)="finish()">
-            Подобрать пиво
+            Find my beer
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
           </button>
         }
@@ -184,7 +216,7 @@ const STEP_KIND: Record<string, string> = {
     </div>
   `,
   styles: [`
-    :host { display: block; scroll-margin-top: 118px; }
+    :host { display: block; }
 
     .wiz { display: flex; flex-direction: column; align-items: center; text-align: center; }
 
@@ -316,7 +348,30 @@ const STEP_KIND: Record<string, string> = {
 
     /* Обёртка без обрезки: в ней живёт отметка выбора, поэтому она
        не упирается в край круга. */
-    .wiz-circle { position: relative; display: block; width: clamp(88px, 11.5vw, 122px); }
+    .wiz-circle { position: relative; display: block; width: clamp(104px, 14vw, 160px); }
+
+    /* Стол: только силуэт, белая скруглённая плоскость, кружки лежат на ней, как тарелки. */
+    .wiz-table {
+      width: 100%;
+      max-width: 1140px;
+      padding: clamp(28px, 4vw, 52px) clamp(14px, 3vw, 40px) clamp(22px, 3vw, 40px);
+      margin-bottom: var(--space-2xl);
+      border-radius: 30px;
+      border: 1px solid rgba(120, 72, 30, 0.14);
+      background: #fff;
+      box-shadow: 0 22px 44px -24px rgba(80, 42, 14, 0.28), 0 2px 6px rgba(80, 42, 14, 0.06);
+    }
+    .wiz-table .wiz-opts { --gx: var(--space-lg); max-width: none; margin-bottom: 0; gap: var(--space-xl) var(--gx); }
+    .wiz-table .wiz-opt { width: calc((100% - (var(--cols, 5) - 1) * var(--gx)) / var(--cols, 5)); }
+    .wiz-table .wiz-circle { width: min(100%, 160px); }
+    .wiz-table .wiz-emoji { font-size: clamp(2.6rem, 5.2vw, 3.8rem); }
+    .wiz-table .wiz-face {
+      background: #fff;
+      border: 4px solid #fff;
+      box-shadow: 0 12px 24px -12px rgba(80, 42, 14, 0.35), 0 2px 6px rgba(80, 42, 14, 0.12);
+    }
+    .wiz-table .wiz-opt:hover .wiz-face { border-color: #fff; box-shadow: 0 20px 32px -14px rgba(80, 42, 14, 0.42), 0 4px 8px rgba(80, 42, 14, 0.14); }
+    .wiz-table .wiz-opt.on .wiz-face { border-color: var(--beer-accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35), 0 14px 26px -12px rgba(80, 42, 14, 0.4); }
 
     .wiz-face {
       display: grid;
@@ -361,7 +416,7 @@ const STEP_KIND: Record<string, string> = {
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       border: 2.5px solid var(--bg-0);
       color: #fff;
       box-shadow: 0 4px 12px rgba(180, 83, 9, 0.35);
@@ -412,7 +467,7 @@ const STEP_KIND: Record<string, string> = {
     }
     .wiz-fat:hover { border-color: rgba(180, 83, 9, 0.3); color: var(--foam); }
     .wiz-fat.on {
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       border-color: transparent;
       color: #fff;
       font-weight: 700;
@@ -476,27 +531,13 @@ const STEP_KIND: Record<string, string> = {
 
     .wiz-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-md); margin-top: var(--space-2xl); }
 
-    /* Сенсорный экран: зона нажатия от 40px, служебные подписи от 12px.
-       Полоса шагов остаётся тонкой, прозрачная рамка добавляет ей высоту.
-       Подпись поля только для скринридера: видимая сдвигала значок поиска к верхнему краю поля */
-    @media (max-width: 768px), (pointer: coarse) {
-      .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-      .wiz-bar { margin: -12px 0; }
-      .wiz-bar .wiz-seg { box-sizing: content-box; border-block: 17px solid transparent; border-radius: 3.5px / 20.5px; background-clip: padding-box; }
-      .wiz-chip { min-height: 40px; }
-      .wiz-acts .btn-ghost { min-height: 44px; padding: 0 var(--space-lg); }
-      .wiz-step, .wiz-or, .wiz-extra-title, .wiz-hint { font-size: 0.75rem; }
-      .wiz-field { scroll-margin-top: 96px; }
-      .wiz-input { font-size: 16px; }
-      .wiz-hints button { min-height: 44px; justify-content: center; }
-    }
-
     @media (max-width: 620px) {
       .wiz-opts { gap: var(--space-lg) var(--space-md); }
       .wiz-opt { width: calc((100% - 2 * var(--space-md)) / 3); }
-      .wiz-circle { width: min(100%, 104px); }
-      /* «Морепродукты» шире трети экрана: переносим по слогам */
-      .wiz-label { font-size: 0.8rem; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
+      .wiz-circle { width: min(100%, 112px); }
+      .wiz-table { border-radius: 22px; }
+      .wiz-table .wiz-opts { --gx: var(--space-md); --cols: 3 !important; gap: var(--space-lg) var(--gx); }
+      .wiz-label { font-size: 0.8rem; }
       .wiz-hint { display: none; }
       .wiz-free { flex-direction: column; }
       .wiz-back { align-self: center; }
@@ -516,6 +557,8 @@ export class DishWizardComponent implements OnInit, OnDestroy {
   @Input() restore: DishProfile | null = null;
   /** С какого шага открыть мастер; null - с последнего, если есть ответы, иначе с первого. */
   @Input() restoreStep: number | null = null;
+  /** Текст из поиска на главной: в каталоге такого блюда нет или каталог ещё грузится. */
+  @Input() search = '';
 
   @Output() done = new EventEmitter<DishProfile>();
   @Output() dishPicked = new EventEmitter<DishChoice>();
@@ -525,19 +568,28 @@ export class DishWizardComponent implements OnInit, OnDestroy {
   /** Шаг назад кнопкой мастера. */
   @Output() retreat = new EventEmitter<WizardMove>();
 
-  readonly steps = WIZARD_STEPS;
+  readonly steps = STEPS;
   readonly fats = FATS;
 
   private gridRef = viewChild<ElementRef<HTMLElement>>('grid');
-  private host: ElementRef<HTMLElement> = inject(ElementRef);
-  private injector = inject(Injector);
 
   index = signal(0);
   profile = signal<DishProfile>(emptyProfile());
   query = signal('');
 
+  /** Единственный таймер автоперехода: двойное нажатие не копит переходы. */
+  private advanceTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Название пришло из поиска на главной: пока гость правит его в поле, оно остаётся названием блюда. */
+  private carried = false;
+
   step = computed(() => this.steps[this.index()]);
   isLast = computed(() => this.index() === this.steps.length - 1);
+  /** Кружков в ряду: не больше пяти, а ряды одинаковые (10 - 5 и 5, 8 - 4 и 4, 7 - 4 и 3). */
+  cols = computed(() => {
+    const n = this.step().options.length;
+    const rows = Math.ceil(n / 5);
+    return Math.max(1, Math.ceil(n / rows));
+  });
 
   suggestions = computed(() => searchDishes(this.catalog, this.query(), 5).map(m => m.dish));
 
@@ -557,12 +609,18 @@ export class DishWizardComponent implements OnInit, OnDestroy {
     return out;
   });
 
-  private advanceTimer: ReturnType<typeof setTimeout> | null = null;
-
   ngOnInit(): void {
     if (this.restore) this.profile.set({ ...this.restore });
     if (this.restoreStep !== null) this.index.set(this.clampStep(this.restoreStep));
     else if (this.restore) this.index.set(this.steps.length - 1);
+    if (this.restore || this.restoreStep !== null) return;
+
+    const text = this.search.trim();
+    if (!text) return;
+    // Название из поиска на главной: стоит в поле и станет заголовком результата
+    this.carried = true;
+    this.query.set(text);
+    this.profile.update(p => ({ ...p, freeText: text }));
   }
 
   ngOnDestroy(): void {
@@ -577,6 +635,16 @@ export class DishWizardComponent implements OnInit, OnDestroy {
     this.focusGrid();
   }
 
+  /** Гость ещё на первом шаге и не менял текст из поиска: его можно сверить с каталогом. */
+  holds(text: string): boolean {
+    return this.index() === 0 && this.query().trim() === text;
+  }
+
+  onQuery(value: string): void {
+    this.query.set(value);
+    if (this.carried) this.profile.update(p => ({ ...p, freeText: value.trim() }));
+  }
+
   value(key: keyof DishProfile): string | null {
     return this.profile()[key] as string | null;
   }
@@ -585,20 +653,30 @@ export class DishWizardComponent implements OnInit, OnDestroy {
   picture(id: string): string | null {
     const kind = STEP_KIND[this.step().key as string];
     if (!kind) return null;
-    return this.icons.find(i => i.kind === kind && i.key === id)?.image ?? null;
+    const custom = this.icons.find(i => i.kind === kind && i.key === id)?.image;
+    if (custom) return custom;
+    return kind === 'CATEGORY' ? CATEGORY_PHOTOS[id] ?? null : null;
   }
 
   choose(id: string): void {
     this.profile.update(p => ({ ...p, [this.step().key]: id }));
+    this.cancelAdvance();
     // На промежуточных шагах ведём дальше сами: выбор виден, ждать нечего.
-    if (!this.isLast()) {
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      this.cancelAdvance();
-      this.advanceTimer = setTimeout(() => { this.advanceTimer = null; this.next(); }, reduce ? 0 : 260);
-      return;
-    }
-    // Последний шаг: под вариантами появились вопрос о жирности и «Подобрать пиво»
-    afterNextRender(() => this.revealFinish(), { injector: this.injector });
+    if (this.isLast()) return;
+    const at = this.index();
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    this.advanceTimer = setTimeout(() => {
+      this.advanceTimer = null;
+      // Шаг уже сменили вручную: этот переход опоздал
+      if (this.index() === at) this.next();
+    }, reduce ? 0 : 260);
+  }
+
+  /** Отменяет отложенный автопереход: иначе он сработал бы поверх ручного шага. */
+  private cancelAdvance(): void {
+    if (this.advanceTimer === null) return;
+    clearTimeout(this.advanceTimer);
+    this.advanceTimer = null;
   }
 
   setFat(id: string): void {
@@ -647,81 +725,21 @@ export class DishWizardComponent implements OnInit, OnDestroy {
     if (found?.sure) { this.query.set(''); this.dishPicked.emit(found); return; }
 
     // Блюда нет в каталоге - запоминаем название и уточняем его вручную.
-    this.profile.update(p => ({ ...p, freeText: text }));
-    // Похожее есть: остаёмся на первом шаге, где видно «Возможно, вы искали».
-    // Подсказки стоят над полем: закрываем клавиатуру и показываем их
-    if (found) {
-      this.query.set('');
-      (document.activeElement as HTMLElement | null)?.blur();
-      this.revealQuestion();
-      return;
-    }
+    // Прежнее блюдо каталога (если ответы меняли после результата) к новому названию не относится.
+    this.profile.update(p => ({ ...p, freeText: text, dishId: null }));
+    // Похожее есть: остаёмся на первом шаге, где видно «Возможно, вы искали»
+    if (found) { this.query.set(''); return; }
     this.next();
   }
 
   pickExact(dish: IndexedDish): void {
+    this.cancelAdvance();
     this.query.set('');
     this.dishPicked.emit({ pick: toPick(dish), also: [] });
   }
 
-  /**
-   * На телефоне клавиатура закрывает нижнюю половину экрана: поднимаем поле
-   * к шапке, чтобы подсказки под ним были видны.
-   */
-  liftField(event: FocusEvent): void {
-    if (!window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches) return;
-    const field = (event.target as HTMLElement).closest<HTMLElement>('.wiz-field');
-    setTimeout(() => field && this.toTop(field), 300);
-  }
-
-  /** Плавная прокрутка, если человек не просил убрать анимацию. */
-  private motion(): ScrollBehavior {
-    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-  }
-
-  /**
-   * Новый вопрос показываем с заголовка. На телефоне круги длиннее экрана:
-   * после нажатия на нижний заголовок следующего шага остался бы выше экрана.
-   * Телефон боком: «Назад» и полоса шагов заняли бы полэкрана, и варианты ушли бы вниз.
-   * Там к верху экрана встаёт сам вопрос, первый ряд вариантов виден под ним.
-   */
-  private revealQuestion(): void {
-    const el = this.host.nativeElement;
-    const low = window.matchMedia?.(LOW_SCREEN).matches;
-    const target = (low && el.querySelector<HTMLElement>('.wiz-ask')) || el;
-    if (target.getBoundingClientRect().top < 0) this.toTop(target);
-  }
-
-  /**
-   * Ставит элемент к верху экрана: обычно под липкую шапку сайта (scroll-margin-top в стилях).
-   * На низком экране шапка не липнет, там отступ TOP_GAP, иначе сверху оставалась пустая полоса.
-   */
-  private toTop(el: HTMLElement): void {
-    if (!window.matchMedia?.(LOW_SCREEN).matches) {
-      el.scrollIntoView({ behavior: this.motion(), block: 'start' });
-      return;
-    }
-    const top = el.getBoundingClientRect().top;
-    if (Math.abs(top - TOP_GAP) > 1) window.scrollTo({ top: window.scrollY + top - TOP_GAP, behavior: this.motion() });
-  }
-
-  /**
-   * Вес выбран: вопрос о жирности и кнопка «Подобрать пиво» стоят под вариантами. На телефоне они
-   * оказывались под нижней панелью, и нажатие выглядело так, будто ничего не произошло.
-   * Прокручиваем ровно настолько, чтобы кнопка встала над панелью (scroll-padding-bottom в styles.css).
-   */
-  private revealFinish(): void {
-    if (!window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches) return;
-    this.host.nativeElement.querySelector<HTMLElement>('.wiz-acts')
-      ?.scrollIntoView({ behavior: this.motion(), block: 'nearest' });
-  }
-
   private clampStep(step: number): number {
     return Math.max(0, Math.min(this.steps.length - 1, Math.round(step) || 0));
-  }
-
-  private cancelAdvance(): void {
-    if (this.advanceTimer !== null) { clearTimeout(this.advanceTimer); this.advanceTimer = null; }
   }
 
   /** Стрелки внутри группы вариантов - как в обычной радиогруппе. */
@@ -740,7 +758,6 @@ export class DishWizardComponent implements OnInit, OnDestroy {
   private focusGrid(): void {
     queueMicrotask(() => {
       this.gridRef()?.nativeElement.querySelector<HTMLButtonElement>('.wiz-opt')?.focus({ preventScroll: true });
-      this.revealQuestion();
     });
   }
 }

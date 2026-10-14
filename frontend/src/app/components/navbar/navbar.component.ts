@@ -13,11 +13,11 @@ export class NavbarComponent {
   isMobileMenuOpen = false;
 
   navLinks = [
-    { label: 'Проблема', href: '#problem' },
-    { label: 'Решение', href: '#solution' },
-    { label: 'Обучение', href: '#education' },
-    { label: 'Бизнес', href: '#business' },
-    { label: 'Команда', href: '#hero' },
+    { label: 'Problem', href: '#problem' },
+    { label: 'Solution', href: '#solution' },
+    { label: 'Education', href: '#education' },
+    { label: 'Business', href: '#business' },
+    { label: 'Team', href: '#hero' },
   ];
 
   @HostListener('window:scroll')

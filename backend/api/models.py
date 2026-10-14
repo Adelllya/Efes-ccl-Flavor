@@ -12,9 +12,9 @@ class FlavorNote(models.Model):
     """Вкусовая нота - базовый элемент вкусовой пирамиды."""
 
     CATEGORY_CHOICES = [
-        ('TOP', 'Верхние ноты'),
-        ('HEART', 'Ноты сердца'),
-        ('BASE', 'Базовые ноты'),
+        ('TOP', 'Top notes'),
+        ('HEART', 'Heart notes'),
+        ('BASE', 'Base notes'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -46,9 +46,9 @@ class Brand(models.Model):
     """Бренд пива - основная сущность каталога."""
 
     PACKAGING_CHOICES = [
-        ('BOTTLE', 'Бутылка'),
-        ('CAN', 'Банка'),
-        ('DRAFT', 'Разливное'),
+        ('BOTTLE', 'Bottle'),
+        ('CAN', 'Can'),
+        ('DRAFT', 'Draft'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -98,9 +98,9 @@ class FlavorProfile(models.Model):
     """Связь Brand ↔ FlavorNote с интенсивностью и комментарием сомелье."""
 
     LAYER_CHOICES = [
-        ('TOP', 'Верхние ноты'),
-        ('HEART', 'Ноты сердца'),
-        ('BASE', 'Базовые ноты'),
+        ('TOP', 'Top notes'),
+        ('HEART', 'Heart notes'),
+        ('BASE', 'Base notes'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -147,10 +147,10 @@ class Course(models.Model):
     """Уровень обучения в Школе Пивных Сомелье."""
 
     LEVEL_CHOICES = [
-        (1, 'Новичок'),
-        (2, 'Исследователь'),
-        (3, 'Знаток'),
-        (4, 'Сомелье'),
+        (1, 'Beginner'),
+        (2, 'Explorer'),
+        (3, 'Connoisseur'),
+        (4, 'Sommelier'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -191,47 +191,47 @@ class Dish(models.Model):
     """Блюдо для food-pairing с классификацией под алгоритм подбора пива."""
 
     CUISINE_CHOICES = [
-        ('KZ', 'Казахская'),
-        ('ITALIAN', 'Итальянская'),
-        ('JAPANESE', 'Японская'),
-        ('AMERICAN', 'Американская'),
-        ('MEXICAN', 'Мексиканская'),
-        ('GERMAN', 'Немецкая'),
-        ('OTHER', 'Другая'),
+        ('KZ', 'Kazakh'),
+        ('ITALIAN', 'Italian'),
+        ('JAPANESE', 'Japanese'),
+        ('AMERICAN', 'American'),
+        ('MEXICAN', 'Mexican'),
+        ('GERMAN', 'German'),
+        ('OTHER', 'Other'),
     ]
 
     TASTE_CHOICES = [
-        ('SALTY', 'Солёное'),
-        ('SWEET', 'Сладкое'),
-        ('SOUR', 'Кислое'),
-        ('BITTER', 'Горькое'),
-        ('UMAMI', 'Умами'),
-        ('SPICY', 'Острое'),
-        ('MIXED', 'Микс'),
+        ('SALTY', 'Salty'),
+        ('SWEET', 'Sweet'),
+        ('SOUR', 'Sour'),
+        ('BITTER', 'Bitter'),
+        ('UMAMI', 'Umami'),
+        ('SPICY', 'Spicy'),
+        ('MIXED', 'Mixed'),
     ]
 
     WEIGHT_CHOICES = [
-        ('LIGHT', 'Лёгкое'),
-        ('MEDIUM', 'Среднее'),
-        ('HEAVY', 'Тяжёлое'),
+        ('LIGHT', 'Light'),
+        ('MEDIUM', 'Medium'),
+        ('HEAVY', 'Heavy'),
     ]
 
     FAT_CHOICES = [
-        ('LOW', 'Низкая'),
-        ('MEDIUM', 'Средняя'),
-        ('HIGH', 'Высокая'),
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High'),
     ]
 
     COOKING_METHOD_CHOICES = [
-        ('FRIED', 'Жарка'),
-        ('GRILLED', 'Гриль'),
-        ('BAKED', 'Запекание'),
-        ('BOILED', 'Варка'),
-        ('STEAMED', 'На пару'),
-        ('RAW', 'Сырое'),
-        ('CURED', 'Вяленое'),
-        ('FERMENTED', 'Ферментация'),
-        ('OTHER', 'Без термообработки / Другое'),
+        ('FRIED', 'Fried'),
+        ('GRILLED', 'Grilled'),
+        ('BAKED', 'Baked'),
+        ('BOILED', 'Boiled'),
+        ('STEAMED', 'Steamed'),
+        ('RAW', 'Raw'),
+        ('CURED', 'Cured'),
+        ('FERMENTED', 'Fermented'),
+        ('OTHER', 'No cooking / Other'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -261,10 +261,17 @@ class FoodPairing(models.Model):
     """Пара блюдо ↔ пиво с оценкой совместимости."""
 
     PAIRING_TYPE_CHOICES = [
-        ('COMPLEMENT', 'Дополняет (Complement)'),
-        ('CONTRAST', 'Контрастирует (Contrast)'),
-        ('CLEANSE', 'Очищает (Cleanse)'),
-        ('BRIDGE', 'Мостик (Bridge)'),
+        ('COMPLEMENT', 'Complement'),
+        ('CONTRAST', 'Contrast'),
+        ('CLEANSE', 'Cleanse'),
+        ('BRIDGE', 'Bridge'),
+    ]
+
+    SOURCE_SOMMELIER = 'SOMMELIER'
+    SOURCE_AI = 'AI'
+    SOURCE_CHOICES = [
+        (SOURCE_SOMMELIER, 'Sommelier'),
+        (SOURCE_AI, 'AI pick'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -275,6 +282,10 @@ class FoodPairing(models.Model):
     compatibility_score = models.IntegerField('Совместимость (оценка 1-5 или %)')
     pairing_type = models.CharField('Тип пары', max_length=20, choices=PAIRING_TYPE_CHOICES)
     explanation = models.TextField('Обоснование')
+    source = models.CharField(
+        'Источник', max_length=10, choices=SOURCE_CHOICES, default=SOURCE_SOMMELIER,
+        help_text='ИИ-подбор: пару предложил ИИ, сомелье её ещё не подтвердил. '
+                  'После правки сомелье или модератором пара становится парой сомелье.')
 
     class Meta:
         verbose_name = 'Food Pairing'
@@ -289,11 +300,11 @@ class Venue(models.Model):
     """Заведение (бар, ресторан, паб)."""
 
     VENUE_TYPE_CHOICES = [
-        ('BAR', 'Бар'),
-        ('RESTAURANT', 'Ресторан'),
-        ('PUB', 'Паб'),
-        ('CAFE', 'Кафе'),
-        ('OTHER', 'Другое'),
+        ('BAR', 'Bar'),
+        ('RESTAURANT', 'Restaurant'),
+        ('PUB', 'Pub'),
+        ('CAFE', 'Cafe'),
+        ('OTHER', 'Other'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -328,13 +339,23 @@ class Venue(models.Model):
         verbose_name = 'Заведение'
         verbose_name_plural = 'Заведения'
         ordering = ['name']
+        constraints = [
+            # Проверка в API не спасает от двух запросов сразу: правило держит и база.
+            models.UniqueConstraint(fields=['owner'], condition=models.Q(owner__isnull=False),
+                                    name='one_venue_per_owner'),
+        ]
+
+    # Адреса, занятые маршрутами API: /api/venues/mine/ это список своих заведений.
+    RESERVED_SLUGS = ('mine',)
 
     def save(self, *args, **kwargs):
-        if not self.slug:
+        if not self.slug or self.slug in self.RESERVED_SLUGS:
             self.slug = unique_slug(self.name, self._slug_taken)
         super().save(*args, **kwargs)
 
     def _slug_taken(self, candidate):
+        if candidate in self.RESERVED_SLUGS:
+            return True
         qs = Venue.objects.filter(slug=candidate)
         if self.pk:
             qs = qs.exclude(pk=self.pk)
@@ -434,12 +455,12 @@ class Order(models.Model):
     STATUS_DONE = 'DONE'
     STATUS_CANCELLED = 'CANCELLED'
     STATUS_CHOICES = [
-        (STATUS_NEW, 'Новый'),
-        (STATUS_ACCEPTED, 'Принят'),
-        (STATUS_COOKING, 'Готовится'),
-        (STATUS_SERVED, 'Подан'),
-        (STATUS_DONE, 'Закрыт'),
-        (STATUS_CANCELLED, 'Отменён'),
+        (STATUS_NEW, 'New'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_COOKING, 'Cooking'),
+        (STATUS_SERVED, 'Served'),
+        (STATUS_DONE, 'Closed'),
+        (STATUS_CANCELLED, 'Cancelled'),
     ]
     # Обычный путь заказа; отмена возможна из любого незакрытого статуса.
     NEXT_STATUS = {
@@ -464,6 +485,10 @@ class Order(models.Model):
     session = models.CharField('Сессия гостя', max_length=36, blank=True, default='',
                                help_text='Анонимный id браузера (ft_sid), связывает заказ с событиями пилота.')
     age_confirmed = models.BooleanField('Гость подтвердил возраст', default=False)
+    is_demo = models.BooleanField(
+        'Демо-заказ', default=False,
+        help_text='Сгенерирован командой seed_demo_orders для показа аналитики. '
+                  'В списке заказов не виден, в аналитике помечен как демо.')
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)
 
@@ -489,8 +514,8 @@ class OrderItem(models.Model):
     KIND_DISH = 'DISH'
     KIND_DRINK = 'DRINK'
     KIND_CHOICES = [
-        (KIND_DISH, 'Блюдо'),
-        (KIND_DRINK, 'Напиток'),
+        (KIND_DISH, 'Dish'),
+        (KIND_DRINK, 'Drink'),
     ]
 
     # Откуда позиция попала в корзину: из меню, из панели «Подобрать напиток» или из чата ИИ-сомелье.
@@ -498,10 +523,13 @@ class OrderItem(models.Model):
     SOURCE_PAIRING = 'PAIRING'
     SOURCE_AI = 'AI'
     SOURCE_CHOICES = [
-        (SOURCE_MENU, 'Меню'),
-        (SOURCE_PAIRING, 'Подбор'),
-        (SOURCE_AI, 'ИИ-сомелье'),
+        (SOURCE_MENU, 'Menu'),
+        (SOURCE_PAIRING, 'Pairing'),
+        (SOURCE_AI, 'AI sommelier'),
     ]
+    # Имена из версии 11 (там поле называлось via): значения те же, поле одно - source.
+    VIA_MENU, VIA_PAIRING, VIA_AI = SOURCE_MENU, SOURCE_PAIRING, SOURCE_AI
+    VIA_CHOICES = SOURCE_CHOICES
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items',
                               verbose_name='Заказ')
@@ -540,18 +568,18 @@ class ChangeRequest(models.Model):
     KIND_NOTE_DELETE = 'NOTE_DELETE'
     KIND_SERVING = 'SERVING'
     KIND_CHOICES = [
-        (KIND_NOTE_UPSERT, 'Нота пирамиды'),
-        (KIND_NOTE_DELETE, 'Удалить ноту'),
-        (KIND_SERVING, 'Подача'),
+        (KIND_NOTE_UPSERT, 'Pyramid note'),
+        (KIND_NOTE_DELETE, 'Delete note'),
+        (KIND_SERVING, 'Serving'),
     ]
 
     STATUS_PENDING = 'PENDING'
     STATUS_APPROVED = 'APPROVED'
     STATUS_REJECTED = 'REJECTED'
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'Ожидает'),
-        (STATUS_APPROVED, 'Принято'),
-        (STATUS_REJECTED, 'Отклонено'),
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -636,10 +664,10 @@ class FoodIcon(models.Model):
     """
 
     KIND_CHOICES = [
-        ('CATEGORY', 'Категория блюда'),
-        ('COOKING', 'Способ приготовления'),
-        ('TASTE', 'Вкус'),
-        ('WEIGHT', 'Сытность'),
+        ('CATEGORY', 'Dish category'),
+        ('COOKING', 'Cooking method'),
+        ('TASTE', 'Taste'),
+        ('WEIGHT', 'Heartiness'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -686,6 +714,10 @@ class SiteSettings(models.Model):
     pairing_intro = models.TextField(
         'Подпись над парами', blank=True,
         default='Мы разложили сорт на вкусовые ноты и нашли блюда, которые с ними совпадают.')
+    show_team = models.BooleanField(
+        'Блок команды в Академии', default=False,
+        help_text='Включайте, когда в разделе «Команда» записаны настоящие люди: '
+                  'стартовые записи в нём условные.')
 
     class Meta:
         verbose_name = 'Настройки витрины'
@@ -696,9 +728,12 @@ class SiteSettings(models.Model):
 
     def save(self, *args, **kwargs):
         # Настройки одни на весь сайт: второй записи быть не должно.
-        if not self.pk and SiteSettings.objects.exists():
+        # pk заполнен сразу (uuid по умолчанию), поэтому новую запись узнаём по _state.adding.
+        if self._state.adding:
             existing = SiteSettings.objects.first()
-            self.pk = existing.pk
+            if existing is not None:
+                self.pk = existing.pk
+                self._state.adding = False
         super().save(*args, **kwargs)
 
     @classmethod
@@ -757,17 +792,17 @@ class PilotEvent(models.Model):
     KIND_CATALOG_OPEN = 'CATALOG_OPEN'
     KIND_PAIRING_V2 = 'PAIRING_V2'
     KIND_CHOICES = [
-        (KIND_SCAN, 'Скан QR'),
-        (KIND_MENU_OPEN, 'Открыл меню'),
-        (KIND_PAIR_OPEN, 'Открыл подбор'),
-        (KIND_PAIR_ADD, 'Добавил напиток из подбора'),
-        (KIND_ORDER, 'Заказ'),
-        (KIND_FEEDBACK, 'Оценка пары'),
-        (KIND_AGE_OK, 'Подтвердил возраст'),
-        (KIND_AI_ASK, 'Вопрос ИИ-сомелье'),
-        (KIND_AI_ADD, 'Добавил из чата ИИ'),
-        (KIND_CATALOG_OPEN, 'Открыл каталог'),
-        (KIND_PAIRING_V2, 'Подбор на сайте'),
+        (KIND_SCAN, 'QR scan'),
+        (KIND_MENU_OPEN, 'Opened menu'),
+        (KIND_PAIR_OPEN, 'Opened pairing'),
+        (KIND_PAIR_ADD, 'Added drink from pairing'),
+        (KIND_ORDER, 'Order'),
+        (KIND_FEEDBACK, 'Pairing rating'),
+        (KIND_AGE_OK, 'Confirmed age'),
+        (KIND_AI_ASK, 'Asked AI sommelier'),
+        (KIND_AI_ADD, 'Added from AI chat'),
+        (KIND_CATALOG_OPEN, 'Opened catalog'),
+        (KIND_PAIRING_V2, 'Website pairing'),
     ]
 
     venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
@@ -822,3 +857,326 @@ class PairingFeedback(models.Model):
 
     def __str__(self):
         return f'{self.rating}/5: {self.dish_ref} + {self.drink_ref}'
+
+
+def default_taste():
+    return {}
+
+
+class UserPreferences(models.Model):
+    """
+    Вкус пользователя: какое пиво ему нравится, любимые сорта и прогресс
+    в Школе сомелье. Одна запись на пользователя, создаётся при первом обращении.
+    """
+
+    TASTE_KEYS = ('body', 'bitterness', 'freshness', 'sweetness', 'roast', 'strength')
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name='preferences', verbose_name='Пользователь')
+    taste = models.JSONField(
+        'Вкусовые предпочтения', default=default_taste, blank=True,
+        help_text='Шкалы 0-10: body, bitterness, freshness, sweetness, roast, strength. '
+                  'Пустая шкала значит "не важно".')
+    cuisines = models.JSONField('Любимые кухни', default=list, blank=True,
+                                help_text='Коды кухонь, как у блюд: KZ, ITALIAN, ...')
+    favorite_brands = models.ManyToManyField(Brand, blank=True, related_name='fans',
+                                             verbose_name='Любимые сорта')
+    sommelier_level = models.IntegerField('Пройдено ступеней Школы', default=0)
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Предпочтения пользователя'
+        verbose_name_plural = 'Предпочтения пользователей'
+
+    def __str__(self):
+        return f'Предпочтения {self.user}'
+
+    @classmethod
+    def for_user(cls, user):
+        obj, _ = cls.objects.get_or_create(user=user)
+        return obj
+
+
+class QuizQuestion(models.Model):
+    """
+    Вопрос теста Школы сомелье. Привязан к номеру ступени, а не к записи
+    курса: seed пересоздаёт курсы, а вопросы, которые правил модератор, должны жить.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    level = models.IntegerField('Ступень', choices=Course.LEVEL_CHOICES)
+    text = models.TextField('Вопрос')
+    options = models.JSONField('Варианты ответа', default=list,
+                               help_text='Список строк, от 2 до 6 вариантов.')
+    correct_index = models.IntegerField('Номер верного ответа', default=0,
+                                        help_text='Считается с нуля: 0 - первый вариант.')
+    explanation = models.TextField('Пояснение', blank=True, default='',
+                                   help_text='Показывается после ответа: почему верно именно так.')
+    sort_order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Показывать в тесте', default=True)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Вопрос теста'
+        verbose_name_plural = 'Вопросы теста'
+        ordering = ['level', 'sort_order', 'created_at']
+
+    def __str__(self):
+        return f'Ступень {self.level}: {self.text[:60]}'
+
+    def clean(self):
+        opts = self.options if isinstance(self.options, list) else []
+        if not 2 <= len(opts) <= 6:
+            raise ValidationError({'options': 'Нужно от 2 до 6 вариантов ответа'})
+        if any(not isinstance(o, str) or not o.strip() for o in opts):
+            raise ValidationError({'options': 'Варианты ответа не должны быть пустыми'})
+        if not 0 <= self.correct_index < len(opts):
+            raise ValidationError({'correct_index': 'Верный ответ должен быть одним из вариантов'})
+
+
+class QuizAttempt(models.Model):
+    """Попытка пройти тест ступени. Гостей без входа не сохраняем."""
+
+    PASS_PERCENT = 70
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='quiz_attempts', verbose_name='Пользователь')
+    level = models.IntegerField('Ступень', choices=Course.LEVEL_CHOICES)
+    correct = models.IntegerField('Верных ответов')
+    total = models.IntegerField('Всего вопросов')
+    passed = models.BooleanField('Сдано')
+    created_at = models.DateTimeField('Когда', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Попытка теста'
+        verbose_name_plural = 'Попытки теста'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} - ступень {self.level}: {self.correct}/{self.total}'
+
+
+class AiUsage(models.Model):
+    """
+    Счётчик платных обращений к ИИ за день. Общий дневной лимит защищает бюджет:
+    лимиты по частоте живут в памяти процесса и на серверлесс-хостинге у каждого экземпляра свои.
+    """
+
+    KIND_PANEL = 'panel'
+    KIND_GUEST = 'guest'
+
+    day = models.DateField('День')
+    kind = models.CharField('Тип', max_length=20)
+    count = models.PositiveIntegerField('Обращений', default=0)
+
+    class Meta:
+        verbose_name = 'Расход ИИ за день'
+        verbose_name_plural = 'Расход ИИ по дням'
+        unique_together = ('day', 'kind')
+        ordering = ['-day', 'kind']
+
+    def __str__(self):
+        return f'{self.day} {self.kind}: {self.count}'
+
+
+class Lesson(models.Model):
+    """
+    Урок Академии: короткий материал внутри ступени. Текст хранится блоками (blocks),
+    чтобы страница сама решала, как их показать: абзац, список, подсказка, вопрос для самопроверки.
+    """
+
+    BLOCK_TYPES = ('text', 'facts', 'steps', 'tip', 'check', 'practice')
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    level = models.IntegerField('Ступень', choices=Course.LEVEL_CHOICES)
+    slug = models.SlugField('Адрес', max_length=80, unique=True)
+    title = models.CharField('Название', max_length=200)
+    summary = models.CharField('Коротко о чём', max_length=300, blank=True, default='')
+    minutes = models.PositiveSmallIntegerField('Минут на чтение', default=3)
+    blocks = models.JSONField(
+        'Содержимое', default=list, blank=True,
+        help_text='Список блоков. Типы: text, facts, steps, tip, check, practice.')
+    sort_order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Показывать', default=True)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Урок'
+        verbose_name_plural = 'Уроки'
+        ordering = ['level', 'sort_order', 'created_at']
+
+    def __str__(self):
+        return f'Ступень {self.level}: {self.title}'
+
+    def clean(self):
+        blocks = self.blocks if isinstance(self.blocks, list) else None
+        if blocks is None:
+            raise ValidationError({'blocks': 'Ожидается список блоков'})
+        for block in blocks:
+            if not isinstance(block, dict) or block.get('type') not in self.BLOCK_TYPES:
+                raise ValidationError({'blocks': 'У каждого блока должен быть type из: ' + ', '.join(self.BLOCK_TYPES)})
+
+
+class LessonProgress(models.Model):
+    """Урок прочитан пользователем. Один раз на урок."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='lesson_progress', verbose_name='Пользователь')
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='progress',
+                               verbose_name='Урок')
+    completed_at = models.DateTimeField('Когда', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Пройденный урок'
+        verbose_name_plural = 'Пройденные уроки'
+        unique_together = ('user', 'lesson')
+        ordering = ['-completed_at']
+
+    def __str__(self):
+        return f'{self.user}: {self.lesson.title}'
+
+
+class Tasting(models.Model):
+    """
+    Отметка в паспорте вкуса: пользователь попробовал сорт и записал, какие ноты услышал.
+    Одна отметка на сорт: баллы даются за новый сорт, а не за количество выпитого.
+    """
+
+    MAX_NOTES = 6
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='tastings', verbose_name='Пользователь')
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='tastings',
+                              verbose_name='Сорт')
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='tastings', verbose_name='Где пробовал')
+    notes = models.ManyToManyField(FlavorNote, blank=True, related_name='tastings',
+                                   verbose_name='Что услышал')
+    rating = models.PositiveSmallIntegerField('Оценка 1-5')
+    comment = models.CharField('Заметка', max_length=280, blank=True, default='')
+    matched = models.PositiveSmallIntegerField(
+        'Совпало нот с пирамидой', default=0,
+        help_text='Сколько выбранных нот есть в пирамиде сомелье на момент отметки.')
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Отметка в паспорте вкуса'
+        verbose_name_plural = 'Паспорт вкуса: отметки'
+        unique_together = ('user', 'brand')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user}: {self.brand.name} ({self.rating}/5)'
+
+
+class PairingVote(models.Model):
+    """
+    Голос гостя за пару из каталога: подошло или нет. Один голос на пару от пользователя,
+    а без входа от устройства (случайный идентификатор из браузера).
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    pairing = models.ForeignKey(FoodPairing, on_delete=models.CASCADE, related_name='votes',
+                                verbose_name='Пара')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
+                             related_name='pairing_votes', verbose_name='Пользователь')
+    device = models.CharField('Устройство', max_length=64, blank=True, default='')
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='pairing_votes', verbose_name='Заведение')
+    liked = models.BooleanField('Подошло')
+    created_at = models.DateTimeField('Когда', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Голос за пару'
+        verbose_name_plural = 'Голоса за пары'
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(fields=['pairing', 'user'], condition=models.Q(user__isnull=False),
+                                    name='one_vote_per_user'),
+            models.UniqueConstraint(fields=['pairing', 'device'],
+                                    condition=models.Q(user__isnull=True) & ~models.Q(device=''),
+                                    name='one_vote_per_device'),
+        ]
+
+    def __str__(self):
+        return f'{self.pairing}: {"подошло" if self.liked else "не подошло"}'
+
+
+class Reward(models.Model):
+    """
+    Награда за баллы знаний. Алкоголь и скидки на него наградой быть не могут:
+    реклама алкоголя через призы в Казахстане запрещена, поэтому типы только такие.
+    Без заведения награда общая для платформы (её ведёт модератор).
+    """
+
+    KIND_FOOD = 'FOOD'
+    KIND_SOFT = 'SOFT'
+    KIND_MERCH = 'MERCH'
+    KIND_EVENT = 'EVENT'
+    KIND_CHOICES = [
+        (KIND_FOOD, 'Treat from the kitchen'),
+        (KIND_SOFT, 'Non-alcoholic drink'),
+        (KIND_MERCH, 'Souvenir'),
+        (KIND_EVENT, 'Event'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, null=True, blank=True,
+                              related_name='rewards', verbose_name='Заведение')
+    title = models.CharField('Название', max_length=120)
+    description = models.CharField('Описание', max_length=300, blank=True, default='')
+    kind = models.CharField('Тип', max_length=10, choices=KIND_CHOICES, default=KIND_FOOD)
+    cost = models.PositiveIntegerField('Цена в баллах')
+    stock = models.PositiveIntegerField('Осталось штук', null=True, blank=True,
+                                        help_text='Пусто - без ограничения.')
+    is_active = models.BooleanField('Доступна', default=True)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Награда'
+        verbose_name_plural = 'Награды'
+        ordering = ['cost', 'title']
+
+    def __str__(self):
+        return f'{self.title} ({self.cost} баллов)'
+
+
+class Redemption(models.Model):
+    """Обмен баллов на награду: гость получает код и показывает его сотруднику."""
+
+    STATUS_ISSUED = 'ISSUED'
+    STATUS_USED = 'USED'
+    STATUS_CANCELLED = 'CANCELLED'
+    STATUS_CHOICES = [
+        (STATUS_ISSUED, 'Code issued'),
+        (STATUS_USED, 'Redeemed'),
+        (STATUS_CANCELLED, 'Cancelled'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='redemptions', verbose_name='Пользователь')
+    reward = models.ForeignKey(Reward, on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='redemptions', verbose_name='Награда')
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='redemptions', verbose_name='Заведение')
+    title = models.CharField('Название на момент обмена', max_length=120)
+    cost = models.PositiveIntegerField('Списано баллов')
+    code = models.CharField('Код', max_length=8, unique=True)
+    status = models.CharField('Статус', max_length=10, choices=STATUS_CHOICES, default=STATUS_ISSUED)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    used_at = models.DateTimeField('Выдана', null=True, blank=True)
+    used_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='redemptions_given', verbose_name='Кто выдал')
+
+    class Meta:
+        verbose_name = 'Обмен баллов'
+        verbose_name_plural = 'Обмены баллов'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user}: {self.title} ({self.get_status_display()})'

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, EMPTY, forkJoin, of, throwError } from 'rxjs';
+import { MonoTypeOperatorFunction, Observable, EMPTY, forkJoin, of, throwError } from 'rxjs';
 import { map, catchError, expand, reduce, switchMap } from 'rxjs/operators';
 import {
   Brand,
@@ -31,7 +31,31 @@ import {
   AiReply,
   PairFeedbackInput,
   PilotReport,
-  QrLink
+  QrLink,
+  UserPreferences,
+  Quiz,
+  QuizResult,
+  QuizQuestion,
+  AiRecognition,
+  DishImportRequest,
+  DishImportResult,
+  AiPairingSuggestions,
+  AiPairingSaveItem,
+  Academy,
+  Lesson,
+  LessonCompleteResult,
+  Passport,
+  TastingSheet,
+  TastingInput,
+  TastingSaved,
+  GuestsHeard,
+  PairingVotes,
+  Reward,
+  Redemption,
+  PointsBalance,
+  VenueAnalytics,
+  BrandsAnalytics,
+  AiPairingSaveResult
 } from '../models/flavor-tree.models';
 import { V2PairingResult } from '../pages/drinks-v2/v2.models';
 import { environment } from '../../environments/environment';
@@ -61,18 +85,47 @@ export interface LandingStats {
   team_members: number;
 }
 
+export interface DishFilters {
+  cuisine?: string;
+  dominant_taste?: string;
+  weight?: string;
+  fat_level?: string;
+  cooking_method?: string;
+  category?: string;
+  q?: string;
+}
+
+export interface PairingFilters {
+  brand_id?: string;
+  brand_name?: string;
+  dish_id?: string;
+  dish_name?: string;
+  pairing_type?: string;
+}
+
 /** Пока админ не завёл настройки, витрина работает на этих. */
 const DEFAULT_SETTINGS: SiteSettings = {
   alternatives_count: 3,
   min_score_to_show: 1,
   show_wheat_decor: true,
-  pairing_intro: 'Мы разложили сорт на вкусовые ноты и нашли блюда, которые с ними совпадают.'
+  pairing_intro: 'We broke this beer down into its flavor notes and found dishes that match them.'
 };
+
+/** Фото для ИИ и распознавание идут дольше обычного запроса. */
+export const AI_VISION_TIMEOUT_MS = 120000;
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
   private baseUrl = API_BASE;
+
+  /**
+   * Демо-данные вместо ответа сервера. Только в сборке для разработки:
+   * на живом сайте заглушка выглядела бы как настоящий каталог, поэтому там ошибка уходит странице.
+   */
+  private demo<T>(mock: () => T): MonoTypeOperatorFunction<T> {
+    return catchError((err: unknown): Observable<T> => environment.production ? throwError(() => err) : of(mock()));
+  }
 
   /**
    * Собирает все страницы ответа DRF.
@@ -124,9 +177,7 @@ export class ApiService {
   // 1. Бренды и сорта пива
   /** Публичные страницы: если бэкенд не отвечает, показываем демо-сорта. */
   getBrands(filters?: BrandFilters): Observable<Brand[]> {
-    return this.getBrandsStrict(filters).pipe(
-      catchError(() => of(this.getMockBrands()))
-    );
+    return this.getBrandsStrict(filters).pipe(this.demo(() => this.getMockBrands()));
   }
 
   /** Для панели: без заглушек, любая ошибка уходит вызывающему. */
@@ -140,15 +191,14 @@ export class ApiService {
   }
 
   /**
-   * Демо-сорт подставляем только когда сервер недоступен (status 0).
-   * 404 и 5xx уходят вызывающему: по устаревшей ссылке нельзя показывать чужой сорт.
+   * Демо-сорт подставляем только в сборке для разработки, когда сервер недоступен (status 0),
+   * и только если это сам демо-сорт: чужой сорт под чужим адресом показывать нельзя.
    */
   getBrandDetail(id: string): Observable<Brand> {
     return this.getBrandDetailStrict(id).pipe(
       catchError((err: unknown) => {
-        if (err instanceof HttpErrorResponse && err.status === 0) {
-          return of(this.getMockBrands().find(b => b.id === id) || this.getMockBrands()[0]);
-        }
+        const mock = this.getMockBrands().find(b => b.id === id);
+        if (!environment.production && mock && err instanceof HttpErrorResponse && err.status === 0) return of(mock);
         return throwError(() => err);
       })
     );
@@ -162,9 +212,7 @@ export class ApiService {
   // 2. Вкусовые ноты
   /** Все страницы справочника: с одной страницы панель видела 20 нот из 67. */
   getFlavorNotes(category?: string): Observable<FlavorNote[]> {
-    return this.getFlavorNotesStrict(category).pipe(
-      catchError(() => of(this.getMockNotes()))
-    );
+    return this.getFlavorNotesStrict(category).pipe(this.demo(() => this.getMockNotes()));
   }
 
   /** Для панели: без заглушек. */
@@ -175,15 +223,13 @@ export class ApiService {
   }
 
   // 3. Блюда
-  getDishes(filters?: {
-    cuisine?: string;
-    dominant_taste?: string;
-    weight?: string;
-    fat_level?: string;
-    cooking_method?: string;
-    category?: string;
-    q?: string;
-  }): Observable<Dish[]> {
+  /** Публичные страницы: в сборке для разработки без бэкенда показываем демо-блюда. */
+  getDishes(filters?: DishFilters): Observable<Dish[]> {
+    return this.getDishesStrict(filters).pipe(this.demo(() => this.getMockDishes()));
+  }
+
+  /** Для панели: без заглушек, любая ошибка уходит вызывающему. */
+  getDishesStrict(filters?: DishFilters): Observable<Dish[]> {
     let params = new HttpParams();
     if (filters?.cuisine) params = params.set('cuisine', filters.cuisine);
     if (filters?.dominant_taste) params = params.set('dominant_taste', filters.dominant_taste);
@@ -193,9 +239,7 @@ export class ApiService {
     if (filters?.category) params = params.set('category', filters.category);
     if (filters?.q) params = params.set('q', filters.q);
 
-    return this.fetchAll<Dish>(`${this.baseUrl}/dishes/`, params).pipe(
-      catchError(() => of(this.getMockDishes()))
-    );
+    return this.fetchAll<Dish>(`${this.baseUrl}/dishes/`, params);
   }
 
   createDish(d: Partial<Dish>): Observable<Dish> {
@@ -230,11 +274,16 @@ export class ApiService {
     );
   }
 
-  /** Настройки витрины: сколько сортов показывать, нужен ли декор. */
+  /** Настройки витрины: сколько сортов показывать, нужен ли декор. Сайту хватит значений по умолчанию. */
   getSettings(): Observable<SiteSettings> {
-    return this.http.get<SiteSettings>(`${this.baseUrl}/settings/`).pipe(
+    return this.getSettingsStrict().pipe(
       catchError(() => of(DEFAULT_SETTINGS))
     );
+  }
+
+  /** Для панели: без значений по умолчанию, иначе "Сохранить" записало бы их поверх настоящих. */
+  getSettingsStrict(): Observable<SiteSettings> {
+    return this.http.get<SiteSettings>(`${this.baseUrl}/settings/`);
   }
 
   /** Только модератор. Ошибка уходит вызывающему. */
@@ -243,13 +292,16 @@ export class ApiService {
   }
 
   // 4. Сочетания блюд и сортов
-  getPairings(filters?: {
-    brand_id?: string;
-    brand_name?: string;
-    dish_id?: string;
-    dish_name?: string;
-    pairing_type?: string;
-  }): Observable<FoodPairing[]> {
+  /** Публичные страницы: в сборке для разработки без бэкенда показываем демо-сочетания под тот же фильтр. */
+  getPairings(filters?: PairingFilters): Observable<FoodPairing[]> {
+    return this.getPairingsStrict(filters).pipe(
+      this.demo(() => this.getMockPairings().filter(p =>
+        (!filters?.brand_id || p.brand === filters.brand_id) && (!filters?.dish_id || p.dish === filters.dish_id)))
+    );
+  }
+
+  /** Для панели: без заглушек. */
+  getPairingsStrict(filters?: PairingFilters): Observable<FoodPairing[]> {
     let params = new HttpParams();
     if (filters?.brand_id) params = params.set('brand_id', filters.brand_id);
     if (filters?.brand_name) params = params.set('brand_name', filters.brand_name);
@@ -257,9 +309,7 @@ export class ApiService {
     if (filters?.dish_name) params = params.set('dish_name', filters.dish_name);
     if (filters?.pairing_type) params = params.set('pairing_type', filters.pairing_type);
 
-    return this.fetchAll<FoodPairing>(`${this.baseUrl}/pairings/`, params).pipe(
-      catchError(() => of(this.getMockPairings()))
-    );
+    return this.fetchAll<FoodPairing>(`${this.baseUrl}/pairings/`, params);
   }
 
   createPairing(p: Partial<FoodPairing>): Observable<FoodPairing> {
@@ -298,15 +348,158 @@ export class ApiService {
   getCourses(): Observable<Course[]> {
     return this.http.get<PaginatedResponse<Course> | Course[]>(`${this.baseUrl}/courses/`).pipe(
       map(res => Array.isArray(res) ? res : res.results || []),
-      catchError(() => of(this.getMockCourses()))
+      this.demo(() => this.getMockCourses())
     );
   }
 
   getTeam(): Observable<TeamMember[]> {
     return this.http.get<PaginatedResponse<TeamMember> | TeamMember[]>(`${this.baseUrl}/team/`).pipe(
       map(res => Array.isArray(res) ? res : res.results || []),
-      catchError(() => of(this.getMockTeam()))
+      this.demo(() => this.getMockTeam())
     );
+  }
+
+  // Предпочтения и тест Школы сомелье
+  getPreferences(): Observable<UserPreferences> {
+    return this.http.get<UserPreferences>(`${this.baseUrl}/auth/preferences/`);
+  }
+
+  updatePreferences(p: Partial<Pick<UserPreferences, 'taste' | 'cuisines' | 'favorite_brands'>>): Observable<UserPreferences> {
+    return this.http.patch<UserPreferences>(`${this.baseUrl}/auth/preferences/`, p);
+  }
+
+  /** Случайные вопросы ступени: каждый вызов собирает тест заново. */
+  getQuiz(level: number): Observable<Quiz> {
+    return this.http.get<Quiz>(`${this.baseUrl}/quiz/${level}/`);
+  }
+
+  /** answers: {id вопроса: номер выбранного варианта}. Ответить нужно на все вопросы теста. */
+  submitQuiz(level: number, answers: Record<string, number>): Observable<QuizResult> {
+    return this.http.post<QuizResult>(`${this.baseUrl}/quiz/${level}/submit/`, { answers });
+  }
+
+  // Академия: путь из ступеней, уроки
+  getAcademy(): Observable<Academy> {
+    return this.http.get<Academy>(`${this.baseUrl}/academy/`);
+  }
+
+  getLesson(slug: string): Observable<Lesson> {
+    return this.http.get<Lesson>(`${this.baseUrl}/lessons/${encodeURIComponent(slug)}/`);
+  }
+
+  /** Урок прочитан. Нужен вход: гостю прогресс хранит браузер. */
+  completeLesson(slug: string): Observable<LessonCompleteResult> {
+    return this.http.post<LessonCompleteResult>(`${this.baseUrl}/lessons/${encodeURIComponent(slug)}/complete/`, {});
+  }
+
+  // Паспорт вкуса
+  getPassport(): Observable<Passport> {
+    return this.http.get<Passport>(`${this.baseUrl}/passport/`);
+  }
+
+  /** Палитра нот сорта и отметка пользователя, если она уже есть. */
+  getTastingSheet(brandId: string): Observable<TastingSheet> {
+    return this.http.get<TastingSheet>(`${this.baseUrl}/tastings/${brandId}/`);
+  }
+
+  saveTasting(brandId: string, body: TastingInput): Observable<TastingSaved> {
+    return this.http.put<TastingSaved>(`${this.baseUrl}/tastings/${brandId}/`, body);
+  }
+
+  deleteTasting(brandId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/tastings/${brandId}/`);
+  }
+
+  /** Что слышат гости в этом сорте: сводка по отметкам. */
+  getGuestsHeard(brandId: string): Observable<GuestsHeard> {
+    return this.http.get<GuestsHeard>(`${this.baseUrl}/brands/${brandId}/guests/`);
+  }
+
+  // Оценка пары гостем. Без входа гость узнаётся по device.
+  getPairingVotes(pairingId: string, device?: string): Observable<PairingVotes> {
+    const params = device ? new HttpParams().set('device', device) : undefined;
+    return this.http.get<PairingVotes>(`${this.baseUrl}/pairings/${pairingId}/feedback/`, { params });
+  }
+
+  votePairing(pairingId: string, liked: boolean, device?: string, venue?: string | null): Observable<PairingVotes> {
+    const body: Record<string, unknown> = { liked };
+    if (device) body['device'] = device;
+    if (venue) body['venue'] = venue;
+    return this.http.post<PairingVotes>(`${this.baseUrl}/pairings/${pairingId}/feedback/`, body);
+  }
+
+  // Награды за баллы знаний
+  /** Доступные награды: общие и заведения venue (slug). */
+  getRewards(venue?: string | null): Observable<Reward[]> {
+    const params = venue ? new HttpParams().set('venue', venue) : undefined;
+    return this.http.get<Reward[]>(`${this.baseUrl}/rewards/`, { params });
+  }
+
+  /** Для панели: награды своего заведения (модератору все), вместе с выключенными. */
+  getManagedRewards(): Observable<Reward[]> {
+    return this.http.get<Reward[]>(`${this.baseUrl}/rewards/`, { params: new HttpParams().set('manage', '1') });
+  }
+
+  createReward(r: Partial<Reward>): Observable<Reward> {
+    return this.http.post<Reward>(`${this.baseUrl}/rewards/`, r);
+  }
+
+  updateReward(id: string, r: Partial<Reward>): Observable<Reward> {
+    return this.http.patch<Reward>(`${this.baseUrl}/rewards/${id}/`, r);
+  }
+
+  deleteReward(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/rewards/${id}/`);
+  }
+
+  /** Обмен баллов на код награды. Повторный вызов отдаёт тот же код. */
+  redeemReward(id: string): Observable<{ redemption: Redemption; points: PointsBalance }> {
+    return this.http.post<{ redemption: Redemption; points: PointsBalance }>(`${this.baseUrl}/rewards/${id}/redeem/`, {});
+  }
+
+  cancelRedemption(id: string): Observable<{ redemption: Redemption; points: PointsBalance }> {
+    return this.http.post<{ redemption: Redemption; points: PointsBalance }>(`${this.baseUrl}/redemptions/${id}/cancel/`, {});
+  }
+
+  /** Сотрудник заведения выдал награду по коду гостя. */
+  useRedemption(code: string): Observable<{ redemption: Redemption }> {
+    return this.http.post<{ redemption: Redemption }>(`${this.baseUrl}/redemptions/use/`, { code });
+  }
+
+  getStaffRedemptions(): Observable<Redemption[]> {
+    return this.http.get<Redemption[]>(`${this.baseUrl}/redemptions/staff/`);
+  }
+
+  // Аналитика
+  getVenueAnalytics(venue: string, days: number, demo: boolean): Observable<VenueAnalytics> {
+    const params = new HttpParams().set('days', days).set('demo', demo ? '1' : '0');
+    return this.http.get<VenueAnalytics>(`${this.baseUrl}/analytics/venue/${encodeURIComponent(venue)}/`, { params });
+  }
+
+  /** CSV со строками заказов: скачивается файлом, поэтому ответ берём как Blob. */
+  exportVenueOrders(venue: string, days: number, demo: boolean): Observable<Blob> {
+    const params = new HttpParams().set('days', days).set('demo', demo ? '1' : '0');
+    return this.http.get(`${this.baseUrl}/analytics/venue/${encodeURIComponent(venue)}/export/`, { params, responseType: 'blob' });
+  }
+
+  getBrandsAnalytics(): Observable<BrandsAnalytics> {
+    return this.http.get<BrandsAnalytics>(`${this.baseUrl}/analytics/brands/`);
+  }
+
+  getQuizQuestions(): Observable<QuizQuestion[]> {
+    return this.fetchAll<QuizQuestion>(`${this.baseUrl}/quiz-questions/`);
+  }
+
+  createQuizQuestion(q: Partial<QuizQuestion>): Observable<QuizQuestion> {
+    return this.http.post<QuizQuestion>(`${this.baseUrl}/quiz-questions/`, q);
+  }
+
+  updateQuizQuestion(id: string, q: Partial<QuizQuestion>): Observable<QuizQuestion> {
+    return this.http.patch<QuizQuestion>(`${this.baseUrl}/quiz-questions/${id}/`, q);
+  }
+
+  deleteQuizQuestion(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/quiz-questions/${id}/`);
   }
 
   // 6. Админ-эндпоинты сомелье. Ошибки записи уходят в панель, чтобы их показать.
@@ -421,10 +614,15 @@ export class ApiService {
     return this.http.get<Order>(`${this.baseUrl}/orders/${id}/`, { params });
   }
 
-  /** Владелец заведения или модератор: заказы заведения, новые сверху. */
-  getOrders(venue: string, status?: OrderStatus): Observable<Order[]> {
+  /**
+   * Владелец заведения или модератор: заказы заведения, новые сверху.
+   * status: один статус или несколько; limit: не больше стольких заказов (для закрытых, чтобы не тянуть всю историю).
+   */
+  getOrders(venue: string, status?: OrderStatus | OrderStatus[], limit?: number): Observable<Order[]> {
     let params = new HttpParams().set('venue', venue);
-    if (status) params = params.set('status', status);
+    const statuses = Array.isArray(status) ? status.join(',') : status;
+    if (statuses) params = params.set('status', statuses);
+    if (limit) params = params.set('limit', limit);
     return this.fetchAll<Order>(`${this.baseUrl}/orders/`, params);
   }
 
@@ -532,17 +730,53 @@ export class ApiService {
     return this.http.post<AiReply>(`${this.baseUrl}/ai/sommelier/`, body);
   }
 
+  /** Гость прислал фото блюда: сомелье узнаёт его и советует напиток из карты бара или каталога. */
+  askSommelierByPhoto(file: File, venue: string | null, prefs?: AiRequest['prefs']): Observable<AiReply> {
+    const formData = new FormData();
+    formData.append('image', file);
+    if (venue) formData.append('venue', venue);
+    if (prefs) formData.append('prefs', JSON.stringify(prefs));
+    return this.http.post<AiReply>(`${this.baseUrl}/ai/sommelier/photo/`, formData);
+  }
+
+  // 11. ИИ в панели: блюда по фото и подбор сортов. Ошибки уходят вызывающему.
+  /** Фото тарелки или страницы меню -> черновики блюд. Ничего не сохраняет. */
+  recognizeDishes(file: File, hint?: string): Observable<AiRecognition> {
+    const formData = new FormData();
+    formData.append('image', file);
+    if (hint?.trim()) formData.append('hint', hint.trim());
+    return this.http.post<AiRecognition>(`${this.baseUrl}/ai/dishes/recognize/`, formData);
+  }
+
+  /** Сохраняет подтверждённые черновики: блюда в каталог, позиции в меню заведения, пары с пометкой ИИ. */
+  importDishes(body: DishImportRequest): Observable<DishImportResult> {
+    return this.http.post<DishImportResult>(`${this.baseUrl}/dishes/import/`, body);
+  }
+
+  /** Сорта к блюдам каталога (до 12 за раз). save: сразу записать пары с пометкой ИИ там, где это разрешено роли. */
+  suggestPairings(dishes: string[], save = false): Observable<AiPairingSuggestions> {
+    return this.http.post<AiPairingSuggestions>(`${this.baseUrl}/ai/pairings/suggest/`, { dishes, save });
+  }
+
+  /**
+   * Записывает сорта, которые ИИ уже предложил, без нового обращения к модели.
+   * У сомелье и модератора пара становится парой сомелье, у администратора заведения остаётся ИИ-подбором.
+   */
+  saveAiPairings(items: AiPairingSaveItem[]): Observable<AiPairingSaveResult> {
+    return this.http.post<AiPairingSaveResult>(`${this.baseUrl}/ai/pairings/save/`, { items });
+  }
+
   // Заглушки на случай, если бэкенд не отвечает
   private getMockNotes(): FlavorNote[] {
     return [
-      { id: 'n1', name: 'Свежесть', category: 'TOP', icon: '🌿' },
-      { id: 'n2', name: 'Хмелевой аромат', category: 'TOP', icon: '🍃' },
-      { id: 'n3', name: 'Цветочные ноты', category: 'TOP', icon: '🌸' },
-      { id: 'n4', name: 'Солод', category: 'HEART', icon: '🌾' },
-      { id: 'n5', name: 'Солодовая плотность', category: 'HEART', icon: '🍞' },
-      { id: 'n6', name: 'Карамель', category: 'HEART', icon: '🍯' },
-      { id: 'n7', name: 'Хмелевая горчинка', category: 'BASE', icon: '⚡' },
-      { id: 'n8', name: 'Освежающий финиш', category: 'BASE', icon: '❄️' }
+      { id: 'n1', name: 'Freshness', category: 'TOP', icon: '🌿' },
+      { id: 'n2', name: 'Hop aroma', category: 'TOP', icon: '🍃' },
+      { id: 'n3', name: 'Floral notes', category: 'TOP', icon: '🌸' },
+      { id: 'n4', name: 'Malt', category: 'HEART', icon: '🌾' },
+      { id: 'n5', name: 'Malty body', category: 'HEART', icon: '🍞' },
+      { id: 'n6', name: 'Caramel', category: 'HEART', icon: '🍯' },
+      { id: 'n7', name: 'Hoppy bitterness', category: 'BASE', icon: '⚡' },
+      { id: 'n8', name: 'Refreshing finish', category: 'BASE', icon: '❄️' }
     ];
   }
 
@@ -554,27 +788,27 @@ export class ApiService {
         style: 'Pilsner',
         abv: 5.0,
         packaging_type: 'BOTTLE',
-        packaging_type_display: 'Бутылка',
+        packaging_type_display: 'Bottle',
         is_horeca_only: false,
         is_active: true,
-        description: 'Флагманская марка Efes Beer Group с благородным хмелевым ароматом и освежающим сухим финишем.',
+        description: 'The flagship Efes Beer Group brand, with a noble hop aroma and a refreshing dry finish.',
         serving_recommendation: {
           serving_temp_min: 5,
           serving_temp_max: 7,
-          glass_type: 'Пилснер / Тюльпан',
-          seasonality: 'Круглый год'
+          glass_type: 'Pilsner / Tulip',
+          seasonality: 'Year-round'
         },
         pyramid: {
           top: [
-            { id: 'n2', name: 'Хмелевой аромат', icon: '🍃', description: 'Свежий благородный хмель', intensity: 6, sommelier_note: 'Благородный хмель европейского типа' },
-            { id: 'n3', name: 'Цветочные ноты', icon: '🌸', description: 'Тонкие луговые цветы', intensity: 4, sommelier_note: 'Изящные цветочные тона' }
+            { id: 'n2', name: 'Hop aroma', icon: '🍃', description: 'Fresh noble hops', intensity: 6, sommelier_note: 'European-style noble hops' },
+            { id: 'n3', name: 'Floral notes', icon: '🌸', description: 'Delicate meadow flowers', intensity: 4, sommelier_note: 'Elegant floral tones' }
           ],
           heart: [
-            { id: 'n5', name: 'Солодовая плотность', icon: '🍞', description: 'Плотный солод', intensity: 6, sommelier_note: 'Полнотелый насыщенный солод' }
+            { id: 'n5', name: 'Malty body', icon: '🍞', description: 'Rich malt', intensity: 6, sommelier_note: 'Full-bodied, rich malt' }
           ],
           base: [
-            { id: 'n7', name: 'Хмелевая горчинка', icon: '⚡', description: 'Освежающая горечь', intensity: 7, sommelier_note: 'Выразительная пилснеровская горечь' },
-            { id: 'n8', name: 'Освежающий финиш', icon: '❄️', description: 'Быстрое чистое завершение', intensity: 7, sommelier_note: 'Фирменное сухое послевкусие Efes' }
+            { id: 'n7', name: 'Hoppy bitterness', icon: '⚡', description: 'Refreshing bitterness', intensity: 7, sommelier_note: 'Pronounced pilsner bitterness' },
+            { id: 'n8', name: 'Refreshing finish', icon: '❄️', description: 'Quick, clean finish', intensity: 7, sommelier_note: 'Signature dry Efes aftertaste' }
           ]
         }
       },
@@ -584,20 +818,20 @@ export class ApiService {
         style: 'Lager (draft-style)',
         abv: 4.0,
         packaging_type: 'BOTTLE',
-        packaging_type_display: 'Бутылка',
+        packaging_type_display: 'Bottle',
         is_horeca_only: false,
         is_active: true,
-        description: 'Разливное пиво в бутылочном формате, сваренное по классическому рецепту.',
+        description: 'Draft-style beer in a bottle, brewed to a classic recipe.',
         serving_recommendation: {
           serving_temp_min: 4,
           serving_temp_max: 7,
-          glass_type: 'Кружка / Пинта',
-          seasonality: 'Круглый год'
+          glass_type: 'Mug / Pint',
+          seasonality: 'Year-round'
         },
         pyramid: {
-          top: [{ id: 'n1', name: 'Свежесть', icon: '🌿', description: 'Чистота и свежесть', intensity: 6, sommelier_note: 'Яркий свежий вдох разливного формата' }],
-          heart: [{ id: 'n4', name: 'Солод', icon: '🌾', description: 'Светлый ячменный солод', intensity: 5, sommelier_note: 'Классический ячменный солод' }],
-          base: [{ id: 'n8', name: 'Освежающий финиш', icon: '❄️', description: 'Чистый сход', intensity: 5, sommelier_note: 'Быстрое утоление жажды' }]
+          top: [{ id: 'n1', name: 'Freshness', icon: '🌿', description: 'Clean and fresh', intensity: 6, sommelier_note: 'A bright, fresh draft-style first sip' }],
+          heart: [{ id: 'n4', name: 'Malt', icon: '🌾', description: 'Pale barley malt', intensity: 5, sommelier_note: 'Classic barley malt' }],
+          base: [{ id: 'n8', name: 'Refreshing finish', icon: '❄️', description: 'Clean fade', intensity: 5, sommelier_note: 'Quickly quenches thirst' }]
         }
       }
     ];
@@ -605,10 +839,10 @@ export class ApiService {
 
   private getMockDishes(): Dish[] {
     return [
-      { id: 'd1', name: 'Бешбармак', cuisine: 'KZ', category: 'Мясное', dominant_taste: 'UMAMI', weight: 'HEAVY', fat_level: 'HIGH', cooking_method: 'BOILED', description: 'Традиционное главное блюдо казахской кухни из отварного мяса и тонкого сочня' },
-      { id: 'd2', name: 'Казы', cuisine: 'KZ', category: 'Мясное (конская колбаса)', dominant_taste: 'SALTY', weight: 'HEAVY', fat_level: 'HIGH', cooking_method: 'CURED', description: 'Деликатесная сыровяленая конская колбаса с чесноком и черным перцем' },
-      { id: 'd3', name: 'Пицца Маргарита', cuisine: 'ITALIAN', category: 'Пицца', dominant_taste: 'UMAMI', weight: 'MEDIUM', fat_level: 'MEDIUM', cooking_method: 'BAKED', description: 'Классическая неаполитанская пицца с томатами, моцареллой и базиликом' },
-      { id: 'd4', name: 'Братвурст (сосиски)', cuisine: 'GERMAN', category: 'Колбасы/Гриль', dominant_taste: 'SALTY', weight: 'HEAVY', fat_level: 'HIGH', cooking_method: 'GRILLED', description: 'Традиционные немецкие колбаски из свинины на гриле' }
+      { id: 'd1', name: 'Beshbarmak', cuisine: 'KZ', category: 'Meat', dominant_taste: 'UMAMI', weight: 'HEAVY', fat_level: 'HIGH', cooking_method: 'BOILED', description: 'The traditional Kazakh main dish of boiled meat and thin pasta sheets' },
+      { id: 'd2', name: 'Kazy', cuisine: 'KZ', category: 'Meat (horse sausage)', dominant_taste: 'SALTY', weight: 'HEAVY', fat_level: 'HIGH', cooking_method: 'CURED', description: 'A delicacy of dry-cured horse sausage with garlic and black pepper' },
+      { id: 'd3', name: 'Pizza Margherita', cuisine: 'ITALIAN', category: 'Pizza', dominant_taste: 'UMAMI', weight: 'MEDIUM', fat_level: 'MEDIUM', cooking_method: 'BAKED', description: 'Classic Neapolitan pizza with tomatoes, mozzarella and basil' },
+      { id: 'd4', name: 'Bratwurst (sausages)', cuisine: 'GERMAN', category: 'Sausages/Grill', dominant_taste: 'SALTY', weight: 'HEAVY', fat_level: 'HIGH', cooking_method: 'GRILLED', description: 'Traditional grilled German pork sausages' }
     ];
   }
 
@@ -619,39 +853,39 @@ export class ApiService {
         brand: 'b1',
         brand_name: 'Efes Pilsener',
         dish: 'd2',
-        dish_name: 'Казы',
+        dish_name: 'Kazy',
         pairing_type: 'CONTRAST',
-        pairing_type_display: 'Контрастирует (Contrast)',
+        pairing_type_display: 'Contrast',
         compatibility_score: 5,
-        explanation: 'Выраженная горечь в послевкусии пильзнера режет жирность вяленого мяса'
+        explanation: 'The pilsner’s pronounced bitter finish cuts through the richness of the cured meat'
       },
       {
         id: 'p2',
         brand: 'b1',
         brand_name: 'Efes Pilsener',
         dish: 'd3',
-        dish_name: 'Пицца Маргарита',
+        dish_name: 'Pizza Margherita',
         pairing_type: 'CONTRAST',
-        pairing_type_display: 'Контрастирует (Contrast)',
+        pairing_type_display: 'Contrast',
         compatibility_score: 4,
-        explanation: 'Хмелевая горчинка режет сырную жирность'
+        explanation: 'Hoppy bitterness cuts through the richness of the cheese'
       }
     ];
   }
 
   private getMockCourses(): Course[] {
     return [
-      { id: 'c1', level: 1, level_display: 'Новичок', title: 'Первое знакомство', description: 'Стили пива, крепость и плотность. Как пробовать и на что обращать внимание в первом глотке.' },
-      { id: 'c2', level: 2, level_display: 'Исследователь', title: 'Вкусовая пирамида', description: 'Верхние ноты, сердце и послевкусие: как раскрывается глоток и чем хмель отличается от солода.' },
-      { id: 'c3', level: 3, level_display: 'Знаток', title: 'Пиво и еда', description: 'Четыре типа сочетаний: дополняет, контраст, очищает и мостик. Температура подачи и бокал.' },
-      { id: 'c4', level: 4, level_display: 'Сомелье', title: 'Подбор для гостей', description: 'Дегустация вслепую, описание вкуса по колесу вкусов пива и подбор напитка к блюдам из меню заведения.' }
+      { id: 'c1', level: 1, level_display: 'Beginner', title: 'First steps', description: 'Beer styles, strength and body. How to taste and what to notice in the first sip.' },
+      { id: 'c2', level: 2, level_display: 'Explorer', title: 'The flavor pyramid', description: 'Top notes, heart and finish: how a sip unfolds and how hops differ from malt.' },
+      { id: 'c3', level: 3, level_display: 'Connoisseur', title: 'Beer and food', description: 'Four pairing types: complement, contrast, cleanse and bridge. Serving temperature and glassware.' },
+      { id: 'c4', level: 4, level_display: 'Sommelier', title: 'Pairing for guests', description: 'Blind tasting, describing flavor with the beer flavor wheel, and matching drinks to dishes on a venue’s menu.' }
     ];
   }
 
   private getMockTeam(): TeamMember[] {
     return [
-      { id: 't1', name: 'Аджибаева Аделия', role: 'Сооснователь', bio: '' },
-      { id: 't2', name: 'Абуталифулы Ералы', role: 'Сооснователь', bio: '' }
+      { id: 't1', name: 'Adeliya Ajibayeva', role: 'Co-founder', bio: '' },
+      { id: 't2', name: 'Yeraly Abutalifuly', role: 'Co-founder', bio: '' }
     ];
   }
 }

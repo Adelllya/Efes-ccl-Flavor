@@ -4,6 +4,7 @@
 """
 import secrets
 
+from django.utils import timezone
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -31,7 +32,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
     POST  /api/orders/                   - гость: новый заказ (без входа); session, age_confirmed,
                                            у позиций source (MENU, PAIRING, AI), paired_with, rank
     GET   /api/orders/<id>/?token=       - гость: свой заказ по токену; владелец и модератор - без токена
-    GET   /api/orders/?venue=&status=    - владелец или модератор: заказы заведения, новые сверху
+    GET   /api/orders/?venue=&status=&limit= - владелец или модератор: заказы заведения, новые сверху
     PATCH /api/orders/<id>/  {status}    - владелец или модератор: следующий статус или отмена
     GET   /api/orders/new-count/?venue=  - владелец или модератор: {count} новых заказов;
                                            без ?venue= владелец получает свои заведения, модератор все
@@ -40,6 +41,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
     serializer_class = OrderSerializer
     pagination_class = None
     http_method_names = ['get', 'post', 'patch', 'head', 'options']
+    MAX_LIST_LIMIT = 500
 
     def get_permissions(self):
         if self.action in ('create', 'retrieve'):
@@ -61,13 +63,14 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
             return None
         venue = find_venue(raw)
         if venue is None:
-            raise ValidationError({'venue': ['Заведение не найдено']})
+            raise ValidationError({'venue': ['Venue not found']})
         if not (has_role(request.user, ROLE_MODERATOR) or venue.owner_id == request.user.id):
-            raise PermissionDenied('Это заведение вам не принадлежит')
+            raise PermissionDenied('This venue does not belong to you')
         return venue
 
     def _owned_orders(self, request):
-        queryset = self.get_queryset()
+        # Демо-заказы (seed_demo_orders) нужны только аналитике: в рабочем списке их нет.
+        queryset = self.get_queryset().filter(is_demo=False)
         venue = self._venue_from_query(request)
         if venue is not None:
             return queryset.filter(venue=venue)
@@ -92,7 +95,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
             allowed = user.is_authenticated and (
                 has_role(user, ROLE_MODERATOR) or order.venue.owner_id == user.id)
         if not allowed:
-            raise PermissionDenied('Неверный токен заказа')
+            raise PermissionDenied('Invalid order token')
         return Response(self.get_serializer(order).data)
 
     def list(self, request, *args, **kwargs):
@@ -101,6 +104,16 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
         statuses = [s.strip().upper() for s in (request.query_params.get('status') or '').split(',') if s.strip()]
         if statuses:
             queryset = queryset.filter(status__in=statuses)
+        # ?limit=50: панель опрашивает список каждые 20 секунд, всю историю каждый раз тянуть незачем.
+        raw_limit = (request.query_params.get('limit') or '').strip()
+        if raw_limit:
+            try:
+                limit = int(raw_limit)
+            except ValueError:
+                raise ValidationError({'limit': ['Expected an integer']})
+            if not 1 <= limit <= self.MAX_LIST_LIMIT:
+                raise ValidationError({'limit': ['Must be from 1 to {}'.format(self.MAX_LIST_LIMIT)]})
+            queryset = queryset[:limit]
         return Response(self.get_serializer(queryset, many=True).data)
 
     def partial_update(self, request, *args, **kwargs):
@@ -108,12 +121,18 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.Li
         labels = dict(Order.STATUS_CHOICES)
         new_status = str(request.data.get('status') or '').strip().upper()
         if new_status not in labels:
-            raise ValidationError({'status': ['Неизвестный статус']})
+            raise ValidationError({'status': ['Unknown status']})
         if not Order.can_transition(order.status, new_status):
             raise ValidationError({'status': [
-                'Нельзя перевести заказ из «{}» в «{}»'.format(order.get_status_display(), labels[new_status])]})
-        order.status = new_status
-        order.save(update_fields=['status', 'updated_at'])
+                'Cannot move the order from "{}" to "{}"'.format(order.get_status_display(), labels[new_status])]})
+        # Меняем статус только если он всё ещё тот, что мы видели: два сотрудника сразу
+        # не должны один принять, а другой отменить один и тот же заказ.
+        changed = Order.objects.filter(pk=order.pk, status=order.status).update(
+            status=new_status, updated_at=timezone.now())
+        if not changed:
+            return Response({'detail': 'Another staff member has already changed the order status. Refresh the list'},
+                            status=status.HTTP_409_CONFLICT)
+        order.refresh_from_db()
         return Response(self.get_serializer(order).data)
 
     @action(detail=False, methods=['get'], url_path='new-count')

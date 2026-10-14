@@ -10,11 +10,11 @@ import { CommonModule } from '@angular/common';
 })
 export class EducationComponent {
   levels = [
-    { level: 1, color: '#22C55E', name: 'Новичок', description: 'Базовые вкусы, как правильно пробовать пиво' },
-    { level: 2, color: '#3B82F6', name: 'Исследователь', description: 'Ароматические ноты, стили пива (лагер vs эль)' },
-    { level: 3, color: '#8B5CF6', name: 'Знаток', description: 'Сочетания с блюдами, влияние ингредиентов на вкус' },
-    { level: 4, color: '#F59E0B', name: 'Сомелье', description: 'Слепая дегустация + цифровой сертификат Efes' },
+    { level: 1, color: '#22C55E', name: 'Novice', description: 'Basic tastes and how to taste beer properly' },
+    { level: 2, color: '#3B82F6', name: 'Explorer', description: 'Aroma notes and beer styles (lager vs ale)' },
+    { level: 3, color: '#8B5CF6', name: 'Connoisseur', description: 'Food pairings and how ingredients shape flavor' },
+    { level: 4, color: '#F59E0B', name: 'Sommelier', description: 'Blind tasting + a digital Efes certificate' },
   ];
 
-  features = ['XP', 'стрики', 'лидерборд', 'AI-наставник', 'AR-уроки'];
+  features = ['XP', 'streaks', 'leaderboard', 'AI mentor', 'AR lessons'];
 }

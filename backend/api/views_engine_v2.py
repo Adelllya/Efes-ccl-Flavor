@@ -44,7 +44,9 @@ DISH_LIST_FIELDS = ("id", "name", "display_name", "emoji", "cuisine", "category"
 def _ds(request=None) -> DatasetV2:
     """Набор данных; ?locale=kk|en — объяснения движка на языке гостя (баллы те же, см. docs/ENGINE_TEXTS.md)."""
     data_dir = str(getattr(settings, "FLAVOR_DATA_DIR", "")) or None
-    locale = (request.query_params.get("locale") if request is not None else None) or "ru"
+    locale = ((request.query_params.get("locale") if request is not None else None) or "en").strip().lower()
+    if locale not in ("ru", "kk", "en"):
+        locale = "en"
     # Веса из админки (если заданы) накладываются поверх базы; без них — обычный кэш.
     from . import engine_tuning
     return engine_tuning.tuned_dataset(data_dir, locale)
@@ -147,7 +149,7 @@ def _dish_from_request(ds: DatasetV2, data) -> Optional[Dict[str, Any]]:
     for a in E.DISH_AXES:
         v = _float(raw_vec.get(a), 0.0, 1.0)
         vec[a] = v if v is not None else 0.0
-    raw = {"id": "custom", "name": str(spec.get("name") or "Ваше блюдо")[:120], "vector": vec,
+    raw = {"id": "custom", "name": str(spec.get("name") or "Your dish")[:120], "vector": vec,
            "tags": spec.get("tags") if isinstance(spec.get("tags"), (dict, list)) else {},
            "cuisine": _csv(spec.get("cuisine"))[:5], "is_dessert": bool(spec.get("is_dessert")),
            "acid_type": spec.get("acid_type") or "none", "cook_method": spec.get("cook_method") or "",
@@ -271,7 +273,7 @@ def drink_detail(request, drink_id):
     ds = _ds(request)
     raw = ds.drink_raw_by_id.get(drink_id)
     if not raw:
-        return Response({"detail": "Напиток не найден"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Drink not found"}, status=status.HTTP_404_NOT_FOUND)
     prof = ds.drink_by_id[drink_id]
     ctx = _ctx_from(request.query_params)
     rev = E.reverse(prof, ds.dish_profiles, ctx, int(_float(request.query_params.get("top"), 1, 30) or 8),
@@ -309,7 +311,7 @@ def pairing_for_dish(request, dish_id):
     ds = _ds(request)
     dish = ds.dish_by_id.get(dish_id)
     if not dish:
-        return Response({"detail": "Блюдо не найдено"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Dish not found"}, status=status.HTTP_404_NOT_FOUND)
     data = request.query_params
     return Response(_pairing_payload(ds, dish, data, _ctx_from(data)))
 
@@ -319,10 +321,10 @@ def pairing_recommend(request):
     ds = _ds(request)
     data = request.data if isinstance(request.data, dict) else None
     if data is None:
-        return Response({"detail": "Ожидается JSON-объект"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Expected a JSON object"}, status=status.HTTP_400_BAD_REQUEST)
     dish = _dish_from_request(ds, data)
     if not dish:
-        return Response({"detail": "Нужно dish_id или dish {vector…}"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "dish_id or dish {vector…} is required"}, status=status.HTTP_400_BAD_REQUEST)
     ctx_src = data.get("context") if isinstance(data.get("context"), dict) else data
     return Response(_pairing_payload(ds, dish, data, _ctx_from(ctx_src)))
 
@@ -335,6 +337,6 @@ def pairing_explain(request):
     b = ds.drink_by_id.get(drink_id) or ds.archetype_by_id.get(drink_id)
     d = ds.dish_by_id.get(dish_id)
     if not b or not d:
-        return Response({"detail": "Нужны существующие drink и dish"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "An existing drink and dish are required"}, status=status.HTTP_404_NOT_FOUND)
     r = E.score_pair(b, d, _ctx_from(request.query_params), ds.params, ds.classic_index, True)
     return Response(_with_drink(ds, r))

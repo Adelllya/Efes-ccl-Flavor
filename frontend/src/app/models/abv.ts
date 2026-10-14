@@ -5,9 +5,9 @@
  */
 export function abvText(abv: number | null | undefined, estimated = false): string | null {
   if (abv === null || abv === undefined || !Number.isFinite(abv)) return null;
-  const value = abv.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
-  return `${estimated ? 'около ' : ''}${value} %`;
+  const value = abv.toLocaleString('en-US', { maximumFractionDigits: 1 });
+  return `${estimated ? 'approx. ' : ''}${value} %`;
 }
 
 /** Подсказка к крепости-оценке. */
-export const ABV_ESTIMATE_HINT = 'Точной крепости в наших источниках нет, указана оценка по стилю';
+export const ABV_ESTIMATE_HINT = 'Our sources list no exact ABV, so this is an estimate based on the style';

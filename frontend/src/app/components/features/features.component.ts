@@ -13,22 +13,22 @@ export class FeaturesComponent {
     {
       icon: '🧬',
       title: 'Flavor DNA',
-      text: 'Персональный вкусовой профиль - как Spotify Wrapped. «Ты 70% цитрусовый».'
+      text: 'A personal flavor profile, like Spotify Wrapped. "You are 70% citrus."'
     },
     {
       icon: '🍖',
-      title: 'Казахская кухня + Пиво',
-      text: 'Бешбармак → Карагандинское Тёмное. Шашлык → Efes Pilsener. Уникальная локализация.'
+      title: 'Kazakh cuisine + Beer',
+      text: 'Beshbarmak → Karagandinskoe Dark. Shashlik → Efes Pilsener. Truly local.'
     },
     {
       icon: '📱',
-      title: 'Scan этикетки',
-      text: 'Наводишь камеру → мгновенная вкусовая пирамида + рекомендация к еде.'
+      title: 'Label scan',
+      text: 'Point your camera → instant flavor pyramid + a food pairing.'
     }
   ];
 
   comparison = [
-    { name: 'Untappd', desc: '«8 лет, ставки 4/5»', side: 'left' },
-    { name: 'Flavor Tree', desc: '«Я знаю это пиво»', side: 'right' }
+    { name: 'Untappd', desc: '"8 years, 4/5 ratings"', side: 'left' },
+    { name: 'Flavor Tree', desc: '"I know this beer"', side: 'right' }
   ];
 }

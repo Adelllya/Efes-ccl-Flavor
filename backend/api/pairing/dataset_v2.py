@@ -191,10 +191,116 @@ def load_dataset(data_dir: Optional[Path] = None, params_override: Optional[Dict
     )
 
 
+# Витрина сайта: гостю показываем только эти сорта Efes. Пусто - весь набор.
+SHOWCASE_DRINK_IDS = ("efes-pilsener", "bavaria", "wukong-ju", "kruzhka-svezhego")
+
+
 @lru_cache(maxsize=4)
 def get_dataset(data_dir: Optional[str] = None) -> DatasetV2:
-    """Кэшированный набор (на процесс). Для перечитывания — get_dataset.cache_clear()."""
-    return load_dataset(Path(data_dir) if data_dir else None)
+    """Кэшированный набор (на процесс). Для перечитывания — get_dataset.cache_clear().
+    Напитки урезаны до витрины SHOWCASE_DRINK_IDS; полный набор даёт load_dataset()."""
+    return for_site(load_dataset(Path(data_dir) if data_dir else None))
+
+
+# Сайт на английском: названия блюд из dish_names_en.json, русское название уходит в синонимы для поиска.
+# Названия витрины совпадают с названиями сортов в каталоге (Brand.name): по ним ai_engine находит сорт.
+DRINK_NAMES_EN = {"kruzhka-svezhego": "Kruzhka Svezhego Myagkoe", "wukong-ju": "Wukong JU",
+                  "bavaria": "Bavaria Premium Lager", "efes-pilsener": "Efes Pilsener"}
+_SERVING_EN = {"glass": "Pilsner glass / pint", "seasonality": "All year round"}
+DRINK_TEXTS_EN = {
+    "efes-pilsener": {
+        "description": "Classic pale lager brewed from 100% malt: fresh grain and bread-crust aroma, a smooth malty body "
+                       "and a soft, noble hop bitterness. Clean, dry, refreshing finish. Serve at 5-8°C.",
+        "price_note": "285-449 ₸ / 0.45-0.5 L", "availability_note": "Flagship of Efes"},
+    "bavaria": {
+        "description": "Premium European lager with a rich malty taste, a fuller body and a distinct noble hop bitterness. "
+                       "Notes of fresh bread and grain, a long, clean finish. Serve at 5-8°C.",
+        "price_note": "280-735 ₸ / 0.45-0.5 L"},
+    "wukong-ju": {
+        "description": "Modern Asian pale lager brewed with barley malt and rice: crystal clear, light and dry, "
+                       "with floral and citrus hop notes and a soft bitterness. Serve at 5-8°C."},
+    "kruzhka-svezhego": {
+        "description": "Light filtered lager made for easy drinking: soft malt sweetness, gentle grain and bread notes, "
+                       "low bitterness and a clean, short finish. Serve at 5-8°C.",
+        "availability_note": "Draft-style beer in a bottle"},
+}
+
+
+def _drink_en(d: Dict[str, Any]) -> Dict[str, Any]:
+    """Английские тексты сорта витрины поверх русских из drinks.json."""
+    did = d.get("id")
+    t = DRINK_TEXTS_EN.get(did)
+    d = {**d, "serving": {**(d.get("serving") or {}), **_SERVING_EN}} if isinstance(d.get("serving"), dict) else d
+    if did in DRINK_NAMES_EN:
+        d = {**d, "name": DRINK_NAMES_EN[did]}
+    if not t:
+        return d
+    d = {**d, "description": t["description"]}
+    if "price_note" in t and isinstance(d.get("price_kzt"), dict):
+        d = {**d, "price_kzt": {**d["price_kzt"], "raw": t["price_note"]}}
+    if "availability_note" in t and isinstance(d.get("availability_kz"), dict):
+        d = {**d, "availability_kz": {**d["availability_kz"], "note": t["availability_note"]}}
+    return d
+
+
+def english_records(dishes: List[Dict[str, Any]], drinks: List[Dict[str, Any]], data_dir: Optional[Path] = None):
+    """Английские названия, категории и описания блюд и сортов (русское название блюда уходит в синонимы)."""
+    d = Path(data_dir or DATA_DIR)
+    names = _read(d / "dish_names_en.json") if (d / "dish_names_en.json").exists() else {}
+    texts = _read(d / "dish_texts_en.json") if (d / "dish_texts_en.json").exists() else {}
+    cats, descs = texts.get("categories") or {}, texts.get("descriptions") or {}
+    out = []
+    for x in dishes:
+        en = names.get(x.get("id"))
+        if en and en != x.get("name"):
+            x = {**x, "name": en, "synonyms": list(x.get("synonyms") or []) + [x.get("name")]}
+        if x.get("category") in cats:
+            x = {**x, "category": cats[x["category"]]}
+        if x.get("id") in descs:
+            x = {**x, "description": descs[x["id"]]}
+        out.append(x)
+    return out, [_drink_en(x) for x in drinks]
+
+
+# Пары из дегустационных профилей Efes Kazakhstan: {drink_id: {dish_id: бонус R20}}.
+# Бонус ровно такой, чтобы рекомендованный пивоварней сорт стоял первым у своего блюда.
+PRODUCER_PAIRS_FILE = "producer_pairs.json"
+PRODUCER_SOURCE = {"en": "Efes Kazakhstan tasting notes", "ru": "дегустационные профили Efes Kazakhstan"}
+PRODUCER_MAX_BONUS = 40
+
+
+def _producer_classics(data_dir: Optional[Path], english: bool) -> List[Dict[str, Any]]:
+    path = Path(data_dir or DATA_DIR) / PRODUCER_PAIRS_FILE
+    if not path.exists():
+        return []
+    title = PRODUCER_SOURCE["en" if english else "ru"]
+    return [{"dish": dish, "drink": drink, "bonus": bonus, "label": title, "source": {"title": title}}
+            for drink, dishes in _read(path).items() for dish, bonus in dishes.items()]
+
+
+def for_site(ds: DatasetV2, english: bool = False) -> DatasetV2:
+    """Набор для сайта: только витрина SHOWCASE_DRINK_IDS, пары пивоварни; english=True - английские тексты (?locale=en)."""
+    keep = set(SHOWCASE_DRINK_IDS)
+    dishes = ds.dishes
+    drinks = [d for d in ds.drinks if not keep or d.get("id") in keep]
+    drinks = [{**d, "name": DRINK_NAMES_EN[d["id"]]} if d.get("id") in DRINK_NAMES_EN else d for d in drinks]
+    if english:
+        dishes, drinks = english_records(dishes, drinks, ds.data_dir)
+    producer = _producer_classics(ds.data_dir, english)
+    params = ds.params
+    if producer:
+        r20 = params["R20"]
+        params = {**params, "R20": {**r20, "bonus": max(r20.get("bonus", 0), PRODUCER_MAX_BONUS),
+                                     "max_bonus": max(r20.get("max_bonus", 0), PRODUCER_MAX_BONUS)}}
+    taken = {(c["dish"], c["drink"]) for c in producer}
+    # у учебных классик бонус прежний (R20.bonus по умолчанию), поднятый потолок только для пар пивоварни
+    default = ds.params["R20"].get("bonus", 8)
+    classics = [c if c.get("bonus") is not None else {**c, "bonus": default}
+                for c in ds.classics if (c.get("dish"), c.get("drink")) not in taken] + producer
+    return DatasetV2(archetypes=ds.archetypes, dishes=dishes, drinks=drinks,
+                     classics=classics, tests=ds.tests, params=params, source=ds.source,
+                     missing=ds.missing, proposed_archetypes=ds.proposed_archetypes,
+                     proposed_dishes=ds.proposed_dishes, data_dir=ds.data_dir, calibration=ds.calibration)
 
 
 LOCALES = ("kk", "en")
@@ -212,7 +318,12 @@ def get_dataset_locale(data_dir: Optional[str] = None, locale: str = "ru") -> Da
     if not path.exists():
         return base
     params = E.merge_params(base.params, _read(path))
-    return DatasetV2(archetypes=base.archetypes, dishes=base.dishes, drinks=base.drinks, classics=base.classics,
+    dishes, drinks = english_records(base.dishes, base.drinks, base.data_dir) if locale == "en" else (base.dishes, base.drinks)
+    classics = base.classics
+    if locale == "en":
+        en_src = {(c["dish"], c["drink"]): c for c in _producer_classics(base.data_dir, True)}
+        classics = [en_src.get((c.get("dish"), c.get("drink")), c) for c in classics]
+    return DatasetV2(archetypes=base.archetypes, dishes=dishes, drinks=drinks, classics=classics,
                      tests=base.tests, params=params, source=base.source, missing=base.missing,
                      proposed_archetypes=base.proposed_archetypes, proposed_dishes=base.proposed_dishes,
                      data_dir=base.data_dir, calibration=base.calibration)

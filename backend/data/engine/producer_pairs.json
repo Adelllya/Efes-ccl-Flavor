@@ -1,0 +1,50 @@
+{
+ "wukong-ju": {
+  "sushi": 4,
+  "philadelphia-roll": 4,
+  "tempura": 16,
+  "ramen": 14,
+  "yakitori": 13,
+  "pad-thai": 16,
+  "tom-yum": 18,
+  "salmon-grilled": 15
+ },
+ "kruzhka-svezhego": {
+  "vobla": 13,
+  "fish-and-chips": 12,
+  "calamari-rings": 11,
+  "garlic-croutons": 10,
+  "fries": 12,
+  "salted-nuts": 13,
+  "greek-salad": 7,
+  "caesar-salad": 12,
+  "crayfish-boiled": 13,
+  "garlic-shrimp": 11,
+  "mussels-steamed": 11,
+  "shuzhyk": 13,
+  "burrata": 4
+ },
+ "bavaria": {
+  "bbq-ribs": 14,
+  "pork-knuckle": 17,
+  "burger": 13,
+  "cheeseburger": 12,
+  "cheese-aged": 11,
+  "cheese-plate": 11,
+  "lyulya-kebab": 17
+ },
+ "efes-pilsener": {
+  "samsa": 4,
+  "chebureki": 4,
+  "pizza-margherita": 4,
+  "pizza-pepperoni": 4,
+  "shashlyk": 4,
+  "shashlyk-chicken": 4,
+  "bratwurst": 4,
+  "currywurst": 4,
+  "buffalo-wings": 4,
+  "bbq-wings": 4,
+  "mozzarella-sticks": 4,
+  "kazy": 4
+ }
+}

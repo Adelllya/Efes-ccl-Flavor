@@ -1,41 +1,40 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Flavor Tree: вкусы напитков и подбор к блюду</title>
+  <title>Flavor Tree: drink flavors and food pairing</title>
   <base href="/">
   <!-- viewport-fit=cover: без него env(safe-area-inset-*) на iPhone всегда 0 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Справочник вкусов 412 напитков, подбор напитка к блюду и электронное меню заведения с заказом со стола по QR-коду. Для гостей старше 21 года.">
+  <!-- interactive-widget: на Android клавиатура сжимает страницу, и поле чата или корзины остаётся над ней -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="description" content="A flavor guide to 412 drinks, drink and food pairing, the Flavor Academy, a taste passport, and a digital venue menu with table ordering by QR code. For guests aged 21 and over.">
   <meta name="theme-color" content="#FAFAF9">
   <!-- Сервис для гостей заведений по QR, а не публичная витрина алкоголя: в поиск страницы не отдаём (и public/robots.txt) -->
   <meta name="robots" content="noindex, nofollow">
   <!-- Превью ссылки в Telegram, WhatsApp и соцсетях. Картинка 1200x630 лежит в public/og.jpg.
-       Open Graph требует полный адрес: относительный og:image понимают не все мессенджеры. Домен тот же,
-       что FT_PUBLIC_SITE_URL в DEPLOY.md (на него ведут QR столов); сменится домен, поменять и здесь -->
+       Адрес относительный, пока домен фронтенда не закреплён; потом лучше указать полный https://<домен>/og.jpg и og:url -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://flavor-tree-frontend.vercel.app/">
   <meta property="og:site_name" content="Flavor Tree">
-  <meta property="og:locale" content="ru_RU">
-  <meta property="og:title" content="Flavor Tree: вкусы напитков и подбор к блюду">
-  <meta property="og:description" content="Справочник вкусов напитков, подбор к блюду и электронное меню заведения с заказом со стола. Для гостей старше 21 года.">
-  <meta property="og:image" content="https://flavor-tree-frontend.vercel.app/og.jpg">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Flavor Tree: drink flavors and food pairing">
+  <meta property="og:description" content="A drink flavor guide, food pairing, and a digital venue menu with table ordering. For guests aged 21 and over.">
+  <meta property="og:image" content="/og.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Логотип Flavor Tree: дерево вкусов">
+  <meta property="og:image:alt" content="Flavor Tree logo: a tree of flavors">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Flavor Tree: вкусы напитков и подбор к блюду">
-  <meta name="twitter:description" content="Справочник вкусов напитков, подбор к блюду и электронное меню заведения с заказом со стола. Для гостей старше 21 года.">
-  <meta name="twitter:image" content="https://flavor-tree-frontend.vercel.app/og.jpg">
-  <meta name="twitter:image:alt" content="Логотип Flavor Tree: дерево вкусов">
+  <meta name="twitter:title" content="Flavor Tree: drink flavors and food pairing">
+  <meta name="twitter:description" content="A drink flavor guide, food pairing, and a digital venue menu with table ordering. For guests aged 21 and over.">
+  <meta name="twitter:image" content="/og.jpg">
+  <meta name="twitter:image:alt" content="Flavor Tree logo: a tree of flavors">
   <meta name="format-detection" content="telephone=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Flavor Tree">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="decor/logo-sm.webp" type="image/webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">

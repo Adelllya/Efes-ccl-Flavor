@@ -76,7 +76,7 @@ export function efesBeers(result: V2PairingResult): { beers: V2Pair[]; nonAlcoho
 export function cleanReason(text: string): string {
   let t = (text || '').split(' · ').filter((part, i) => i === 0 || !part.includes('↔')).join(' · ');
   t = t.replace(/\s*\((?=[^()]*(?:↔|\d|[A-Za-z]))[^()]*\)/g, '');
-  t = t.replace(/\s*↔\s*/g, ' и ');
+  t = t.replace(/\s*↔\s*/g, /[А-Яа-яЁё]/.test(t) ? ' и ' : ' and ');
   t = t.replace(/\s*[\u2013\u2014]\s*/g, ', ');
   t = t.replace(/,(\s*,)+/g, ',').replace(/\s+([,.;:])/g, '$1').replace(/\s{2,}/g, ' ').trim();
   t = t.replace(/[,;:]$/, '');

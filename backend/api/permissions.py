@@ -4,23 +4,27 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 ROLE_USER = 'user'
+# Официант заведения: в панель не ходит, в профиле у него трек персонала (уроки подачи и рассказа гостю).
+ROLE_WAITER = 'waiter'
 ROLE_SOMMELIER = 'sommelier'
 ROLE_RESTAURANT = 'restaurant_admin'
 ROLE_MODERATOR = 'moderator'
 
-GROUP_ROLES = (ROLE_SOMMELIER, ROLE_RESTAURANT, ROLE_MODERATOR)
+# По возрастанию старшинства: при нескольких группах побеждает последняя.
+GROUP_ROLES = (ROLE_WAITER, ROLE_SOMMELIER, ROLE_RESTAURANT, ROLE_MODERATOR)
 ALL_ROLES = (ROLE_USER,) + GROUP_ROLES
 
 ROLE_LABELS = {
-    ROLE_USER: 'Пользователь',
-    ROLE_SOMMELIER: 'Сомелье',
-    ROLE_RESTAURANT: 'Администратор заведения',
-    ROLE_MODERATOR: 'Модератор',
+    ROLE_USER: 'User',
+    ROLE_WAITER: 'Waiter',
+    ROLE_SOMMELIER: 'Sommelier',
+    ROLE_RESTAURANT: 'Venue admin',
+    ROLE_MODERATOR: 'Moderator',
 }
 
 
 def user_role(user):
-    """Роль пользователя: None для анонима, иначе одно из четырёх имён."""
+    """Роль пользователя: None для анонима, иначе одно из имён ALL_ROLES."""
     if user is None or not getattr(user, 'is_authenticated', False):
         return None
     if user.is_superuser:

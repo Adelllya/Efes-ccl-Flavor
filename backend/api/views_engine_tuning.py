@@ -32,7 +32,7 @@ def tuning_save(request):
     body = request.data if isinstance(request.data, dict) else {}
     overrides = body.get("overrides")
     if not isinstance(overrides, dict):
-        return Response({"detail": "overrides должен быть объектом вида {путь: число}"}, status=400)
+        return Response({"detail": "overrides must be an object of the form {path: number}"}, status=400)
     engine_tuning.save_overrides(overrides, getattr(request.user, "username", ""))
     return Response(engine_tuning.knobs_state(_data_dir()))
 

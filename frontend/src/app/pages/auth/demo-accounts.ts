@@ -11,8 +11,9 @@ export interface DemoAccount {
  * на demo-accounts.prod.ts (fileReplacements в angular.json), и паролей в бандле нет.
  */
 export const DEMO_ACCOUNTS: DemoAccount[] = [
-  { username: 'moderator', password: 'moderator12345', role: 'Модератор', hint: 'все вкладки панели' },
-  { username: 'sommelier', password: 'sommelier12345', role: 'Сомелье', hint: 'сочетания и пирамида' },
-  { username: 'restaurant', password: 'restaurant12345', role: 'Администратор заведения', hint: 'меню и блюда' },
-  { username: 'guest', password: 'guest12345', role: 'Пользователь', hint: 'только сайт и профиль' }
+  { username: 'moderator', password: 'moderator12345', role: 'Moderator', hint: 'all dashboard tabs' },
+  { username: 'sommelier', password: 'sommelier12345', role: 'Sommelier', hint: 'pairings and the pyramid' },
+  { username: 'restaurant', password: 'restaurant12345', role: 'Venue admin', hint: 'menu and dishes' },
+  { username: 'guest', password: 'guest12345', role: 'User', hint: 'site and profile only' },
+  { username: 'waiter', password: 'waiter12345', role: 'Waiter', hint: 'staff track in the profile' }
 ];

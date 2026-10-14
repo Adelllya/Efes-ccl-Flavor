@@ -1,59 +1,109 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ActiveTab } from '../models/navigation';
+import { LEGAL_AGE } from '../services/age-gate.service';
 
 /**
- * Подвал на всех страницах сайта: предупреждение о вреде алкоголя и ссылка на /privacy.
- * В меню заведения добавляется строка о том, что алкоголь подают только с 21 года.
+ * Подвал на всех страницах сайта, кроме панели: разделы, слой ответственного потребления,
+ * происхождение проекта и ссылка на /privacy. В меню заведения добавляется строка о том,
+ * что алкоголь подают только с 21 года.
  */
 @Component({
   selector: 'app-site-footer',
   standalone: true,
   template: `
     <footer class="sf">
-      <p class="sf-warning">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-        Чрезмерное употребление алкоголя вредит вашему здоровью
-      </p>
-      @if (menu) {
-        <p class="sf-line">Заказ уходит персоналу заведения. Алкоголь подают только гостям старше 21 года, могут попросить документ.</p>
-      }
-      <p class="sf-line">
-        Flavor Tree: справочник по напиткам и подбор к блюдам для гостей старше 21 года.
-        <a href="/privacy" (click)="open($event)">Конфиденциальность</a>
-      </p>
+      <div class="sf-top">
+        <div class="sf-brand">
+          <span class="sf-name">FLAVOR TREE</span>
+          <p class="sf-about">
+            We help you taste beer with intention and pair it with food. A project by participants of
+            OneIdea Championship 2026 × Efes Kazakhstan.
+          </p>
+        </div>
+        <nav class="sf-nav" aria-label="Site sections">
+          <button type="button" (click)="navigate.emit('landing')">Find a pairing</button>
+          <button type="button" (click)="navigate.emit('explorer')">Beer catalog</button>
+          <button type="button" (click)="navigate.emit('pairing')">Match a dish</button>
+          <button type="button" (click)="navigate.emit('academy')">Academy</button>
+          <button type="button" (click)="navigate.emit('passport')">Taste passport</button>
+          <button type="button" (click)="navigate.emit('menu')">Venue menus</button>
+        </nav>
+      </div>
+      <div class="sf-care">
+        <span class="sf-age" aria-hidden="true">{{ legalAge }}+</span>
+        <div>
+          <p class="sf-warning">Excessive alcohol consumption is harmful to your health</p>
+          <p>
+            This site is intended for people aged {{ legalAge }} and over. It provides information about flavor and serving culture, not advertising.
+            Never drink and drive.
+          </p>
+          @if (menu) {
+            <p>Your order goes to the venue staff. Alcohol is served only to guests aged {{ legalAge }} and over; you may be asked for ID.</p>
+          }
+          <p><a href="/privacy" (click)="open($event)">Privacy</a></p>
+        </div>
+      </div>
     </footer>
   `,
   styles: [`
+    :host { display: block; position: relative; z-index: 1; }
     .sf {
-      margin-top: var(--space-5xl);
-      padding: var(--space-xl) var(--space-lg) 0;
+      max-width: 1280px;
+      margin: var(--space-6xl) auto 0;
+      padding: var(--space-3xl) 0 calc(var(--space-3xl) + 72px);
       border-top: 1px solid var(--line);
-      text-align: center;
     }
-    .sf-warning {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-sm);
-      margin: 0 0 var(--space-sm);
-      font-size: 0.88rem;
-      font-weight: 700;
+    .sf-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2xl); margin-bottom: var(--space-2xl); }
+    .sf-brand { flex: 1 1 300px; max-width: 440px; }
+    .sf-name { font-family: var(--font-heading); font-weight: 800; letter-spacing: 0.04em; color: var(--foam); }
+    .sf-about { margin: var(--space-sm) 0 0; font-size: 0.875rem; line-height: 1.6; color: var(--muted); }
+    .sf-nav { display: grid; grid-template-columns: repeat(2, auto); gap: 0 var(--space-3xl); align-content: start; }
+    .sf-nav button {
+      min-height: 40px;
+      padding: 0;
+      border: none;
+      background: none;
       color: var(--foam-dim);
+      font: inherit;
+      font-size: 0.9375rem;
+      text-align: left;
+      cursor: pointer;
     }
-    .sf-warning svg { flex-shrink: 0; color: var(--beer-mid); }
-    .sf-line {
-      margin: 0 auto var(--space-xs);
-      max-width: 640px;
-      font-size: 0.78rem;
-      line-height: 1.5;
-      color: var(--muted);
+    .sf-nav button:hover { color: var(--beer-mid); text-decoration: underline; }
+    .sf-nav button:focus-visible { outline: 3px solid var(--beer-light); outline-offset: 2px; border-radius: 4px; }
+    .sf-care {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      background: var(--bg-1);
+      border: 1px solid var(--line);
     }
-    .sf-line a {
+    .sf-care p { margin: 0 0 var(--space-xs); font-size: 0.8125rem; line-height: 1.6; color: var(--muted); }
+    .sf-care p:last-child { margin-bottom: 0; }
+    .sf-care .sf-warning { font-size: 0.88rem; font-weight: 700; color: var(--foam-dim); }
+    .sf-care a {
       color: var(--beer-mid);
       font-weight: 600;
       white-space: nowrap;
       text-decoration: underline;
       text-underline-offset: 3px;
     }
-    .sf-line a:hover { color: var(--beer-deep); }
+    .sf-care a:hover { color: var(--beer-deep); }
+    .sf-age {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border: 2px solid var(--beer-mid);
+      border-radius: var(--radius-full);
+      color: var(--beer-deep);
+      font-weight: 800;
+      font-size: 0.8125rem;
+    }
+    @media (max-width: 600px) {
+      .sf { padding: var(--space-2xl) 0 calc(var(--space-2xl) + 88px); margin-top: var(--space-4xl); }
+      .sf-nav { grid-template-columns: 1fr 1fr; gap: 0 var(--space-lg); width: 100%; }
+    }
   `]
 })
 export class SiteFooterComponent {
@@ -61,6 +111,9 @@ export class SiteFooterComponent {
   @Input() menu = false;
   /** Переход на /privacy без перезагрузки страницы. */
   @Output() privacy = new EventEmitter<void>();
+  /** Переход в раздел сайта из подвала. */
+  @Output() navigate = new EventEmitter<ActiveTab>();
+  readonly legalAge = LEGAL_AGE;
 
   open(event: MouseEvent): void {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;

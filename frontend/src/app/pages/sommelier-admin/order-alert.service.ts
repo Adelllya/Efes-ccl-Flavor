@@ -141,7 +141,7 @@ export class OrderAlertService {
       });
     }).catch(() => {
       this.wakeActive.set(false);
-      this.wakeError.set('Браузер не дал держать экран включённым. Проверьте режим энергосбережения.');
+      this.wakeError.set('The browser won\'t keep the screen on. Check your power-saving mode.');
     });
   }
 
@@ -156,7 +156,7 @@ export class OrderAlertService {
   };
 
   private startBlink(count: number): void {
-    const alert = count > 1 ? `(${count}) Новые заказы` : '(1) Новый заказ';
+    const alert = count > 1 ? `(${count}) New orders` : '(1) New order';
     if (!this.blinkTimer) this.baseTitle = document.title;
     this.stopTimerOnly();
     this.blinkTexts = [alert, this.baseTitle];

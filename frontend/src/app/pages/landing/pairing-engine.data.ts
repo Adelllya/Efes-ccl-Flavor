@@ -7,10 +7,10 @@
    подбираем к нему сорт.
 
    Подбор двухслойный:
-   1. Если блюдо известно (dishId), первыми идут пары, которые сомелье
-      написал именно для него (своя 3/5 уступает только расчётным 5/5).
-      Иначе берём пары блюд, совпавших со всеми ответами мастера, и
-      честно подписываем, что блюдо похожее.
+   1. Если блюдо известно (dishId), первыми идут пары, написанные именно
+      для него: пары сомелье раньше пар ИИ. Иначе берём пары блюд,
+      совпавших со всеми ответами мастера, и честно подписываем, что
+      блюдо похожее.
    2. Остальные сорта считаем по правилам сочетания: вес к весу, горечь
       против жира, солод против остроты.
 
@@ -36,49 +36,49 @@ export type CategoryId =
   | 'PIZZA' | 'STREET' | 'SIDES' | 'DESSERT' | 'SNACK';
 
 export const CATEGORIES: WizardOption<CategoryId>[] = [
-  { id: 'MEAT',    emoji: '🥩', label: 'Мясо',                 hint: 'Стейк, шашлык, рёбра' },
-  { id: 'SALAD',   emoji: '🥗', label: 'Салаты',               hint: 'Овощи и зелень' },
-  { id: 'SOUP',    emoji: '🍲', label: 'Супы / Рагу',          hint: 'Горячее в тарелке' },
-  { id: 'ASIAN',   emoji: '🥢', label: 'Азиатское',            hint: 'Вок, лапша, карри' },
-  { id: 'SEAFOOD', emoji: '🐟', label: 'Рыба / Морепродукты',  hint: 'Суши, креветки, рыба' },
-  { id: 'PIZZA',   emoji: '🍕', label: 'Пицца / Паста',        hint: 'Тесто, сыр, соус' },
-  { id: 'STREET',  emoji: '🌮', label: 'Бургеры / Стритфуд',   hint: 'Бургер, тако, шаурма' },
-  { id: 'SIDES',   emoji: '🥔', label: 'Гарниры / Закуски',    hint: 'Картофель, овощи' },
-  { id: 'DESSERT', emoji: '🍰', label: 'Десерты',              hint: 'Сладкое к столу' },
-  { id: 'SNACK',   emoji: '🧀', label: 'Снеки / Тапас',        hint: 'Сыр, орехи, чипсы' },
+  { id: 'MEAT',    emoji: '🥩', label: 'Meat',                 hint: 'Steak, kebab, ribs' },
+  { id: 'SALAD',   emoji: '🥗', label: 'Salads',               hint: 'Veggies and greens' },
+  { id: 'SOUP',    emoji: '🍲', label: 'Soups / Stews',        hint: 'Hot and hearty' },
+  { id: 'ASIAN',   emoji: '🥢', label: 'Asian',                hint: 'Wok, noodles, curry' },
+  { id: 'SEAFOOD', emoji: '🐟', label: 'Fish / Seafood',       hint: 'Sushi, shrimp, fish' },
+  { id: 'PIZZA',   emoji: '🍕', label: 'Pizza / Pasta',        hint: 'Dough, cheese, sauce' },
+  { id: 'STREET',  emoji: '🌮', label: 'Burgers / Street food', hint: 'Burgers, tacos, shawarma' },
+  { id: 'SIDES',   emoji: '🥔', label: 'Sides / Starters',     hint: 'Potatoes, veggies' },
+  { id: 'DESSERT', emoji: '🍰', label: 'Desserts',             hint: 'Something sweet' },
+  { id: 'SNACK',   emoji: '🧀', label: 'Snacks / Tapas',       hint: 'Cheese, nuts, chips' },
 ];
 
 export const COOKING: WizardOption<CookingMethod>[] = [
-  { id: 'GRILLED',   emoji: '🔥', label: 'Гриль / мангал', hint: 'На углях, с корочкой' },
-  { id: 'FRIED',     emoji: '🍳', label: 'Жареное',        hint: 'На сковороде, во фритюре' },
-  { id: 'BAKED',     emoji: '🥧', label: 'Запечённое',     hint: 'Духовка, тандыр' },
-  { id: 'CURED',     emoji: '🥓', label: 'Копчёное',       hint: 'Копчение, вяление' },
-  { id: 'BOILED',    emoji: '🍜', label: 'Варёное',        hint: 'В бульоне, отварное' },
-  { id: 'STEAMED',   emoji: '♨️', label: 'На пару',        hint: 'Манты, дим-самы' },
-  { id: 'RAW',       emoji: '🍣', label: 'Сырое',          hint: 'Суши, тартар, карпаччо' },
-  { id: 'FERMENTED', emoji: '🥬', label: 'Ферментация',    hint: 'Квашеное, маринованное' },
+  { id: 'GRILLED',   emoji: '🔥', label: 'Grilled', hint: 'Over coals, charred crust' },
+  { id: 'FRIED',     emoji: '🍳', label: 'Fried',   hint: 'Pan-fried or deep-fried' },
+  { id: 'BAKED',     emoji: '🥧', label: 'Baked',   hint: 'Oven or tandoor' },
+  { id: 'CURED',     emoji: '🥓', label: 'Smoked / Cured', hint: 'Smoked or dry-cured' },
+  { id: 'BOILED',    emoji: '🍜', label: 'Boiled',  hint: 'Simmered in broth' },
+  { id: 'STEAMED',   emoji: '♨️', label: 'Steamed', hint: 'Manti, dim sum' },
+  { id: 'RAW',       emoji: '🍣', label: 'Raw',     hint: 'Sushi, tartare, carpaccio' },
+  { id: 'FERMENTED', emoji: '🥬', label: 'Fermented', hint: 'Pickled or marinated' },
 ];
 
 export const TASTES: WizardOption<TasteType>[] = [
-  { id: 'UMAMI', emoji: '🍄', label: 'Мясное · умами', hint: 'Насыщенный бульонный вкус' },
-  { id: 'SALTY', emoji: '🧂', label: 'Солёное',        hint: 'Соль на первом плане' },
-  { id: 'SPICY', emoji: '🌶️', label: 'Острое',         hint: 'Перец, жгучесть' },
-  { id: 'SWEET', emoji: '🍯', label: 'Сладкое',        hint: 'Сахар, мёд, глазурь' },
-  { id: 'SOUR',  emoji: '🍋', label: 'Кислое',         hint: 'Лимон, уксус, маринад' },
-  { id: 'BITTER', emoji: '🌿', label: 'Горькое',       hint: 'Руккола, грейпфрут, какао' },
-  { id: 'MIXED', emoji: '🎭', label: 'Всего понемногу', hint: 'Сложный сборный вкус' },
+  { id: 'UMAMI', emoji: '🍄', label: 'Savory · umami', hint: 'Rich, brothy depth' },
+  { id: 'SALTY', emoji: '🧂', label: 'Salty',   hint: 'Salt takes the lead' },
+  { id: 'SPICY', emoji: '🌶️', label: 'Spicy',   hint: 'Chili and heat' },
+  { id: 'SWEET', emoji: '🍯', label: 'Sweet',   hint: 'Sugar, honey, glaze' },
+  { id: 'SOUR',  emoji: '🍋', label: 'Sour',    hint: 'Lemon, vinegar, marinade' },
+  { id: 'BITTER', emoji: '🌿', label: 'Bitter', hint: 'Arugula, grapefruit, cocoa' },
+  { id: 'MIXED', emoji: '🎭', label: 'A bit of everything', hint: 'Complex, layered flavor' },
 ];
 
 export const WEIGHTS: WizardOption<WeightType>[] = [
-  { id: 'LIGHT',  emoji: '🪶', label: 'Лёгкое',  hint: 'Съедается незаметно' },
-  { id: 'MEDIUM', emoji: '⚖️', label: 'Среднее', hint: 'Обычная порция' },
-  { id: 'HEAVY',  emoji: '🪨', label: 'Тяжёлое', hint: 'Сытное, после него тянет отдохнуть' },
+  { id: 'LIGHT',  emoji: '🪶', label: 'Light',  hint: 'Barely fills you up' },
+  { id: 'MEDIUM', emoji: '⚖️', label: 'Medium', hint: 'A regular portion' },
+  { id: 'HEAVY',  emoji: '🪨', label: 'Heavy', hint: 'Filling, nap-worthy' },
 ];
 
 export const FATS: WizardOption<FatType>[] = [
-  { id: 'LOW',    emoji: '', label: 'Постное' },
-  { id: 'MEDIUM', emoji: '', label: 'Умеренно жирное' },
-  { id: 'HIGH',   emoji: '', label: 'Жирное' },
+  { id: 'LOW',    emoji: '', label: 'Lean' },
+  { id: 'MEDIUM', emoji: '', label: 'Moderately rich' },
+  { id: 'HIGH',   emoji: '', label: 'Rich / fatty' },
 ];
 
 /** Ответы пользователя. Любой шаг можно пропустить - тогда поле пустое. */
@@ -90,36 +90,13 @@ export interface DishProfile {
   fat: FatType | null;
   /** Что человек вписал руками, если не нашёл свой вариант. */
   freeText: string;
-  /** Блюдо из каталога сомелье, если человек назвал его точно: тогда пары сомелье берём только его. */
+  /** id блюда каталога, если гость назвал его точно: тогда первыми идут его собственные пары. */
   dishId?: string | null;
 }
 
 export const emptyProfile = (): DishProfile => ({
-  category: null, cooking: null, taste: null, weight: null, fat: null, freeText: '',
+  category: null, cooking: null, taste: null, weight: null, fat: null, freeText: '', dishId: null,
 });
-
-/* Шаги мастера по порядку. Лежат здесь, а не в dish-wizard: главная знает последний шаг,
-   не загружая сам мастер (он приходит отдельным чанком, @defer в landing) */
-
-export interface WizardStep {
-  key: keyof DishProfile;
-  title: string;
-  accent: string;
-  sub: string;
-  options: WizardOption[];
-  /** Первый шаг нельзя пропустить: без категории подбирать не от чего. */
-  skippable: boolean;
-}
-
-export const WIZARD_STEPS: WizardStep[] = [
-  { key: 'category', title: 'Что ты', accent: 'ешь?', sub: 'Выбери категорию блюда', options: CATEGORIES, skippable: false },
-  { key: 'cooking', title: 'Как это', accent: 'приготовлено?', sub: 'Огонь, пар или сырое - способ меняет вкус сильнее, чем кажется', options: COOKING, skippable: true },
-  { key: 'taste', title: 'Какой вкус', accent: 'главный?', sub: 'Тот, что чувствуется первым, ещё до остальных', options: TASTES, skippable: true },
-  { key: 'weight', title: 'Насколько', accent: 'сытное?', sub: 'От веса блюда зависит плотность сорта - лёгкое к лёгкому, тяжёлое к тяжёлому', options: WEIGHTS, skippable: true },
-];
-
-/** Последний шаг мастера: на него возвращает «Изменить ответы» из результата. */
-export const LAST_STEP = WIZARD_STEPS.length - 1;
 
 /** Человеческое название блюда по ответам - для заголовка результата. */
 export function profileTitle(p: DishProfile): string {
@@ -127,7 +104,7 @@ export function profileTitle(p: DishProfile): string {
   const parts: string[] = [];
   if (p.cooking) parts.push(COOKING.find(c => c.id === p.cooking)!.label.toLowerCase());
   if (p.category) parts.push(CATEGORIES.find(c => c.id === p.category)!.label.toLowerCase());
-  return parts.length ? parts.join(' · ') : 'ваше блюдо';
+  return parts.length ? parts.join(' · ') : 'your dish';
 }
 
 /* Профиль сорта */
@@ -178,12 +155,24 @@ const NOTE_WEIGHTS: { test: RegExp; field: keyof BeerProfile; k: number }[] = [
   { test: /рисов|лёгк|легк|воздуш|rice/i,         field: 'freshness',  k: 0.6 },
 ];
 
+const PROFILE_KEYS: (keyof BeerProfile)[] = ['body', 'bitterness', 'freshness', 'sweetness', 'roast', 'strength'];
+
 /**
  * Профиль сорта: основа от стиля, поправка от крепости, уточнение - от
  * вкусовой пирамиды, если сомелье её уже заполнил.
  */
 export function beerProfile(brand: Brand): BeerProfile {
-  const style = `${brand.style ?? ''} ${brand.name ?? ''} ${brand.density ?? ''}`;
+  // Сервер уже свёл стиль, крепость и пирамиду в шесть шкал. В списке сортов
+  // пирамиды нет, поэтому без готового профиля лагеры выходили одинаковыми.
+  const ready = brand.taste_profile;
+  if (ready && PROFILE_KEYS.every(k => Number.isFinite(ready[k]))) {
+    const p = { ...NEUTRAL };
+    for (const k of PROFILE_KEYS) p[k] = clamp10(ready[k]);
+    return p;
+  }
+
+  // Плотность в строку стиля не берём: "10.0%" совпадало с правилом безалкогольного "0.0"
+  const style = `${brand.style ?? ''} ${brand.name ?? ''}`;
   const rule = STYLE_RULES.find(r => r.test.test(style));
   const p: BeerProfile = { ...(rule ? rule.base : NEUTRAL) };
 
@@ -215,23 +204,23 @@ interface Verdict {
 
 /** Словами о плотности тела - для подписи под шкалой. */
 export function bodyLabel(body: number): string {
-  if (body <= 3.5) return 'лёгкое';
-  if (body <= 6.5) return 'среднее';
-  return 'плотное';
+  if (body <= 3.5) return 'light';
+  if (body <= 6.5) return 'medium';
+  return 'full';
 }
 
 /** Ключевые слова категории - по ним ищем похожие блюда в базе. */
 const CATEGORY_MATCH: Record<CategoryId, { words: RegExp; cuisines?: CuisineType[] }> = {
-  MEAT:    { words: /мяс|стейк|шашлык|рёбр|ребр|казы|куырдак|шницел|бешбармак|колбас|бекон/i },
-  SALAD:   { words: /салат|овощ|зелен|зелён/i },
-  SOUP:    { words: /суп|рагу|бульон|сорпа|лапша|том ям|шурпа/i },
-  ASIAN:   { words: /азиат|вок|лапша|карри|димсам|дим-сам|темпура|рамен/i, cuisines: ['JAPANESE'] },
-  SEAFOOD: { words: /рыб|морепрод|суши|креветк|лосос|тунец|мидии|краб/i },
-  PIZZA:   { words: /пицц|паст|спагетт|лазан|тест|фокачч/i, cuisines: ['ITALIAN'] },
-  STREET:  { words: /бургер|тако|шаурм|хот-?дог|сэндвич|стритфуд|самса|донер/i },
-  SIDES:   { words: /гарнир|картоф|фри|овощ|рис|пюре|закуск/i },
-  DESSERT: { words: /десерт|торт|пирож|шокол|мороже|чизкейк|тирамису|сладк/i },
-  SNACK:   { words: /снек|тапас|сыр|орех|чипс|брецел|крендел|сухар/i },
+  MEAT:    { words: /мяс|стейк|шашлык|рёбр|ребр|казы|куырдак|шницел|бешбармак|колбас|бекон|meat|steak|kebab|rib|kazy|kuyrdak|schnitzel|beshbarmak|sausage|bacon/i },
+  SALAD:   { words: /салат|овощ|зелен|зелён|salad|veg|green/i },
+  SOUP:    { words: /суп|рагу|бульон|сорпа|лапша|том ям|шурпа|soup|stew|broth|sorpa|noodle|tom yum|shurpa/i },
+  ASIAN:   { words: /азиат|вок|лапша|карри|димсам|дим-сам|темпура|рамен|asian|wok|noodle|curry|dim ?sum|tempura|ramen/i, cuisines: ['JAPANESE'] },
+  SEAFOOD: { words: /рыб|морепрод|суши|креветк|лосос|тунец|мидии|краб|fish|seafood|sushi|shrimp|prawn|salmon|tuna|mussel|crab/i },
+  PIZZA:   { words: /пицц|паст|спагетт|лазан|тест|фокачч|pizza|pasta|spaghetti|lasagn|dough|focaccia/i, cuisines: ['ITALIAN'] },
+  STREET:  { words: /бургер|тако|шаурм|хот-?дог|сэндвич|стритфуд|самса|донер|burger|taco|shawarma|hot-?dog|sandwich|street ?food|samsa|doner/i },
+  SIDES:   { words: /гарнир|картоф|фри|овощ|рис|пюре|закуск|side|potato|fries|veg|rice|mash|starter|appetizer/i },
+  DESSERT: { words: /десерт|торт|пирож|шокол|мороже|чизкейк|тирамису|сладк|dessert|cake|pastr|chocolate|ice cream|cheesecake|tiramisu|sweet/i },
+  SNACK:   { words: /снек|тапас|сыр|орех|чипс|брецел|крендел|сухар|snack|tapas|cheese|nut|chips|pretzel|crouton/i },
 };
 
 /** Насколько блюдо из базы похоже на ответы пользователя: 0-1. */
@@ -258,6 +247,12 @@ const WEIGHT_TARGET: Record<WeightType, number> = { LIGHT: 3, MEDIUM: 5.5, HEAVY
 const FAT_LOAD: Record<FatType, number> = { LOW: 0, MEDIUM: 1, HIGH: 2 };
 
 /**
+ * До такой разницы тело сорта и вес блюда считаем совпавшими. Порог один
+ * для объяснения в карточке и для подписи под шкалами, иначе они спорят.
+ */
+export const BODY_MATCH_GAP = 1.5;
+
+/**
  * Совместимость сорта с профилем блюда.
  * Каждое правило даёт баллы и фразу-объяснение. В карточке показываем
  * одну-две самые весомые фразы, чтобы ответ читался, а не считался.
@@ -278,19 +273,19 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
     const gap = Math.abs(b.body - target);
     score += (2.5 - gap) * 9;
 
-    if (gap <= 1.5 && p.weight === 'HEAVY') {
-      reasons.push({ weight: 9, text: 'Плотное тело сорта держит вес сытного блюда и не теряется рядом с ним' });
+    if (gap <= BODY_MATCH_GAP && p.weight === 'HEAVY') {
+      reasons.push({ weight: 9, text: 'A full-bodied beer stands up to a hearty dish without getting lost' });
       setType('COMPLEMENT', 5);
-    } else if (gap <= 1.5 && p.weight === 'LIGHT') {
-      reasons.push({ weight: 9, text: 'Лёгкое тело не перебивает деликатный вкус - блюдо остаётся главным' });
+    } else if (gap <= BODY_MATCH_GAP && p.weight === 'LIGHT') {
+      reasons.push({ weight: 9, text: 'A light body won’t overpower delicate flavors, so the dish stays the star' });
       setType('COMPLEMENT', 5);
-    } else if (gap <= 1.5) {
-      reasons.push({ weight: 7, text: 'Тело сорта совпадает по весу с блюдом - ни один не перетягивает внимание' });
+    } else if (gap <= BODY_MATCH_GAP) {
+      reasons.push({ weight: 7, text: 'The beer matches the dish in weight, so neither one steals the show' });
       setType('COMPLEMENT', 4);
     } else if (gap > 3.5) {
       reasons.push({ weight: 2, text: p.weight === 'HEAVY'
-        ? 'Сорт легче блюда: он освежит, но не составит ему компанию по плотности'
-        : 'Сорт плотнее блюда - держите его на второй глоток, после еды' });
+        ? 'Lighter than the dish: it refreshes, but won’t match its weight'
+        : 'Heavier than the dish, so save it for after the meal' });
     }
   }
 
@@ -304,7 +299,7 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
     const cleansing = (b.bitterness + b.freshness) / 2;
     score += (cleansing - 4) * 3.2 * Math.min(fatLoad, 4) / 2;
     if (cleansing >= 6) {
-      reasons.push({ weight: 10, text: 'Горчинка и живая карбонизация смывают жир и обновляют вкус перед каждым новым куском' });
+      reasons.push({ weight: 10, text: 'Bitterness and lively carbonation cut through fat and reset your palate for every bite' });
       setType('CLEANSE', 6);
     }
   }
@@ -314,10 +309,10 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
     score -= b.bitterness * 2.2 + b.strength * 1.8;
     score += b.sweetness * 2.4 + b.freshness * 2.0;
     if (b.bitterness <= 5 && b.strength <= 6) {
-      reasons.push({ weight: 10, text: 'Мягкий солод и низкая горечь гасят остроту - хмель и крепость её бы только разогнали' });
+      reasons.push({ weight: 10, text: 'Soft malt and low bitterness tame the heat, where hops and alcohol would only fan it' });
       setType('CONTRAST', 7);
     } else {
-      reasons.push({ weight: 3, text: 'Горечь и крепость сорта подчеркнут жгучесть - берите только если любите поострее' });
+      reasons.push({ weight: 3, text: 'Its bitterness and strength will amplify the heat. Pick it only if you like it hot' });
     }
   }
 
@@ -325,16 +320,20 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
   if (p.taste === 'SWEET' || p.category === 'DESSERT') {
     score += (b.sweetness - 4) * 3.6 + (b.roast - 2) * 2.2 - Math.max(0, b.bitterness - 5) * 2.4;
     if (b.sweetness >= 5 || b.roast >= 4) {
-      reasons.push({ weight: 9, text: 'Карамельный и жжёный солод перекликаются со сладостью десерта, не споря с ней' });
+      reasons.push({ weight: 9, text: 'Caramel and roasted malt echo the dessert’s sweetness without fighting it' });
       setType('COMPLEMENT', 6);
     }
   }
 
   // 5. Мясо, гриль и копчение: у корочки и тёмного солода общая нота.
-  if (p.taste === 'UMAMI' || p.category === 'MEAT' || p.cooking === 'GRILLED' || p.cooking === 'CURED') {
+  // Деликатное умами (суши, блюда на пару, лёгкие закуски) сюда не относится: ему плотный сорт только мешает.
+  // То же правило стоит в backend/api/pairing_rules.py: подбор на сайте и на сервере должен совпадать.
+  const delicate = p.cooking === 'RAW' || p.cooking === 'STEAMED' || p.category === 'SALAD' || p.category === 'SEAFOOD'
+    || p.weight === 'LIGHT';
+  if ((p.taste === 'UMAMI' && !delicate) || p.category === 'MEAT' || p.cooking === 'GRILLED' || p.cooking === 'CURED') {
     score += (b.body - 4) * 2.4 + (b.roast - 1) * 2.0 + (b.sweetness - 3) * 1.4;
     if (b.roast >= 3 || b.sweetness >= 5) {
-      reasons.push({ weight: 8, text: 'Поджаренный солод повторяет карамельную корочку с огня - вкусы сходятся в одной ноте' });
+      reasons.push({ weight: 8, text: 'Toasted malt mirrors the caramelized char from the fire, so the flavors meet in one note' });
       setType('BRIDGE', 6);
     }
   }
@@ -343,7 +342,7 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
   if (p.cooking === 'RAW' || p.cooking === 'STEAMED' || p.category === 'SALAD' || p.category === 'SEAFOOD') {
     score += (b.freshness - 4) * 3.4 - Math.max(0, b.body - 5) * 2.6 - Math.max(0, b.roast - 2) * 2.2;
     if (b.freshness >= 6 && b.body <= 5) {
-      reasons.push({ weight: 9, text: 'Чистое сухое тело не забивает деликатный вкус и освежает между кусочками' });
+      reasons.push({ weight: 9, text: 'A clean, dry body keeps delicate flavors intact and refreshes between bites' });
       setType('COMPLEMENT', 5);
     }
   }
@@ -352,7 +351,7 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
   if (p.taste === 'SALTY' || p.category === 'SNACK') {
     score += (b.freshness - 4) * 2.6 + (b.bitterness - 3) * 1.8;
     if (b.freshness >= 6) {
-      reasons.push({ weight: 8, text: 'Сухой финиш смывает соль и снова открывает аппетит - классика барной закуски' });
+      reasons.push({ weight: 8, text: 'A dry finish washes away the salt and brings your appetite back. A bar-snack classic' });
       setType('CLEANSE', 5);
     }
   }
@@ -361,7 +360,7 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
   if (p.taste === 'SOUR' || p.cooking === 'FERMENTED') {
     score += (b.freshness - 4) * 2.8 - Math.max(0, b.bitterness - 6) * 2.4;
     if (b.freshness >= 6 && b.bitterness <= 6) {
-      reasons.push({ weight: 7, text: 'Свежесть сорта подхватывает кислинку блюда, а мягкая горечь не даёт ей стать резкой' });
+      reasons.push({ weight: 7, text: 'Its crispness picks up the dish’s tang, while gentle bitterness keeps it from turning sharp' });
       setType('BRIDGE', 4);
     }
   }
@@ -371,7 +370,7 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
     score -= Math.max(0, b.bitterness - 4) * 2.8;
     score += (b.sweetness - 3) * 2.4;
     if (b.bitterness <= 5) {
-      reasons.push({ weight: 7, text: 'Низкая горечь сорта уравновешивает горчинку блюда, а не удваивает её' });
+      reasons.push({ weight: 7, text: 'Low bitterness balances the dish’s bitter edge instead of doubling it' });
       setType('CONTRAST', 5);
     }
   }
@@ -380,14 +379,14 @@ export function scoreBeer(brand: Brand, p: DishProfile): Verdict {
   if (p.category === 'SOUP') {
     score += (b.bitterness - 3) * 1.8 + (b.freshness - 4) * 1.6;
     if (b.bitterness >= 5) {
-      reasons.push({ weight: 6, text: 'Выраженная горчинка слышна даже после ложки горячего бульона' });
+      reasons.push({ weight: 6, text: 'A pronounced bitterness that still comes through after a spoonful of hot broth' });
       setType('CONTRAST', 4);
     }
   }
 
   // Ничего не сработало - скажем честно, на чём держится совет.
   if (!reasons.length) {
-    reasons.push({ weight: 1, text: 'Универсальный сбалансированный сорт: не спорит с блюдом и подойдёт как нейтральная пара' });
+    reasons.push({ weight: 1, text: 'A versatile, balanced beer that won’t clash with the dish. A safe, neutral pairing' });
   }
 
   return { score: Math.max(0, Math.min(100, score)), type, reasons };
@@ -408,9 +407,11 @@ export interface Recommendation {
   explanation: string;
   /** Дополнительная фраза, если правил сработало несколько. */
   extra?: string;
-  /** true - оценку поставил человек, а не алгоритм. */
+  /** true - оценку поставил сомелье, а не алгоритм. */
   bySommelier: boolean;
-  /** Блюдо из базы, на котором основан совет сомелье. */
+  /** true - пару предложил ИИ, сомелье её ещё не подтвердил: оценкой сомелье её называть нельзя. */
+  byAi: boolean;
+  /** Блюдо из базы, для которого написана пара. */
   basedOn?: string;
 }
 
@@ -452,10 +453,32 @@ function closeDishes(profile: DishProfile, dishes: Dish[]): Map<string, Dish> {
   return new Map(dishes.filter(d => dishAffinity(d, profile) === 1).map(d => [d.id, d]));
 }
 
+/** Пару предложил ИИ; без пометки источника считаем её парой сомелье. */
+const isAi = (p: FoodPairing) => p.source === 'AI';
+
+/** Какая из двух пар одного сорта важнее: пара сомелье раньше пары ИИ, при равном источнике решает оценка. */
+const beats = (a: FoodPairing, b: FoodPairing) =>
+  isAi(a) === isAi(b) ? a.compatibility_score > b.compatibility_score : !isAi(a);
+
+/** Собственная пара блюда слабее этой оценки первой не встаёт: тройка - уже рабочая пара. */
+const OWN_MIN_RATING = 3;
+
+interface Scored {
+  rec: Recommendation;
+  /** Сырые баллы расчёта 0-100: порядок среди карточек с одинаковым числом делений. */
+  score: number;
+  /** 0 - пара сомелье для этого блюда, 1 - пара ИИ для него же, 2 - всё остальное. */
+  tier: number;
+}
+
 /**
  * Подбор сортов под ответы мастера или под известное блюдо.
- * Пара сомелье забирает текст объяснения и показывает ровно ту оценку,
- * что поставил человек. Для известного блюда берём только его пары.
+ *
+ * Если гость назвал блюдо из каталога, первыми идут его собственные пары:
+ * оценка и слова как в базе, пары сомелье раньше пар ИИ. Остальные места
+ * заполняет расчёт. Пара блюда, совпавшего со всеми ответами, даёт в нём
+ * весомую прибавку, забирает текст объяснения и показывает ровно ту
+ * оценку, что стоит в базе.
  */
 export function recommend(
   profile: DishProfile,
@@ -464,64 +487,104 @@ export function recommend(
   pairings: FoodPairing[],
   limit = 4,
 ): Recommendation[] {
-  const dishId = profile.dishId ?? null;
-  const similar = dishId ? new Map<string, Dish>() : closeDishes(profile, dishes);
+  const ownId = profile.dishId || null;
+  // Для известного блюда пары похожих блюд не берём: у него есть свои.
+  const similar = ownId ? new Map<string, Dish>() : closeDishes(profile, dishes);
 
-  // Лучшая авторская пара для каждого сорта: своя у блюда или у совпавшего блюда.
-  const expert = new Map<string, { pairing: FoodPairing; own: boolean; dishName: string }>();
+  // Собственные пары блюда и лучшая авторская пара для каждого сорта среди совпавших блюд.
+  const own = new Map<string, FoodPairing>();
+  const expert = new Map<string, { pairing: FoodPairing; dishName: string }>();
   for (const p of pairings) {
-    const own = !!dishId && p.dish === dishId;
+    if (ownId && p.dish === ownId) {
+      const prev = own.get(p.brand);
+      if (!prev || beats(p, prev)) own.set(p.brand, p);
+      continue;
+    }
     const close = similar.get(p.dish);
-    if (!own && !close) continue;
+    if (!close) continue;
     const prev = expert.get(p.brand);
-    if (!prev || p.compatibility_score > prev.pairing.compatibility_score) {
-      expert.set(p.brand, { pairing: p, own, dishName: close?.name ?? '' });
+    if (!prev || beats(p, prev.pairing)) {
+      expert.set(p.brand, { pairing: p, dishName: close.name });
     }
   }
 
+  const targetBody = profile.weight ? WEIGHT_TARGET[profile.weight] : null;
+
   const scored = brands
     .filter(b => b.is_active !== false)
-    .map(brand => {
+    .map((brand): Scored => {
       const verdict = scoreBeer(brand, profile);
-      const hit = expert.get(brand.id);
-      const sommelier = hit?.pairing.compatibility_score ?? 0;
+      const sorted = [...verdict.reasons].sort((a, b) => b.weight - a.weight);
+      const body = beerProfile(brand).body;
 
-      let score = verdict.score;
-      if (hit?.own && sommelier >= 4) {
-        // Своя пара сомелье идёт первой, между собой такие пары - по оценке человека
-        score = 1000 + sommelier * 20 + verdict.score / 100;
-      } else if (hit?.own && sommelier === 3) {
-        // Своя 3/5 уступает только расчётным 5/5 (round5: от 90 баллов), иначе «Лучший выбор» был бы 3/5 над 5/5
-        score = 89.5 + verdict.score / 1000;
-      } else if (hit?.own) {
-        // Низкую оценку сомелье не поднимаем выше расчёта
-        score = Math.min(verdict.score, sommelier * 20);
-      } else if (hit) {
-        // Пара похожего блюда: оценка 1-5 даёт до 45 баллов
-        score = score * 0.55 + (sommelier * 20) * 0.45 + 10;
+      // Собственная пара блюда: оценка и слова как в базе, пара другого блюда её не подменяет.
+      const mine = own.get(brand.id);
+      if (mine) {
+        const ai = isAi(mine);
+        const rating = Math.max(1, Math.min(5, Math.round(mine.compatibility_score)));
+        // Расчётную фразу добавляем, только когда она в пользу пары: спорить с оценкой блюда ей нельзя
+        const support = sorted[0].weight >= 6 ? sorted[0].text : undefined;
+        const rec: Recommendation = {
+          brand,
+          body,
+          targetBody,
+          rating,
+          type: mine.pairing_type,
+          explanation: mine.explanation || sorted[0].text,
+          extra: mine.explanation ? support : sorted[1]?.text,
+          bySommelier: !ai,
+          byAi: ai,
+          // Пара написана для этого самого блюда: подпись «по похожему блюду» не нужна
+          basedOn: undefined,
+        };
+        // Низкую оценку не поднимаем выше расчёта
+        const score = rating < OWN_MIN_RATING ? Math.min(verdict.score, rating * 20) : verdict.score;
+        return { rec, score, tier: rating < OWN_MIN_RATING ? 2 : ai ? 1 : 0 };
       }
 
-      const sorted = [...verdict.reasons].sort((a, b) => b.weight - a.weight);
+      const hit = expert.get(brand.id);
+      const expertRating = hit ? Math.max(1, Math.min(5, Math.round(hit.pairing.compatibility_score))) : 0;
 
+      let score = verdict.score;
+      if (hit) {
+        // Пара похожего блюда: оценка 1-5 даёт до 45 баллов
+        score = score * 0.55 + (expertRating * 20) * 0.45 + 10;
+      }
+
+      const ai = !!hit && isAi(hit.pairing);
       const rec: Recommendation = {
         brand,
-        body: beerProfile(brand).body,
-        targetBody: profile.weight ? WEIGHT_TARGET[profile.weight] : null,
-        rating: hit ? sommelier : round5(score),
+        body,
+        targetBody,
+        rating: hit ? expertRating : round5(score),
         type: hit ? hit.pairing.pairing_type : verdict.type,
         explanation: hit?.pairing.explanation || sorted[0].text,
         extra: hit ? sorted[0].text : sorted[1]?.text,
-        bySommelier: !!hit,
-        basedOn: hit && !hit.own ? hit.dishName : undefined,
+        bySommelier: !!hit && !ai,
+        byAi: ai,
+        basedOn: hit?.dishName,
       };
-      return { rec, score, own: !!hit?.own };
-    })
-    .sort((a, b) => b.score - a.score);
+      return { rec, score, tier: 2 };
+    });
 
-  // Крепкое пиво не ставим первым, если сорт обычной крепости почти не уступает
+  // Сначала собственные пары блюда, дальше по числу делений в карточке и только потом по сырым
+  // баллам: при сортировке по баллам "лучший выбор" мог показать меньше делений, чем альтернатива.
+  const order = (a: Scored, b: Scored) => a.tier - b.tier || b.rec.rating - a.rec.rating || b.score - a.score;
+  scored.sort(order);
+
+  // Первой стоит пара самого блюда: остальным карточкам делений больше, чем у неё, не показываем.
+  const lead = scored[0];
+  if (lead && lead.tier < 2) {
+    for (const x of scored) x.rec.rating = Math.min(x.rec.rating, lead.rec.rating);
+    scored.sort(order);
+    return scored.slice(0, limit).map(x => x.rec);
+  }
+
+  // Пары самого блюда нет, порядок задаёт расчёт.
+  // Крепкое пиво не ставим первым, если сорт обычной крепости почти не уступает.
   const ordered = softenStrong(scored, x => x.score, x => strongBrand(x.rec.brand));
-  // Расчёт по правилам грубее движка, поэтому первым крепкое идёт, только если его выбрал сомелье для этого блюда
-  if (ordered.length > 1 && strongBrand(ordered[0].rec.brand) && !ordered[0].own) {
+  // Расчёт по правилам грубее движка, поэтому первым крепкое не идёт совсем, если есть обычное
+  if (ordered.length > 1 && strongBrand(ordered[0].rec.brand)) {
     const mild = ordered.findIndex(x => !strongBrand(x.rec.brand));
     if (mild > 0) ordered.unshift(...ordered.splice(mild, 1));
   }
@@ -536,6 +599,21 @@ export function findDish(dishes: Dish[], text: string): Dish | null {
   return dishes.find(d => norm(d.name) === q)
     ?? dishes.find(d => norm(d.name).includes(q))
     ?? null;
+}
+
+/* Числа в карточке сорта */
+
+/** Число по-русски: дробная часть через запятую, без хвоста нулей ("4,5", "5"). */
+export function decimal(n: number): string {
+  return String(Math.round(n * 100) / 100);
+}
+
+/**
+ * Крепость как "4,5 %" (пробел неразрывный). null - крепость не указана;
+ * ноль - тоже значение: так записано безалкогольное.
+ */
+export function abvText(abv: number | null | undefined): string | null {
+  return typeof abv === 'number' && Number.isFinite(abv) ? `${decimal(abv)}%` : null;
 }
 
 /* Картинки сорта */

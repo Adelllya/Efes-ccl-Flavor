@@ -12,18 +12,18 @@ export class ProblemComponent {
   problems = [
     {
       icon: '🎯',
-      title: '72% выбирают по цене',
-      text: 'Потребители не умеют объяснить, почему им нравится конкретное пиво. Выбор - привычка, не вкус.'
+      title: 'Chosen by habit and price',
+      text: 'Consumers can\'t explain why they like a particular beer. The choice is habit, not taste.'
     },
     {
       icon: '🍺',
-      title: '15+ брендов - 0 различий',
-      text: 'Efes KZ имеет более 15 уникальных брендов, но потребитель не видит разницы между ними.'
+      title: '15+ brands, 0 differences',
+      text: 'Efes KZ has more than 15 distinct brands, but consumers can\'t tell them apart.'
     },
     {
       icon: '📊',
-      title: 'Нет платформ в СНГ',
-      text: 'RateBeer закрылся в 2025. Untappd - просто рейтинги. Ноль сенсорного образования.'
+      title: 'No platforms in the CIS',
+      text: 'RateBeer shut down in 2025. Untappd is just ratings. Zero sensory education.'
     }
   ];
 }

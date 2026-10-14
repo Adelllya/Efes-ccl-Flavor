@@ -1,25 +1,22 @@
-import { Component, ElementRef, EventEmitter, Output, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, EventEmitter, Injector, Output, afterNextRender, computed, effect, inject, input, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Brand, Dish, FoodIcon, FoodPairing, PAIRING_LABELS, PairingType } from '../../models/flavor-tree.models';
 import { COOKING, TASTES, CATEGORIES, bigImage, smallImage } from './pairing-engine.data';
-import { matchesSearch } from '../../services/search-text';
 
 const PAIRING_HINT: Record<string, string> = {
-  COMPLEMENT: 'Похожие вкусы усиливают друг друга',
-  CONTRAST: 'Противоположности уравновешиваются',
-  CLEANSE: 'Пиво освежает после тяжёлого или острого',
-  BRIDGE: 'У пива и блюда есть общая нота',
+  COMPLEMENT: 'Similar flavors amplify each other',
+  CONTRAST: 'Opposites balance each other out',
+  CLEANSE: 'Beer refreshes after rich or spicy food',
+  BRIDGE: 'The beer and the dish share a common note',
 };
-
-/** Телефон боком: шапка сайта на таком экране не липнет (styles.css), прокрутку считаем от края экрана. */
-const LOW_SCREEN = '(max-height: 500px) and (max-width: 768px), (max-height: 500px) and (pointer: coarse)';
-/** Отступ от верха экрана после прокрутки на низком экране (--space-md). */
-const TOP_GAP = 12;
 
 interface PairCard {
   pairing: FoodPairing;
   label: string;
   hint: string;
   photo: string | null;
+  /** Значок первой характеристики блюда: стоит в кружке, пока у блюда нет фото. */
+  emoji: string;
   marks: { key: string; label: string; emoji: string; image: string | null }[];
 }
 
@@ -34,48 +31,50 @@ interface PairCard {
 @Component({
   selector: 'app-beer-pairings',
   standalone: true,
-  // FormsModule не подключаем: поле читаем через (input), как в hero. Витрина приходит отдельным чанком
-  // (@defer в landing), и главной не нужно тянуть за ней ещё и чанк форм
+  imports: [FormsModule],
   template: `
     <div class="bp">
       <div class="bp-head">
         <button type="button" class="bp-back" (click)="goBack()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          {{ selected() ? 'Выбрать другой сорт' : 'Назад' }}
+          {{ selected() ? 'Pick another beer' : 'Back' }}
         </button>
 
-        <nav class="bp-bar" aria-label="Шаги подбора">
+        <nav class="bp-bar" aria-label="Pairing steps">
           <span class="bp-seg" [class.on]="!selected()" [class.done]="!!selected()"></span>
           <span class="bp-seg" [class.on]="!!selected()"></span>
         </nav>
 
-        <span class="bp-step">Шаг {{ selected() ? 2 : 1 }} из 2</span>
+        <span class="bp-step">Step {{ selected() ? 2 : 1 }} of 2</span>
       </div>
 
+      @if (failed()) {
+        <div class="bp-none" role="alert">
+          <p class="text-dim mb-lg">Couldn't load the catalog. Check your connection and try again.</p>
+          <button type="button" class="btn-amber btn-sm" (click)="retry.emit()">Retry</button>
+        </div>
+      } @else {
       <!-- ── Шаг 1: витрина сортов ── -->
       @if (!selected()) {
         <header class="bp-ask">
-          <h2 class="section-header">Что у тебя <span class="bp-accent">в бокале?</span></h2>
-          <p class="section-subtitle">Выбери сорт - покажем блюда, которые к нему подходят, и объясним почему</p>
+          <h2 class="section-header">What's in <span class="bp-accent">your glass?</span></h2>
+          <p class="section-subtitle">Pick a beer and we'll show you the dishes that match it, and why</p>
         </header>
 
         <div class="bp-find">
           <svg class="bp-find-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <label class="sr-only" for="bp-search">Поиск сорта</label>
+          <label class="sr-only" for="bp-search">Search beers</label>
           <input
             id="bp-search"
             class="input bp-input"
             type="search"
-            enterkeyhint="search"
-            placeholder="Efes Pilsener, Kozel, Хмельной Лось…"
-            [value]="query()"
-            (input)="query.set($any($event.target).value)"
-            (focus)="liftField($event)"
-            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Efes Pilsener, Kozel…"
+            [ngModel]="query()"
+            (ngModelChange)="query.set($event)"
           />
         </div>
 
-        <div class="bp-packs" role="group" aria-label="Тип упаковки">
+        <div class="bp-packs" role="group" aria-label="Package type">
           @for (p of packs; track p.id) {
             <button type="button" class="bp-pack" [class.on]="pack() === p.id" (click)="pack.set(p.id)">{{ p.label }}</button>
           }
@@ -83,9 +82,9 @@ interface PairCard {
 
         @if (!visible().length) {
           @if (loaded()) {
-            <p class="bp-empty">Такого сорта не нашли. Проверьте написание или уберите фильтр.</p>
+            <p class="bp-empty">No beer found. Check the spelling or clear the filter.</p>
           } @else {
-            <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сорта">
+            <div class="skeleton-grid" aria-busy="true" aria-label="Loading beers">
               @for (i of skeletonCards; track i) {
                 <div class="skeleton-card">
                   <div class="skeleton-line"></div>
@@ -108,7 +107,7 @@ interface PairCard {
                 </span>
                 <span class="bp-card-name">{{ b.name }}</span>
                 <span class="bp-card-style">{{ b.style }}@if (b.abv) { · {{ b.abv }}% }</span>
-                <span class="bp-card-go">Выбрать →</span>
+                <span class="bp-card-go">Choose →</span>
               </button>
             }
           </div>
@@ -123,44 +122,44 @@ interface PairCard {
 
             <span class="bp-bottle">
               @if (big(b); as src) {
-                <img [src]="src" [alt]="'Бутылка ' + b.name" />
+                <img [src]="src" [alt]="'Bottle of ' + b.name" />
               } @else {
                 <span class="bp-card-fallback" aria-hidden="true">🍺</span>
               }
             </span>
 
-            <span class="badge mb-xs">{{ b.tagline || b.brand_owner || 'Ваш сорт' }}</span>
+            <span class="badge mb-xs">{{ b.tagline || b.brand_owner || 'Your beer' }}</span>
             <h3 class="bp-drink-name">{{ b.name }}</h3>
-            <p class="text-sm text-muted">{{ b.style }}@if (b.abv) { · {{ b.abv }}% алк. }</p>
+            <p class="text-sm text-muted">{{ b.style }}@if (b.abv) { · {{ b.abv }}% ABV }</p>
 
             @if (b.description) { <p class="text-sm text-dim bp-drink-desc">{{ b.description }}</p> }
 
             @if (b.serving_recommendation; as rec) {
               <p class="text-xs text-muted bp-serve">
-                Подавать при {{ rec.serving_temp_min }}-{{ rec.serving_temp_max }} °C, {{ rec.glass_type }}
+                Serve at {{ rec.serving_temp_min }}-{{ rec.serving_temp_max }} °C, {{ rec.glass_type }}
               </p>
             }
 
             <button type="button" class="btn-amber bp-more" (click)="openBrand.emit(b.id)">
-              Узнать больше о напитке
+              Learn more about this beer
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
             </button>
           </aside>
 
           <div class="bp-list">
             <header class="bp-list-head">
-              <h3 class="section-header bp-list-title">Что к нему подать</h3>
+              <h3 class="section-header bp-list-title">What to serve with it</h3>
               @if (intro()) { <p class="text-muted">{{ intro() }}</p> }
             </header>
 
             @if (!cards().length) {
               @if (loaded()) {
                 <div class="bp-none">
-                  <p class="text-dim">Для этого сорта пары пока не описаны.</p>
-                  <p class="text-sm text-muted">Их заполняет сомелье в своей панели - как только появятся, они будут здесь.</p>
+                  <p class="text-dim">No pairings for this beer yet.</p>
+                  <p class="text-sm text-muted">Our sommelier adds them in the admin panel. They'll show up here as soon as they're ready.</p>
                 </div>
               } @else {
-                <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сочетания">
+                <div class="skeleton-grid" aria-busy="true" aria-label="Loading pairings">
                   @for (i of skeletonCards; track i) {
                     <div class="skeleton-card">
                       <div class="skeleton-line"></div>
@@ -178,8 +177,10 @@ interface PairCard {
                       <span class="bp-duo-dish">
                         @if (c.photo) {
                           <img [src]="c.photo" alt="" loading="lazy" />
+                        } @else if (c.emoji) {
+                          <span class="bp-duo-emoji">{{ c.emoji }}</span>
                         } @else {
-                          <span class="bp-duo-emoji">{{ (c.marks.length && c.marks[0].emoji) || '🍽️' }}</span>
+                          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
                         }
                       </span>
 
@@ -195,7 +196,7 @@ interface PairCard {
                     <div class="bp-pair-body">
                       <div class="bp-pair-top">
                         <h4 class="bp-pair-name">{{ c.pairing.dish_name }}</h4>
-                        <span class="bp-score" [attr.aria-label]="'Совместимость ' + c.pairing.compatibility_score + ' из 5'">
+                        <span class="bp-score" [attr.aria-label]="'Compatibility ' + c.pairing.compatibility_score + ' out of 5'">
                           @for (s of [1,2,3,4,5]; track s) {
                             <span class="bp-pip" [class.on]="s <= c.pairing.compatibility_score"></span>
                           }
@@ -230,10 +231,11 @@ interface PairCard {
           </div>
         </div>
       }
+      }
     </div>
   `,
   styles: [`
-    :host { display: block; scroll-margin-top: 118px; }
+    :host { display: block; }
 
     .bp-head {
       display: flex;
@@ -300,7 +302,7 @@ interface PairCard {
     }
     .bp-pack:hover { border-color: rgba(180, 83, 9, 0.3); color: var(--foam); }
     .bp-pack.on {
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       border-color: transparent;
       color: #fff;
       font-weight: 700;
@@ -346,7 +348,7 @@ interface PairCard {
       transition: all var(--duration-normal) ease;
     }
     .bp-card:hover .bp-card-go {
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       color: #fff;
     }
 
@@ -437,6 +439,7 @@ interface PairCard {
       flex: 0 0 auto;
     }
     .bp-duo-dish img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .bp-duo-dish svg { color: var(--beer-mid); }
 
     .bp-duo-beer {
       position: relative;
@@ -506,32 +509,20 @@ interface PairCard {
     }
 
     @media (max-width: 900px) {
-      .bp-layout { grid-template-columns: 1fr; }
+      .bp-layout { grid-template-columns: minmax(0, 1fr); }
       .bp-drink { position: static; }
-    }
-
-    /* Сенсорный экран: служебные подписи от 12px.
-       Подпись поля только для скринридера: видимая сдвигала значок поиска к верхнему краю поля */
-    @media (max-width: 768px), (pointer: coarse) {
-      .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-      .bp-step, .bp-mark { font-size: 0.75rem; }
-      .bp-input { font-size: 16px; }
-      .bp-find { scroll-margin-top: 96px; }
     }
 
     @media (max-width: 560px) {
       .bp-pair { grid-template-columns: 1fr; }
       .bp-duo { width: 100%; height: 140px; }
       .bp-back { align-self: center; }
-      /* Витрина в две колонки: в одну семнадцать сортов растягивались на пять экранов */
+      /* Витрина на телефоне в две колонки: полка короче вдвое */
       .bp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
       .bp-card { padding: var(--space-lg) var(--space-sm) var(--space-xl); }
       .bp-card-visual { height: 120px; }
-      .bp-card-name { hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
-      .bp-card-go { margin-top: auto; padding: 7px 12px; white-space: nowrap; }
-      /* Без фото emoji встаёт в центр рамки, а не к её верхнему краю */
-      .bp-card-visual, .bp-bottle { display: grid; place-items: center; }
-      .bp-empty, .bp-none { padding: var(--space-3xl) var(--space-lg); }
+      .bp-card-name { font-size: 0.95rem; }
+      .bp-list-title { font-size: 1.6rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -547,8 +538,10 @@ export class BeerPairingsComponent {
   icons = input<FoodIcon[]>([]);
   /** false, пока родитель ещё грузит каталог: тогда вместо "пусто" скелет. */
   loaded = input(true);
+  /** Сорта или сочетания не загрузились: вместо "пусто" ошибка с кнопкой "Обновить". */
+  failed = input(false);
   intro = input('');
-  /** Сорт, с которого открыть сразу второй шаг (экспресс-сценарии главной). */
+  /** Сорт, с которого открыть сразу второй шаг: экспресс-сценарий или возврат на главную после страницы сорта. */
   initial = input<Brand | null>(null);
 
   readonly skeletonCards = [1, 2, 3];
@@ -557,21 +550,23 @@ export class BeerPairingsComponent {
 
   @Output() openBrand = new EventEmitter<string>();
   @Output() exit = new EventEmitter<void>();
-  /** Гость сам открыл сорт или вернулся к списку: родитель ведёт историю браузера. */
+  /** Гость выбрал сорт или вернулся к витрине (null): родитель ведёт историю браузера и помнит выбор между заходами на страницу. */
   @Output() picked = new EventEmitter<Brand | null>();
+  /** Гость нажал "Обновить" после ошибки загрузки. */
+  @Output() retry = new EventEmitter<void>();
+
+  private injector = inject(Injector);
 
   readonly packs = [
-    { id: '', label: 'Все' },
-    { id: 'BOTTLE', label: 'Бутылка' },
-    { id: 'CAN', label: 'Банка' },
-    { id: 'DRAFT', label: 'Разливное' },
+    { id: '', label: 'All' },
+    { id: 'BOTTLE', label: 'Bottle' },
+    { id: 'CAN', label: 'Can' },
+    { id: 'DRAFT', label: 'Draft' },
   ];
 
   selected = signal<Brand | null>(null);
   query = signal('');
   pack = signal('');
-
-  private host: ElementRef<HTMLElement> = inject(ElementRef);
 
   constructor() {
     // Родитель передал сорт: открываем сразу пары к нему
@@ -585,13 +580,13 @@ export class BeerPairingsComponent {
   readonly small = smallImage;
 
   visible = computed(() => {
-    const q = this.query();
+    const q = this.query().trim().toLowerCase();
     const p = this.pack();
     return this.brands().filter(b => {
       if (b.is_active === false) return false;
       if (p && b.packaging_type !== p) return false;
-      // «эфес», «козел», «бавария» с русской раскладки находят латинские названия (как в каталоге)
-      return matchesSearch(q, b.name, b.style);
+      if (q && !`${b.name} ${b.style}`.toLowerCase().includes(q)) return false;
+      return true;
     });
   });
 
@@ -616,12 +611,14 @@ export class BeerPairingsComponent {
       .sort((a, b) => b.compatibility_score - a.compatibility_score)
       .map(p => {
         const dish = byId.get(p.dish) ?? byName.get((p.dish_name ?? '').toLowerCase()) ?? null;
+        const marks = this.marksFor(dish);
         return {
           pairing: p,
           label: PAIRING_LABELS[p.pairing_type] ?? p.pairing_type,
           hint: PAIRING_HINT[p.pairing_type] ?? '',
           photo: dish?.image || null,
-          marks: this.marksFor(dish),
+          emoji: marks.length ? marks[0].emoji : '',
+          marks,
         };
       });
   });
@@ -629,38 +626,20 @@ export class BeerPairingsComponent {
   select(brand: Brand): void {
     this.selected.set(brand);
     this.picked.emit(brand);
-    // До 900px всё в одну колонку: сорт и пары начинаются выше карточки, по которой нажали.
-    // Без этого гость из середины витрины попадал в конец пар или ниже подбора
-    if (window.matchMedia?.('(max-width: 900px)').matches) {
-      this.toTop(this.host.nativeElement);
-      return;
-    }
-    window.scrollTo({ top: Math.max(0, window.scrollY - 200), behavior: 'smooth' });
-  }
-
-  /** На телефоне клавиатура закрывает витрину под полем: поднимаем поиск к шапке, сорта видны над клавиатурой. */
-  liftField(event: FocusEvent): void {
-    if (!window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches) return;
-    const field = (event.target as HTMLElement).closest<HTMLElement>('.bp-find');
-    setTimeout(() => field && this.toTop(field), 300);
-  }
-
-  /**
-   * Ставит элемент к верху экрана: обычно под липкую шапку сайта (scroll-margin-top в стилях).
-   * На низком экране шапка не липнет, там отступ TOP_GAP, иначе сверху оставалась пустая полоса.
-   */
-  private toTop(el: HTMLElement): void {
-    const behavior: ScrollBehavior = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    if (!window.matchMedia?.(LOW_SCREEN).matches) {
-      el.scrollIntoView({ behavior, block: 'start' });
-      return;
-    }
-    const top = el.getBoundingClientRect().top;
-    if (Math.abs(top - TOP_GAP) > 1) window.scrollTo({ top: window.scrollY + top - TOP_GAP, behavior });
+    // Пары рисуются вместо витрины: когда они уже на экране, подводим к началу панели
+    afterNextRender(() => {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      document.getElementById('pairing-selector-section')
+        ?.scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'start' });
+    }, { injector: this.injector });
   }
 
   goBack(): void {
-    if (this.selected()) { this.selected.set(null); this.picked.emit(null); return; }
+    if (this.selected()) {
+      this.selected.set(null);
+      this.picked.emit(null);
+      return;
+    }
     this.exit.emit();
   }
 
@@ -696,14 +675,14 @@ export class BeerPairingsComponent {
   private categoryKey(dish: Dish): string | undefined {
     const text = `${dish.name} ${dish.category ?? ''}`.toLowerCase();
     const rules: [string, RegExp][] = [
-      ['MEAT', /мяс|стейк|шашлык|рёбр|ребр|колбас|шницел/],
-      ['SEAFOOD', /рыб|морепрод|суши|креветк|лосос/],
-      ['DESSERT', /десерт|торт|пирож|шокол|тирамису/],
-      ['SALAD', /салат|овощ/],
-      ['SOUP', /суп|рагу|бульон|лапша/],
-      ['PIZZA', /пицц|паст|спагетт/],
-      ['STREET', /бургер|тако|шаурм|самса/],
-      ['SNACK', /снек|тапас|сыр|орех|брецел|крендел/],
+      ['MEAT', /мяс|стейк|шашлык|рёбр|ребр|колбас|шницел|meat|steak|kebab|rib|sausage|schnitzel|beef|pork|lamb|chicken/],
+      ['SEAFOOD', /рыб|морепрод|суши|креветк|лосос|fish|seafood|sushi|shrimp|prawn|salmon/],
+      ['DESSERT', /десерт|торт|пирож|шокол|тирамису|dessert|cake|pastry|chocolate|tiramisu/],
+      ['SALAD', /салат|овощ|salad|vegetable/],
+      ['SOUP', /суп|рагу|бульон|лапша|soup|stew|broth|noodle/],
+      ['PIZZA', /пицц|паст|спагетт|pizza|pasta|spaghetti/],
+      ['STREET', /бургер|тако|шаурм|самса|burger|taco|shawarma|samsa/],
+      ['SNACK', /снек|тапас|сыр|орех|брецел|крендел|snack|tapas|cheese|nut|pretzel/],
     ];
     return rules.find(([, re]) => re.test(text))?.[0];
   }

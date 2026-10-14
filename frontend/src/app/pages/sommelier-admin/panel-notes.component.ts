@@ -15,11 +15,12 @@ type NoteFilter = 'all' | PyramidLayer;
     <div class="wa-page" [class.has-selection]="!!selectedId()">
       <aside class="wa-list">
         <div class="wa-list-head">
-          <h2 class="wa-list-title">Ноты @if (loaded()) { <span class="wa-count">{{ notes().length }}</span> }</h2>
+          <h2 class="wa-list-title">Notes @if (loaded()) { <span class="wa-count">{{ notes().length }}</span> }</h2>
         </div>
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Название или термин" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Name or term" aria-label="Search by name or term"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         <div class="wa-pills">
           @for (p of pills; track p.value) {
@@ -30,7 +31,7 @@ type NoteFilter = 'all' | PyramidLayer;
         </div>
         <div class="wa-rows">
           @if (!loaded()) {
-            <p class="wa-empty">Загрузка...</p>
+            <p class="wa-empty">Loading...</p>
           } @else {
             @for (n of filtered(); track n.id) {
               <button type="button" class="wa-row" [class.active]="selectedId() === n.id" (click)="select(n.id)">
@@ -39,14 +40,14 @@ type NoteFilter = 'all' | PyramidLayer;
                 </span>
                 <span class="wa-row-body">
                   <span class="wa-row-title">{{ n.name }}</span>
-                  <span class="wa-row-sub">{{ n.technical_term || n.description || 'Нота вкусовой пирамиды' }}</span>
+                  <span class="wa-row-sub">{{ n.technical_term || n.description || 'Flavor pyramid note' }}</span>
                 </span>
                 <span class="wa-row-meta">
                   <span class="wa-chip" [class.wa-chip-warn]="n.is_off_flavour">{{ layerShort[n.category] || n.category }}</span>
                 </span>
               </button>
             } @empty {
-              <p class="wa-empty">{{ notes().length ? 'Ничего не найдено' : 'Справочник пуст' }}</p>
+              <p class="wa-empty">{{ notes().length ? 'Nothing found' : 'The glossary is empty' }}</p>
             }
           }
         </div>
@@ -55,7 +56,7 @@ type NoteFilter = 'all' | PyramidLayer;
       <section class="wa-detail">
         @for (n of selectedOne(); track n.id) {
           <div class="wa-detail-enter">
-            <button type="button" class="wa-back" (click)="select(null)"><panel-icon name="arrowLeft" /> К списку</button>
+            <button type="button" class="wa-back" (click)="select(null)"><panel-icon name="arrowLeft" /> Back to list</button>
             <div class="wa-card">
               <div class="wa-card-head">
                 <span class="wa-avatar wa-avatar-lg">
@@ -67,23 +68,23 @@ type NoteFilter = 'all' | PyramidLayer;
                     @if (n.technical_term) { <span class="wa-dot"></span>{{ n.technical_term }} }
                   </p>
                 </div>
-                @if (n.is_off_flavour) { <span class="wa-chip wa-chip-warn">Дефект</span> }
+                @if (n.is_off_flavour) { <span class="wa-chip wa-chip-warn">Off-flavor</span> }
               </div>
               <dl class="wa-facts">
                 @if (n.wheel_code) {
-                  <div><dt>Код колеса</dt><dd>{{ n.wheel_code }}</dd></div>
+                  <div><dt>Wheel code</dt><dd>{{ n.wheel_code }}</dd></div>
                 }
-                <div><dt>Слой пирамиды</dt><dd>{{ n.category_display || layerShort[n.category] }}</dd></div>
+                <div><dt>Pyramid layer</dt><dd>{{ n.category_display || layerShort[n.category] }}</dd></div>
                 @if (n.reference_material) {
-                  <div><dt>Эталон</dt><dd>{{ n.reference_material }}</dd></div>
+                  <div><dt>Reference</dt><dd>{{ n.reference_material }}</dd></div>
                 }
               </dl>
-              <p class="wa-text">{{ n.description || 'Описание ещё не заполнено' }}</p>
-              <p class="wa-muted">Справочник нот правится в Django admin, здесь он только для сверки.</p>
+              <p class="wa-text">{{ n.description || 'No description yet' }}</p>
+              <p class="wa-muted">The notes glossary is edited in Django admin; it's shown here for reference only.</p>
             </div>
           </div>
         } @empty {
-          <div class="wa-detail-empty">Выберите элемент слева</div>
+          <div class="wa-detail-empty">Select an item on the left</div>
         }
       </section>
     </div>
@@ -97,7 +98,7 @@ export class PanelNotesComponent {
   readonly layerShort = LAYER_SHORT;
   readonly initial = initialOf;
   readonly pills: { value: NoteFilter; label: string }[] = [
-    { value: 'all', label: 'Все' },
+    { value: 'all', label: 'All' },
     { value: 'TOP', label: 'Top' },
     { value: 'HEART', label: 'Heart' },
     { value: 'BASE', label: 'Base' }

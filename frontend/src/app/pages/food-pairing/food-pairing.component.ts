@@ -7,23 +7,22 @@ import { FoodPairing, Dish, CuisineType, PAIRING_LABELS, PairingType } from '../
 import { countOf } from '../venue-menu/plural';
 import { PairingV2Component } from '../drinks-v2/pairing-v2.component';
 import { V2ApiService } from '../drinks-v2/v2-api.service';
-import { matchesSearch } from '../../services/search-text';
 
 /** Короткое пояснение к типу сочетания на бейдже карточки. */
 const PAIRING_HINT: Record<PairingType, string> = {
-  COMPLEMENT: 'схожие ноты',
-  CONTRAST: 'горечь против жирности',
-  CLEANSE: 'освежает рецепторы',
-  BRIDGE: 'общая нота вкуса',
+  COMPLEMENT: 'similar notes',
+  CONTRAST: 'bitterness cuts richness',
+  CLEANSE: 'refreshes the palate',
+  BRIDGE: 'a shared flavor note',
 };
 
 const CUISINES: { id: CuisineType; label: string }[] = [
-  { id: 'KZ', label: 'Казахская' },
-  { id: 'ITALIAN', label: 'Итальянская' },
-  { id: 'JAPANESE', label: 'Японская' },
-  { id: 'AMERICAN', label: 'Американская' },
-  { id: 'MEXICAN', label: 'Мексиканская' },
-  { id: 'GERMAN', label: 'Немецкая' },
+  { id: 'KZ', label: 'Kazakh' },
+  { id: 'ITALIAN', label: 'Italian' },
+  { id: 'JAPANESE', label: 'Japanese' },
+  { id: 'AMERICAN', label: 'American' },
+  { id: 'MEXICAN', label: 'Mexican' },
+  { id: 'GERMAN', label: 'German' },
 ];
 
 @Component({
@@ -32,50 +31,58 @@ const CUISINES: { id: CuisineType; label: string }[] = [
   imports: [CommonModule, FormsModule, PairingV2Component],
   template: `
     <div class="mb-3xl">
-      <h1 class="section-header">Что подать к блюду</h1>
-      <p class="text-muted">Подбор команды Flavor Tree: сорта и блюда сведены по вкусовым пирамидам. Это черновик, на дегустации пары ещё не проверяли.</p>
+      <h1 class="section-header">What to serve with your dish</h1>
+      <p class="text-muted">Picked by the Flavor Tree team: drinks and dishes matched by their flavor pyramids. This is a draft; the pairings haven't been tested at a tasting yet.</p>
     </div>
 
     <!-- Режимы: Сочетания или Каталог блюд + Поиск -->
     <div class="flex justify-between items-center mb-2xl flex-wrap gap-lg">
-      <div class="flex gap-md flex-wrap items-center">
+      <div class="flex gap-md flex-wrap items-center fp-modes">
         <button
-          class="btn-outline fp-mode"
+          class="btn-outline"
           [class.active]="viewMode() === 'pairings'"
           (click)="viewMode.set('pairings')"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          {{ pairingsLoaded() ? countOf(pairings().length, 'сочетание', 'сочетания', 'сочетаний') : 'Сочетания' }}
+          {{ pairingsLoaded() ? countOf(pairings().length, 'pairing', 'pairings') : 'Pairings' }}
         </button>
         <button
-          class="btn-outline fp-mode"
+          class="btn-outline"
           [class.active]="viewMode() === 'dishes'"
           (click)="viewMode.set('dishes')"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-          {{ dishesLoaded() ? 'Каталог ' + countOf(dishes().length, 'блюда', 'блюд', 'блюд') : 'Каталог блюд' }}
+          {{ dishesLoaded() ? 'Catalog of ' + countOf(dishes().length, 'dish', 'dishes') : 'Dish catalog' }}
         </button>
         <button
-          class="btn-outline fp-mode"
+          class="btn-outline"
           [class.active]="viewMode() === 'drinks'"
           (click)="viewMode.set('drinks')"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></svg>
-          {{ drinksTotal() ? 'Подбор из ' + countOf(drinksTotal()!, 'напитка', 'напитков', 'напитков') : 'Подбор из всех напитков' }}
+          Match an Efes beer
         </button>
       </div>
 
       @if (viewMode() !== 'drinks') {
-      <div class="fp-search">
+      <div style="position: relative; min-width: min(260px, 100%); max-width: 360px; width: 100%;">
         <input
           type="text"
           class="input"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
-          [placeholder]="viewMode() === 'pairings' ? 'Поиск по блюду или пиву...' : 'Поиск блюда...'"
+          [placeholder]="viewMode() === 'pairings' ? 'Search by dish or beer...' : 'Search dishes...'"
+          [attr.aria-label]="viewMode() === 'pairings' ? 'Search by dish or beer' : 'Search dishes'"
+          style="width: 100%; padding-right: 44px;"
         />
         @if (searchQuery()) {
-          <button class="fp-clear" (click)="searchQuery.set('')" title="Очистить">&#x2715;</button>
+          <button
+            type="button"
+            (click)="searchQuery.set('')"
+            style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px;"
+            title="Clear"
+            aria-label="Clear search"
+          >&#x2715;</button>
         }
       </div>
       }
@@ -84,14 +91,19 @@ const CUISINES: { id: CuisineType; label: string }[] = [
     @if (viewMode() === 'pairings') {
       <!-- Фильтр по типу сочетания -->
       <div class="flex gap-sm mb-3xl flex-wrap">
-        <button class="btn-outline" [class.active]="activeFilter() === ''" (click)="activeFilter.set('')">Все{{ pairingsLoaded() ? ' (' + pairings().length + ')' : '' }}</button>
+        <button class="btn-outline" [class.active]="activeFilter() === ''" (click)="activeFilter.set('')">All{{ pairingsLoaded() ? ' (' + pairings().length + ')' : '' }}</button>
         @for (t of pairingTypes; track t.id) {
           <button class="btn-outline" [class.active]="activeFilter() === t.id" (click)="activeFilter.set(t.id)">{{ t.label }}</button>
         }
       </div>
 
-      @if (!pairingsLoaded()) {
-        <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем сочетания">
+      @if (pairingsFailed()) {
+        <div class="glass-panel text-center p-4xl" role="alert">
+          <p class="text-muted mb-lg">Couldn't load the pairings. Check your connection and try again.</p>
+          <button type="button" class="btn-amber btn-sm" (click)="loadPairings()">Reload</button>
+        </div>
+      } @else if (!pairingsLoaded()) {
+        <div class="skeleton-grid" aria-busy="true" aria-label="Loading pairings">
           @for (i of skeletonCards; track i) {
             <div class="skeleton-card">
               <div class="skeleton-line"></div>
@@ -105,34 +117,34 @@ const CUISINES: { id: CuisineType; label: string }[] = [
         <div class="grid grid-cards-lg">
           @for (pair of filteredPairings(); track pair.id) {
             <div class="glass-card p-2xl stagger-item">
-              <div class="flex justify-between items-center mb-lg">
+              <div class="flex justify-between items-center flex-wrap gap-sm mb-lg">
                 <span class="badge badge-type" [ngClass]="'badge-' + pair.pairing_type.toLowerCase()">
                   {{ getBadgeLabel(pair.pairing_type) }}
                 </span>
-                <span class="badge">{{ pair.compatibility_score }} / 5</span>
+                <span class="badge fp-score">{{ pair.compatibility_score }} / 5</span>
               </div>
 
               <div class="pairing-versus mb-lg">
                 <div>
-                  <span class="pairing-versus-label">Сорт напитка</span>
+                  <span class="pairing-versus-label">Drink</span>
                   <h4 class="pairing-versus-name text-deep">{{ pair.brand_name }}</h4>
                 </div>
                 <div class="pairing-connector" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
                 </div>
                 <div>
-                  <span class="pairing-versus-label">Блюдо</span>
+                  <span class="pairing-versus-label">Dish</span>
                   <h4 class="pairing-versus-name">{{ pair.dish_name }}</h4>
                 </div>
               </div>
 
               <p class="text-dim text-sm" style="line-height: 1.45;">
-                <strong style="color: var(--foam);">Почему подходит:</strong> {{ pair.explanation }}
+                <strong style="color: var(--foam);">{{ pair.source === 'AI' ? 'AI pick:' : 'Sommelier verdict:' }}</strong> {{ pair.explanation }}
               </p>
             </div>
           } @empty {
             <div class="glass-panel text-center p-4xl" style="grid-column: 1 / -1;">
-              <p class="text-muted">По вашему запросу сочетаний не найдено.</p>
+              <p class="text-muted">No pairings match your search.</p>
             </div>
           }
         </div>
@@ -143,14 +155,19 @@ const CUISINES: { id: CuisineType; label: string }[] = [
     } @else {
       <!-- Каталог блюд -->
       <div class="flex gap-sm mb-2xl flex-wrap">
-        <button class="btn-outline" [class.active]="cuisineFilter() === ''" (click)="cuisineFilter.set('')">Все кухни{{ dishesLoaded() ? ' (' + dishes().length + ')' : '' }}</button>
+        <button class="btn-outline" [class.active]="cuisineFilter() === ''" (click)="cuisineFilter.set('')">All cuisines{{ dishesLoaded() ? ' (' + dishes().length + ')' : '' }}</button>
         @for (c of cuisines; track c.id) {
           <button class="btn-outline" [class.active]="cuisineFilter() === c.id" (click)="cuisineFilter.set(c.id)">{{ c.label }}</button>
         }
       </div>
 
-      @if (!dishesLoaded()) {
-        <div class="skeleton-grid" aria-busy="true" aria-label="Загружаем блюда">
+      @if (dishesFailed()) {
+        <div class="glass-panel text-center p-4xl" role="alert">
+          <p class="text-muted mb-lg">Couldn't load the dishes. Check your connection and try again.</p>
+          <button type="button" class="btn-amber btn-sm" (click)="loadDishes()">Reload</button>
+        </div>
+      } @else if (!dishesLoaded()) {
+        <div class="skeleton-grid" aria-busy="true" aria-label="Loading dishes">
           @for (i of skeletonCards; track i) {
             <div class="skeleton-card">
               <div class="skeleton-line"></div>
@@ -173,7 +190,7 @@ const CUISINES: { id: CuisineType; label: string }[] = [
             </div>
           } @empty {
             <div class="glass-panel text-center p-4xl" style="grid-column: 1 / -1;">
-              <p class="text-muted">По вашему запросу блюд не найдено.</p>
+              <p class="text-muted">No dishes match your search.</p>
             </div>
           }
         </div>
@@ -186,23 +203,12 @@ const CUISINES: { id: CuisineType; label: string }[] = [
     .badge-cleanse { background: rgba(37, 99, 235, 0.1); color: #2563EB; }
     .badge-bridge { background: rgba(147, 51, 234, 0.1); color: #9333EA; }
     .pairing-connector svg { display: block; margin: 0 auto; color: var(--beer-mid); }
-    .fp-search { position: relative; min-width: 260px; max-width: 360px; width: 100%; }
-    .fp-search .input { width: 100%; padding-right: 36px; }
-    .fp-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none;
-      border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px; }
-
-    @media (max-width: 768px) {
-      /* Режимы раздела и крестик поиска под палец: не меньше 44px */
-      .fp-mode { min-height: 44px; }
-      .fp-search .input { padding-right: 48px; }
-      .fp-clear { right: 2px; width: 44px; height: 44px; padding: 0; }
-      /* Подписи «Сорт напитка» и «Блюдо» не мельче 12px */
-      .pairing-versus-label { font-size: 0.75rem; }
-    }
-
+    /* Оценка держится справа, даже когда длинный тип сочетания уводит её на вторую строку */
+    .fp-score { margin-left: auto; }
+    /* Телефон: обе кнопки режима в одну строку */
     @media (max-width: 480px) {
-      /* Режимы заполняют строку, а не висят лесенкой разной ширины */
-      .fp-mode { flex: 1 1 auto; justify-content: center; }
+      .fp-modes { gap: var(--space-sm); }
+      .fp-modes .btn-outline { padding: 9px 12px; }
     }
   `]
 })
@@ -219,6 +225,9 @@ export class FoodPairingComponent implements OnInit {
   viewMode = signal<'pairings' | 'dishes' | 'drinks'>(pairingViewFromUrl());
   /** Вкладка живёт в адресе (?view=drinks): переживает перезагрузку и «Назад» со страницы сорта. */
   private readonly viewInUrl = effect(() => syncPairingView(this.viewMode()));
+  /** Список не загрузился: вместо "не найдено" ошибка с кнопкой "Обновить". */
+  pairingsFailed = signal(false);
+  dishesFailed = signal(false);
   activeFilter = signal<string>('');
   cuisineFilter = signal<string>('');
   searchQuery = signal<string>('');
@@ -235,9 +244,9 @@ export class FoodPairingComponent implements OnInit {
 
     return this.pairings().filter(p => {
       const matchType = !filter || p.pairing_type === filter;
-      // Сорт и блюдо как угодно («эфес», «козел»); в пояснении ищем как есть, иначе короткий запрос находит всё подряд
       const matchQuery = !query ||
-        matchesSearch(query, p.brand_name, p.dish_name) ||
+        p.brand_name.toLowerCase().includes(query) ||
+        p.dish_name.toLowerCase().includes(query) ||
         (p.explanation && p.explanation.toLowerCase().includes(query));
       return matchType && matchQuery;
     });
@@ -259,13 +268,25 @@ export class FoodPairingComponent implements OnInit {
 
   ngOnInit() {
     this.v2.meta().subscribe({ next: m => this.drinksTotal.set(m.drinks || null), error: () => {} });
+    this.loadPairings();
+    this.loadDishes();
+  }
+
+  loadPairings() {
+    this.pairingsLoaded.set(false);
+    this.pairingsFailed.set(false);
     this.api.getPairings().subscribe({
       next: data => { this.pairings.set(data); this.pairingsLoaded.set(true); },
-      error: () => this.pairingsLoaded.set(true),
+      error: () => this.pairingsFailed.set(true),
     });
+  }
+
+  loadDishes() {
+    this.dishesLoaded.set(false);
+    this.dishesFailed.set(false);
     this.api.getDishes().subscribe({
       next: data => { this.dishes.set(data); this.dishesLoaded.set(true); },
-      error: () => this.dishesLoaded.set(true),
+      error: () => this.dishesFailed.set(true),
     });
   }
 
@@ -276,7 +297,7 @@ export class FoodPairingComponent implements OnInit {
 
   getBadgeLabel(type: PairingType): string {
     const label = PAIRING_LABELS[type];
-    if (!label) return 'Сочетание';
+    if (!label) return 'Pairing';
     const hint = PAIRING_HINT[type];
     return hint ? `${label} · ${hint}` : label;
   }

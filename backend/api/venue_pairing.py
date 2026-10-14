@@ -61,13 +61,17 @@ GENERIC_WORDS = frozenset({
     'картошка', 'сыры', 'шоколад', 'творог', 'бульон', 'запеканка', 'рагу', 'пончики', 'макароны',
     'капуста', 'томаты', 'авокадо', 'бобы', 'говядина', 'отбивная', 'пицца', 'пирожок', 'креветки',
     'ет', 'фри', 'фо', 'шуба', 'сыр', 'курица', 'мясное', 'ассорти', 'нарезка',
+    'salad', 'dessert', 'meat', 'fish', 'soup', 'pastry', 'bread', 'pie', 'cake', 'snack', 'snacks', 'starter',
+    'roll', 'rolls', 'dip', 'cutlet', 'sausage', 'noodles', 'pasta', 'pickles', 'grill', 'barbecue',
+    'potatoes', 'cheeses', 'chocolate', 'stew', 'broth', 'donuts', 'cabbage', 'tomatoes', 'avocado',
+    'beans', 'beef', 'chop', 'pizza', 'shrimp', 'fries', 'cheese', 'chicken', 'platter', 'assorted',
 })
 
 # Похожесть блюд каталога: вес совпадения каждого поля и порог, ниже которого не угадываем.
 SIMILAR_WEIGHTS = (('dominant_taste', 2.0), ('cooking_method', 1.5), ('weight', 1.0), ('fat_level', 1.0),
                    ('cuisine', 1.0))
 SIMILAR_MIN = 4.0
-DESSERT_WORDS = ('десерт', 'выпечк', 'сладк')
+DESSERT_WORDS = ('десерт', 'выпечк', 'сладк', 'dessert', 'pastr', 'sweet')
 
 _warned_dishes = set()
 
@@ -80,12 +84,12 @@ def dataset():
     """Набор движка с весами из админки, как в /api/v2/. Без весов или при сбое базы - обычный набор."""
     try:
         from . import engine_tuning
-        return engine_tuning.tuned_dataset(_data_dir(), 'ru')
+        return engine_tuning.tuned_dataset(_data_dir(), 'en')
     except Exception:  # noqa: BLE001 - подкрутка весов не должна ломать меню
         logger.exception('Веса движка не загрузились, считаем по базовым')
     try:
-        from .pairing.dataset_v2 import get_dataset
-        return get_dataset(_data_dir())
+        from .pairing.dataset_v2 import get_dataset_locale
+        return get_dataset_locale(_data_dir(), 'en')
     except Exception:  # noqa: BLE001 - без движка меню работает на парах команды
         logger.exception('Набор движка v2 не загрузился')
         return None
@@ -236,7 +240,7 @@ def clean_reason(text) -> str:
     text = _CITATION.sub('', str(text or ''))
     text = _DASH_PAIR.sub(lambda m: ' (' + m.group(1).strip() + ') ', text)
     text = _DASH.sub(', ', text)
-    text = text.replace(' ↔ ', ' и ').replace('↔', ' и ')
+    text = text.replace(' ↔ ', ' and ').replace('↔', ' and ')
     text = re.sub(r'\s+([,.;:])', r'\1', text)
     text = ' '.join(text.split()).strip(' ,;')
     return text[:1].upper() + text[1:] if text else ''

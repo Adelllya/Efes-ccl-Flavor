@@ -1,10 +1,10 @@
-import { Component, OnInit, computed, inject, output, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ChangeRequest, PyramidLayer, REQUEST_STATUS_LABELS, RequestStatus } from '../../models/flavor-tree.models';
 import { PanelIconComponent } from './panel-icons';
-import { LAYER_SHORT, flash, formatWhen, initialOf, isErrorText, statusChipClass } from './panel-shared';
+import { LAYER_SHORT, flash, formatWhen, initialOf, isErrorText, onTabReturn, statusChipClass } from './panel-shared';
 
 type RequestFilter = RequestStatus | 'all';
 
@@ -40,16 +40,17 @@ function tempText(min: unknown, max: unknown): string {
     <div class="wa-page" [class.has-selection]="!!selectedId()">
       <aside class="wa-list">
         <div class="wa-list-head">
-          <h2 class="wa-list-title">Запросы
+          <h2 class="wa-list-title">Requests
             @if (pendingTotal() > 0) { <span class="wa-count wa-count-accent">{{ pendingTotal() }}</span> }
           </h2>
-          <button type="button" class="wa-iconbtn" title="Обновить" [disabled]="loading()" (click)="load()">
+          <button type="button" class="wa-iconbtn" title="Refresh" aria-label="Refresh" [disabled]="loading()" (click)="load()">
             <panel-icon name="refresh" />
           </button>
         </div>
         <label class="wa-search">
           <panel-icon name="search" />
-          <input type="text" placeholder="Сорт, нота или автор" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          <input type="text" placeholder="Beer, note or author" aria-label="Search by beer, note or author"
+                 [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </label>
         <div class="wa-pills">
           @for (p of pills; track p.value) {
@@ -59,13 +60,13 @@ function tempText(min: unknown, max: unknown): string {
           }
         </div>
         @if (msg()) {
-          <p class="wa-msg" [class.error]="isError(msg())">{{ msg() }}</p>
+          <p class="wa-msg" [class.error]="isError(msg())" [attr.role]="isError(msg()) ? 'alert' : 'status'">{{ msg() }}</p>
         }
         <div class="wa-rows">
           @if (loading() && !requests().length) {
-            <p class="wa-empty">Загрузка...</p>
+            <p class="wa-empty">Loading...</p>
           } @else if (loadError()) {
-            <p class="wa-error">{{ loadError() }}</p>
+            <p class="wa-error" role="alert">{{ loadError() }}</p>
           } @else {
             @for (g of grouped(); track g.brand) {
               <div class="wa-group">{{ g.brand_name }}</div>
@@ -85,7 +86,7 @@ function tempText(min: unknown, max: unknown): string {
                 </button>
               }
             } @empty {
-              <p class="wa-empty">{{ requests().length ? 'В этом фильтре пусто' : 'Запросов пока нет' }}</p>
+              <p class="wa-empty">{{ requests().length ? 'Nothing matches this filter' : 'No requests yet' }}</p>
             }
           }
         </div>
@@ -94,7 +95,7 @@ function tempText(min: unknown, max: unknown): string {
       <section class="wa-detail">
         @for (r of selectedOne(); track r.id) {
           <div class="wa-detail-enter">
-            <button type="button" class="wa-back" (click)="select(null)"><panel-icon name="arrowLeft" /> К списку</button>
+            <button type="button" class="wa-back" (click)="select(null)"><panel-icon name="arrowLeft" /> Back to list</button>
             <div class="wa-card">
               <div class="wa-card-head">
                 <span class="wa-avatar wa-avatar-lg">
@@ -111,50 +112,50 @@ function tempText(min: unknown, max: unknown): string {
 
               <div class="wa-diff">
                 <div class="wa-diff-col">
-                  <h4>Сейчас</h4>
+                  <h4>Current</h4>
                   @if (r.current) {
                     @for (row of diffRows(); track row.label) {
-                      <div class="wa-diff-row"><span>{{ row.label }}</span><strong>{{ row.before || 'пусто' }}</strong></div>
+                      <div class="wa-diff-row"><span>{{ row.label }}</span><strong>{{ row.before || 'empty' }}</strong></div>
                     }
                   } @else {
-                    <p class="wa-muted">{{ r.kind === 'SERVING' ? 'Подача ещё не заполнена' : 'Ноты ещё нет в пирамиде' }}</p>
+                    <p class="wa-muted">{{ r.kind === 'SERVING' ? 'Serving details not filled in yet' : 'This note isn\'t in the pyramid yet' }}</p>
                   }
                 </div>
                 <div class="wa-diff-col wa-diff-after">
-                  <h4>Предлагается</h4>
+                  <h4>Proposed</h4>
                   @for (row of diffRows(); track row.label) {
-                    <div class="wa-diff-row" [class.changed]="row.changed"><span>{{ row.label }}</span><strong>{{ row.after || 'пусто' }}</strong></div>
+                    <div class="wa-diff-row" [class.changed]="row.changed"><span>{{ row.label }}</span><strong>{{ row.after || 'empty' }}</strong></div>
                   }
                 </div>
               </div>
 
               @if (r.comment) {
                 <div class="wa-quote">
-                  <span class="wa-label">Комментарий автора</span>
+                  <span class="wa-label">Author's comment</span>
                   <p>{{ r.comment }}</p>
                 </div>
               }
 
               @if (r.status === 'PENDING') {
                 <label class="wa-field wa-field-wide">
-                  <span class="wa-label">Комментарий для сомелье</span>
+                  <span class="wa-label">Comment for the sommelier</span>
                   <textarea class="input" rows="2" [ngModel]="reviewComment()" (ngModelChange)="reviewComment.set($event)"
-                            placeholder="Обязателен при отклонении: сомелье увидит причину"></textarea>
+                            placeholder="Required when rejecting: the sommelier will see the reason"></textarea>
                 </label>
                 @if (actionError()) {
-                  <p class="wa-error">{{ actionError() }}</p>
+                  <p class="wa-error" role="alert">{{ actionError() }}</p>
                 }
                 <div class="wa-actions">
                   <button type="button" class="btn-amber" [disabled]="acting()" (click)="approve(r)">
-                    <panel-icon name="check" /> Принять
+                    <panel-icon name="check" /> Approve
                   </button>
                   <button type="button" class="btn-outline panel-danger" [disabled]="acting()" (click)="reject(r)">
-                    <panel-icon name="x" /> Отклонить
+                    <panel-icon name="x" /> Reject
                   </button>
                 </div>
               } @else {
                 <div class="wa-review">
-                  <span class="wa-label">{{ r.status === 'APPROVED' ? 'Принял' : 'Отклонил' }} {{ r.reviewer?.username || 'модератор' }}
+                  <span class="wa-label">{{ r.status === 'APPROVED' ? 'Approved by' : 'Rejected by' }} {{ r.reviewer?.username || 'moderator' }}
                     @if (r.reviewed_at) { <span class="wa-dot"></span>{{ when(r.reviewed_at) }} }
                   </span>
                   @if (r.review_comment) { <p>{{ r.review_comment }}</p> }
@@ -163,7 +164,7 @@ function tempText(min: unknown, max: unknown): string {
             </div>
           </div>
         } @empty {
-          <div class="wa-detail-empty">Выберите элемент слева</div>
+          <div class="wa-detail-empty">Select an item on the left</div>
         }
       </section>
     </div>
@@ -172,18 +173,22 @@ function tempText(min: unknown, max: unknown): string {
 export class PanelRequestsComponent implements OnInit {
   private api = inject(ApiService);
 
+  /** Вкладка на экране. Панель держит её живой и прячет: при возврате список перечитывается. */
+  active = input(true);
   /** Запрос принят или отклонён: родитель обновляет бейдж и список сортов. */
   reviewed = output<ChangeRequest>();
+  /** Список перечитан: сколько запросов в нём ждут решения. Родитель ставит это число в бейдж. */
+  pendingChanged = output<number>();
 
   readonly statusLabels = REQUEST_STATUS_LABELS;
   readonly initial = initialOf;
   readonly when = formatWhen;
   readonly chip = statusChipClass;
   readonly pills: { value: RequestFilter; label: string }[] = [
-    { value: 'PENDING', label: 'Ожидают' },
-    { value: 'APPROVED', label: 'Принятые' },
-    { value: 'REJECTED', label: 'Отклонённые' },
-    { value: 'all', label: 'Все' }
+    { value: 'PENDING', label: 'Pending' },
+    { value: 'APPROVED', label: 'Approved' },
+    { value: 'REJECTED', label: 'Rejected' },
+    { value: 'all', label: 'All' }
   ];
 
   requests = signal<ChangeRequest[]>([]);
@@ -241,26 +246,31 @@ export class PanelRequestsComponent implements OnInit {
     const row = (label: string, before: string, after: string): DiffRow => ({ label, before, after, changed: before !== after });
     if (r.kind === 'SERVING') {
       return [
-        row('Температура', tempText(cur['serving_temp_min'], cur['serving_temp_max']), tempText(p['serving_temp_min'], p['serving_temp_max'])),
-        row('Бокал', String(cur['glass_type'] ?? ''), String(p['glass_type'] ?? '')),
-        row('Сезон', String(cur['seasonality'] ?? ''), String(p['seasonality'] ?? ''))
+        row('Temperature', tempText(cur['serving_temp_min'], cur['serving_temp_max']), tempText(p['serving_temp_min'], p['serving_temp_max'])),
+        row('Glass', String(cur['glass_type'] ?? ''), String(p['glass_type'] ?? '')),
+        row('Season', String(cur['seasonality'] ?? ''), String(p['seasonality'] ?? ''))
       ];
     }
-    const name = r.flavor_note_name || 'нота';
+    const name = r.flavor_note_name || 'note';
     if (r.kind === 'NOTE_DELETE') {
       return [
-        row('Нота', r.current ? name : '', 'Убрать из пирамиды'),
-        row('Слой', layerText(cur['layer']), ''),
-        row('Интенсивность', cur['intensity'] != null ? cur['intensity'] + '/10' : '', '')
+        row('Note', r.current ? name : '', 'Remove from pyramid'),
+        row('Layer', layerText(cur['layer']), ''),
+        row('Intensity', cur['intensity'] != null ? cur['intensity'] + '/10' : '', '')
       ];
     }
     return [
-      row('Нота', r.current ? name : '', name),
-      row('Слой', layerText(cur['layer']), layerText(p['layer'])),
-      row('Интенсивность', cur['intensity'] != null ? cur['intensity'] + '/10' : '', p['intensity'] != null ? p['intensity'] + '/10' : ''),
-      row('Комментарий сомелье', String(cur['sommelier_note'] ?? ''), String(p['sommelier_note'] ?? ''))
+      row('Note', r.current ? name : '', name),
+      row('Layer', layerText(cur['layer']), layerText(p['layer'])),
+      row('Intensity', cur['intensity'] != null ? cur['intensity'] + '/10' : '', p['intensity'] != null ? p['intensity'] + '/10' : ''),
+      row('Sommelier comment', String(cur['sommelier_note'] ?? ''), String(p['sommelier_note'] ?? ''))
     ];
   });
+
+  constructor() {
+    // Новые запросы приходят, пока вкладка спрятана: при возврате список и бейдж должны быть свежими
+    onTabReturn(this.active, () => this.load());
+  }
 
   ngOnInit() {
     this.load();
@@ -273,10 +283,11 @@ export class PanelRequestsComponent implements OnInit {
       next: list => {
         this.requests.set(list);
         this.loading.set(false);
+        this.pendingChanged.emit(this.pendingTotal());
       },
       error: err => {
         this.loading.set(false);
-        this.loadError.set('Ошибка: ' + AuthService.errorText(err));
+        this.loadError.set('Error: ' + AuthService.errorText(err));
       }
     });
   }
@@ -299,46 +310,41 @@ export class PanelRequestsComponent implements OnInit {
     this.actionError.set(null);
     const comment = this.reviewComment().trim();
     this.api.approveChangeRequest(r.id, comment || undefined).subscribe({
-      next: res => {
-        this.acting.set(false);
-        this.replace(res);
-        flash(this.msg, 'Принято: изменение уже на сайте');
-        this.reviewed.emit(res);
-        // Колонка "Сейчас" у соседних запросов по той же ноте устарела: перечитываем список
-        this.load();
-      },
-      error: err => {
-        this.acting.set(false);
-        this.actionError.set('Ошибка: ' + AuthService.errorText(err));
-      }
+      next: res => this.afterReview(r, res, 'Approved: the change is now live on the site'),
+      error: err => this.reviewFailed(r, err)
     });
   }
 
   reject(r: ChangeRequest) {
     const comment = this.reviewComment().trim();
     if (!comment) {
-      this.actionError.set('Напишите причину отклонения: сомелье её увидит');
+      this.actionError.set('Please give a reason for rejecting: the sommelier will see it');
       return;
     }
     this.acting.set(true);
     this.actionError.set(null);
     this.api.rejectChangeRequest(r.id, comment).subscribe({
-      next: res => {
-        this.acting.set(false);
-        this.replace(res);
-        flash(this.msg, 'Запрос отклонён');
-        this.reviewed.emit(res);
-        this.load();
-      },
-      error: err => {
-        this.acting.set(false);
-        this.actionError.set('Ошибка: ' + AuthService.errorText(err));
-      }
+      next: res => this.afterReview(r, res, 'Request rejected'),
+      error: err => this.reviewFailed(r, err)
     });
   }
 
-  private replace(updated: ChangeRequest) {
-    this.requests.update(list => list.map(x => x.id === updated.id ? { ...x, ...updated } : x));
-    this.reviewComment.set('');
+  /** Ответ мог прийти, когда открыт уже другой запрос: набранный для него комментарий не трогаем. */
+  private afterReview(r: ChangeRequest, res: ChangeRequest, text: string) {
+    this.acting.set(false);
+    this.requests.update(list => list.map(x => x.id === res.id ? { ...x, ...res } : x));
+    if (this.selectedId() === r.id) this.reviewComment.set('');
+    flash(this.msg, text);
+    this.reviewed.emit(res);
+    // Колонка "Сейчас" у соседних запросов по той же ноте устарела: перечитываем список
+    this.load();
+  }
+
+  /** Ошибку показываем в карточке, только если в ней тот же запрос; иначе строкой над списком с названием сорта. */
+  private reviewFailed(r: ChangeRequest, err: unknown) {
+    this.acting.set(false);
+    const reason = AuthService.errorText(err);
+    if (this.selectedId() === r.id) this.actionError.set('Error: ' + reason);
+    else flash(this.msg, `Error: the request for "${r.brand_name}" wasn't processed. ${reason}`, 6000);
   }
 }

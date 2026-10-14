@@ -1,9 +1,14 @@
 """
 Django management command: python manage.py seed
-Загружает все демо-данные (идемпотентно - сначала удаляет, потом вставляет).
+Загружает демо-данные по стандарту FlavorActiV «Beer Flavour Language».
 Пирамиды и описания сортов это черновик команды Flavor Tree, без дегустации.
+
+Команда сначала удаляет сорта, ноты, курсы и команду, потом вставляет демо-набор,
+поэтому на базе, где уже есть сорта, заведения или заказы, она требует --force: иначе стёрла бы всё,
+что добавили в панели. Всё идёт одной транзакцией.
 """
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from api import public_content
 from api.models import (
     FlavorNote, Brand, FlavorProfile, ServingRecommendation,
@@ -95,18 +100,23 @@ TEAM_MEMBER_SEEDS = public_content.TEAM
 
 
 class Command(BaseCommand):
-    help = 'Загрузить демо-данные Flavor Tree (идемпотентно)'
+    help = 'Загрузить демо-данные Flavor Tree (на непустой базе нужен --force)'
 
     def add_arguments(self, parser):
         parser.add_argument('--force', action='store_true',
-                            help='Запустить даже в базе, где уже есть заведения или заказы')
+                            help='Стереть существующие сорта, ноты, курсы и команду и залить демо-набор заново, '
+                                 'даже если в базе уже есть заведения или заказы')
 
     def handle(self, *args, **options):
         # Команда стирает все сорта, а с ними каскадом пары, карты напитков заведений и запросы сомелье.
-        if not options.get('force') and (Venue.objects.exists() or Order.objects.exists()):
+        if not options.get('force') and (Brand.objects.exists() or Venue.objects.exists() or Order.objects.exists()):
             raise CommandError(
-                'В базе уже есть заведения или заказы: seed сотрёт сорта, пары и карты напитков. '
+                'В базе уже есть сорта, заведения или заказы: seed сотрёт сорта, пары и карты напитков. '
                 'На рабочей базе его не запускают (см. DEPLOY.md). Если это точно нужно, добавьте --force')
+        with transaction.atomic():
+            self._seed()
+
+    def _seed(self):
         self.stdout.write('Очистка старых данных...')
         TeamMember.objects.all().delete()
         Course.objects.all().delete()

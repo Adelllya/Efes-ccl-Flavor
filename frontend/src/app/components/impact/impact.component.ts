@@ -12,18 +12,18 @@ export class ImpactComponent {
   impacts = [
     {
       icon: '👤',
-      title: 'Для потребителя',
-      text: 'Осознанный выбор вместо привычки. Новые вкусы. Сертификат сомелье. Понимание «почему мне это нравится».'
+      title: 'For consumers',
+      text: 'Mindful choices instead of habit. New flavors. A sommelier certificate. Knowing "why I like this".'
     },
     {
       icon: '🏢',
-      title: 'Для Efes / Anadolu',
-      text: 'Новый канал связи через образование. Data asset для R&D, B2B обучение. Лояльность. Масштаб на Турцию.'
+      title: 'For Efes / Anadolu',
+      text: 'A new channel through education. A data asset for R&D, B2B training. Loyalty. Scaling to Türkiye.'
     },
     {
       icon: '🌍',
-      title: 'Для рынка',
-      text: 'Новая категория - сенсорное образование. Культурный сдвиг: от «пить больше» к «пить лучше».'
+      title: 'For the market',
+      text: 'A new category: sensory education. A cultural shift from "drink more" to "drink better".'
     }
   ];
 }

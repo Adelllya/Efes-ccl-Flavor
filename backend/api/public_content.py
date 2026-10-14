@@ -26,8 +26,8 @@ log = logging.getLogger(__name__)
 
 # В README у сооснователей только имя и роль. Биографию пишут они сами, в админке.
 TEAM = [
-    {'name': 'Аджибаева Аделия', 'role': 'Сооснователь', 'bio': ''},
-    {'name': 'Абуталифулы Ералы', 'role': 'Сооснователь', 'bio': ''},
+    {'name': 'Аджибаева Аделия', 'role': 'Co-founder', 'bio': ''},
+    {'name': 'Абуталифулы Ералы', 'role': 'Co-founder', 'bio': ''},
 ]
 
 # Люди из старого seed, которых нет в команде. update_public_content удаляет только их.
@@ -35,14 +35,14 @@ INVENTED_TEAM = ('Айгерим Нурланова', 'Дамир Сапаров
 
 # Программа школы. Курсы ещё не готовы, на сайте они помечены «Скоро».
 COURSES = [
-    {'level': 1, 'title': 'Первое знакомство', 'color': '#f59e0b',
-     'description': 'Стили пива, крепость и плотность. Как пробовать и на что обращать внимание в первом глотке.'},
-    {'level': 2, 'title': 'Вкусовая пирамида', 'color': '#84cc16',
-     'description': 'Верхние ноты, сердце и послевкусие: как раскрывается глоток и чем хмель отличается от солода.'},
-    {'level': 3, 'title': 'Пиво и еда', 'color': '#0ea5e9',
-     'description': 'Четыре типа сочетаний: дополняет, контраст, очищает и мостик. Температура подачи и бокал.'},
-    {'level': 4, 'title': 'Подбор для гостей', 'color': '#8b5cf6',
-     'description': 'Дегустация вслепую, описание вкуса по колесу вкусов пива и подбор напитка к блюдам из меню заведения.'},
+    {'level': 1, 'title': 'First acquaintance', 'color': '#f59e0b',
+     'description': 'Beer styles, strength and gravity. How to taste and what to pay attention to in the first sip.'},
+    {'level': 2, 'title': 'The flavor pyramid', 'color': '#84cc16',
+     'description': 'Top notes, heart and aftertaste: how a sip unfolds and how hops differ from malt.'},
+    {'level': 3, 'title': 'Beer and food', 'color': '#0ea5e9',
+     'description': 'Four types of pairing: complement, contrast, cleanse and bridge. Serving temperature and glassware.'},
+    {'level': 4, 'title': 'Pairing for guests', 'color': '#8b5cf6',
+     'description': 'Blind tasting, describing flavor with the beer flavor wheel and pairing drinks with dishes from the venue menu.'},
 ]
 
 # Курсы старого seed: уровень -> (название, описание). update_public_content заменяет только их.
@@ -73,8 +73,8 @@ PAIRING_TEXT_FIXES = {
 }
 
 DEMO_VENUE_SLUG = 'efes-beer-garden'
-DEMO_VENUE_NAME = 'Демо-бар Flavor Tree'
-DEMO_VENUE_DESCRIPTION = 'Демонстрационное заведение Flavor Tree: меню и цены условные, это пример, а не настоящий бар.'
+DEMO_VENUE_NAME = 'Flavor Tree Demo Bar'
+DEMO_VENUE_DESCRIPTION = 'Flavor Tree demo venue: the menu and prices are illustrative, this is an example, not a real bar.'
 # Заглушки старого seed_roles: выдуманные адрес и телефон. Настоящие данные заведения не трогаем.
 DEMO_PLACEHOLDERS = {'name': 'Efes Beer Garden', 'address': 'пр. Достык 100', 'phone': '+7 727 000 00 00'}
 # Демо-аккаунт заведения из seed_roles: его имя видно в панели.

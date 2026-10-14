@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable, of, throwError, timer } from 'rxjs';
+import { catchError, map, retry, tap } from 'rxjs/operators';
 import { API_BASE } from './api.service';
 import { TokenStore } from './token.store';
 import { AuthResponse, AuthUser, UserRole } from '../models/flavor-tree.models';
@@ -22,9 +22,13 @@ export interface RegisterData {
 /** Какие вкладки панели открыты каждой роли. */
 export const PANEL_ACCESS: Record<UserRole, readonly PanelTab[]> = {
   user: [],
-  sommelier: ['overview', 'brands', 'pairings', 'engine'],
-  restaurant_admin: ['overview', 'dishes', 'menu', 'orders', 'pilot'],
-  moderator: ['overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'pilot', 'engine', 'users', 'settings', 'requests']
+  waiter: [],
+  sommelier: ['overview', 'brands', 'pairings', 'notes', 'engine', 'analytics', 'quiz'],
+  restaurant_admin: ['overview', 'dishes', 'menu', 'orders', 'pilot', 'analytics', 'rewards'],
+  moderator: [
+    'overview', 'brands', 'pairings', 'notes', 'dishes', 'menu', 'orders', 'pilot', 'engine', 'analytics', 'rewards',
+    'users', 'settings', 'requests', 'quiz'
+  ]
 };
 
 /** Старые вкладки pyramid и serving стали частями вкладки brands. */
@@ -35,68 +39,82 @@ const TAB_ALIASES: Partial<Record<PanelTab, PanelTab>> = {
 
 /** Подписи полей для сообщений об ошибках с сервера. */
 export const FIELD_LABELS: Record<string, string> = {
-  username: 'Логин',
+  username: 'Username',
   email: 'Email',
-  password: 'Пароль',
-  first_name: 'Имя',
-  consent: 'Согласие',
-  old_password: 'Старый пароль',
-  new_password: 'Новый пароль',
-  role: 'Роль',
-  venue: 'Заведение',
-  owner: 'Владелец',
-  name: 'Название',
-  price: 'Цена',
-  dish: 'Блюдо',
-  brand: 'Сорт',
-  image: 'Фото',
-  image_url: 'Ссылка на фото',
-  logo: 'Логотип',
-  logo_url: 'Ссылка на логотип',
-  file: 'Файл',
-  kind: 'Тип запроса',
-  payload: 'Данные запроса',
-  comment: 'Комментарий',
-  review_comment: 'Комментарий модератора',
-  flavor_note_id: 'Нота',
-  layer: 'Слой',
-  intensity: 'Интенсивность',
-  sommelier_note: 'Комментарий сомелье',
-  serving_temp_min: 'Температура от',
-  serving_temp_max: 'Температура до',
-  glass_type: 'Бокал',
-  seasonality: 'Сезон',
-  cover: 'Ссылка на обложку',
-  phone: 'Телефон',
-  working_hours: 'Часы работы',
-  address: 'Адрес',
-  city: 'Город',
-  description: 'Описание',
-  category: 'Категория',
-  section: 'Раздел меню',
-  portion: 'Порция',
-  sort_order: 'Порядок',
-  chef_note: 'Комментарий повара',
-  alternatives_count: 'Сколько сортов показывать',
-  min_score_to_show: 'Минимальная оценка',
-  pairing_intro: 'Вступительный текст',
-  venue_type: 'Тип заведения',
-  is_published: 'Показывать гостям',
-  tables_count: 'Количество столов',
-  volume: 'Объём',
-  table_number: 'Номер стола',
-  guest_name: 'Имя гостя',
-  items: 'Позиции заказа',
-  qty: 'Количество',
-  note: 'Примечание',
-  status: 'Статус',
-  is_available: 'В наличии',
-  accepts_orders: 'Приём заказов',
-  rating: 'Оценка'
+  password: 'Password',
+  first_name: 'First name',
+  consent: 'Consent',
+  old_password: 'Current password',
+  new_password: 'New password',
+  role: 'Role',
+  venue: 'Venue',
+  owner: 'Owner',
+  name: 'Name',
+  price: 'Price',
+  dish: 'Dish',
+  brand: 'Beer',
+  image: 'Photo',
+  image_url: 'Photo URL',
+  logo: 'Logo',
+  logo_url: 'Logo URL',
+  file: 'File',
+  kind: 'Request type',
+  payload: 'Request data',
+  comment: 'Comment',
+  review_comment: 'Moderator comment',
+  flavor_note_id: 'Note',
+  layer: 'Layer',
+  intensity: 'Intensity',
+  sommelier_note: 'Sommelier note',
+  serving_temp_min: 'Min. temperature',
+  serving_temp_max: 'Max. temperature',
+  glass_type: 'Glass',
+  seasonality: 'Season',
+  cover: 'Cover image URL',
+  phone: 'Phone',
+  working_hours: 'Opening hours',
+  address: 'Address',
+  city: 'City',
+  description: 'Description',
+  category: 'Category',
+  section: 'Menu section',
+  portion: 'Portion',
+  sort_order: 'Sort order',
+  chef_note: 'Chef note',
+  alternatives_count: 'Number of beers to show',
+  min_score_to_show: 'Minimum score',
+  pairing_intro: 'Intro text',
+  venue_type: 'Venue type',
+  is_published: 'Visible to guests',
+  tables_count: 'Number of tables',
+  volume: 'Volume',
+  table_number: 'Table number',
+  guest_name: 'Guest name',
+  items: 'Order items',
+  qty: 'Quantity',
+  note: 'Note',
+  status: 'Status',
+  is_available: 'Available',
+  accepts_orders: 'Accepting orders',
+  rating: 'Rating',
+  text: 'Question',
+  options: 'Answer options',
+  correct_index: 'Correct answer',
+  explanation: 'Why the pairing works',
+  is_active: 'Show in quiz',
+  level: 'Level',
+  taste: 'Taste',
+  cuisines: 'Cuisines',
+  favorite_brands: 'Favorite beers',
+  answers: 'Answers'
 };
 
 /** Длиннее этого сервер по-человечески не пишет: скорее всего, это трассировка или HTML. */
 const MAX_MESSAGE_LENGTH = 300;
+
+/** Сколько раз повторить проверку сессии, если сервер не ответил, и пауза перед первым повтором. */
+const ME_RETRIES = 2;
+const ME_RETRY_DELAY_MS = 1500;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -175,7 +193,17 @@ export class AuthService {
       this.ready.set(true);
       return;
     }
-    this.http.get<AuthUser>(`${API_BASE}/auth/me/`).subscribe({
+    const rejected = (err: unknown) => err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403);
+    this.http.get<AuthUser>(`${API_BASE}/auth/me/`).pipe(
+      // Холодный старт сервера или обрыв сети: сессия цела, просто ответа нет. Пробуем ещё пару раз
+      // и до конца попыток держим ready = false, иначе вошедшего пользователя уводило на вход.
+      // Отказ по токену и смену токена повтор не лечит.
+      retry({
+        count: ME_RETRIES,
+        delay: (err: unknown, attempt: number) =>
+          rejected(err) || this.store.token() !== token ? throwError(() => err) : timer(ME_RETRY_DELAY_MS * attempt)
+      })
+    ).subscribe({
       next: user => {
         // пока ждали ответ, токен сменился: этот ответ уже не про нас
         if (this.store.token() !== token) return;
@@ -185,7 +213,7 @@ export class AuthService {
       error: (err: unknown) => {
         if (this.store.token() !== token) return;
         // 401 уже сбросил токен в интерцепторе; сеть недоступна - токен оставляем
-        if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) this.clearSession();
+        if (rejected(err)) this.clearSession();
         this.ready.set(true);
       }
     });
@@ -228,18 +256,17 @@ export class AuthService {
   /** Превращает ответ DRF ({detail} | {field: [..]} | {errors: {...}}) в одну строку. */
   static errorText(err: unknown): string {
     if (err instanceof HttpErrorResponse) {
-      // Статус 0: запрос не дошёл (на телефоне обычно пропала сеть). Текст видит гость, без слов про бэкенд
-      if (err.status === 0) return 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.';
+      if (err.status === 0) return 'Can’t reach the server. Check your connection and try again.';
       const text = AuthService.bodyText(err.error);
       if (text) return text;
-      if (err.status === 401) return 'Нужно войти в аккаунт';
-      if (err.status === 403) return 'Недостаточно прав';
-      if (err.status === 404) return 'Не найдено';
-      if (err.status === 413) return 'Файл слишком большой';
-      return `Сервер вернул ошибку ${err.status}`;
+      if (err.status === 401) return 'Please sign in to continue';
+      if (err.status === 403) return 'You don’t have permission to do this';
+      if (err.status === 404) return 'Not found';
+      if (err.status === 413) return 'The file is too large';
+      return `Server error ${err.status}`;
     }
     if (err instanceof Error) return err.message;
-    return 'Неизвестная ошибка';
+    return 'Unknown error';
   }
 
   /** HTML-страницы ошибок Django и прочие сырые ответы пользователю не показываем. */

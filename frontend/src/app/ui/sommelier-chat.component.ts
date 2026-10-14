@@ -1,21 +1,20 @@
 import {
   Component, DestroyRef, ElementRef, EventEmitter, HostListener, Injector, Input, NgZone, Output, afterNextRender, computed, effect,
-  inject, signal, untracked, viewChild
+  inject, input, signal, untracked, viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { TimeoutError, timeout } from 'rxjs';
+import { Observable, TimeoutError, timeout } from 'rxjs';
 import { AgeService } from '../services/age.service';
-import { ApiService } from '../services/api.service';
+import { AI_VISION_TIMEOUT_MS, ApiService } from '../services/api.service';
+import { downscalePhoto, photoProblem } from './image-tools';
 import { AuthService } from '../services/auth.service';
 import { SelectionService } from '../services/selection.service';
 import { TrackService } from '../services/track.service';
 import {
-  AiMessage, AiMode, AiPrefs, AiRequest, AiStatus, AiSuggestion, MenuDrink, MenuEntry, VenueMenu
+  AiMessage, AiMode, AiPrefs, AiReply, AiRequest, AiStatus, AiSuggestion, MenuDrink, MenuEntry, VenueMenu
 } from '../models/flavor-tree.models';
 import { CartLine, addToCart, notifyCartChanged, readCart } from '../pages/venue-menu/cart-storage';
-import { OverlayHistory } from './overlay-history';
-import { OpenChatDetail, attachChat, detachChat } from './chat-open';
 
 /** Сколько реплик уходит на сервер и сколько знаков в каждой: лимиты API. */
 const MAX_TURNS = 12;
@@ -37,7 +36,14 @@ interface ChatMessage extends AiMessage {
   disclaimer?: string;
   /** slug заведения на момент ответа; по нему решаем, можно ли класть карточку в заказ. */
   venue?: string | null;
+  /** Гость прислал фото: в ленте показываем снимок. Адрес живёт до перезагрузки и в хранилище не пишется. */
+  photo?: string;
 }
+
+/** Подпись реплики с фото: под ней фото уходит в историю, которую видит текстовый чат. */
+const PHOTO_CAPTION = 'Dish photo';
+/** Длинная сторона фото для чата: блюдо узнаётся и на небольшом снимке, а отправка быстрее. */
+const PHOTO_MAX_SIDE = 1600;
 
 interface StoredChat {
   messages: ChatMessage[];
@@ -68,7 +74,11 @@ function readHistory(key: string): StoredChat | null {
 function writeHistory(key: string, chat: StoredChat | null): void {
   try {
     if (!chat) sessionStorage.removeItem(key);
-    else sessionStorage.setItem(key, JSON.stringify({ ...chat, messages: chat.messages.slice(-STORED_LIMIT) }));
+    else {
+      // Адрес снимка (blob:) после перезагрузки не работает: в хранилище его не кладём
+      const messages = chat.messages.slice(-STORED_LIMIT).map(({ photo, ...rest }) => rest);
+      sessionStorage.setItem(key, JSON.stringify({ ...chat, messages }));
+    }
   } catch {
     // без хранилища история живёт до перезагрузки
   }
@@ -77,26 +87,6 @@ function writeHistory(key: string, chat: StoredChat | null): void {
 /** Прокрутка страницы меню, после которой кнопка сомелье прячется, пока гость листает вниз. */
 const TUCK_AFTER_PX = 160;
 const TUCK_STEP_PX = 6;
-
-/**
- * Что плавающая кнопка не должна закрывать на телефоне: основные кнопки (.btn-amber, отправка формы),
- * поля ввода и форму поиска целиком (на главной это «Подобрать» и поле блюда). Страница может отметить
- * и свой элемент атрибутом data-fab-avoid.
- */
-const FAB_AVOID = 'button[type="submit"], .btn-amber, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), select, textarea, [role="search"], [data-fab-avoid]';
-/** Проверяем, когда прокрутка остановилась: на ходу кнопка не мигает над каждой карточкой. */
-const COVER_REST_MS = 160;
-/** Точки кнопки (доли ширины и высоты), под которыми ищем такие элементы: центр и четыре точки на краю круга. */
-const FAB_PROBES: ReadonlyArray<readonly [number, number]> = [[0.5, 0.5], [0.15, 0.15], [0.85, 0.15], [0.15, 0.85], [0.85, 0.85]];
-/** Телефон и сенсорный экран: только там кнопка уходит с основных действий, десктоп не меняем. */
-const TOUCH_QUERY = '(max-width: 768px), (pointer: coarse)';
-/** На сколько видимая часть экрана меньше макета, чтобы считать это клавиатурой, а не адресной строкой. */
-const KEYBOARD_MIN_PX = 120;
-/**
- * Лист во весь экран (телефон, телефон боком, styles.css): у открытого чата своя запись в истории,
- * «Назад» закрывает его. Боковая панель планшета и десктопа истории не трогает.
- */
-const FULL_SHEET_QUERY = '(max-width: 768px), (max-height: 500px) and (pointer: coarse)';
 
 /** Строка корзины из чата: откуда позиция, к какому блюду подобран напиток и место карточки (поля CartLine). */
 interface AiCartMeta {
@@ -148,7 +138,7 @@ function subFromSubtitle(subtitle: string): string {
       (click)="toggle()"
       [attr.aria-expanded]="open()"
       aria-controls="ai-sheet"
-      aria-label="Сомелье Flavor Tree"
+      aria-label="Flavor Tree Sommelier"
       #fab
     >
       <!-- Пузырь диалога с кружкой пива внутри -->
@@ -158,26 +148,25 @@ function subFromSubtitle(subtitle: string): string {
         <path d="M14 10.5h1a1.5 1.5 0 0 1 0 3h-1"/>
         <path d="M9 9c0-1 .8-1.5 2.5-1.5S14 8 14 9"/>
       </svg>
-      <span class="ai-fab-label">Сомелье</span>
+      <span class="ai-fab-label">Sommelier</span>
     </button>
 
     @if (open()) {
-      <section class="ai-sheet" id="ai-sheet" role="dialog" aria-labelledby="ai-title" #sheet>
+      <section class="ai-sheet" id="ai-sheet" role="dialog" aria-labelledby="ai-title">
         <header class="ai-head">
           <div class="ai-head-text">
-            <h2 id="ai-title" class="ai-title">Сомелье</h2>
+            <h2 id="ai-title" class="ai-title">Sommelier</h2>
             <span class="ai-sub">{{ contextLabel() }}</span>
           </div>
-          <!-- На узком телефоне подпись движка короче (styles.css), иначе она съедает подпись контекста -->
           @if (status()) {
-            <span class="ai-status" [class.ai-status-on]="claudeOn()" [title]="statusTitle()">@if (claudeOn()) {ИИ Claude} @else {<span class="ai-status-long">Ответы по вкусовому движку</span><span class="ai-status-short">Вкусовой движок</span>}</span>
+            <span class="ai-status" [class.ai-status-on]="claudeOn()" [title]="statusTitle()">{{ claudeOn() ? 'Claude AI' : 'Taste engine' }}</span>
           }
           @if (messages().length) {
-            <button type="button" class="btn-ghost ai-icon-btn" (click)="clearHistory()" aria-label="Начать заново" title="Начать заново">
+            <button type="button" class="btn-ghost ai-icon-btn" (click)="clearHistory()" aria-label="Start over" title="Start over">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
           }
-          <button type="button" class="btn-ghost ai-icon-btn" (click)="close()" aria-label="Закрыть">
+          <button type="button" class="btn-ghost ai-icon-btn" (click)="close()" aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </header>
@@ -190,15 +179,19 @@ function subFromSubtitle(subtitle: string): string {
           }
           @for (m of messages(); track $index) {
             <div class="ai-msg" [class.ai-msg-me]="m.role === 'user'" [class.ai-msg-bot]="m.role !== 'user'">
-              <div class="ai-bubble">{{ m.content }}</div>
+              @if (m.photo) {
+                <img class="ai-photo-msg" [src]="m.photo" alt="Guest's dish photo" />
+              } @else {
+                <div class="ai-bubble">{{ m.content }}</div>
+              }
               @if (cardsOf(m); as cards) {
                 <div class="ai-cards">
                   @for (s of cards; track $index) {
                     <article class="ai-card">
                       <div class="ai-card-head">
-                        <span class="ai-card-kind">{{ s.kind === 'DISH' ? 'Блюдо' : 'Напиток' }}</span>
+                        <span class="ai-card-kind">{{ s.kind === 'DISH' ? 'Dish' : 'Drink' }}</span>
                         @if (s.score) {
-                          <span class="ai-score" role="img" [attr.aria-label]="'Совместимость ' + s.score + ' из 5'">
+                          <span class="ai-score" role="img" [attr.aria-label]="'Match ' + s.score + ' out of 5'">
                             @for (p of pips; track p) {
                               <span class="ai-pip" [class.on]="p <= s.score"></span>
                             }
@@ -208,7 +201,7 @@ function subFromSubtitle(subtitle: string): string {
                       </div>
                       <h3 class="ai-card-title">{{ s.title }}</h3>
                       @if (s.subtitle) { <p class="ai-card-sub">{{ s.subtitle }}</p> }
-                      @if (pairedTitle(m, s); as t) { <p class="ai-card-pair">К блюду «{{ t }}»</p> }
+                      @if (pairedTitle(m, s); as t) { <p class="ai-card-pair">Pairs with “{{ t }}”</p> }
                       @if (s.reason) { <p class="ai-card-reason">{{ s.reason }}</p> }
                       <div class="ai-card-actions">
                         @if (canOrder(m)) {
@@ -216,19 +209,19 @@ function subFromSubtitle(subtitle: string): string {
                             <button type="button" class="ai-card-btn" [class.ai-card-btn-done]="isAdded(s)" (click)="addToOrder(m, s, $index)">
                               @if (isAdded(s)) {
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                                Добавлено
+                                Added
                               } @else {
-                                В заказ
+                                Add to order
                               }
                             </button>
                           } @else {
-                            <span class="ai-card-off">Нет в наличии</span>
+                            <span class="ai-card-off">Out of stock</span>
                           }
                           @if (brandIdOf(s); as b) {
-                            <button type="button" class="ai-card-link" (click)="openBrandPage(b)">О напитке</button>
+                            <button type="button" class="ai-card-link" (click)="openBrandPage(b)">About this drink</button>
                           }
                         } @else if (canOpen(m, s)) {
-                          <button type="button" class="ai-card-btn ai-card-btn-outline" (click)="openBrandPage(s.brand || s.id)">Открыть</button>
+                          <button type="button" class="ai-card-btn ai-card-btn-outline" (click)="openBrandPage(s.brand || s.id)">Open</button>
                         }
                       </div>
                     </article>
@@ -244,7 +237,7 @@ function subFromSubtitle(subtitle: string): string {
           }
           @if (busy()) {
             <div class="ai-msg ai-msg-bot">
-              <div class="ai-bubble ai-typing" role="status" aria-label="Сомелье печатает">
+              <div class="ai-bubble ai-typing" role="status" aria-label="Sommelier is typing">
                 <span></span><span></span><span></span>
               </div>
             </div>
@@ -252,42 +245,47 @@ function subFromSubtitle(subtitle: string): string {
           @if (error()) {
             <div class="ai-error" role="alert">
               <span>{{ error() }}</span>
-              <button type="button" class="ai-retry" (click)="retry()">Повторить</button>
+              <button type="button" class="ai-retry" (click)="retry()">Try again</button>
             </div>
           }
         </div>
 
         <div class="ai-foot">
-          <div class="ai-chips" aria-label="Быстрые вопросы">
+          <div class="ai-chips" aria-label="Quick questions">
             @for (c of chips(); track c) {
               <button type="button" class="ai-chip" (click)="send(c)" [disabled]="busy()">{{ c }}</button>
             }
           </div>
-          <div class="ai-prefs" role="group" aria-label="Пожелания">
-            <button type="button" class="ai-pref" [class.on]="prefs().no_bitter" [attr.aria-pressed]="!!prefs().no_bitter" (click)="togglePref('no_bitter')">Без горечи</button>
-            <button type="button" class="ai-pref" [class.on]="prefs().light" [attr.aria-pressed]="!!prefs().light" (click)="togglePref('light')">Полегче</button>
+          <div class="ai-prefs" role="group" aria-label="Preferences">
+            <button type="button" class="ai-pref" [class.on]="prefs().no_bitter" [attr.aria-pressed]="!!prefs().no_bitter" (click)="togglePref('no_bitter')">Not bitter</button>
+            <button type="button" class="ai-pref" [class.on]="prefs().light" [attr.aria-pressed]="!!prefs().light" (click)="togglePref('light')">Something lighter</button>
             <!-- Гостю младше 21 «Без алкоголя» включено всегда -->
             <button type="button" class="ai-pref" [class.on]="prefs().no_alcohol || under21()" [attr.aria-pressed]="!!prefs().no_alcohol || under21()"
-                    [disabled]="under21()" (click)="togglePref('no_alcohol')">Без алкоголя</button>
+                    [disabled]="under21()" (click)="togglePref('no_alcohol')">Alcohol-free</button>
           </div>
           <form class="ai-input-row" (submit)="onSubmit($event); inputEl.value = ''">
+            <button type="button" class="ai-photo-btn" [disabled]="busy()" (click)="photoInput.click()"
+                    aria-label="Send a dish photo" title="Send a dish photo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </button>
+            <input type="file" accept="image/*" hidden #photoInput (change)="onPhoto($event)" />
             <input
               id="ai-input"
               class="ai-input"
               type="text"
               [attr.maxlength]="maxChars"
               autocomplete="off"
-              placeholder="Спросите сомелье..."
-              aria-label="Сообщение сомелье"
+              placeholder="Ask the sommelier..."
+              aria-label="Message to the sommelier"
               [value]="input()"
               (input)="input.set($any($event.target).value)"
               #inputEl
             />
-            <button type="submit" class="ai-send" [disabled]="busy() || !input().trim()" aria-label="Отправить">
+            <button type="submit" class="ai-send" [disabled]="busy() || !input().trim()" aria-label="Send">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
             </button>
           </form>
-          <p class="ai-foot-note">Алкоголь только для гостей старше 21 года. Чрезмерное употребление алкоголя вредит вашему здоровью. Про аллергию и состав блюд спросите официанта.</p>
+          <p class="ai-foot-note">Alcohol is served to guests 21 and over only. Excessive drinking is harmful to your health. For allergies and ingredients, please ask your server.</p>
         </div>
       </section>
     }
@@ -305,10 +303,15 @@ export class SommelierChatComponent {
 
   /** На странице меню кнопку поднимаем над полосой корзины и прячем, пока гость листает вниз. */
   @Input() lift = false;
+  /**
+   * Гость сейчас на странице меню заведения. Только тогда чат советует из его карты бара:
+   * на остальных страницах последнее открытое заведение чату не указ, он отвечает по каталогу.
+   */
+  inVenue = input(false);
   /** Гость нажал «Открыть» или «О напитке»: AppComponent показывает страницу сорта. */
   @Output() openBrand = new EventEmitter<string>();
 
-  readonly slug = this.selection.venueSlug;
+  readonly slug = computed(() => this.inVenue() ? this.selection.venueSlug() : null);
   readonly pips = [1, 2, 3, 4, 5];
   readonly maxChars = MAX_CHARS;
   /** Гость ответил, что ему нет 21: чат советует только безалкогольное из этого меню. */
@@ -336,6 +339,8 @@ export class SommelierChatComponent {
   private menuSlug: string | null = null;
   /** Для какого ответа о возрасте загружено меню: гостю младше 21 карта только с безалкогольным. */
   private menuUnder21 = false;
+  /** Фото последнего вопроса: «Повторить» после ошибки отправляет его же, а не текст. */
+  private lastPhoto: File | null = null;
   private statusRequested = false;
   private historyLoaded = false;
   private currentKey = historyKey(null);
@@ -344,47 +349,18 @@ export class SommelierChatComponent {
   private readonly list = viewChild<ElementRef<HTMLElement>>('list');
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly fab = viewChild<ElementRef<HTMLButtonElement>>('fab');
-  private readonly sheet = viewChild<ElementRef<HTMLElement>>('sheet');
-  private readonly touch = window.matchMedia(TOUCH_QUERY);
-  private readonly fullSheet = window.matchMedia(FULL_SHEET_QUERY);
-  private coverTicking = false;
-  private coverTimer: ReturnType<typeof setTimeout> | undefined;
-
-  /** Запись чата в истории браузера: «Назад» на телефоне закрывает лист, «Вперёд» открывает снова. */
-  private readonly entry = new OverlayHistory('chat', {
-    back: () => this.zone.run(() => this.hide()),
-    forward: () => this.zone.run(() => this.show(false)),
-    isOpen: () => this.open(),
-  });
-
-  /** Страница попросила открыть чат (событие ft-open-chat, chat-open.ts): текст встаёт в поле ввода. */
-  private readonly openRequest = (detail: OpenChatDetail) => this.zone.run(() => {
-    const text = (detail.text || '').trim().slice(0, MAX_CHARS);
-    if (text) this.input.set(text);
-    if (!this.open()) this.show();
-  });
 
   constructor() {
-    this.destroyRef.onDestroy(() => this.entry.destroy());
-    // Страницу обновили с открытым чатом (запись чата текущая): открываем его снова
-    if (this.entry.resume()) {
-      if (this.fullSheet.matches) this.show(false);
-      else this.entry.settle(false);
-    }
-    const waiting = attachChat(this.openRequest);
-    this.destroyRef.onDestroy(() => detachChat(this.openRequest));
-    if (waiting) this.openRequest(waiting);
-
     // Сменилось заведение: показываем его историю, а не чужую
     effect(() => {
-      const key = historyKey(this.selection.venueSlug());
+      const key = historyKey(this.slug());
       untracked(() => this.switchHistory(key));
     }, { allowSignalWrites: true });
 
     // Лист открыт для заведения: подтягиваем его меню один раз (и заново, если поменялся ответ о возрасте)
     effect(() => {
       const open = this.open();
-      const slug = this.selection.venueSlug();
+      const slug = this.slug();
       const under21 = this.age.under21();
       untracked(() => {
         if (!open) return;
@@ -399,32 +375,6 @@ export class SommelierChatComponent {
     // Прокрутку слушаем вне зоны Angular: в зону заходим, только когда кнопка прячется или появляется
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
     this.destroyRef.onDestroy(() => window.removeEventListener('scroll', this.onScroll));
-
-    // Кнопка поверх основного действия: проверяем после первой отрисовки, после остановки прокрутки (onScroll)
-    // и когда меняется высота документа (другая страница, догрузка) или ширина экрана (поворот)
-    this.afterRender(() => this.checkCover());
-    this.destroyRef.onDestroy(() => clearTimeout(this.coverTimer));
-    if (typeof ResizeObserver !== 'undefined') {
-      this.zone.runOutsideAngular(() => {
-        const ro = new ResizeObserver(this.scheduleCover);
-        ro.observe(document.documentElement);
-        this.destroyRef.onDestroy(() => ro.disconnect());
-      });
-    }
-
-    // Лист открыт: следим за visualViewport, чтобы клавиатура не закрывала шапку и ленту
-    effect(onCleanup => {
-      const vv = window.visualViewport;
-      if (!this.open() || !vv) return;
-      this.zone.runOutsideAngular(() => {
-        vv.addEventListener('resize', this.fitSheet);
-        vv.addEventListener('scroll', this.fitSheet);
-      });
-      onCleanup(() => {
-        vv.removeEventListener('resize', this.fitSheet);
-        vv.removeEventListener('scroll', this.fitSheet);
-      });
-    });
 
     // Новые сообщения и индикатор набора: список листаем вниз
     effect(() => {
@@ -454,17 +404,12 @@ export class SommelierChatComponent {
 
   readonly chips = computed(() => {
     const dish = this.firstDish();
-    const toDish = dish ? `Что взять к блюду «${dish}»?` : 'Что взять к бешбармаку?';
-    // Гостю младше 21 не предлагаем вопросов о пиве: только блюда и безалкогольное
-    if (this.under21()) {
-      return [toDish, 'Что выпить без алкоголя?', 'Хочу что-то лёгкое', 'Что взять к десерту?', 'Посоветуй ужин на двоих'];
-    }
     return [
-      toDish,
-      'Чем закусить пиво?',
-      'Хочу что-то лёгкое',
-      'Что такое лагер?',
-      'Посоветуй ужин на двоих',
+      dish ? `What goes well with “${dish}”?` : 'What goes well with beshbarmak?',
+      'What should I eat with beer?',
+      'I want something light',
+      'What is a lager?',
+      'Suggest a dinner for two',
     ];
   });
 
@@ -477,28 +422,28 @@ export class SommelierChatComponent {
   readonly statusTitle = computed(() => {
     const s = this.status();
     if (!s) return '';
-    if (this.claudeOn()) return `Отвечает модель ${s.model}; при сбое отвечает вкусовой движок Flavor Tree`;
-    if (s.enabled && s.limit_reached) return 'Лимит ответов ИИ на сегодня исчерпан, отвечает вкусовой движок Flavor Tree';
-    return 'Ответы подбирает вкусовой движок Flavor Tree по правилам сочетания, без языковой модели';
+    if (this.claudeOn()) return `Answered by ${s.model}; the Flavor Tree taste engine steps in if it fails`;
+    if (s.enabled && s.limit_reached) return 'Today\'s AI answer limit is reached; the Flavor Tree taste engine is answering';
+    return 'Answers come from the Flavor Tree taste engine using pairing rules, no language model';
   });
 
   readonly contextLabel = computed(() => {
     const slug = this.slug();
-    if (!slug) return 'Совет по каталогу сортов';
-    const name = this.venueMenu()?.venue.name || 'Меню заведения';
+    if (!slug) return 'Advice from the beer catalog';
+    const name = this.venueMenu()?.venue.name || 'Venue menu';
     const table = this.selection.tableNumber();
-    return table && table > 0 ? `${name} · стол ${table}` : name;
+    return table && table > 0 ? `${name} · table ${table}` : name;
   });
 
   readonly greeting = computed(() => {
     if (this.under21()) {
       return this.slug()
-        ? 'Здравствуйте! Подскажу блюда из меню и безалкогольный напиток к ним. Спросите или выберите подсказку ниже.'
-        : 'Здравствуйте! Подскажу безалкогольный напиток под блюдо или настроение. Спросите или выберите подсказку ниже.';
+        ? 'Hi! I can suggest dishes from the menu and an alcohol-free drink to go with them. Ask me anything, pick a suggestion below, or send a photo of a dish.'
+        : 'Hi! I can suggest an alcohol-free drink to match your dish or mood. Ask me anything, pick a suggestion below, or send a photo of a dish.';
     }
     return this.slug()
-      ? 'Здравствуйте! Подскажу, что взять из меню и какой напиток к этому подойдёт. Спросите или выберите подсказку ниже.'
-      : 'Здравствуйте! Помогу выбрать сорт под блюдо или настроение. Спросите или выберите подсказку ниже.';
+      ? 'Hi! I can help you choose from the menu and find the right drink to go with it. Ask me anything, pick a suggestion below, or send a photo of a dish.'
+      : 'Hi! I can help you pick a beer to match your dish or mood. Ask me anything, pick a suggestion below, or send a photo of a dish and I will recognize it and find a drink.';
   });
 
   /**
@@ -506,8 +451,6 @@ export class SommelierChatComponent {
    * у правого края), и возвращается при прокрутке вверх и в начале страницы.
    */
   private readonly onScroll = () => {
-    clearTimeout(this.coverTimer);
-    this.coverTimer = setTimeout(this.checkCover, COVER_REST_MS);
     if (this.scrollTicking) return;
     this.scrollTicking = true;
     requestAnimationFrame(() => {
@@ -521,52 +464,6 @@ export class SommelierChatComponent {
     });
   };
 
-  /**
-   * Телефон: кнопка сомелье уходит, пока стоит поверх основной кнопки или поля ввода (на главной при 390x844
-   * она закрывала правый край «Подобрать»). Проверка после остановки прокрутки, после смены страницы
-   * и поворота экрана. Класс ставим прямо на кнопку: всё это идёт вне зоны Angular.
-   */
-  private readonly checkCover = () => {
-    const fab = this.fab()?.nativeElement;
-    if (!fab) return;
-    // offsetLeft и offsetTop у fixed-кнопки без transform: спрятанная (сдвинутая вниз) кнопка проверяет
-    // то же место, где стоит видимая, и не мигает. Открыт чат: кнопки нет (display: none), ширина 0
-    const w = fab.offsetWidth;
-    const h = fab.offsetHeight;
-    const cover = !!w && !!h && this.touch.matches && FAB_PROBES.some(([fx, fy]) =>
-      document.elementsFromPoint(fab.offsetLeft + w * fx, fab.offsetTop + h * fy)
-        .some(el => !fab.contains(el) && el.matches(FAB_AVOID)));
-    fab.classList.toggle('ai-fab-away', cover);
-  };
-
-  private readonly scheduleCover = () => {
-    if (this.coverTicking) return;
-    this.coverTicking = true;
-    requestAnimationFrame(() => {
-      this.coverTicking = false;
-      this.checkCover();
-    });
-  };
-
-  /**
-   * Экранная клавиатура уменьшает видимую часть экрана, а лист (position: fixed) остаётся во весь макет:
-   * шапка с «Закрыть» и лента уходят за край. Пока клавиатура открыта, лист встаёт в видимую часть
-   * (visualViewport), а класс ai-kb прячет подсказки и пожелания. Щипок-зум не трогаем.
-   */
-  private readonly fitSheet = () => {
-    const el = this.sheet()?.nativeElement;
-    const vv = window.visualViewport;
-    if (!el || !vv) return;
-    const kb = vv.scale < 1.01 && document.documentElement.clientHeight - vv.height > KEYBOARD_MIN_PX;
-    const opened = kb && !el.classList.contains('ai-kb');
-    el.classList.toggle('ai-kb', kb);
-    el.style.top = kb ? `${Math.round(vv.offsetTop)}px` : '';
-    el.style.height = kb ? `${Math.round(vv.height)}px` : '';
-    // Клавиатура только открылась: последние сообщения остаются на виду над полем ввода
-    const list = this.list()?.nativeElement;
-    if (opened && list) list.scrollTop = list.scrollHeight;
-  };
-
   // Открытие и закрытие
 
   toggle(): void {
@@ -574,11 +471,8 @@ export class SommelierChatComponent {
     else this.show();
   }
 
-  /** push: лист во весь экран получает свою запись в истории (false: открываем по «Вперёд» или после обновления). */
-  show(push = true): void {
-    if (this.open()) return;
+  show(): void {
     this.open.set(true);
-    if (push && this.fullSheet.matches) this.entry.push();
     if (!this.statusRequested) this.loadStatus();
     // Отрисовка идёт после события (eventCoalescing), поэтому ждём её, а не setTimeout.
     // На телефоне клавиатура закрыла бы половину чата, поэтому фокус только на широком экране
@@ -588,24 +482,10 @@ export class SommelierChatComponent {
     });
   }
 
-  /**
-   * Крестик и Escape (dismiss): запись чата в истории снимаем шагом назад. Переход на страницу сорта
-   * (dismiss = false): AppComponent ставит новую страницу на место записи чата, шаг назад не нужен.
-   */
-  close(dismiss = true): void {
-    if (!this.open()) return;
-    this.hide();
-    this.afterRender(() => this.entry.settle(dismiss));
-  }
-
-  /** Лист закрылся: кнопка сомелье снова на месте и в фокусе. «Назад» телефона вызывает только это. */
-  private hide(): void {
+  close(): void {
     if (!this.open()) return;
     this.open.set(false);
-    this.afterRender(() => {
-      this.checkCover();
-      this.fab()?.nativeElement.focus();
-    });
+    this.afterRender(() => this.fab()?.nativeElement.focus());
   }
 
   /** Escape закрывает чат, но не когда открыт лист стола или корзины: там Escape закрывает его. */
@@ -627,6 +507,7 @@ export class SommelierChatComponent {
     if (!q || this.busy()) return;
     this.input.set('');
     this.error.set('');
+    this.lastPhoto = null;
     this.push({ role: 'user', content: q.slice(0, MAX_CHARS) });
     this.ask();
   }
@@ -635,7 +516,34 @@ export class SommelierChatComponent {
   retry(): void {
     if (this.busy()) return;
     this.error.set('');
-    this.ask();
+    if (this.lastPhoto) this.askByPhoto(this.lastPhoto);
+    else this.ask();
+  }
+
+  /** Гость выбрал или снял фото блюда: уменьшаем его и отправляем сомелье. */
+  async onPhoto(event: Event): Promise<void> {
+    const inputEl = event.target as HTMLInputElement;
+    const original = inputEl.files?.[0];
+    inputEl.value = '';
+    if (!original || this.busy()) return;
+    this.error.set('');
+    const file = await downscalePhoto(original, PHOTO_MAX_SIDE);
+    const problem = photoProblem(file);
+    if (problem) {
+      this.lastPhoto = null;
+      this.error.set(problem);
+      return;
+    }
+    this.lastPhoto = file;
+    this.push({ role: 'user', content: PHOTO_CAPTION, photo: URL.createObjectURL(file) });
+    this.askByPhoto(file);
+  }
+
+  private askByPhoto(file: File): void {
+    const p = this.prefs();
+    // Гостю младше 21 фото-подбор тоже только безалкогольный
+    const prefs = { no_bitter: !!p.no_bitter, light: !!p.light, no_alcohol: !!p.no_alcohol || this.under21() };
+    this.run(this.api.askSommelierByPhoto(file, this.slug(), prefs).pipe(timeout(AI_VISION_TIMEOUT_MS)));
   }
 
   togglePref(key: keyof AiPrefs): void {
@@ -654,7 +562,6 @@ export class SommelierChatComponent {
   private ask(): void {
     const turns = lastTurns(this.messages());
     if (!turns.length || turns[turns.length - 1].role !== 'user') return;
-    const key = this.currentKey;
     const slug = this.slug();
     const table = this.selection.tableNumber();
     const p = this.prefs();
@@ -674,8 +581,15 @@ export class SommelierChatComponent {
       if (cart.length) body.cart = cart.map(l => ({ kind: l.kind, id: l.id, title: l.title, qty: l.qty }));
     }
 
+    this.run(this.api.askSommelier(body).pipe(timeout(REQUEST_TIMEOUT_MS)));
+  }
+
+  /** Общий путь ответа для текста и фото: индикатор, карточки, ошибка с повтором. */
+  private run(request: Observable<AiReply>): void {
+    const key = this.currentKey;
+    const slug = this.slug();
     this.busy.set(true);
-    this.api.askSommelier(body).pipe(timeout(REQUEST_TIMEOUT_MS), takeUntilDestroyed(this.destroyRef)).subscribe({
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: r => {
         this.busy.set(false);
         // Пока ждали, гость открыл другое заведение: ответ относится к прошлой истории
@@ -684,7 +598,7 @@ export class SommelierChatComponent {
         this.safetyFlags = Array.from(new Set([...this.safetyFlags, ...flags]));
         this.push({
           role: 'assistant',
-          content: (r?.reply || '').trim() || 'Не нашёл, что посоветовать. Попробуйте спросить иначе.',
+          content: (r?.reply || '').trim() || 'I couldn\'t find anything to suggest. Try asking a different way.',
           suggestions: Array.isArray(r?.suggestions) ? r.suggestions : [],
           mode: r?.mode,
           note: r?.note || '',
@@ -702,10 +616,15 @@ export class SommelierChatComponent {
   }
 
   private errorText(err: unknown): string {
-    if (err instanceof TimeoutError) return 'Сомелье долго не отвечает. Попробуйте ещё раз.';
+    if (err instanceof TimeoutError) return 'The sommelier is taking too long to reply. Please try again.';
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 429) return 'Слишком много вопросов подряд. Подождите минуту и повторите.';
-      if (err.status === 404) return 'Сомелье пока недоступен на сервере.';
+      if (err.status === 429) {
+        return err.error?.code === 'ai_budget'
+          ? 'You\'ve reached today\'s photo limit. Please type the dish name instead.'
+          : 'Too many questions in a row. Please wait a minute and try again.';
+      }
+      if (err.status === 404) return 'The AI sommelier is not available on the server yet.';
+      if (err.status === 413) return 'The photo is too large. Retake it or choose a smaller file.';
     }
     return AuthService.errorText(err);
   }
@@ -762,9 +681,9 @@ export class SommelierChatComponent {
   modeCaption(m: ChatMessage): string {
     if (m.safety) {
       // Флаг из прошлых реплик в режиме Claude: ответ писала модель, но без алкоголя
-      return m.mode === 'claude' ? 'Ответ: ИИ Claude, без алкоголя' : 'Ответ по правилам безопасности: без алкоголя';
+      return m.mode === 'claude' ? 'Answered by Claude AI, alcohol-free' : 'Safety rules applied: alcohol-free';
     }
-    return m.mode === 'claude' ? 'Ответ: ИИ Claude' : 'Ответ по вкусовому движку Flavor Tree';
+    return m.mode === 'claude' ? 'Answered by Claude AI' : 'Answered by the Flavor Tree taste engine';
   }
 
   /** Меню загружено и позиции в нём нет или она снята: класть в заказ нельзя. */
@@ -833,7 +752,7 @@ export class SommelierChatComponent {
   openBrandPage(brandId: string): void {
     this.selection.open(brandId);
     this.openBrand.emit(brandId);
-    this.close(false);
+    this.close();
   }
 
   /** Строка корзины из меню; если меню не загрузилось, цену и объём берём из подписи карточки. */

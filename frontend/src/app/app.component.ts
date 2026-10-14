@@ -1,6 +1,4 @@
-import {
-  Component, HostListener, Injector, NgZone, OnDestroy, OnInit, afterNextRender, computed, effect, inject, signal, untracked
-} from '@angular/core';
+import { Component, HostListener, NgZone, OnDestroy, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LandingComponent } from './pages/landing/landing.component';
 import { BrandExplorerComponent } from './pages/brand-explorer/brand-explorer.component';
@@ -12,12 +10,12 @@ import { BeerDetailComponent } from './pages/beer-detail/beer-detail.component';
 import { VenueMenuComponent } from './pages/venue-menu/venue-menu.component';
 import { AuthComponent } from './pages/auth/auth.component';
 import { ProfileComponent } from './pages/profile/profile.component';
+import { PassportComponent } from './pages/passport/passport.component';
 import { SommelierChatComponent } from './ui/sommelier-chat.component';
 import { AgeGateComponent } from './ui/age-gate.component';
 import { SiteFooterComponent } from './ui/site-footer.component';
-import { OverlayHistory, overlayEntry, replaceOverlayEntry } from './ui/overlay-history';
-import { OPEN_CHAT_EVENT, openChatDetail, requestOpenChat } from './ui/chat-open';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
+import { LangSwitchComponent } from './ui/lang-switch.component';
 import { AgeService } from './services/age.service';
 import { AuthService } from './services/auth.service';
 import { SelectionService } from './services/selection.service';
@@ -29,15 +27,16 @@ export type { ActiveTab } from './models/navigation';
 /** Разделы, где query в адресе хранит состояние экрана: режим, фильтры, блюдо, открытый напиток (pages/drinks-v2/v2-url.ts). */
 const QUERY_TABS: ReadonlySet<ActiveTab> = new Set<ActiveTab>(['explorer', 'pairing']);
 
-/** Путь в адресной строке для раздела. Сорт и заведение попадают в него параметром. */
-function pathFor(tab: ActiveTab, brandId: string | null, venueSlug: string | null): string {
+/** Путь в адресной строке для раздела. Сорт, заведение и урок попадают в него параметром. */
+function pathFor(tab: ActiveTab, brandId: string | null, venueSlug: string | null, lessonSlug: string | null, staff = false): string {
   switch (tab) {
     case 'explorer': return '/catalog';
     case 'beer': return brandId ? `/beer/${encodeURIComponent(brandId)}` : '/catalog';
     case 'pairing': return '/pairings';
-    case 'academy': return '/academy';
+    case 'academy': return lessonSlug ? `/academy/${encodeURIComponent(lessonSlug)}` : '/academy';
+    case 'passport': return '/passport';
     case 'admin': return '/panel';
-    case 'menu': return venueSlug ? `/menu/${encodeURIComponent(venueSlug)}` : '/menu';
+    case 'menu': return venueSlug ? `/menu/${encodeURIComponent(venueSlug)}${staff ? '/staff' : ''}` : '/menu';
     case 'login': return '/login';
     case 'register': return '/register';
     case 'profile': return '/profile';
@@ -58,6 +57,9 @@ interface ParsedPath {
   tab: ActiveTab;
   brandId?: string;
   venueSlug?: string | null;
+  lessonSlug?: string | null;
+  /** /menu/<slug>/staff: шпаргалка официанта вместо меню гостя. */
+  staff?: boolean;
 }
 
 /** Обратная операция: из адреса в раздел. Незнакомый адрес ведёт на главную. */
@@ -68,15 +70,16 @@ function parsePath(pathname: string): ParsedPath {
   } catch {
     return { tab: 'landing' };
   }
-  const [first = '', second = ''] = parts;
+  const [first = '', second = '', third = ''] = parts;
   switch (first) {
     case '': return { tab: 'landing' };
     case 'catalog': return { tab: 'explorer' };
     case 'beer': return second ? { tab: 'beer', brandId: second } : { tab: 'explorer' };
     case 'pairings': return { tab: 'pairing' };
-    case 'academy': return { tab: 'academy' };
+    case 'academy': return { tab: 'academy', lessonSlug: second || null };
+    case 'passport': return { tab: 'passport' };
     case 'panel': return { tab: 'admin' };
-    case 'menu': return { tab: 'menu', venueSlug: second || null };
+    case 'menu': return { tab: 'menu', venueSlug: second || null, staff: !!second && third === 'staff' };
     case 'login': return { tab: 'login' };
     case 'register': return { tab: 'register' };
     case 'profile': return { tab: 'profile' };
@@ -85,21 +88,19 @@ function parsePath(pathname: string): ParsedPath {
   }
 }
 
-/** Телефон и сенсорный экран: у открытого мобильного меню своя запись в истории, «Назад» закрывает его. */
-const TOUCH_QUERY = '(max-width: 768px), (pointer: coarse)';
-
 /** Заголовок вкладки браузера по разделу. На главной остаётся title из index.html. */
 const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
-  explorer: 'Каталог',
-  beer: 'Каталог',
-  pairing: 'К блюду',
-  academy: 'Академия',
-  admin: 'Панель',
-  menu: 'Меню',
-  login: 'Вход',
-  register: 'Регистрация',
-  profile: 'Профиль',
-  privacy: 'Конфиденциальность'
+  explorer: 'Catalog',
+  beer: 'Catalog',
+  pairing: 'Food pairing',
+  academy: 'Academy',
+  passport: 'Taste passport',
+  admin: 'Dashboard',
+  menu: 'Menu',
+  login: 'Sign in',
+  register: 'Sign up',
+  profile: 'Profile',
+  privacy: 'Privacy'
 };
 
 @Component({
@@ -117,10 +118,12 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
     VenueMenuComponent,
     AuthComponent,
     ProfileComponent,
+    PassportComponent,
     SommelierChatComponent,
     AgeGateComponent,
     SiteFooterComponent,
-    PrivacyComponent
+    PrivacyComponent,
+    LangSwitchComponent
   ],
   template: `
     <!-- Колосья по краям страницы: растут из-за кулис, едут при прокрутке -->
@@ -141,7 +144,7 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
     </div>
 
     <!-- Навигация с Glassmorphism -->
-    <header class="nav-container" [class.has-tabbar]="showTabBar()">
+    <header class="nav-container">
       <nav class="glass-panel nav-bar">
         <!-- Логотип -->
         <div class="nav-logo" (click)="goTo('landing')">
@@ -157,44 +160,48 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
         <!-- Липкий заголовок: появляется, когда H1 главной уходит за навбар -->
         <div class="nav-sticky-title" [class.visible]="showStickyTitle()" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
-          Что выберешь <span class="accent">сегодня?</span>
+          What will you pick <span class="accent">today?</span>
         </div>
 
         <!-- Десктопные табы -->
-        <div class="nav-tabs" role="tablist" aria-label="Разделы">
-          <button class="nav-tab" [class.active]="activeTab() === 'landing'" [attr.aria-current]="activeTab() === 'landing' ? 'page' : null" (click)="goTo('landing')">Главная</button>
-          <button class="nav-tab" [class.active]="activeTab() === 'explorer' || activeTab() === 'beer'" [attr.aria-current]="activeTab() === 'explorer' ? 'page' : null" (click)="goTo('explorer')">Каталог</button>
-          <button class="nav-tab" [class.active]="activeTab() === 'pairing'" [attr.aria-current]="activeTab() === 'pairing' ? 'page' : null" (click)="goTo('pairing')">К блюду</button>
-          <button class="nav-tab" [class.active]="activeTab() === 'academy'" [attr.aria-current]="activeTab() === 'academy' ? 'page' : null" (click)="goTo('academy')">Академия</button>
-          <button class="nav-tab" [class.active]="activeTab() === 'menu'" [attr.aria-current]="activeTab() === 'menu' ? 'page' : null" (click)="goTo('menu')">Меню</button>
+        <div class="nav-tabs" role="tablist" aria-label="Sections">
+          <button class="nav-tab" [class.active]="activeTab() === 'landing'" [attr.aria-current]="activeTab() === 'landing' ? 'page' : null" (click)="goTo('landing')">Home</button>
+          <button class="nav-tab" [class.active]="activeTab() === 'explorer' || activeTab() === 'beer'" [attr.aria-current]="activeTab() === 'explorer' ? 'page' : null" (click)="goTo('explorer')">Catalog</button>
+          <button class="nav-tab" [class.active]="activeTab() === 'pairing'" [attr.aria-current]="activeTab() === 'pairing' ? 'page' : null" (click)="goTo('pairing')">Food pairing</button>
+          <button class="nav-tab" [class.active]="activeTab() === 'academy'" [attr.aria-current]="activeTab() === 'academy' ? 'page' : null" (click)="goTo('academy')">Academy</button>
+          <button class="nav-tab" [class.active]="activeTab() === 'passport'" [attr.aria-current]="activeTab() === 'passport' ? 'page' : null" (click)="goTo('passport')">Passport</button>
+          <button class="nav-tab" [class.active]="activeTab() === 'menu'" [attr.aria-current]="activeTab() === 'menu' ? 'page' : null" (click)="goTo('menu')">Menu</button>
         </div>
 
-        <!-- Вход и аккаунт (десктоп) -->
+        <!-- Правая группа: язык интерфейса EN / RU (виден везде, на телефоне рядом с гамбургером), вход и аккаунт (десктоп) -->
+        <div class="nav-right">
+        <app-lang-switch />
         <div class="nav-user nav-admin-btn">
           @if (auth.isLoggedIn()) {
             @if (auth.canSeePanel()) {
               <button class="btn-amber btn-sm" (click)="goTo('admin')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                Панель
+                Dashboard
               </button>
             }
-            <button class="btn-outline" [class.active]="activeTab() === 'profile'" (click)="goTo('profile')" title="Профиль">
+            <button class="btn-outline" [class.active]="activeTab() === 'profile'" (click)="goTo('profile')" title="Profile">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               <span>{{ auth.user()?.username }}</span>
             </button>
-            <button class="btn-ghost" (click)="logout()" title="Выйти" aria-label="Выйти">
+            <button class="btn-ghost" (click)="logout()" title="Sign out" aria-label="Sign out">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
             </button>
           } @else {
             <button class="btn-amber btn-sm" (click)="goTo('login')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-              Войти
+              Sign in
             </button>
           }
         </div>
+        </div>
 
         <!-- Гамбургер (мобильный) -->
-        <button class="nav-hamburger" [class.open]="mobileMenuOpen()" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()" aria-controls="nav-mobile-menu" [attr.aria-label]="mobileMenuOpen() ? 'Закрыть меню' : 'Открыть меню'">
+        <button class="nav-hamburger" [class.open]="mobileMenuOpen()" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()" aria-controls="nav-mobile-menu" [attr.aria-label]="mobileMenuOpen() ? 'Close menu' : 'Open menu'">
           <span></span>
           <span></span>
           <span></span>
@@ -207,30 +214,34 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
     <div class="nav-mobile-menu" id="nav-mobile-menu" [class.open]="mobileMenuOpen()">
       <button class="btn-outline" [class.active]="activeTab() === 'landing'" (click)="goTo('landing')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Главная
+        Home
       </button>
       <button class="btn-outline" [class.active]="activeTab() === 'explorer' || activeTab() === 'beer'" (click)="goTo('explorer')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        Сорта и пирамида
+        Styles & taste pyramid
       </button>
       <button class="btn-outline" [class.active]="activeTab() === 'pairing'" (click)="goTo('pairing')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-        Что подать к блюду
+        What to pair with food
       </button>
       <button class="btn-outline" [class.active]="activeTab() === 'academy'" (click)="goTo('academy')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 10 3 12 0v-5"/></svg>
-        Академия Сомелье
+        Taste Academy
+      </button>
+      <button class="btn-outline" [class.active]="activeTab() === 'passport'" (click)="goTo('passport')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 15 8.5l7 1-5 4.9 1.2 7L12 18l-6.2 3.4 1.2-7-5-4.9 7-1L12 2Z"/></svg>
+        Taste passport
       </button>
       <button class="btn-outline" [class.active]="activeTab() === 'menu'" (click)="goTo('menu')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        Электронное меню
+        Digital menu
       </button>
       <hr style="border: none; border-top: 1px solid var(--line); margin: 8px 0;">
       @if (auth.isLoggedIn()) {
         @if (auth.canSeePanel()) {
           <button class="btn-amber" (click)="goTo('admin')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-            Панель
+            Dashboard
           </button>
         }
         <button class="btn-outline" [class.active]="activeTab() === 'profile'" (click)="goTo('profile')">
@@ -239,15 +250,23 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
         </button>
         <button class="btn-outline" (click)="logout()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-          Выйти
+          Sign out
         </button>
       } @else {
         <button class="btn-amber" (click)="goTo('login')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-          Войти
+          Sign in
         </button>
       }
     </div>
+
+    <!-- Код раздела не загрузился (нет сети или сайт обновился) -->
+    <ng-template #pageFail>
+      <div class="glass-card page-fail" role="alert">
+        <p>Couldn't load this section. Check your connection and refresh the page.</p>
+        <button type="button" class="btn-amber btn-sm" (click)="reloadPage()">Refresh page</button>
+      </div>
+    </ng-template>
 
     <!-- Основной контент -->
     <main class="app-main" [class.has-tabbar]="showTabBar()">
@@ -267,15 +286,19 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
             </div>
           } @placeholder {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('beer') {
           @defer (on immediate) {
             <div class="page-enter">
-              <app-beer-detail (back)="goTo('explorer')" />
+              <app-beer-detail [backLabel]="beerBackLabel()" (back)="goTo(beerFrom())" (login)="goTo('login')" />
             </div>
           } @placeholder {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('pairing') {
@@ -285,15 +308,19 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
             </div>
           } @placeholder {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('academy') {
           @defer (on immediate) {
             <div class="page-enter">
-              <app-academy />
+              <app-academy (navigate)="goTo($event)" />
             </div>
           } @placeholder {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('menu') {
@@ -303,27 +330,34 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
             </div>
           } @placeholder {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('admin') {
           <div class="page-enter">
             <!-- Пока сессия проверяется, форму входа не показываем: иначе она мигает при обновлении /panel -->
             @if (!auth.ready()) {
-              <p class="text-muted text-center p-4xl">Проверяем сессию...</p>
+              <p class="text-muted text-center p-4xl">Checking your session...</p>
             } @else if (auth.canSeePanel()) {
               @defer (on immediate) {
-                <app-sommelier-admin (openMenu)="openVenueMenu($event)" />
+                <!-- Панель персонала остаётся на английском: перевод интерфейса её не трогает -->
+                <app-sommelier-admin data-no-i18n (openMenu)="openVenueMenu($event)" />
               } @placeholder {
                 <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+              } @error {
+                <ng-container *ngTemplateOutlet="pageFail" />
               }
             } @else {
               @if (auth.isLoggedIn()) {
-                <p class="text-muted text-center mb-lg">Аккаунту {{ auth.user()?.username }} панель недоступна. Войдите под другой учётной записью.</p>
+                <p class="text-muted text-center mb-lg">The account {{ auth.user()?.username }} doesn't have dashboard access. Please sign in with a different account.</p>
               }
               @defer (on immediate) {
                 <app-auth mode="login" (done)="afterAuth()" (switchMode)="goTo($event)" />
               } @placeholder {
                 <div class="page-placeholder page-placeholder-narrow" aria-busy="true"><div class="skeleton-card"></div></div>
+              } @error {
+                <ng-container *ngTemplateOutlet="pageFail" />
               }
             }
           </div>
@@ -335,6 +369,8 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
             </div>
           } @placeholder {
             <div class="page-placeholder page-placeholder-narrow" aria-busy="true"><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('register') {
@@ -344,6 +380,8 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
             </div>
           } @placeholder {
             <div class="page-placeholder page-placeholder-narrow" aria-busy="true"><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('profile') {
@@ -353,6 +391,19 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
             </div>
           } @placeholder {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
+          }
+        }
+        @case ('passport') {
+          @defer (on immediate) {
+            <div class="page-enter">
+              <app-passport (navigate)="goTo($event)" />
+            </div>
+          } @placeholder {
+            <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
         @case ('privacy') {
@@ -362,56 +413,57 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
             </div>
           } @placeholder {
             <div class="page-placeholder" aria-busy="true"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          } @error {
+            <ng-container *ngTemplateOutlet="pageFail" />
           }
         }
       }
 
       <!-- Предупреждение о вреде алкоголя и ссылка на /privacy. В панели персонала не нужно -->
       @if (activeTab() !== 'admin') {
-        <app-site-footer [menu]="venueMenuOpen()" (privacy)="goTo('privacy')" />
+        <app-site-footer [menu]="venueMenuOpen()" (privacy)="goTo('privacy')" (navigate)="goTo($event)" />
       }
     </main>
 
     <!-- Нижняя панель разделов на телефоне (на десктопе те же разделы в шапке).
          В меню заведения её нет: там снизу своя полоса корзины -->
     @if (showTabBar()) {
-      <nav class="tabbar" aria-label="Разделы">
+      <nav class="tabbar" aria-label="Sections">
         <button type="button" class="tabbar-item" [class.active]="activeTab() === 'landing'" [attr.aria-current]="activeTab() === 'landing' ? 'page' : null" (click)="goTo('landing')">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>Главная</span>
+          <span>Home</span>
         </button>
         <button type="button" class="tabbar-item" [class.active]="activeTab() === 'explorer' || activeTab() === 'beer'" [attr.aria-current]="activeTab() === 'explorer' ? 'page' : null" (click)="goTo('explorer')">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <span>Каталог</span>
+          <span>Catalog</span>
         </button>
         <button type="button" class="tabbar-item" [class.active]="activeTab() === 'pairing'" [attr.aria-current]="activeTab() === 'pairing' ? 'page' : null" (click)="goTo('pairing')">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-          <span>К блюду</span>
+          <span>Pairing</span>
         </button>
         <button type="button" class="tabbar-item" [class.active]="activeTab() === 'menu'" [attr.aria-current]="activeTab() === 'menu' ? 'page' : null" (click)="goTo('menu')">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          <span>Меню</span>
+          <span>Menu</span>
         </button>
         @if (auth.isLoggedIn()) {
           <button type="button" class="tabbar-item" [class.active]="activeTab() === 'profile' || activeTab() === 'admin'" [attr.aria-current]="activeTab() === 'profile' ? 'page' : null" (click)="goTo('profile')">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span>Профиль</span>
+            <span>Profile</span>
           </button>
         } @else {
           <button type="button" class="tabbar-item" [class.active]="activeTab() === 'login' || activeTab() === 'register'" [attr.aria-current]="activeTab() === 'login' ? 'page' : null" (click)="goTo('login')">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-            <span>Войти</span>
+            <span>Sign in</span>
           </button>
         }
       </nav>
     }
 
     <!-- ИИ-сомелье: плавающая кнопка и чат. В панели и на формах входа не нужен.
-         Грузится отдельным чанком, когда браузер освободится после первой отрисовки,
-         или сразу, если страница уже попросила открыть чат (событие ft-open-chat) -->
+         Грузится отдельным чанком, когда браузер освободится после первой отрисовки -->
     @if (activeTab() !== 'admin' && activeTab() !== 'login' && activeTab() !== 'register') {
-      @defer (on idle; when chatWanted()) {
-        <app-sommelier-chat [lift]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
+      @defer (on idle) {
+        <app-sommelier-chat [lift]="activeTab() === 'menu'" [inVenue]="activeTab() === 'menu'" (openBrand)="goTo('beer')" />
       }
     }
 
@@ -433,9 +485,6 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
       max-width: var(--container-max);
       margin: 32px auto;
       padding: 0 var(--container-padding) 80px;
-      /* iPhone боком: текст не уходит под вырез экрана */
-      padding-left: max(var(--container-padding), env(safe-area-inset-left));
-      padding-right: max(var(--container-padding), env(safe-area-inset-right));
     }
 
     /* Скелетон, пока грузится чанк раздела */
@@ -469,6 +518,18 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
     }
 
     .nav-user .btn-ghost { color: var(--muted); }
+
+    .nav-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    /* На планшете и телефоне в группе остаётся только язык: прижимаем её к гамбургеру */
+    @media (max-width: 1024px) {
+      .nav-right { margin-left: auto; }
+    }
 
     .nav-bar { position: relative; }
 
@@ -511,7 +572,7 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
       inset: 0;
       z-index: -1;
       border-radius: inherit;
-      background: linear-gradient(155deg, var(--beer-accent), var(--beer-mid));
+      background: var(--grad-cta);
       opacity: 0;
       transition: opacity 180ms ease;
     }
@@ -573,40 +634,31 @@ const TAB_TITLES: Partial<Record<ActiveTab, string>> = {
       .nav-sticky-title { transition: opacity var(--duration-fast) ease; }
     }
 
+    .page-fail { display: grid; gap: var(--space-md); justify-items: center; padding: var(--space-3xl); text-align: center; color: var(--foam-dim); }
+    .page-fail p { margin: 0; }
+
+    /* Узкий ноутбук: имя пользователя прячем, остаётся иконка профиля, иначе кнопки не влезают в шапку */
+    @media (max-width: 1279px) {
+      .nav-user .btn-outline { padding: 7px 10px; }
+      .nav-user .btn-outline span { display: none; }
+    }
+
     @media (max-width: 1100px) {
       .nav-tab { padding: 0 12px; font-size: 0.76rem; }
-      .nav-user .btn-outline { max-width: 130px; }
-    }
-
-    /* Сенсорный экран шире 768px (планшет, телефон боком): профиль и выход в шапке под палец */
-    @media (pointer: coarse) {
-      .nav-user .btn-outline,
-      .nav-user .btn-ghost { min-height: 40px; min-width: 40px; }
-    }
-
-    /* Планшет 1024-1120px: «Выйти» 40px и подпись логотипа 12px делают ряд шире на 14px. Вкладки уже
-       на 2px с каждой стороны, иначе «Выйти» вылезает за край панели (у модератора с «Панелью») */
-    @media (pointer: coarse) and (max-width: 1100px) {
-      .nav-tab { padding: 0 10px; }
-    }
-    @media (pointer: coarse) and (min-width: 1101px) and (max-width: 1120px) {
-      .nav-tab { padding: 0 16px; }
     }
 
     @media (max-width: 860px) {
       .nav-sticky-title { display: none; }
     }
 
-    /* Планшет и телефон боком: вход, профиль и панель в выезжающем меню (шапка как на телефоне, styles.css) */
-    @media (min-width: 769px) and (max-width: 1023px) {
-      .nav-admin-btn { display: none; }
-    }
-
-    @media (max-width: 768px) {
+    /* Вход, профиль и панель на планшете и телефоне переезжают в меню-гамбургер вместе с разделами */
+    @media (max-width: 1024px) {
       .nav-admin-btn {
         display: none;
       }
+    }
 
+    @media (max-width: 768px) {
       .app-main { margin-top: 24px; }
       /* Место под нижнюю панель разделов и полосу жестов iPhone */
       .app-main.has-tabbar { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
@@ -620,22 +672,23 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly track = inject(TrackService);
   private readonly zone = inject(NgZone);
 
-  private readonly injector = inject(Injector);
-
   activeTab = signal<ActiveTab>('landing');
   /** Последний query каталога и подбора: вернувшись в раздел, гость видит тот же режим и фильтры. */
   private readonly lastQuery = new Map<ActiveTab, string>();
   mobileMenuOpen = signal(false);
   showStickyTitle = signal(false);
-  /** Страница попросила открыть чат раньше, чем он загрузился: грузим его чанк сразу. */
-  readonly chatWanted = signal(false);
-
-  private readonly touch = window.matchMedia(TOUCH_QUERY);
-  /** Запись мобильного меню в истории: «Назад» на телефоне закрывает меню, а не уводит со страницы. */
-  private readonly menuEntry = new OverlayHistory('menu', {
-    back: () => this.zone.run(() => this.mobileMenuOpen.set(false)),
-    forward: () => this.zone.run(() => this.mobileMenuOpen.set(true)),
-    isOpen: () => this.mobileMenuOpen(),
+  /** Раздел, из которого открыли страницу сорта: туда ведёт её кнопка «назад». */
+  readonly beerFrom = signal<ActiveTab>('explorer');
+  readonly beerBackLabel = computed(() => {
+    switch (this.beerFrom()) {
+      case 'landing': return 'Back to picks';
+      case 'menu': return 'Back to menu';
+      case 'profile': return 'Back to profile';
+      case 'passport': return 'Back to passport';
+      case 'pairing': return 'Back to pairings';
+      case 'academy': return 'Back to Academy';
+      default: return 'All styles';
+    }
   });
 
   /** Открыто меню конкретного заведения: в подвале строка о подаче алкоголя с 21 года. */
@@ -656,11 +709,6 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor() {
     // Адрес читаем до первого запуска эффекта, иначе он перепишет его на главную
     this.applyPath(location.pathname);
-    // Страницу обновили с открытым мобильным меню (его запись текущая): открываем его снова
-    if (this.menuEntry.resume()) {
-      if (this.touch.matches) this.mobileMenuOpen.set(true);
-      else this.menuEntry.settle(false);
-    }
 
     // Заголовок вкладки браузера по разделу, чтобы вкладки и история различались
     const baseTitle = document.title;
@@ -671,33 +719,35 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Раздел, сорт или заведение поменялись: кладём новый адрес в историю
     effect(() => {
-      const path = pathFor(this.activeTab(), this.selection.brandId(), this.selection.venueSlug());
+      const path = pathFor(this.activeTab(), this.selection.brandId(), this.selection.venueSlug(), this.selection.lessonSlug(),
+        this.selection.staffMode());
       if (path !== location.pathname) {
         // Каталог и подбор держат состояние в query: уходя, запоминаем его, а при возврате в раздел
         // (вкладка или кнопка «назад» на странице сорта) подставляем. Открытую карточку напитка не возвращаем
         const from = parsePath(location.pathname).tab;
         if (QUERY_TABS.has(from)) this.lastQuery.set(from, withoutParam(location.search, 'drink'));
-        const url = path + (this.lastQuery.get(this.activeTab()) ?? '');
-        // Переход из открытого чата или мобильного меню: новая страница встаёт на место записи листа,
-        // и «Назад» с неё ведёт на страницу под листом (ui/overlay-history.ts)
-        if (overlayEntry()) replaceOverlayEntry(url);
-        else history.pushState({}, '', url);
+        history.pushState({}, '', path + (this.lastQuery.get(this.activeTab()) ?? ''));
       }
     });
 
-    // Сессия закончилась (кнопка выхода в панели или 401): с панели и профиля уводим на вход
+    // Сессия закончилась (кнопка выхода в панели или 401): с панели уводим на вход.
+    // Профиль без входа сам показывает приглашение войти
     effect(() => {
       const user = this.auth.user();
       const ready = this.auth.ready();
       const tab = untracked(this.activeTab);
-      if (ready && user === null && (tab === 'admin' || tab === 'profile')) untracked(() => this.goTo('login'));
+      if (ready && user === null && tab === 'admin') untracked(() => this.goTo('login'));
     }, { allowSignalWrites: true });
+
+    // Пока открыто мобильное меню, страница под ним не прокручивается (правило в styles.css только для узких экранов)
+    effect(() => {
+      document.documentElement.classList.toggle('ft-no-scroll', this.mobileMenuOpen());
+    });
   }
 
   ngOnInit() {
     // Сессию AuthService проверяет сам в конструкторе (loadMe), второй запрос не нужен
     window.addEventListener('popstate', this.onPopState);
-    window.addEventListener(OPEN_CHAT_EVENT, this.onOpenChat);
     // Прокрутку слушаем вне зоны Angular: иначе каждое событие scroll запускало бы
     // проверку изменений во всём приложении, на телефоне это заметно при листании
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScrollEvent, { passive: true }));
@@ -705,17 +755,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('popstate', this.onPopState);
-    window.removeEventListener(OPEN_CHAT_EVENT, this.onOpenChat);
     window.removeEventListener('scroll', this.onScrollEvent);
-    this.menuEntry.destroy();
   }
-
-  /** Страница просит открыть чат сомелье (ui/chat-open.ts). Чат ещё не загружен: грузим его сразу. */
-  private readonly onOpenChat = (event: Event) => {
-    this.zone.run(() => {
-      if (requestOpenChat(openChatDetail(event))) this.chatWanted.set(true);
-    });
-  };
 
   /** Esc закрывает мобильное меню. */
   @HostListener('document:keydown.escape')
@@ -726,8 +767,7 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Кнопки назад/вперёд браузера: адрес уже сменился, разбираем его без нового pushState. */
   private readonly onPopState = () => {
     this.applyPath(location.pathname);
-    // На записи самого меню («Вперёд» на неё) его открывает menuEntry
-    if (overlayEntry() !== 'menu') this.closeMobileMenu();
+    this.closeMobileMenu();
     this.showStickyTitle.set(false);
   };
 
@@ -743,10 +783,13 @@ export class AppComponent implements OnInit, OnDestroy {
         this.selection.setTableFromQuery(parsed.venueSlug);
       }
     }
+    this.selection.lessonSlug.set(parsed.tab === 'academy' ? parsed.lessonSlug ?? null : null);
+    this.selection.staffMode.set(parsed.tab === 'menu' && !!parsed.staff);
     this.activeTab.set(parsed.tab);
     // Незнакомый или неполный адрес (или адрес с query) подменяем каноническим без новой записи в истории
     // Каталог и подбор хранят в query своё состояние: его оставляем
-    const canonical = pathFor(parsed.tab, this.selection.brandId(), this.selection.venueSlug());
+    const canonical = pathFor(parsed.tab, this.selection.brandId(), this.selection.venueSlug(), this.selection.lessonSlug(),
+      this.selection.staffMode());
     const search = QUERY_TABS.has(parsed.tab) ? location.search : '';
     if (canonical !== pathname || location.search !== search) history.replaceState(history.state, '', canonical + search);
   }
@@ -782,8 +825,16 @@ export class AppComponent implements OnInit, OnDestroy {
   }));
 
   goTo(tab: ActiveTab) {
+    const from = this.activeTab();
+    if (tab === 'beer' && from !== 'beer') {
+      this.beerFrom.set(from === 'admin' || from === 'login' || from === 'register' || from === 'privacy' ? 'explorer' : from);
+    }
+    // Урок Академии живёт в адресе только пока открыт её раздел
+    if (tab !== 'academy' || from !== 'academy') this.selection.lessonSlug.set(null);
+    // Режим официанта относится к одному заведению: переход в любой раздел возвращает меню гостя
+    this.selection.staffMode.set(false);
     this.activeTab.set(tab);
-    this.closeMobileMenu(false);
+    this.closeMobileMenu();
     this.showStickyTitle.set(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -802,26 +853,20 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Выход из шапки и мобильного меню: всегда ведёт на страницу входа. */
   logout() {
     this.auth.logout();
+    this.closeMobileMenu();
     this.goTo('login');
   }
 
-  toggleMobileMenu() {
-    if (this.mobileMenuOpen()) {
-      this.closeMobileMenu();
-      return;
-    }
-    this.mobileMenuOpen.set(true);
-    if (this.touch.matches) this.menuEntry.push();
+  /** Код раздела не загрузился (нет сети или сайт обновился): перезагрузка страницы берёт свежие файлы. */
+  reloadPage() {
+    location.reload();
   }
 
-  /**
-   * dismiss (крестик, подложка, Escape): запись меню в истории снимаем шагом назад. Пункт меню
-   * (goTo) ставит новую страницу на место записи меню, поэтому ждём отрисовки и только потом смотрим,
-   * осталась ли запись (ui/overlay-history.ts).
-   */
-  closeMobileMenu(dismiss = true) {
-    if (!this.mobileMenuOpen()) return;
+  toggleMobileMenu() {
+    this.mobileMenuOpen.update(v => !v);
+  }
+
+  closeMobileMenu() {
     this.mobileMenuOpen.set(false);
-    afterNextRender(() => this.menuEntry.settle(dismiss), { injector: this.injector });
   }
 }

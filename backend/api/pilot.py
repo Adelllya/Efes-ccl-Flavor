@@ -86,10 +86,10 @@ def clean_meta(value):
 def build_event(kind, *, venue=None, session='', **fields):
     """Несохранённое событие с очищенными полями; неизвестные поля и тип - ValueError."""
     if kind not in EVENT_KINDS:
-        raise ValueError('Неизвестное событие: {}'.format(kind))
+        raise ValueError('Unknown event: {}'.format(kind))
     unknown = set(fields) - _EVENT_FIELDS
     if unknown:
-        raise ValueError('Неизвестные поля события: {}'.format(', '.join(sorted(unknown))))
+        raise ValueError('Unknown event fields: {}'.format(', '.join(sorted(unknown))))
     for key in ('dish_ref', 'drink_ref'):
         if key in fields:
             fields[key] = clean_ref(fields[key])

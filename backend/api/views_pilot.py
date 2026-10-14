@@ -123,9 +123,9 @@ def events(request):
     data = request.data if isinstance(request.data, dict) else {}
     raw_events = data.get('events')
     if not isinstance(raw_events, list):
-        raise ValidationError({'events': ['Ожидается список событий']})
+        raise ValidationError({'events': ['Expected a list of events']})
     if len(raw_events) > MAX_EVENTS:
-        raise ValidationError({'events': ['Не больше {} событий за раз'.format(MAX_EVENTS)]})
+        raise ValidationError({'events': ['No more than {} events at a time'.format(MAX_EVENTS)]})
     venue = _venue_by_slug(data.get('venue'))
     session = clean_session(data.get('session'))
     raw_events = [e for e in raw_events if isinstance(e, dict)]
@@ -179,9 +179,9 @@ class FeedbackSerializer(serializers.Serializer):
     dish_ref = serializers.CharField(required=False, allow_blank=True, allow_null=True, default='')
     drink_ref = serializers.CharField(required=False, allow_blank=True, allow_null=True, default='')
     rating = serializers.IntegerField(min_value=1, max_value=5, error_messages={
-        'min_value': 'Оценка от 1 до 5', 'max_value': 'Оценка от 1 до 5',
-        'invalid': 'Оценка от 1 до 5', 'required': 'Поставьте оценку от 1 до 5',
-        'null': 'Поставьте оценку от 1 до 5',
+        'min_value': 'Rating must be from 1 to 5', 'max_value': 'Rating must be from 1 to 5',
+        'invalid': 'Rating must be from 1 to 5', 'required': 'Give a rating from 1 to 5',
+        'null': 'Give a rating from 1 to 5',
     })
     comment = serializers.CharField(required=False, allow_blank=True, allow_null=True, default='',
                                     trim_whitespace=True)
@@ -251,15 +251,15 @@ def report_venue(request):
     if raw:
         venue = find_venue(raw)
         if venue is None:
-            raise NotFound('Заведение не найдено')
+            raise NotFound('Venue not found')
         if not (is_moderator or venue.owner_id == user.id):
-            raise PermissionDenied('Отчёт пилота видят владелец заведения и модератор')
+            raise PermissionDenied('The pilot report is available to the venue owner and moderators')
         return venue
     if is_moderator:
         return None
     venue = Venue.objects.filter(owner=user).order_by('name').first()
     if venue is None:
-        raise PermissionDenied('Отчёт пилота видят владелец заведения и модератор')
+        raise PermissionDenied('The pilot report is available to the venue owner and moderators')
     return venue
 
 
@@ -289,7 +289,7 @@ class ExportCsvView(APIView):
         date_from, date_to = report_period(request, venue)
         kind = (request.query_params.get('kind') or 'orders').strip().lower()
         if kind not in pilot_report.EXPORT_KINDS:
-            raise ValidationError({'kind': ['Выгрузка бывает events, orders или feedback']})
+            raise ValidationError({'kind': ['Export kind must be events, orders or feedback']})
         comma = (request.query_params.get('sep') or '').strip().lower() in ('comma', ',')
         header, rows = pilot_report.export_rows(kind, venue, date_from, date_to, decimal_comma=not comma)
         text = pilot_report.csv_text(header, rows, delimiter=',' if comma else ';')
@@ -340,7 +340,7 @@ def menu_url(site, slug, table=None):
 
 class SiteUrlMissing(APIException):
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    default_detail = 'Не задан адрес сайта для QR: укажите FT_PUBLIC_SITE_URL'
+    default_detail = 'Site URL for QR codes is not set: configure FT_PUBLIC_SITE_URL'
     default_code = 'site_url_missing'
 
 
@@ -351,13 +351,13 @@ def qr_target(request, slug):
     """
     venue = Venue.objects.filter(slug=slug).first()
     if venue is None or not (venue.is_published or _can_manage(request.user, venue)):
-        raise NotFound('Заведение не найдено')
+        raise NotFound('Venue not found')
     raw_table = (request.query_params.get('table') or '').strip()
     table = None
     if raw_table:
         table = _table(raw_table, venue)
         if not table:
-            raise ValidationError({'table': ['Стол от 1 до {}'.format(venue.tables_count)]})
+            raise ValidationError({'table': ['Table must be from 1 to {}'.format(venue.tables_count)]})
     site = public_site_url(request)
     if not site:
         raise SiteUrlMissing()
@@ -371,7 +371,7 @@ class VenueQrView(APIView):
 
     def get(self, request, slug):
         venue, table, site = qr_target(request, slug)
-        title = '{}, стол {}'.format(venue.name, table) if table else venue.name
+        title = '{}, table {}'.format(venue.name, table) if table else venue.name
         buffer = io.BytesIO()
         # Уровень коррекции M: код читается и с чуть помятой или поцарапанной таблички.
         segno.make_qr(menu_url(site, venue.slug, table), error='m').save(

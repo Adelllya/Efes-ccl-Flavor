@@ -54,7 +54,7 @@ def drink_style_label(raw):
         return str(style)
     ds = _dataset()
     archetype = (ds.archetype_raw_by_id.get(style.get('archetype')) if ds else None) or {}
-    label = archetype.get('label_ru') or style.get('name') or ''
+    label = style.get('name') or archetype.get('label_ru') or ''
     return '' if label == 'unknown' else label
 
 

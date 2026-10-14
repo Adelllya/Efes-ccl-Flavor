@@ -13,6 +13,7 @@
 
 import { Dish } from '../../models/flavor-tree.models';
 import { V2Dish } from '../drinks-v2/v2.models';
+import { trText } from '../../i18n/translate';
 
 /** Выбранное блюдо. Простой объект: его кладём в историю браузера. */
 export interface DishPick {
@@ -61,6 +62,8 @@ const STOP_WORDS = new Set([
   'к', 'ко', 'с', 'со', 'и', 'в', 'во', 'на', 'для', 'под', 'по', 'из', 'что', 'чем', 'как', 'мне', 'нам',
   'выпить', 'пить', 'запить', 'взять', 'подобрать', 'подбери', 'посоветуй', 'посоветуйте', 'хочу', 'буду',
   'пиво', 'пива', 'пивом', 'напиток', 'напитки', 'блюдо', 'блюду', 'какое', 'какой', 'лучше', 'сегодня',
+  'a', 'an', 'the', 'to', 'with', 'for', 'and', 'of', 'what', 'which', 'me', 'us', 'my', 'i', 'goes', 'go',
+  'drink', 'pair', 'pairing', 'pairs', 'match', 'best', 'good', 'beer', 'beers', 'dish', 'today', 'tonight',
 ]);
 
 /**
@@ -71,6 +74,9 @@ const PREFERRED: Record<string, string> = {
   'рыба': 'salmon-grilled',
   'торт': 'medovik',
   'курица': 'shashlyk-chicken',
+  'fish': 'salmon-grilled',
+  'cake': 'medovik',
+  'chicken': 'shashlyk-chicken',
 };
 
 /** Нижняя граница совпадения: ниже неё считаем, что блюда в каталоге нет. */
@@ -186,7 +192,12 @@ function makeKey(text: string, isName: boolean): SearchKey | null {
  */
 export function buildDishIndex(v1: Dish[], v2: V2Dish[]): IndexedDish[] {
   const v1ByName = new Map<string, Dish>();
-  for (const d of v1) v1ByName.set(normalizeDish(d.name), d);
+  for (const d of v1) {
+    v1ByName.set(normalizeDish(d.name), d);
+    // RU-интерфейс: движок отдаёт русские названия, а каталог сомелье английские. Сводим через словарь
+    const ru = trText(d.name);
+    if (ru !== d.name) v1ByName.set(normalizeDish(ru), d);
+  }
   const used = new Set<string>();
   const out: IndexedDish[] = [];
 

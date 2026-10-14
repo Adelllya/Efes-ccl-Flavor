@@ -12,24 +12,24 @@ export class SolutionComponent {
   pyramidLayers = [
     {
       level: 'TOP',
-      label: 'Эмоции',
-      notes: 'свобода, ностальгия, лето',
+      label: 'Emotions',
+      notes: 'freedom, nostalgia, summer',
       icon: '☀️',
       color: '#F7941D',
       bgColor: '#FFF3E0'
     },
     {
       level: 'HEART',
-      label: 'Ароматические ноты',
-      notes: 'цитрус, хлеб, тмин, мёд',
+      label: 'Aroma notes',
+      notes: 'citrus, bread, caraway, honey',
       icon: '🌿',
       color: '#E87D10',
       bgColor: '#FFE8CC'
     },
     {
       level: 'BASE',
-      label: 'Базовые вкусы',
-      notes: 'горечь, сладость, кислота',
+      label: 'Basic tastes',
+      notes: 'bitterness, sweetness, acidity',
       icon: '🏔️',
       color: '#C0610B',
       bgColor: '#FFDDB3'

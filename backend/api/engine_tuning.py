@@ -15,23 +15,17 @@ from .pairing import engine_v2 as E
 
 # path, label, hint, min, max, step
 KNOBS = [
-    ("score.base", "Базовая щедрость балла", "Общий сдвиг всех оценок вверх или вниз.", 30, 60, 1),
-    ("score.k", "Влияние совместимости", "Насколько сильно ядро совместимости растягивает оценки.", 0.5, 1.3, 0.05),
-    ("R1.k_loud", "Важность интенсивности", "Совпадение по «громкости» вкуса блюда и напитка.", 40, 90, 1),
-    ("R2.tannin", "Рез жирности танином", "Сила, с которой танин режет жир блюда.", 0.0, 0.6, 0.05),
-    ("R3.relief_sweet", "Гашение остроты сладостью", "Насколько сладость напитка гасит остроту блюда.", 0.0, 0.6, 0.05),
-    ("R4.k_gap", "Штраф за нехватку сладости", "Штраф, если напиток менее сладок, чем требует блюдо.", 0, 50, 1),
-    ("R5.k_gap", "Штраф за нехватку кислотности", "Штраф, если кислотности напитка не хватает под блюдо.", 0, 40, 1),
-    ("R6.k_forgive", "Прощение горечи солью", "Насколько соль блюда смягчает горечь напитка.", 0, 16, 1),
-    ("R7.k_neg", "Жёсткость умами без соли", "Штраф за жёсткость, когда умами не поддержано солью и кислотой.", 0, 24, 1),
-    ("R8.k_plus", "Бонус танин и белок", "Бонус за пару насыщенного танина с белковым блюдом.", 0, 30, 1),
-    ("recommend.partner_tie_window", "Приоритет портфеля Efes",
-     "Напиток Efes встаёт выше чужого, если уступает ему не больше чем на столько баллов. Баллы не меняются. "
-     "0 выключает приоритет.", 0, 30, 1),
+    ("score.base", "Base score generosity", "Shifts all scores up or down.", 30, 60, 1),
+    ("score.k", "Compatibility influence", "How strongly the compatibility core stretches the scores.", 0.5, 1.3, 0.05),
+    ("R1.k_loud", "Intensity importance", "How well the flavour \"loudness\" of the dish and the drink match.", 40, 90, 1),
+    ("R2.tannin", "Tannin cuts through fat", "How strongly tannin cuts through the fat of the dish.", 0.0, 0.6, 0.05),
+    ("R3.relief_sweet", "Sweetness tames heat", "How much the sweetness of the drink tames the heat of the dish.", 0.0, 0.6, 0.05),
+    ("R4.k_gap", "Not-sweet-enough penalty", "Penalty when the drink is less sweet than the dish requires.", 0, 50, 1),
+    ("R5.k_gap", "Not-acidic-enough penalty", "Penalty when the drink lacks the acidity the dish needs.", 0, 40, 1),
+    ("R6.k_forgive", "Salt forgives bitterness", "How much the salt of the dish softens the bitterness of the drink.", 0, 16, 1),
+    ("R7.k_neg", "Umami harshness without salt", "Harshness penalty when umami is not backed by salt and acidity.", 0, 24, 1),
+    ("R8.k_plus", "Tannin and protein bonus", "Bonus for pairing rich tannin with a protein-rich dish.", 0, 30, 1),
 ]
-# Кнопка «Рекомендовать Efes» в админке: окно, с которым напитки Efes почти всегда идут первыми.
-EFES_PROMOTE_PATH = "recommend.partner_tie_window"
-EFES_PROMOTE_WINDOW = 12
 KNOB_PATHS = [k[0] for k in KNOBS]
 KNOB_RANGE = {k[0]: (k[3], k[4]) for k in KNOBS}
 
@@ -82,14 +76,9 @@ def knobs_state(data_dir=None):
         b = _get_path(base, path)
         items.append({"path": path, "label": label, "hint": hint, "min": lo, "max": hi,
                       "step": step, "base": b, "value": ov.get(path, b)})
-    window = ov.get(EFES_PROMOTE_PATH, _get_path(base, EFES_PROMOTE_PATH))
     return {"version": row.version, "updated_by": row.updated_by,
             "updated_at": row.updated_at.isoformat() if row.updated_at else None,
-            "has_overrides": bool(ov), "knobs": items,
-            # кнопка «Рекомендовать Efes»: включена, если окно не меньше EFES_PROMOTE_WINDOW
-            "efes_promote": {"path": EFES_PROMOTE_PATH, "window": EFES_PROMOTE_WINDOW,
-                             "base": _get_path(base, EFES_PROMOTE_PATH),
-                             "active": window is not None and window >= EFES_PROMOTE_WINDOW}}
+            "has_overrides": bool(ov), "knobs": items}
 
 
 def save_overrides(overrides: Dict[str, Any], username: str = "") -> None:
@@ -113,7 +102,7 @@ def tuned_dataset(data_dir=None, locale: str = "ru"):
     key = (data_dir, locale, row.version)
     if key in _cache:
         return _cache[key]
-    ds = DS.load_dataset(data_dir, params_override=ov)
+    ds = DS.for_site(DS.load_dataset(data_dir, params_override=ov), english=(locale == "en"))
     if locale != "ru" and locale in DS.LOCALES:
         path = Path(data_dir or DS.DATA_DIR) / ("engine_v2_texts_%s.json" % locale)
         if path.exists():
