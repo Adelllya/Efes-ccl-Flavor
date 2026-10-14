@@ -3,6 +3,6 @@ export const environment = {
   production: true,
   apiBase: 'https://flavor-tree-backend.vercel.app/api',
   adminUrl: 'https://flavor-tree-backend.vercel.app/admin/',
-  // На проде тестовые кнопки входа скрыты.
-  demoAccounts: false,
+  // Прототип: кнопки быстрого входа видны и на проде, чтобы любой мог зайти под ролью.
+  demoAccounts: true,
 };
